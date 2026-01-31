@@ -1,0 +1,63 @@
+COMMAND 1 — Extract all states:
+- Idle
+- SalesHistoryManagement (implied)
+- DuePaymentsManagement
+- EmployeeSalariesAndBonusesManagement
+- ProfitOrIncomeReporting
+- SalesReportsGeneration
+
+COMMAND 2 — Extract events/triggers:
+- Start (implied initial state)
+- ProductDetailsAdded
+- SubtotalCalculated
+- SaleCompleted
+- CustomerDuePaymentReceived
+- EmployeeSalaryAndBonusPaid
+- ProfitOrIncomeReportRequested
+- SalesReportGenerated
+
+COMMAND 3 — Extract transitions:
+- Start --> SalesHistoryManagement (implied)
+- SalesHistoryManagement --> ProductDetailsAdded : add product details
+- ProductDetailsAdded --> SubtotalCalculated : calculate subtotal
+- SubtotalCalculated --> SaleCompleted : complete sale
+- SaleCompleted --> SalesHistoryManagement : update sales history
+- SalesHistoryManagement --> CustomerDuePaymentReceived (implied)
+- CustomerDuePaymentReceived --> DuePaymentsManagement
+- DuePaymentsManagement --> EmployeeSalaryAndBonusPaid (implied)
+- EmployeeSalaryAndBonusPaid --> EmployeeSalariesAndBonusesManagement
+- EmployeeSalariesAndBonusesManagement --> ProfitOrIncomeReportRequested : request report
+- ProfitOrIncomeReportRequested --> ProfitOrIncomeReporting
+- ProfitOrIncomeReporting --> SalesReportsGeneration (implied)
+- SalesReportsGeneration --> SalesReportGenerated : generate report
+- SalesReportGenerated --> ProfitOrIncomeReporting
+
+COMMAND 4 — Infer missing transitions:
+- DuePaymentsManagement --> Idle : customer's due payment completed or timeout
+- EmployeeSalariesAndBonusesManagement --> Idle : employee salaries and bonuses calculated for the period
+- SalesHistoryManagement --> Idle : no active sales
+
+COMMAND 5 — Validate:
+- There is exactly one initial state (Start)
+- All transitions refer to defined states
+- No orphan states (inferred from given requirements)
+- No unreachable states (inferred from given requirements)
+
+COMMAND 6 — Generate final PlantUML:
+@startuml
+[*] --> Idle
+Idle --> SalesHistoryManagement : add product details
+SalesHistoryManagement --> ProductDetailsAdded
+ProductDetailsAdded --> SubtotalCalculated
+SubtotalCalculated --> SaleCompleted
+SaleCompleted --> SalesHistoryManagement : update sales history
+SalesHistoryManagement --> CustomerDuePaymentReceived (inferred)
+CustomerDuePaymentReceived --> DuePaymentsManagement
+DuePaymentsManagement --> EmployeeSalaryAndBonusPaid (inferred)
+EmployeeSalaryAndBonusPaid --> EmployeeSalariesAndBonusesManagement
+EmployeeSalariesAndBonusesManagement --> ProfitOrIncomeReportRequested : request report
+ProfitOrIncomeReportRequested --> ProfitOrIncomeReporting
+ProfitOrIncomeReporting --> SalesReportsGeneration (inferred)
+SalesReportsGeneration --> SalesReportGenerated : generate report
+SalesReportGenerated --> ProfitOrIncomeReporting
+@enduml

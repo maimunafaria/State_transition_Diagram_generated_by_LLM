@@ -1,0 +1,71 @@
+I'll follow the commands exactly and in order.
+
+**COMMAND 1 — Extract all states.**
+List all major logical states that appear or are implied.
+
+States:
+
+* Idle
+* ProcessingOrders
+* SendingOrderMemo
+* GeneratingRecommendations
+* ReadyForNextAction
+
+**COMMAND 2 — Extract events/triggers.**
+List all actions, events, or conditions that cause transitions.
+
+Events/Triggers:
+
+* OrderDetailsAvailable
+* SMS Sent
+* PurchaseHistoryUpdated
+* CustomerPreferencesChanged
+
+**COMMAND 3 — Extract transitions.**
+For each event, identify:
+- from state
+- to state
+- event/trigger name
+
+Transitions:
+
+1. Idle --> ProcessingOrders : OrderDetailsAvailable
+2. ProcessingOrders --> SendingOrderMemo : SMS Sent
+3. SendingOrderMemo --> GeneratingRecommendations : PurchaseHistoryUpdated
+4. GeneratingRecommendations --> ReadyForNextAction : CustomerPreferencesChanged
+5. ProcessingOrders --> ReadyForNextAction : all orders processed
+
+**COMMAND 4 — Infer missing transitions.**
+If the requirement implies a transition but does not explicitly state it, infer it and mark it with (inferred).
+
+Infered Transitions:
+
+1. GeneratingRecommendations --> Idle : recommendations generated
+2. ReadyForNextAction --> Idle : no new actions pending
+
+**COMMAND 5 — Validate.**
+Ensure that:
+- There is exactly one initial state.
+- All transitions refer to defined states.
+- No orphan states.
+- No unreachable states.
+
+Validated: The diagram meets all validation criteria.
+
+**COMMAND 6 — Generate final PlantUML.**
+Use ONLY:
+- @startuml / @enduml
+- [*] for initial
+- --> for transitions
+
+PlantUML:
+
+@startuml
+[*] --> ProcessingOrders : OrderDetailsAvailable
+ProcessingOrders --> SendingOrderMemo : SMS Sent
+SendingOrderMemo --> GeneratingRecommendations : PurchaseHistoryUpdated
+GeneratingRecommendations --> ReadyForNextAction : CustomerPreferencesChanged
+ProcessingOrders --> ReadyForNextAction : all orders processed
+GeneratingRecommendations --> Idle : recommendations generated
+ReadyForNextAction --> Idle : no new actions pending
+@enduml

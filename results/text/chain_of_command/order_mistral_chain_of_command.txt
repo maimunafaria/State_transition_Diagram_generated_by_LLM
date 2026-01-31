@@ -1,0 +1,46 @@
+COMMAND 1 — Extract all states:
+- Idle
+- OrderRecording
+- OrderFinalized
+- CalculatingTotalExpense
+- StoringOrderDetails
+- LinkedToCustomerAccount
+
+COMMAND 2 — Extract events/triggers:
+- RecordOrderDetails (employee action)
+- FinalizeOrder (event)
+- CalculateTotalExpense (automatic event)
+- StoreOrderDetails (action)
+- LinkToCustomerAccount (action)
+
+COMMAND 3 — Extract transitions:
+- [*] --> Idle
+- Idle --> OrderRecording : RecordOrderDetails
+- OrderRecording --> OrderFinalized : FinalizeOrder
+- OrderFinalized --> CalculatingTotalExpense
+- CalculatingTotalExpense --> OrderFinalized
+- OrderFinalized --> StoringOrderDetails
+- StoringOrderDetails --> LinkedToCustomerAccount
+- LinkedToCustomerAccount --> Idle (implied)
+
+COMMAND 4 — Infer missing transitions:
+- OrderFinalized --> Idle (inferred, since it's the final state and needs to transition back to Idle)
+
+COMMAND 5 — Validate:
+- There is exactly one initial state (Idle).
+- All transitions refer to defined states.
+- No orphan states.
+- No unreachable states.
+
+COMMAND 6 — Generate final PlantUML:
+@startuml
+[*] --> Idle
+Idle --> OrderRecording : RecordOrderDetails
+OrderRecording --> OrderFinalized : FinalizeOrder
+OrderFinalized --> CalculatingTotalExpense
+CalculatingTotalExpense --> OrderFinalized
+OrderFinalized --> StoringOrderDetails
+StoringOrderDetails --> LinkedToCustomerAccount
+LinkedToCustomerAccount --> Idle (inferred)
+Idle --> OrderRecording (inferred)
+@enduml

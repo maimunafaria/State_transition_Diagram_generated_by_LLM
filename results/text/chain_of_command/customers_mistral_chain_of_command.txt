@@ -1,0 +1,41 @@
+COMMAND 1 — Extract all states:
+- Idle (Initial State)
+- OrderPlaced (Customer places an order)
+- CalculatingTotalOrdersAndExpenses (System calculates total orders and expenses)
+- SendingSMS (System sends order memo through SMS)
+- ReceivingPreferenceData (System receives customer's preferences data)
+- GeneratingRecommendations (System generates personalized recommendations for the customer)
+
+COMMAND 2 — Extract events/triggers:
+- PlaceOrder (Customer places an order)
+- CalculateTotalOrdersAndExpenses (System calculates total orders and expenses based on order details)
+- SendSMS (System sends order memo through SMS)
+- ReceivePreferenceData (Customer provides preferences data to the system)
+- GenerateRecommendations (System generates personalized recommendations based on customer's purchasing patterns)
+
+COMMAND 3 — Extract transitions:
+- [*] --> OrderPlaced : PlaceOrder
+- OrderPlaced --> CalculatingTotalOrdersAndExpenses : CalculateTotalOrdersAndExpenses
+- CalculatingTotalOrdersAndExpenses --> SendingSMS : SendSMS
+- (Inferred) SendingSMS --> Idle (Assumed that after sending SMS, the system returns to idle state)
+- ReceivingPreferenceData (Customer provides preferences data) --> GeneratingRecommendations : GenerateRecommendations
+- GeneratingRecommendations --> Idle (System generates recommendations and then returns to idle state)
+
+COMMAND 4 — Infer missing transitions:
+- (Inferred) CalculatingTotalOrdersAndExpenses --> SendingSMS (Assumed that after calculating total orders and expenses, the system sends SMS immediately)
+
+COMMAND 5 — Validate:
+- There is exactly one initial state (Idle).
+- All transitions refer to defined states.
+- No orphan states found.
+- No unreachable states found.
+
+COMMAND 6 — Generate final PlantUML:
+@startuml
+[*] --> OrderPlaced : PlaceOrder
+OrderPlaced --> CalculatingTotalOrdersAndExpenses : CalculateTotalOrdersAndExpenses
+CalculatingTotalOrdersAndExpenses --> SendingSMS : SendSMS
+(inferred) SendingSMS --> Idle
+ReceivingPreferenceData --> GeneratingRecommendations : GenerateRecommendations
+GeneratingRecommendations --> Idle
+@enduml

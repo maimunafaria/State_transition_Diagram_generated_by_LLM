@@ -1,0 +1,70 @@
+I'll follow the six commands to extract the states, events, transitions, and generate the final PlantUML.
+
+**COMMAND 1 — Extract all states**
+
+Major logical states that appear or are implied:
+
+* Idle
+* PaymentInitiated
+* PaymentProcessing
+* PaymentFailed
+* PaymentSuccessful
+* MemoGenerated
+
+**COMMAND 2 — Extract events/triggers**
+
+Actions, events, or conditions that cause transitions:
+
+* InitiatePayment (initiating a payment)
+* MakePayment (processing the payment)
+* PaymentRejected (payment failed)
+* PaymentApproved (payment successful)
+* GenerateMemo (automatically generating the memo)
+
+**COMMAND 3 — Extract transitions**
+
+For each event, identify:
+
+- from state
+- to state
+- event/trigger name
+
+1. From: Idle, To: PaymentInitiated, Event: InitiatePayment
+2. From: PaymentInitiated, To: PaymentProcessing, Event: MakePayment
+3. From: PaymentProcessing, To: PaymentFailed, Event: PaymentRejected
+4. From: PaymentProcessing, To: PaymentSuccessful, Event: PaymentApproved
+5. From: PaymentSuccessful, To: MemoGenerated, Event: GenerateMemo
+
+**COMMAND 4 — Infer missing transitions**
+
+If the requirement implies a transition but does not explicitly state it, infer it and mark it with (inferred):
+
+* From: PaymentFailed, To: Idle, Event: (inferred) CancelPayment
+* From: PaymentSuccessful, To: Idle, Event: (inferred) EndTransaction
+
+**COMMAND 5 — Validate**
+
+Ensure that:
+
+- There is exactly one initial state.
+- All transitions refer to defined states.
+- No orphan states.
+- No unreachable states.
+
+Validation successful. Warnings: None.
+
+**COMMAND 6 — Generate final PlantUML**
+
+Here's the final PlantUML code:
+
+@startuml
+[*] --> Idle
+Idle --> PaymentInitiated : InitiatePayment
+PaymentInitiated --> PaymentProcessing : MakePayment
+PaymentProcessing --> PaymentFailed : PaymentRejected
+PaymentProcessing --> PaymentSuccessful : PaymentApproved
+PaymentSuccessful --> MemoGenerated : GenerateMemo
+PaymentFailed --> Idle : (inferred) CancelPayment
+PaymentSuccessful --> Idle : (inferred) EndTransaction
+MemoGenerated --> Idle : (inferred) EndTransaction
+@enduml

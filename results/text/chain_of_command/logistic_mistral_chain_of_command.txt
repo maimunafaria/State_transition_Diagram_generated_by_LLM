@@ -1,0 +1,45 @@
+COMMAND 1 — Extract all states:
+- Idle
+- ProductRequestSent
+- DealerInformationRecorded
+- ProductsReceived
+- ShipmentDetailsAdded
+- NewDealerIntroduced
+
+COMMAND 2 — Extract events/triggers:
+- ItemAboutToRunOutOfStock (implies sending a product request)
+- DealerSendsProducts
+- RecordNewDealerInformation
+- AddShipmentDetailsToDatabase
+- NewDealerIntroduced
+
+COMMAND 3 — Extract transitions:
+- [*] --> Idle
+- Idle --> ProductRequestSent : ItemAboutToRunOutOfStock
+- ProductRequestSent --> DealerInformationRecorded : DealerSendsProducts
+- DealerInformationRecorded --> ProductsReceived
+- ProductsReceived --> ShipmentDetailsAdded : AddShipmentDetailsToDatabase
+- NewDealerIntroduced --> DealerInformationRecorded : RecordNewDealerInformation
+
+COMMAND 4 — Infer missing transitions:
+- Idle (inferred) --> NewDealerIntroduced : NewDealerIntroduced (this event implies changing the system state when a new dealer is introduced)
+- ProductsReceived (inferred) --> Idle : no explicit transition, but it's assumed that the system returns to idle once products are received
+
+COMMAND 5 — Validate:
+- There is exactly one initial state: [*]
+- All transitions refer to defined states.
+- No orphan states.
+- No unreachable states (all states can be reached from either the initial state or another defined state).
+
+COMMAND 6 — Generate final PlantUML:
+@startuml
+[*] --> Idle
+Idle --> ProductRequestSent : ItemAboutToRunOutOfStock
+ProductRequestSent --> DealerInformationRecorded : DealerSendsProducts
+DealerInformationRecorded --> ProductsReceived
+ProductsReceived --> ShipmentDetailsAdded : AddShipmentDetailsToDatabase
+[*] --> NewDealerIntroduced (inferred)
+NewDealerIntroduced --> DealerInformationRecorded : RecordNewDealerInformation
+ProductsReceived (inferred) --> Idle
+ShipmentDetailsAdded --> Idle
+@enduml

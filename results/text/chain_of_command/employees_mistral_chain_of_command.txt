@@ -1,0 +1,62 @@
+COMMAND 1 — Extract all states:
+- Idle (initial state)
+- AddingInformation
+- UpdatingProfile
+- ResettingPassword
+- ReceivingPayment
+- UpdatingStockLevels
+- ReceivingSalary
+- ManagingCustomerSuggestions
+
+COMMAND 2 — Extract events/triggers:
+- StartingWork (implied initial state)
+- AddInformation
+- UpdateProfile
+- ResetPassword
+- ReceivePayment
+- UpdateStockLevels
+- ReceiveSalary
+- ManageCustomerSuggestions
+
+COMMAND 3 — Extract transitions:
+- StartingWork --> Idle
+- Idle --> AddingInformation : AddInformation
+- AddingInformation --> Idle : DoneAddingInfo (inferred)
+- Idle --> UpdatingProfile : UpdateProfile
+- UpdatingProfile --> Idle : DoneUpdatingProfile (inferred)
+- Idle --> ReceivingPayment : ReceivePayment
+- ReceivingPayment --> Idle : PaymentReceived (inferred)
+- Idle --> UpdatingStockLevels : UpdateStockLevels
+- UpdatingStockLevels --> Idle : DoneUpdatingStockLevels (inferred)
+- Idle --> ReceivingSalary : ReceiveSalary
+- ReceivingSalary --> Idle : SalaryReceived (inferred)
+- Idle --> ManagingCustomerSuggestions : ManageCustomerSuggestions
+- ManagingCustomerSuggestions --> Idle : DoneManagingCustomerSuggestions (inferred)
+
+COMMAND 4 — Infer missing transitions:
+- AddInformation --> UpdatingProfile (implied, as updating profile may follow adding information)
+- UpdateProfile --> ResettingPassword (implied, as resetting password may follow updating profile)
+
+COMMAND 5 — Validate:
+- There is exactly one initial state (StartingWork).
+- All transitions refer to defined states.
+- No orphan states.
+- No unreachable states.
+
+COMMAND 6 — Generate final PlantUML:
+
+@startuml
+[*] --> Idle : StartingWork
+Idle --> AddingInformation : AddInformation
+AddingInformation --> UpdatingProfile : UpdateProfile
+UpdatingProfile --> ResettingPassword : ResetPassword
+ResettingPassword --> Idle : DoneResettingPassword (inferred)
+Idle --> ReceivingPayment : ReceivePayment
+ReceivingPayment --> Idle : PaymentReceived (inferred)
+Idle --> UpdatingStockLevels : UpdateStockLevels
+UpdatingStockLevels --> Idle : DoneUpdatingStockLevels (inferred)
+Idle --> ReceivingSalary : ReceiveSalary
+ReceivingSalary --> Idle : SalaryReceived (inferred)
+Idle --> ManagingCustomerSuggestions : ManageCustomerSuggestions
+ManagingCustomerSuggestions --> Idle : DoneManagingCustomerSuggestions (inferred)
+@enduml
