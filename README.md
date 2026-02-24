@@ -24,7 +24,18 @@ python Code/Scripts/Few_shot_text.py
 python Code/Scripts/Chain_Of_Command.py
 python Code/Scripts/chain_of_command_mistral.py
 python Code/Scripts/build_rag_index.py
+python Code/Scripts/build_experiment_manifest.py
 ```
+
+### Build Section 3.4 experiment design artifacts
+```
+python Code/Scripts/build_experiment_manifest.py \
+  --dataset data/processed/dataset/dataset_2026-02-24.jsonl
+```
+Creates:
+- `data/processed/dataset/subsets/gpt4o_balanced_30.jsonl`
+- `data/processed/experiments/run_manifest_3_4.jsonl`
+- `data/processed/experiments/experimental_design_3_4.json`
 
 ## Outputs
 - PlantUML files: `results/diagrams/`
