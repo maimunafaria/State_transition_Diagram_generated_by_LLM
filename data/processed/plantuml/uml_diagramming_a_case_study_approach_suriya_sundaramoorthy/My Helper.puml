@@ -1,0 +1,61 @@
+@startuml
+
+[*] --> LoginSignup
+
+LoginSignup : entry / Download app
+LoginSignup : do / Enables the user to use app
+LoginSignup : exit / Verifies details
+
+LoginSignup --> SetPassword : signup / forgot password
+SetPassword : entry / Signup
+SetPassword : do / Set password
+SetPassword : exit / Validate password
+
+SetPassword --> LoginSignup : password set
+
+LoginSignup --> SendSMS : forgot phone
+SendSMS : entry / Forgot phone
+SendSMS : do / Send SMS from any other mobile
+SendSMS : exit / NIL
+
+SendSMS --> ReadsSMS : SMS sent
+ReadsSMS : entry / SMS received
+ReadsSMS : do / Scans SMS
+ReadsSMS : exit / Performs required action
+
+ReadsSMS --> VerifyPassword : verify request
+VerifyPassword : entry / Read SMS
+VerifyPassword : do / Check whether password is correct
+VerifyPassword : exit / Password is correct
+
+VerifyPassword --> ChecksRequirement : password correct
+VerifyPassword --> PasswordError : incorrect password
+
+PasswordError : entry / Incorrect password
+PasswordError : do / Send SMS stating incorrect password
+PasswordError : exit / SMS sent
+PasswordError --> [*]
+
+ChecksRequirement : entry / Password is correct
+ChecksRequirement : do / Check for requirement
+ChecksRequirement : exit / Requirement is valid
+
+ChecksRequirement --> FulfilRequirements : requirement valid
+ChecksRequirement --> RequirementError : invalid requirement
+
+FulfilRequirements : entry / Requirement is valid
+FulfilRequirements : do / Fulfils requirement
+FulfilRequirements : exit / NIL
+
+FulfilRequirements --> SendRequestedDetails : fulfil completed
+SendRequestedDetails : entry / Requirement is fulfilled
+SendRequestedDetails : do / Send requested details back in form of SMS
+SendRequestedDetails : exit / SMS has been sent
+SendRequestedDetails --> [*]
+
+RequirementError : entry / Invalid requirement
+RequirementError : do / Send SMS stating invalid requirement
+RequirementError : exit / SMS sent
+RequirementError --> [*]
+
+@enduml
