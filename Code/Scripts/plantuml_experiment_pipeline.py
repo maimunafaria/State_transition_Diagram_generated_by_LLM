@@ -24,6 +24,7 @@ import re
 import statistics
 import sys
 import time
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -922,6 +923,282 @@ def summarize_metrics(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]],
     return summary_config, summary_complexity, stability_rows
 
 
+def _safe_strategy_tag(strategy: str) -> str:
+    return strategy.strip().lower().replace(" ", "_")
+
+
+def _puml_state_token(state: str) -> str:
+    state = state.strip()
+    if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_\-\.]*", state):
+        return state
+    escaped = state.replace('"', '\\"')
+    return f'"{escaped}"'
+
+
+def build_puml_from_graph(
+    states: set[str],
+    transitions: set[tuple[str, str, str]],
+    initial_state: str | None,
+    final_states: set[str],
+) -> str:
+    lines: list[str] = ["@startuml"]
+    if initial_state:
+        lines.append(f"[*] --> {_puml_state_token(initial_state)}")
+        lines.append("")
+
+    for src, event, dst in sorted(transitions, key=lambda t: (t[0], t[1], t[2])):
+        src_tok = _puml_state_token(src)
+        dst_tok = _puml_state_token(dst)
+        if event:
+            lines.append(f"{src_tok} --> {dst_tok} : {event}")
+        else:
+            lines.append(f"{src_tok} --> {dst_tok}")
+
+    if final_states:
+        if transitions:
+            lines.append("")
+        for state in sorted(final_states):
+            lines.append(f"{_puml_state_token(state)} --> [*]")
+
+    lines.append("@enduml")
+    return "\n".join(lines) + "\n"
+
+
+def collect_ensemble_candidates(
+    results_root: Path,
+    case_id: str,
+    strategy: str,
+    qwen_prefix: str,
+    llama_prefix: str,
+) -> list[dict[str, Any]]:
+    candidates: list[dict[str, Any]] = []
+    source_models = [("qwen", qwen_prefix), ("llama", llama_prefix)]
+    for model_key, prefix in source_models:
+        run_id = f"{prefix}__{strategy}"
+        case_dir = results_root / "runs" / run_id / case_id
+        if not case_dir.exists():
+            continue
+        for puml_path in sorted(case_dir.glob("run_*.puml")):
+            meta_path = case_dir / puml_path.name.replace(".puml", ".meta.json")
+            if meta_path.exists():
+                try:
+                    meta = json.loads(read_text(meta_path))
+                except json.JSONDecodeError:
+                    continue
+                if str(meta.get("status", "")) != "ok":
+                    continue
+            puml_text = read_text(puml_path)
+            graph, validation = parse_and_validate_puml_text(puml_text)
+            candidates.append(
+                {
+                    "model": model_key,
+                    "run_id": run_id,
+                    "puml_path": str(puml_path),
+                    "graph": graph,
+                    "validation": validation,
+                }
+            )
+    return candidates
+
+
+def majority_vote_graph(
+    candidates: list[dict[str, Any]],
+    min_votes_override: int = 0,
+) -> tuple[set[str], set[tuple[str, str, str]], str | None, set[str], dict[str, Any]]:
+    candidate_count = len(candidates)
+    threshold = min_votes_override if min_votes_override > 0 else (candidate_count // 2 + 1)
+
+    state_counter: Counter[str] = Counter()
+    transition_counter: Counter[tuple[str, str, str]] = Counter()
+    initial_counter: Counter[str] = Counter()
+    final_counter: Counter[str] = Counter()
+
+    for cand in candidates:
+        graph: DiagramGraph = cand["graph"]
+        validation: ValidationResult = cand["validation"]
+        state_counter.update(set(graph.states))
+        transition_counter.update(set(graph.transitions))
+        final_counter.update(set(graph.final_states))
+        if validation.initial_state:
+            initial_counter.update([validation.initial_state])
+
+    states = {s for s, c in state_counter.items() if c >= threshold}
+    transitions = {t for t, c in transition_counter.items() if c >= threshold}
+    final_states = {s for s, c in final_counter.items() if c >= threshold}
+
+    initial_state: str | None = None
+    if initial_counter:
+        max_votes = max(initial_counter.values())
+        initial_candidates = sorted([s for s, c in initial_counter.items() if c == max_votes])
+        initial_state = initial_candidates[0]
+
+    if initial_state:
+        states.add(initial_state)
+    for src, _, dst in transitions:
+        states.add(src)
+        states.add(dst)
+    final_states = {s for s in final_states if s in states}
+
+    vote_meta = {
+        "candidate_count": candidate_count,
+        "vote_threshold": threshold,
+        "initial_votes": dict(initial_counter),
+        "top_state_votes": sorted(
+            [{"state": s, "votes": c} for s, c in state_counter.items()],
+            key=lambda x: (-x["votes"], x["state"]),
+        )[:20],
+        "top_transition_votes": sorted(
+            [
+                {"transition": {"from": t[0], "event": t[1], "to": t[2]}, "votes": c}
+                for t, c in transition_counter.items()
+            ],
+            key=lambda x: (
+                -x["votes"],
+                x["transition"]["from"],
+                x["transition"]["event"],
+                x["transition"]["to"],
+            ),
+        )[:30],
+    }
+    return states, transitions, initial_state, final_states, vote_meta
+
+
+def command_ensemble(args: argparse.Namespace) -> int:
+    dataset_root = Path(args.dataset_root)
+    if not dataset_root.is_absolute():
+        dataset_root = (PROJECT_ROOT / dataset_root).resolve()
+    results_root = Path(args.results_root)
+    if not results_root.is_absolute():
+        results_root = (PROJECT_ROOT / results_root).resolve()
+    ensemble_root = Path(args.ensemble_root)
+    if not ensemble_root.is_absolute():
+        ensemble_root = (results_root / args.ensemble_root).resolve()
+
+    cases = load_cases(dataset_root)
+    case_by_id = {c.case_id: c for c in cases}
+    strategies = (
+        args.strategy
+        if args.strategy
+        else [
+            "zero_shot",
+            "few_shot",
+            "rag",
+            "rag_structural_validation",
+            "rag_validation_generator_critic_repair",
+        ]
+    )
+    strategies = [_safe_strategy_tag(s) for s in strategies]
+
+    metrics_rows: list[dict[str, Any]] = []
+    produced_runs = 0
+    skipped_cases = 0
+
+    for strategy in strategies:
+        run_id = f"ensemble__qwen_llama__{strategy}__majority_vote"
+        for case_id in sorted(case_by_id.keys()):
+            case = case_by_id[case_id]
+            candidates = collect_ensemble_candidates(
+                results_root=results_root,
+                case_id=case_id,
+                strategy=strategy,
+                qwen_prefix=args.qwen_run_prefix,
+                llama_prefix=args.llama_run_prefix,
+            )
+            if len(candidates) < args.min_candidates:
+                skipped_cases += 1
+                continue
+
+            model_set = {str(c["model"]) for c in candidates}
+            if args.require_both_models and not {"qwen", "llama"}.issubset(model_set):
+                skipped_cases += 1
+                continue
+
+            states, transitions, initial_state, final_states, vote_meta = majority_vote_graph(
+                candidates=candidates,
+                min_votes_override=args.min_votes,
+            )
+            ensemble_puml = build_puml_from_graph(
+                states=states,
+                transitions=transitions,
+                initial_state=initial_state,
+                final_states=final_states,
+            )
+            ensemble_graph, ensemble_validation = parse_and_validate_puml_text(ensemble_puml)
+            metrics = compute_metrics(
+                pred_graph=ensemble_graph,
+                pred_validation=ensemble_validation,
+                gold_graph=case.gold_graph,
+            )
+
+            out_dir = ensemble_root / "runs" / run_id / case_id
+            out_puml = out_dir / "ensemble.puml"
+            out_meta = out_dir / "ensemble.meta.json"
+            out_dir.mkdir(parents=True, exist_ok=True)
+            write_text(out_puml, ensemble_puml)
+
+            metrics_row = {
+                "run_id": run_id,
+                "model_group": "ensemble",
+                "model_label": "Qwen+LLaMA Majority Vote",
+                "model_name": "majority_vote",
+                "strategy": strategy,
+                "case_id": case_id,
+                "complexity": case.complexity,
+                "run_index": 1,
+                "status": "ok",
+                "error_message": "",
+                "candidate_count": len(candidates),
+                "vote_threshold": vote_meta["vote_threshold"],
+                **metrics,
+            }
+            metrics_rows.append(metrics_row)
+            produced_runs += 1
+
+            meta = {
+                "run_id": run_id,
+                "case_id": case_id,
+                "status": "ok",
+                "candidate_count": len(candidates),
+                "source_runs": [
+                    {"run_id": c["run_id"], "model": c["model"], "puml_path": c["puml_path"]}
+                    for c in candidates
+                ],
+                "vote_meta": vote_meta,
+                "validation": ensemble_validation.to_dict(),
+                "metrics": metrics,
+                "puml_path": str(out_puml),
+            }
+            write_json(out_meta, meta)
+
+    metrics_dir = ensemble_root / "metrics"
+    write_jsonl(metrics_dir / "per_run_metrics.jsonl", metrics_rows)
+    summary_cfg, summary_cmp, stability_rows = summarize_metrics(metrics_rows)
+    write_json(metrics_dir / "summary_by_config.json", summary_cfg)
+    write_json(metrics_dir / "summary_by_config_and_complexity.json", summary_cmp)
+    write_jsonl(metrics_dir / "stability_by_case.jsonl", stability_rows)
+
+    manifest = {
+        "dataset_root": str(dataset_root),
+        "results_root": str(results_root),
+        "ensemble_root": str(ensemble_root),
+        "strategies": strategies,
+        "qwen_run_prefix": args.qwen_run_prefix,
+        "llama_run_prefix": args.llama_run_prefix,
+        "min_candidates": args.min_candidates,
+        "min_votes": args.min_votes,
+        "require_both_models": args.require_both_models,
+        "produced_case_runs": produced_runs,
+        "skipped_case_runs": skipped_cases,
+        "generated_at_epoch": time.time(),
+    }
+    write_json(ensemble_root / "manifest.json", manifest)
+    print(
+        f"Ensemble complete: produced={produced_runs}, skipped={skipped_cases}, "
+        f"metrics={metrics_dir / 'summary_by_config.json'}"
+    )
+    return 0
+
+
 def command_validate(args: argparse.Namespace) -> int:
     puml_path = Path(args.puml)
     if not puml_path.is_absolute():
@@ -1246,6 +1523,26 @@ def command_table(args: argparse.Namespace) -> int:
     else:
         rows = json.loads(source_file.read_text(encoding="utf-8"))
 
+    # Add a derived percentage field for convenient reporting.
+    for row in rows:
+        if "structural_valid_rate" in row:
+            try:
+                row["structural_valid_percentage"] = float(row["structural_valid_rate"]) * 100.0
+            except Exception:
+                row["structural_valid_percentage"] = None
+        elif "structural_valid" in row:
+            row["structural_valid_percentage"] = 100.0 if bool(row["structural_valid"]) else 0.0
+
+    if args.model_family != "all":
+        family_patterns = {
+            "qwen": "qwen25_7b_instruct",
+            "llama": "llama31_8b_instruct",
+            "ensemble": "ensemble__",
+            "gpt": "gpt4o",
+        }
+        pattern = family_patterns.get(args.model_family, "")
+        rows = [row for row in rows if pattern in str(row.get("run_id", ""))]
+
     if args.run_id:
         rows = [row for row in rows if str(row.get("run_id", "")) in set(args.run_id)]
 
@@ -1284,6 +1581,21 @@ def command_table(args: argparse.Namespace) -> int:
         ]
         default_sort = "overall_f1"
 
+    if args.structural_only:
+        if args.source == "summary":
+            default_columns = ["run_id", "samples", "structural_valid_percentage"]
+        elif args.source == "complexity":
+            default_columns = ["run_id", "complexity", "samples", "structural_valid_percentage"]
+        else:
+            default_columns = [
+                "run_id",
+                "case_id",
+                "run_index",
+                "status",
+                "structural_valid_percentage",
+            ]
+        default_sort = "structural_valid_percentage"
+
     columns = args.columns.split(",") if args.columns else default_columns
     columns = [col.strip() for col in columns if col.strip()]
     if not columns:
@@ -1306,7 +1618,10 @@ def command_table(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="All-in-one PlantUML validator/parser + metrics + 11-config batch runner"
+        description=(
+            "All-in-one PlantUML validator/parser + metrics + 11-config batch runner + "
+            "cross-model majority-vote ensemble"
+        )
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -1387,6 +1702,62 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_metrics.set_defaults(func=command_metrics)
 
+    p_ensemble = sub.add_parser(
+        "ensemble",
+        help="Build cross-model majority-vote ensemble from existing Qwen/LLaMA runs",
+    )
+    p_ensemble.add_argument(
+        "--dataset-root",
+        default=str(DEFAULT_DATASET_ROOT),
+        help="Dataset root containing case_* folders",
+    )
+    p_ensemble.add_argument(
+        "--results-root",
+        default=str(DEFAULT_RESULTS_ROOT),
+        help="Results root containing runs/ from prior experiments",
+    )
+    p_ensemble.add_argument(
+        "--ensemble-root",
+        default="ensemble_majority_vote",
+        help="Output folder under results-root for ensemble artifacts",
+    )
+    p_ensemble.add_argument(
+        "--strategy",
+        action="append",
+        help=(
+            "Strategy to ensemble (repeatable). "
+            "Default: all five strategies from methodology."
+        ),
+    )
+    p_ensemble.add_argument(
+        "--qwen-run-prefix",
+        default="open_source__qwen25_7b_instruct",
+        help="Run-id prefix for Qwen configurations",
+    )
+    p_ensemble.add_argument(
+        "--llama-run-prefix",
+        default="open_source__llama31_8b_instruct",
+        help="Run-id prefix for LLaMA configurations",
+    )
+    p_ensemble.add_argument(
+        "--min-candidates",
+        type=int,
+        default=2,
+        help="Minimum candidate outputs required per case before voting",
+    )
+    p_ensemble.add_argument(
+        "--min-votes",
+        type=int,
+        default=0,
+        help="Votes required to keep a state/transition (0 = strict majority)",
+    )
+    p_ensemble.add_argument(
+        "--require-both-models",
+        action="store_true",
+        help="Require both Qwen and LLaMA candidates per case",
+    )
+    p_ensemble.set_defaults(func=command_ensemble)
+
     p_table = sub.add_parser("table", help="Show metrics as a terminal table")
     p_table.add_argument(
         "--results-root",
@@ -1398,6 +1769,12 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["summary", "complexity", "per-run"],
         default="summary",
         help="Which metrics source to render as a table",
+    )
+    p_table.add_argument(
+        "--model-family",
+        choices=["all", "qwen", "llama", "ensemble", "gpt"],
+        default="all",
+        help="Filter rows by model family based on run_id",
     )
     p_table.add_argument(
         "--columns",
@@ -1424,6 +1801,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--run-id",
         action="append",
         help="Filter by run_id (repeatable)",
+    )
+    p_table.add_argument(
+        "--structural-only",
+        action="store_true",
+        help="Show only structural validity percentage columns",
     )
     p_table.set_defaults(func=command_table)
 
