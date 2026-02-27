@@ -1,0 +1,63 @@
+Title: Generic Payment and Order Rules
+
+Purpose:
+Model order and payment lifecycles in ecommerce or service transactions.
+
+States:
+- Cart
+- Order Placed
+- Payment Pending
+- Payment Authorized
+- Paid
+- Payment Failed
+- Fulfillment Pending
+- Fulfilled
+- Cancelled
+- Refunded
+
+Events:
+- place_order
+- initiate_payment
+- authorize
+- capture
+- fail
+- retry
+- cancel
+- dispatch
+- deliver
+- refund
+
+Required transitions:
+- Cart --> OrderPlaced on place_order.
+- OrderPlaced --> PaymentPending when payment starts.
+- PaymentPending --> Paid through authorize/capture path.
+- PaymentPending --> PaymentFailed when charge fails.
+- PaymentFailed --> PaymentPending on retry.
+- Paid --> FulfillmentPending before dispatch.
+- FulfillmentPending --> Fulfilled on delivery completion.
+- Cancellation and refund paths depend on policy and stage.
+
+Forbidden transitions:
+- Do not move PaymentFailed directly to Fulfilled.
+- Do not allow Cancelled --> Paid.
+- Do not allow Refunded --> Fulfilled unless explicit re-open flow exists.
+
+Terminal states:
+- Fulfilled, Cancelled, and Refunded are common terminal outcomes.
+
+PlantUML mini example:
+@startuml
+[*] --> Cart
+Cart --> OrderPlaced : place_order
+OrderPlaced --> PaymentPending : initiate_payment
+PaymentPending --> Paid : authorize_and_capture
+PaymentPending --> PaymentFailed : fail
+PaymentFailed --> PaymentPending : retry
+Paid --> FulfillmentPending : dispatch
+FulfillmentPending --> Fulfilled : deliver
+OrderPlaced --> Cancelled : cancel
+Paid --> Refunded : refund
+Fulfilled --> [*]
+Cancelled --> [*]
+Refunded --> [*]
+@enduml

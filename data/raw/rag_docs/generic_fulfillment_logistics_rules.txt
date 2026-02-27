@@ -1,0 +1,55 @@
+Title: Generic Fulfillment and Logistics Rules
+
+Purpose:
+Model shipping and logistics status flow for generalized delivery pipelines.
+
+States:
+- Created
+- Packed
+- Dispatched
+- In Transit
+- Out For Delivery
+- Delivered
+- Delivery Failed
+- Returned
+
+Events:
+- pack
+- dispatch
+- handover_to_carrier
+- mark_out_for_delivery
+- confirm_delivery
+- delivery_attempt_failed
+- reattempt
+- return_to_sender
+
+Required transitions:
+- Created --> Packed before dispatch.
+- Packed --> Dispatched before transit.
+- Dispatched --> InTransit after carrier handoff.
+- InTransit --> OutForDelivery before final attempt.
+- OutForDelivery --> Delivered on success.
+- OutForDelivery --> DeliveryFailed on failed attempt.
+- DeliveryFailed can retry or return.
+
+Forbidden transitions:
+- Do not jump Created --> Delivered.
+- Do not transition Returned --> OutForDelivery without explicit re-shipment.
+
+Terminal states:
+- Delivered and Returned are terminal outcomes.
+
+PlantUML mini example:
+@startuml
+[*] --> Created
+Created --> Packed : pack
+Packed --> Dispatched : dispatch
+Dispatched --> InTransit : handover_to_carrier
+InTransit --> OutForDelivery : mark_out_for_delivery
+OutForDelivery --> Delivered : confirm_delivery
+OutForDelivery --> DeliveryFailed : delivery_attempt_failed
+DeliveryFailed --> OutForDelivery : reattempt
+DeliveryFailed --> Returned : return_to_sender
+Delivered --> [*]
+Returned --> [*]
+@enduml

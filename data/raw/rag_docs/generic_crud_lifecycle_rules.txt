@@ -1,0 +1,50 @@
+Title: Generic CRUD Lifecycle Rules
+
+Purpose:
+Model entities that are created, edited, activated, suspended, archived, or deleted.
+
+States:
+- New
+- Active
+- Updated
+- Suspended
+- Archived
+- Deleted
+
+Events:
+- create
+- activate
+- update
+- suspend
+- restore
+- archive
+- delete
+
+Required transitions:
+- [*] --> New at creation intent.
+- New --> Active after successful creation/activation.
+- Active --> Updated on update, then Updated --> Active after save.
+- Active --> Suspended and Suspended --> Active for reversible operational hold.
+- Active or Suspended --> Archived for long-term retention.
+
+Forbidden transitions:
+- Deleted should not transition back unless requirement defines recovery policy.
+- Avoid direct New --> Archived unless explicitly needed.
+- Do not keep both Archived and Deleted as active operational states.
+
+Terminal states:
+- Deleted is terminal in strict systems.
+- Archived can be terminal or semi-terminal if restore is supported.
+
+PlantUML mini example:
+@startuml
+[*] --> New
+New --> Active : create
+Active --> Updated : update
+Updated --> Active : save
+Active --> Suspended : suspend
+Suspended --> Active : restore
+Active --> Archived : archive
+Archived --> Deleted : delete
+Deleted --> [*]
+@enduml

@@ -41,6 +41,15 @@ def command_ensemble(args: argparse.Namespace) -> int:
     results_root = _resolve_root(args.results_root)
     ensemble_root = _resolve_root(args.ensemble_root, parent=results_root)
     ensemble_method = str(args.ensemble_method).strip().lower()
+    stack_rag_domain_hints = {
+        s.strip().lower() for s in (args.stack_rag_domain_hint or []) if s.strip()
+    }
+    stack_rag_docs_dir = _resolve_root(args.stack_rag_docs_dir)
+    stack_rag_docs = (
+        load_rag_docs(stack_rag_docs_dir)
+        if ensemble_method == "stacked_llm" and args.stack_use_rag
+        else []
+    )
 
     cases = load_cases(dataset_root)
     case_by_id = {c.case_id: c for c in cases}
@@ -62,7 +71,10 @@ def command_ensemble(args: argparse.Namespace) -> int:
     skipped_cases = 0
 
     for strategy in strategies:
-        run_id = f"ensemble__qwen_llama__{strategy}__{ensemble_method}"
+        method_tag = ensemble_method
+        if ensemble_method == "stacked_llm" and args.stack_use_rag:
+            method_tag = "stacked_llm_rag"
+        run_id = f"ensemble__qwen_llama__{strategy}__{method_tag}"
         for case_id in sorted(case_by_id.keys()):
             case = case_by_id[case_id]
             candidates = collect_ensemble_candidates(
@@ -99,6 +111,10 @@ def command_ensemble(args: argparse.Namespace) -> int:
                         max_tokens=args.stack_max_tokens,
                         timeout=args.stack_timeout,
                         max_candidates=args.stack_max_candidates,
+                        rag_docs=stack_rag_docs,
+                        top_k_rag=args.stack_top_k_rag,
+                        rag_max_chars_per_doc=args.stack_rag_max_chars_per_doc,
+                        rag_domain_hints=stack_rag_domain_hints,
                     )
                 else:
                     states, transitions, initial_state, final_states, vote_meta = majority_vote_graph(
@@ -211,6 +227,12 @@ def command_ensemble(args: argparse.Namespace) -> int:
         "require_both_models": args.require_both_models,
         "stack_model": args.stack_model if ensemble_method == "stacked_llm" else "",
         "stack_requirement_source": args.stack_requirement_source,
+        "stack_use_rag": args.stack_use_rag,
+        "stack_rag_docs_dir": str(stack_rag_docs_dir),
+        "stack_rag_doc_count": len(stack_rag_docs),
+        "stack_top_k_rag": args.stack_top_k_rag,
+        "stack_rag_max_chars_per_doc": args.stack_rag_max_chars_per_doc,
+        "stack_rag_domain_hints": sorted(stack_rag_domain_hints),
         "stack_max_candidates": args.stack_max_candidates,
         "stack_temperature": args.stack_temperature,
         "stack_top_p": args.stack_top_p,
@@ -271,6 +293,7 @@ def command_run(args: argparse.Namespace) -> int:
     dataset_root = _resolve_root(args.dataset_root)
     results_root = _resolve_root(args.results_root)
     rag_docs_dir = _resolve_root(args.rag_docs_dir)
+    rag_domain_hints = {s.strip().lower() for s in (args.rag_domain_hint or []) if s.strip()}
 
     cases = load_cases(dataset_root)
     for case in cases:
@@ -312,6 +335,10 @@ def command_run(args: argparse.Namespace) -> int:
         "dataset_root": str(dataset_root),
         "results_root": str(results_root),
         "rag_docs_dir": str(rag_docs_dir),
+        "rag_doc_count": len(rag_docs),
+        "rag_top_k": args.top_k_rag,
+        "rag_max_chars_per_doc": args.rag_max_chars_per_doc,
+        "rag_domain_hints": sorted(rag_domain_hints),
         "runs_per_case": args.runs,
         "baseline_subset_size_target": args.baseline_subset_size,
         "baseline_subset_size_actual": len(baseline_cases),
@@ -356,6 +383,8 @@ def command_run(args: argparse.Namespace) -> int:
                             top_p=args.top_p,
                             max_tokens=args.max_tokens,
                             timeout=args.timeout,
+                            rag_max_chars_per_doc=args.rag_max_chars_per_doc,
+                            rag_domain_hints=rag_domain_hints,
                         )
                     )
                 except Exception as exc:  # noqa: BLE001 - preserve all run errors

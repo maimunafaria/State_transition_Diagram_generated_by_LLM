@@ -10,6 +10,7 @@ from .io_utils import read_text
 from .model_client import call_model
 from .models import Case, DiagramGraph, ValidationResult
 from .parser import normalize_puml_text, parse_and_validate_puml_text
+from .prompting import retrieve_rag_context
 
 
 def safe_strategy_tag(strategy: str) -> str:
@@ -193,7 +194,11 @@ def _clip_candidate_puml(puml_text: str, max_chars: int) -> str:
     return clipped
 
 
-def build_stacked_ensemble_prompt(requirement: str, candidates: list[dict[str, Any]]) -> str:
+def build_stacked_ensemble_prompt(
+    requirement: str,
+    candidates: list[dict[str, Any]],
+    rag_context: str = "",
+) -> str:
     parts: list[str] = [
         "You are an LLM meta-ensemble for UML state machine generation.",
         "Goal: produce ONE final PlantUML state machine from multiple candidate diagrams.",
@@ -222,6 +227,15 @@ def build_stacked_ensemble_prompt(requirement: str, candidates: list[dict[str, A
         )
         parts.extend([details, puml_text, ""])
 
+    if rag_context.strip():
+        parts.extend(
+            [
+                "Domain/reference context (support evidence):",
+                rag_context.strip(),
+                "",
+            ]
+        )
+
     parts.append("Return only the final PlantUML.")
     return "\n".join(parts).strip() + "\n"
 
@@ -237,6 +251,10 @@ def run_stacked_ensemble(
     max_tokens: int,
     timeout: int,
     max_candidates: int,
+    rag_docs: list[tuple[str, str, set[str]]] | None = None,
+    top_k_rag: int = 0,
+    rag_max_chars_per_doc: int = 1200,
+    rag_domain_hints: set[str] | None = None,
 ) -> tuple[str, dict[str, Any]]:
     if not candidates:
         raise ValueError("No candidates available for stacked ensemble")
@@ -249,7 +267,22 @@ def run_stacked_ensemble(
     if not requirement.strip():
         requirement = case.raw_requirement or case.structured_requirement
 
-    prompt = build_stacked_ensemble_prompt(requirement=requirement, candidates=selected)
+    rag_context = ""
+    rag_trace: list[dict[str, Any]] = []
+    if rag_docs and top_k_rag > 0:
+        rag_context, rag_trace = retrieve_rag_context(
+            query=requirement,
+            docs=rag_docs,
+            top_k=top_k_rag,
+            max_chars_per_doc=rag_max_chars_per_doc,
+            query_domain_hints=rag_domain_hints,
+        )
+
+    prompt = build_stacked_ensemble_prompt(
+        requirement=requirement,
+        candidates=selected,
+        rag_context=rag_context,
+    )
     generated = call_model(
         model_name=model_name,
         prompt=prompt,
@@ -264,6 +297,11 @@ def run_stacked_ensemble(
         "stack_model": model_name,
         "candidate_count_total": len(candidates),
         "candidate_count_used": len(selected),
+        "rag_enabled": bool(rag_docs and top_k_rag > 0),
+        "rag_top_k": top_k_rag,
+        "rag_max_chars_per_doc": rag_max_chars_per_doc,
+        "rag_domain_hints": sorted(rag_domain_hints or set()),
+        "rag_retrieved_docs": rag_trace,
         "candidate_sources": [
             {
                 "model": str(c.get("model", "")),

@@ -1,14 +1,64 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
+from typing import Any
 
 from .constants import WORD_RE
 from .io_utils import read_text
 from .models import Case, ExperimentConfig, ValidationResult
 
+DOMAIN_TOKEN_HINTS = {
+    "accounts",
+    "admin",
+    "inventory",
+    "logistic",
+    "logistics",
+    "order",
+    "payment",
+    "authentication",
+    "employee",
+    "employees",
+    "customer",
+    "customers",
+    "healthcare",
+    "covid",
+    "textile",
+    "marketplace",
+    "device",
+    "recommendation",
+}
+
 
 def tokenize(text: str) -> set[str]:
     return {m.group(0).lower() for m in WORD_RE.finditer(text)}
+
+
+def _filename_tokens(name: str) -> set[str]:
+    stem = Path(name).stem
+    normalized = re.sub(r"[^A-Za-z0-9]+", " ", stem)
+    return tokenize(normalized)
+
+
+def _extract_domain_from_name(name: str) -> set[str]:
+    stem = Path(name).stem.lower()
+    domains: set[str] = set()
+    match = re.match(r"domain_(.+?)_rules$", stem)
+    if match:
+        core = match.group(1).strip()
+        if core:
+            domains.add(core)
+    return domains
+
+
+def infer_query_domains(query: str, explicit_hints: set[str] | None = None) -> set[str]:
+    domains = {tok for tok in tokenize(query) if tok in DOMAIN_TOKEN_HINTS}
+    if explicit_hints:
+        for hint in explicit_hints:
+            clean = hint.strip().lower()
+            if clean:
+                domains.add(clean)
+    return domains
 
 
 def load_rag_docs(rag_docs_dir: Path) -> list[tuple[str, str, set[str]]]:
@@ -28,23 +78,70 @@ def retrieve_rag_context(
     docs: list[tuple[str, str, set[str]]],
     top_k: int,
     max_chars_per_doc: int = 1200,
-) -> str:
+    query_domain_hints: set[str] | None = None,
+) -> tuple[str, list[dict[str, Any]]]:
     if top_k <= 0 or not docs:
-        return ""
+        return "", []
+
     query_tokens = tokenize(query)
-    scored: list[tuple[int, int, str, str]] = []
+    query_domains = infer_query_domains(query, explicit_hints=query_domain_hints)
+
+    scored: list[dict[str, Any]] = []
     for name, content, tokens in docs:
-        overlap = len(query_tokens & tokens)
-        scored.append((overlap, len(tokens), name, content))
-    scored.sort(key=lambda item: (item[0], item[1]), reverse=True)
-    chosen = [item for item in scored if item[0] > 0][:top_k]
+        name_tokens = _filename_tokens(name)
+        doc_domains = set(_extract_domain_from_name(name))
+        doc_domains.update(tok for tok in tokens if tok in DOMAIN_TOKEN_HINTS)
+        lexical_overlap = len(query_tokens & tokens)
+        title_overlap = len(query_tokens & name_tokens)
+        domain_overlap = len(query_domains & doc_domains)
+
+        score = lexical_overlap + (2 * title_overlap) + (3 * domain_overlap)
+        scored.append(
+            {
+                "name": name,
+                "content": content,
+                "token_count": len(tokens),
+                "score": score,
+                "lexical_overlap": lexical_overlap,
+                "title_overlap": title_overlap,
+                "domain_overlap": domain_overlap,
+                "doc_domains": sorted(doc_domains),
+            }
+        )
+
+    scored.sort(
+        key=lambda item: (
+            item["score"],
+            item["domain_overlap"],
+            item["title_overlap"],
+            item["lexical_overlap"],
+            item["token_count"],
+        ),
+        reverse=True,
+    )
+
+    chosen = [item for item in scored if item["score"] > 0][:top_k]
     if not chosen:
         chosen = scored[:top_k]
+
     sections: list[str] = []
-    for _, _, name, content in chosen:
-        clipped = content[:max_chars_per_doc].strip()
-        sections.append(f"[{name}]\n{clipped}")
-    return "\n\n".join(sections)
+    trace: list[dict[str, Any]] = []
+    for item in chosen:
+        clipped = item["content"][:max_chars_per_doc].strip()
+        sections.append(f"[{item['name']}]\n{clipped}")
+        trace.append(
+            {
+                "name": item["name"],
+                "score": item["score"],
+                "lexical_overlap": item["lexical_overlap"],
+                "title_overlap": item["title_overlap"],
+                "domain_overlap": item["domain_overlap"],
+                "doc_domains": item["doc_domains"],
+                "clipped_chars": len(clipped),
+            }
+        )
+
+    return "\n\n".join(sections), trace
 
 
 def select_fewshot_examples(cases: list[Case], current_case_id: str, max_examples: int = 3) -> list[Case]:
@@ -77,10 +174,26 @@ def build_generation_prompt(
     rag_docs: list[tuple[str, str, set[str]]],
     requirement_source: str,
     top_k_rag: int,
-) -> str:
+    rag_max_chars_per_doc: int = 1200,
+    rag_domain_hints: set[str] | None = None,
+) -> tuple[str, dict[str, Any]]:
     requirement = case.structured_requirement if requirement_source == "structured" else case.raw_requirement
     if not requirement.strip():
         requirement = case.raw_requirement or case.structured_requirement
+
+    prompt_meta: dict[str, Any] = {
+        "requirement_source": requirement_source,
+        "few_shot_case_ids": [],
+        "rag": {
+            "enabled": bool(cfg.use_rag),
+            "top_k": top_k_rag,
+            "max_chars_per_doc": rag_max_chars_per_doc,
+            "query_domains": sorted(
+                infer_query_domains(requirement, explicit_hints=rag_domain_hints)
+            ),
+            "retrieved_docs": [],
+        },
+    }
 
     parts: list[str] = [
         "You convert natural language software requirements into UML state machine diagrams in PlantUML format.",
@@ -95,6 +208,7 @@ def build_generation_prompt(
 
     if cfg.strategy == "few_shot":
         examples = select_fewshot_examples(all_cases, case.case_id, max_examples=3)
+        prompt_meta["few_shot_case_ids"] = [ex.case_id for ex in examples]
         if examples:
             example_texts: list[str] = []
             for idx, ex in enumerate(examples, start=1):
@@ -111,7 +225,14 @@ def build_generation_prompt(
             parts.append("\n\n".join(example_texts))
 
     if cfg.use_rag:
-        rag_context = retrieve_rag_context(requirement, rag_docs, top_k=top_k_rag)
+        rag_context, rag_trace = retrieve_rag_context(
+            query=requirement,
+            docs=rag_docs,
+            top_k=top_k_rag,
+            max_chars_per_doc=rag_max_chars_per_doc,
+            query_domain_hints=rag_domain_hints,
+        )
+        prompt_meta["rag"]["retrieved_docs"] = rag_trace
         if rag_context:
             parts.append("Reference context (support only, not mandatory):")
             parts.append(rag_context)
@@ -119,7 +240,7 @@ def build_generation_prompt(
     parts.append("Target requirement:")
     parts.append(requirement)
     parts.append("Now return only the final PlantUML.")
-    return "\n\n".join(parts).strip() + "\n"
+    return "\n\n".join(parts).strip() + "\n", prompt_meta
 
 
 def build_critic_prompt(requirement: str, candidate_puml: str, validation: ValidationResult) -> str:

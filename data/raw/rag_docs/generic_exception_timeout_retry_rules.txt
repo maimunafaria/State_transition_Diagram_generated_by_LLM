@@ -1,0 +1,53 @@
+Title: Generic Exception, Timeout, and Retry Rules
+
+Purpose:
+Model resilient behavior for transient failures and error recovery.
+
+States:
+- Idle
+- Processing
+- Waiting External Dependency
+- Retry Scheduled
+- Failed Temporary
+- Failed Permanent
+- Recovered
+
+Events:
+- start
+- dependency_timeout
+- transient_error
+- retry_window_open
+- retry_success
+- retry_exhausted
+- manual_override
+
+Required transitions:
+- Idle --> Processing on start.
+- Processing --> WaitingExternalDependency when external call is pending.
+- Timeout/error transitions should route to FailedTemporary when retryable.
+- FailedTemporary --> RetryScheduled for controlled retries.
+- RetryScheduled --> Processing on retry_window_open.
+- Retry exhaustion should lead to FailedPermanent.
+
+Forbidden transitions:
+- Do not loop infinitely without retry budget or guard.
+- Do not mark permanent failure as recovered without explicit event.
+
+Terminal states:
+- FailedPermanent is terminal unless manual override exists.
+- Recovered can be terminal or return to Idle based on system design.
+
+PlantUML mini example:
+@startuml
+[*] --> Idle
+Idle --> Processing : start
+Processing --> WaitingExternalDependency : call_external
+WaitingExternalDependency --> FailedTemporary : dependency_timeout
+Processing --> FailedTemporary : transient_error
+FailedTemporary --> RetryScheduled : schedule_retry
+RetryScheduled --> Processing : retry_window_open
+Processing --> Recovered : retry_success
+RetryScheduled --> FailedPermanent : retry_exhausted
+FailedPermanent --> Recovered : manual_override
+Recovered --> [*]
+@enduml

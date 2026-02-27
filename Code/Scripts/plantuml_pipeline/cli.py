@@ -56,6 +56,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Requirement text source used in prompts",
     )
     p_run.add_argument("--top-k-rag", type=int, default=3, help="Top-k RAG docs")
+    p_run.add_argument(
+        "--rag-max-chars-per-doc",
+        type=int,
+        default=1200,
+        help="Maximum characters per retrieved RAG document",
+    )
+    p_run.add_argument(
+        "--rag-domain-hint",
+        action="append",
+        help="Optional domain hint to bias RAG retrieval (repeatable)",
+    )
     p_run.add_argument("--seed", type=int, default=42, help="Random seed")
     p_run.add_argument("--temperature", type=float, default=0.2)
     p_run.add_argument("--top-p", type=float, default=0.9)
@@ -162,6 +173,33 @@ def build_parser() -> argparse.ArgumentParser:
         "--stack-model",
         default="llama3.1:8b-instruct",
         help="Meta-model used for stacked_llm ensembling",
+    )
+    p_ensemble.add_argument(
+        "--stack-use-rag",
+        action="store_true",
+        help="Use domain/reference RAG context in stacked_llm meta-generation",
+    )
+    p_ensemble.add_argument(
+        "--stack-rag-docs-dir",
+        default=str(DEFAULT_RAG_DOCS_DIR),
+        help="RAG documents directory for stacked_llm",
+    )
+    p_ensemble.add_argument(
+        "--stack-top-k-rag",
+        type=int,
+        default=3,
+        help="Top-k RAG docs for stacked_llm",
+    )
+    p_ensemble.add_argument(
+        "--stack-rag-max-chars-per-doc",
+        type=int,
+        default=1200,
+        help="Maximum characters per stacked_llm RAG document",
+    )
+    p_ensemble.add_argument(
+        "--stack-rag-domain-hint",
+        action="append",
+        help="Optional domain hint for stacked_llm RAG retrieval (repeatable)",
     )
     p_ensemble.add_argument(
         "--stack-requirement-source",

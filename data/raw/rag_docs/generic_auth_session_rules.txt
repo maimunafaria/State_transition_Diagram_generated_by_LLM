@@ -1,0 +1,52 @@
+Title: Generic Authentication and Session Rules
+
+Purpose:
+Model login, session handling, lockout, password reset, and logout behavior.
+
+States:
+- Unauthenticated
+- Authenticating
+- Authenticated
+- Locked
+- Password Reset Required
+- Session Expired
+
+Events:
+- login_request
+- login_success
+- login_failure
+- too_many_failures
+- reset_password
+- reset_success
+- logout
+- timeout
+
+Required transitions:
+- [*] --> Unauthenticated as default state.
+- Unauthenticated --> Authenticating on login_request.
+- Authenticating --> Authenticated on login_success.
+- Authenticating --> Unauthenticated on login_failure.
+- Repeated failures should lead to Locked when policy is enabled.
+- Authenticated --> SessionExpired on timeout.
+- Authenticated --> Unauthenticated on logout.
+
+Forbidden transitions:
+- Do not transition Locked --> Authenticated without explicit unlock or reset.
+- Avoid bypassing Authenticating state if MFA or checks are required.
+
+Terminal states:
+- Usually no strict terminal state; SessionExpired and Unauthenticated are stable outcomes.
+
+PlantUML mini example:
+@startuml
+[*] --> Unauthenticated
+Unauthenticated --> Authenticating : login_request
+Authenticating --> Authenticated : login_success
+Authenticating --> Unauthenticated : login_failure
+Authenticating --> Locked : too_many_failures
+Locked --> PasswordResetRequired : reset_password
+PasswordResetRequired --> Unauthenticated : reset_success
+Authenticated --> SessionExpired : timeout
+SessionExpired --> Unauthenticated : acknowledge
+Authenticated --> Unauthenticated : logout
+@enduml

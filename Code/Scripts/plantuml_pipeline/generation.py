@@ -20,20 +20,41 @@ def run_single_generation(
     top_p: float,
     max_tokens: int,
     timeout: int,
+    rag_max_chars_per_doc: int = 1200,
+    rag_domain_hints: set[str] | None = None,
 ) -> tuple[str, ValidationResult, str, str, list[dict[str, Any]]]:
     requirement = case.structured_requirement if requirement_source == "structured" else case.raw_requirement
     if not requirement.strip():
         requirement = case.raw_requirement or case.structured_requirement
 
     steps: list[dict[str, Any]] = []
-    prompt = build_generation_prompt(
+    prompt, prompt_meta = build_generation_prompt(
         case=case,
         cfg=cfg,
         all_cases=all_cases,
         rag_docs=rag_docs,
         requirement_source=requirement_source,
         top_k_rag=top_k_rag,
+        rag_max_chars_per_doc=rag_max_chars_per_doc,
+        rag_domain_hints=rag_domain_hints,
     )
+    if prompt_meta.get("few_shot_case_ids"):
+        steps.append(
+            {
+                "stage": "few_shot_selection",
+                "case_ids": list(prompt_meta["few_shot_case_ids"]),
+            }
+        )
+    rag_meta = prompt_meta.get("rag", {})
+    if rag_meta.get("enabled"):
+        steps.append(
+            {
+                "stage": "rag_retrieval",
+                "top_k": int(rag_meta.get("top_k", 0)),
+                "query_domains": list(rag_meta.get("query_domains", [])),
+                "retrieved_docs": list(rag_meta.get("retrieved_docs", [])),
+            }
+        )
 
     generated = call_model(
         model_name=cfg.model_name,

@@ -1,0 +1,46 @@
+Title: Role-Based Access and Transition Rules
+
+Purpose:
+Encode who can trigger which transitions to prevent invalid control flow.
+
+States:
+- Request Created
+- Waiting Approval
+- Approved
+- Rejected
+- Executed
+- Cancelled
+
+Events and role mapping:
+- create_request (employee, customer)
+- submit_for_approval (request_owner)
+- approve (manager, admin)
+- reject (manager, admin)
+- execute (system, operator)
+- cancel (request_owner, admin)
+
+Required transitions:
+- RequestCreated --> WaitingApproval before managerial decision.
+- WaitingApproval --> Approved or Rejected by authorized role.
+- Approved --> Executed by system or operator.
+
+Forbidden transitions:
+- Do not allow employee/customer to trigger approve directly.
+- Do not allow execute from WaitingApproval.
+- Restrict cancel after Executed unless reversal path exists.
+
+Terminal states:
+- Executed and Cancelled are typical terminal outcomes.
+- Rejected may be terminal or returnable to RequestCreated.
+
+PlantUML mini example:
+@startuml
+[*] --> RequestCreated
+RequestCreated --> WaitingApproval : submit_for_approval
+WaitingApproval --> Approved : approve_by_manager
+WaitingApproval --> Rejected : reject_by_manager
+Approved --> Executed : execute
+RequestCreated --> Cancelled : cancel_by_owner
+Executed --> [*]
+Cancelled --> [*]
+@enduml

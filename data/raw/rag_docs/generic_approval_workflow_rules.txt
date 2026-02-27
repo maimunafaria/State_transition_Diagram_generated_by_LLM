@@ -1,0 +1,51 @@
+Title: Generic Approval Workflow Rules
+
+Purpose:
+Model common approval pipelines such as request approval, claim approval, and admin approval.
+
+States:
+- Draft
+- Submitted
+- Under Review
+- Approved
+- Rejected
+- Cancelled
+
+Events:
+- submit
+- assign_reviewer
+- request_changes
+- resubmit
+- approve
+- reject
+- cancel
+
+Required transitions:
+- Draft --> Submitted on submit.
+- Submitted --> Under Review when reviewer is assigned.
+- Under Review --> Approved or Rejected as decision outcomes.
+- Rejected --> Draft when edits and resubmission are allowed.
+- Cancellation should be possible from non-terminal pre-decision states when requirement permits.
+
+Forbidden transitions:
+- Do not jump directly Draft --> Approved unless explicitly stated.
+- Do not allow Approved --> Draft without a separate revocation process.
+- Avoid overlapping decision transitions with identical event labels.
+
+Terminal states:
+- Approved and Cancelled are typically terminal.
+- Rejected can be terminal or resumable depending on requirement.
+
+PlantUML mini example:
+@startuml
+[*] --> Draft
+Draft --> Submitted : submit
+Submitted --> UnderReview : assign_reviewer
+UnderReview --> Approved : approve
+UnderReview --> Rejected : reject
+Rejected --> Draft : resubmit
+Submitted --> Cancelled : cancel
+UnderReview --> Cancelled : cancel
+Approved --> [*]
+Cancelled --> [*]
+@enduml
