@@ -1,0 +1,256 @@
+from __future__ import annotations
+
+import argparse
+
+from .commands import (
+    command_ensemble,
+    command_metrics,
+    command_run,
+    command_table,
+    command_validate,
+)
+from .constants import DEFAULT_DATASET_ROOT, DEFAULT_RAG_DOCS_DIR, DEFAULT_RESULTS_ROOT
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description=(
+            "All-in-one PlantUML validator/parser + metrics + 11-config batch runner + "
+            "cross-model ensemble (stacked LLM or majority vote)"
+        )
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p_validate = sub.add_parser("validate", help="Validate and parse a PlantUML file")
+    p_validate.add_argument("--puml", required=True, help="Path to .puml file")
+    p_validate.add_argument("--json", action="store_true", help="Print JSON output")
+    p_validate.set_defaults(func=command_validate)
+
+    p_run = sub.add_parser("run", help="Run full 11-configuration experiment batch")
+    p_run.add_argument(
+        "--dataset-root",
+        default=str(DEFAULT_DATASET_ROOT),
+        help="Dataset root containing case_* folders",
+    )
+    p_run.add_argument(
+        "--results-root",
+        default=str(DEFAULT_RESULTS_ROOT),
+        help="Output root for run artifacts and metrics",
+    )
+    p_run.add_argument(
+        "--rag-docs-dir",
+        default=str(DEFAULT_RAG_DOCS_DIR),
+        help="RAG documents directory",
+    )
+    p_run.add_argument("--runs", type=int, default=3, help="Runs per case/config")
+    p_run.add_argument(
+        "--baseline-subset-size",
+        type=int,
+        default=30,
+        help="Target balanced subset size for GPT-4o baseline",
+    )
+    p_run.add_argument(
+        "--requirement-source",
+        choices=["raw", "structured"],
+        default="structured",
+        help="Requirement text source used in prompts",
+    )
+    p_run.add_argument("--top-k-rag", type=int, default=3, help="Top-k RAG docs")
+    p_run.add_argument("--seed", type=int, default=42, help="Random seed")
+    p_run.add_argument("--temperature", type=float, default=0.2)
+    p_run.add_argument("--top-p", type=float, default=0.9)
+    p_run.add_argument("--max-tokens", type=int, default=1024)
+    p_run.add_argument("--timeout", type=int, default=300, help="Model call timeout (seconds)")
+    p_run.add_argument(
+        "--ollama-host",
+        default="http://127.0.0.1:11434",
+        help="Ollama host for open-source model calls",
+    )
+    p_run.add_argument("--gpt-model", default="gpt-4o", help="GPT baseline model id")
+    p_run.add_argument("--qwen-model", default="qwen2.5:7b-instruct", help="Qwen model id")
+    p_run.add_argument("--llama-model", default="llama3.1:8b-instruct", help="Llama model id")
+    p_run.add_argument(
+        "--skip-gpt-baseline",
+        action="store_true",
+        help="Skip proprietary GPT-4o baseline and run open-source configs only",
+    )
+    p_run.add_argument(
+        "--only-run-id",
+        action="append",
+        help="Run only selected run_id (repeatable)",
+    )
+    p_run.add_argument("--skip-existing", action="store_true", help="Skip existing run files")
+    p_run.add_argument("--save-prompts", action="store_true", help="Store prompts in .meta.json")
+    p_run.set_defaults(func=command_run)
+
+    p_metrics = sub.add_parser(
+        "metrics", help="Recompute metrics from generated run files under results"
+    )
+    p_metrics.add_argument(
+        "--dataset-root",
+        default=str(DEFAULT_DATASET_ROOT),
+        help="Dataset root containing case_* folders",
+    )
+    p_metrics.add_argument(
+        "--results-root",
+        default=str(DEFAULT_RESULTS_ROOT),
+        help="Results root containing runs/",
+    )
+    p_metrics.set_defaults(func=command_metrics)
+
+    p_ensemble = sub.add_parser(
+        "ensemble",
+        help="Build cross-model ensemble (stacked LLM or majority vote) from existing Qwen/LLaMA runs",
+    )
+    p_ensemble.add_argument(
+        "--dataset-root",
+        default=str(DEFAULT_DATASET_ROOT),
+        help="Dataset root containing case_* folders",
+    )
+    p_ensemble.add_argument(
+        "--results-root",
+        default=str(DEFAULT_RESULTS_ROOT),
+        help="Results root containing runs/ from prior experiments",
+    )
+    p_ensemble.add_argument(
+        "--ensemble-root",
+        default="ensemble_stacked_llm",
+        help="Output folder under results-root for ensemble artifacts",
+    )
+    p_ensemble.add_argument(
+        "--ensemble-method",
+        choices=["stacked_llm", "majority_vote"],
+        default="stacked_llm",
+        help="Ensembling method (default: stacked_llm)",
+    )
+    p_ensemble.add_argument(
+        "--strategy",
+        action="append",
+        help=(
+            "Strategy to ensemble (repeatable). "
+            "Default: all five strategies from methodology."
+        ),
+    )
+    p_ensemble.add_argument(
+        "--qwen-run-prefix",
+        default="open_source__qwen25_7b_instruct",
+        help="Run-id prefix for Qwen configurations",
+    )
+    p_ensemble.add_argument(
+        "--llama-run-prefix",
+        default="open_source__llama31_8b_instruct",
+        help="Run-id prefix for LLaMA configurations",
+    )
+    p_ensemble.add_argument(
+        "--min-candidates",
+        type=int,
+        default=2,
+        help="Minimum candidate outputs required per case before voting",
+    )
+    p_ensemble.add_argument(
+        "--min-votes",
+        type=int,
+        default=0,
+        help="Votes required to keep a state/transition (0 = strict majority)",
+    )
+    p_ensemble.add_argument(
+        "--require-both-models",
+        action="store_true",
+        help="Require both Qwen and LLaMA candidates per case",
+    )
+    p_ensemble.add_argument(
+        "--stack-model",
+        default="llama3.1:8b-instruct",
+        help="Meta-model used for stacked_llm ensembling",
+    )
+    p_ensemble.add_argument(
+        "--stack-requirement-source",
+        choices=["raw", "structured"],
+        default="structured",
+        help="Requirement text source used by the stack model",
+    )
+    p_ensemble.add_argument(
+        "--stack-max-candidates",
+        type=int,
+        default=6,
+        help="Maximum distinct candidates passed to the stack model",
+    )
+    p_ensemble.add_argument("--stack-temperature", type=float, default=0.1)
+    p_ensemble.add_argument("--stack-top-p", type=float, default=0.9)
+    p_ensemble.add_argument("--stack-max-tokens", type=int, default=1536)
+    p_ensemble.add_argument(
+        "--stack-timeout",
+        type=int,
+        default=300,
+        help="Stack model call timeout (seconds)",
+    )
+    p_ensemble.add_argument(
+        "--stack-ollama-host",
+        default="http://127.0.0.1:11434",
+        help="Ollama host for local stack model calls",
+    )
+    p_ensemble.add_argument(
+        "--stack-fallback-majority",
+        action="store_true",
+        help="Fallback to majority vote when stacked_llm generation fails",
+    )
+    p_ensemble.set_defaults(func=command_ensemble)
+
+    p_table = sub.add_parser("table", help="Show metrics as a terminal table")
+    p_table.add_argument(
+        "--results-root",
+        default=str(DEFAULT_RESULTS_ROOT),
+        help="Results root containing metrics/",
+    )
+    p_table.add_argument(
+        "--source",
+        choices=["summary", "complexity", "per-run"],
+        default="summary",
+        help="Which metrics source to render as a table",
+    )
+    p_table.add_argument(
+        "--model-family",
+        choices=["all", "qwen", "llama", "ensemble", "gpt"],
+        default="all",
+        help="Filter rows by model family based on run_id",
+    )
+    p_table.add_argument(
+        "--columns",
+        default="",
+        help="Comma-separated columns to display (default depends on source)",
+    )
+    p_table.add_argument(
+        "--sort-by",
+        default="",
+        help="Column to sort by (default depends on source)",
+    )
+    p_table.add_argument(
+        "--asc",
+        action="store_true",
+        help="Sort ascending (default is descending)",
+    )
+    p_table.add_argument(
+        "--limit",
+        type=int,
+        default=0,
+        help="Limit rows (0 = all rows)",
+    )
+    p_table.add_argument(
+        "--run-id",
+        action="append",
+        help="Filter by run_id (repeatable)",
+    )
+    p_table.add_argument(
+        "--structural-only",
+        action="store_true",
+        help="Show only structural validity percentage columns",
+    )
+    p_table.set_defaults(func=command_table)
+
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+    return int(args.func(args))

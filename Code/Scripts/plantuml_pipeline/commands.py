@@ -1,0 +1,637 @@
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import os
+import re
+import sys
+import time
+from pathlib import Path
+from typing import Any
+
+from .constants import PROJECT_ROOT
+from .dataset import balanced_subset, build_experiment_configs, load_cases
+from .ensemble import (
+    build_puml_from_graph,
+    collect_ensemble_candidates,
+    majority_vote_graph,
+    run_stacked_ensemble,
+    safe_strategy_tag,
+)
+from .generation import run_single_generation
+from .io_utils import read_text, write_json, write_jsonl, write_text
+from .metrics import compute_metrics, summarize_metrics
+from .models import ValidationResult
+from .parser import parse_and_validate_puml_text
+from .prompting import load_rag_docs
+
+
+def _resolve_root(path_arg: str, parent: Path | None = None) -> Path:
+    path = Path(path_arg)
+    if path.is_absolute():
+        return path
+    if parent is None:
+        return (PROJECT_ROOT / path).resolve()
+    return (parent / path).resolve()
+
+
+def command_ensemble(args: argparse.Namespace) -> int:
+    dataset_root = _resolve_root(args.dataset_root)
+    results_root = _resolve_root(args.results_root)
+    ensemble_root = _resolve_root(args.ensemble_root, parent=results_root)
+    ensemble_method = str(args.ensemble_method).strip().lower()
+
+    cases = load_cases(dataset_root)
+    case_by_id = {c.case_id: c for c in cases}
+    strategies = (
+        args.strategy
+        if args.strategy
+        else [
+            "zero_shot",
+            "few_shot",
+            "rag",
+            "rag_structural_validation",
+            "rag_validation_generator_critic_repair",
+        ]
+    )
+    strategies = [safe_strategy_tag(s) for s in strategies]
+
+    metrics_rows: list[dict[str, Any]] = []
+    produced_runs = 0
+    skipped_cases = 0
+
+    for strategy in strategies:
+        run_id = f"ensemble__qwen_llama__{strategy}__{ensemble_method}"
+        for case_id in sorted(case_by_id.keys()):
+            case = case_by_id[case_id]
+            candidates = collect_ensemble_candidates(
+                results_root=results_root,
+                case_id=case_id,
+                strategy=strategy,
+                qwen_prefix=args.qwen_run_prefix,
+                llama_prefix=args.llama_run_prefix,
+            )
+            if len(candidates) < args.min_candidates:
+                skipped_cases += 1
+                continue
+
+            model_set = {str(c["model"]) for c in candidates}
+            if args.require_both_models and not {"qwen", "llama"}.issubset(model_set):
+                skipped_cases += 1
+                continue
+
+            status = "ok"
+            error_message = ""
+            stack_meta: dict[str, Any] = {}
+            vote_meta: dict[str, Any] = {}
+
+            try:
+                if ensemble_method == "stacked_llm":
+                    ensemble_puml, stack_meta = run_stacked_ensemble(
+                        case=case,
+                        candidates=candidates,
+                        model_name=args.stack_model,
+                        requirement_source=args.stack_requirement_source,
+                        ollama_host=args.stack_ollama_host,
+                        temperature=args.stack_temperature,
+                        top_p=args.stack_top_p,
+                        max_tokens=args.stack_max_tokens,
+                        timeout=args.stack_timeout,
+                        max_candidates=args.stack_max_candidates,
+                    )
+                else:
+                    states, transitions, initial_state, final_states, vote_meta = majority_vote_graph(
+                        candidates=candidates,
+                        min_votes_override=args.min_votes,
+                    )
+                    ensemble_puml = build_puml_from_graph(
+                        states=states,
+                        transitions=transitions,
+                        initial_state=initial_state,
+                        final_states=final_states,
+                    )
+            except Exception as exc:  # noqa: BLE001 - keep per-case robustness
+                if ensemble_method == "stacked_llm" and args.stack_fallback_majority:
+                    error_message = str(exc)
+                    status = "ok_fallback_majority"
+                    states, transitions, initial_state, final_states, vote_meta = majority_vote_graph(
+                        candidates=candidates,
+                        min_votes_override=args.min_votes,
+                    )
+                    ensemble_puml = build_puml_from_graph(
+                        states=states,
+                        transitions=transitions,
+                        initial_state=initial_state,
+                        final_states=final_states,
+                    )
+                    stack_meta = {
+                        "fallback_reason": error_message,
+                        "fallback_used": "majority_vote",
+                    }
+                else:
+                    status = "error"
+                    error_message = str(exc)
+                    ensemble_puml = "@startuml\n' ensemble generation error\n@enduml\n"
+
+            ensemble_graph, ensemble_validation = parse_and_validate_puml_text(ensemble_puml)
+            metrics = compute_metrics(
+                pred_graph=ensemble_graph,
+                pred_validation=ensemble_validation,
+                gold_graph=case.gold_graph,
+            )
+
+            out_dir = ensemble_root / "runs" / run_id / case_id
+            out_puml = out_dir / "ensemble.puml"
+            out_meta = out_dir / "ensemble.meta.json"
+            out_dir.mkdir(parents=True, exist_ok=True)
+            write_text(out_puml, ensemble_puml)
+
+            metrics_row = {
+                "run_id": run_id,
+                "model_group": "ensemble",
+                "model_label": (
+                    f"Qwen+LLaMA Stacked LLM ({args.stack_model})"
+                    if ensemble_method == "stacked_llm"
+                    else "Qwen+LLaMA Majority Vote"
+                ),
+                "model_name": args.stack_model if ensemble_method == "stacked_llm" else "majority_vote",
+                "strategy": strategy,
+                "case_id": case_id,
+                "complexity": case.complexity,
+                "run_index": 1,
+                "status": status,
+                "error_message": error_message,
+                "ensemble_method": ensemble_method,
+                "candidate_count": len(candidates),
+                "vote_threshold": vote_meta.get("vote_threshold"),
+                **metrics,
+            }
+            metrics_rows.append(metrics_row)
+            produced_runs += 1
+
+            meta = {
+                "run_id": run_id,
+                "case_id": case_id,
+                "status": status,
+                "error_message": error_message,
+                "ensemble_method": ensemble_method,
+                "candidate_count": len(candidates),
+                "source_runs": [
+                    {"run_id": c["run_id"], "model": c["model"], "puml_path": c["puml_path"]}
+                    for c in candidates
+                ],
+                "validation": ensemble_validation.to_dict(),
+                "metrics": metrics,
+                "puml_path": str(out_puml),
+            }
+            if vote_meta:
+                meta["vote_meta"] = vote_meta
+            if stack_meta:
+                meta["stack_meta"] = stack_meta
+            write_json(out_meta, meta)
+
+    metrics_dir = ensemble_root / "metrics"
+    write_jsonl(metrics_dir / "per_run_metrics.jsonl", metrics_rows)
+    summary_cfg, summary_cmp, stability_rows = summarize_metrics(metrics_rows)
+    write_json(metrics_dir / "summary_by_config.json", summary_cfg)
+    write_json(metrics_dir / "summary_by_config_and_complexity.json", summary_cmp)
+    write_jsonl(metrics_dir / "stability_by_case.jsonl", stability_rows)
+
+    manifest = {
+        "dataset_root": str(dataset_root),
+        "results_root": str(results_root),
+        "ensemble_root": str(ensemble_root),
+        "strategies": strategies,
+        "qwen_run_prefix": args.qwen_run_prefix,
+        "llama_run_prefix": args.llama_run_prefix,
+        "ensemble_method": ensemble_method,
+        "min_candidates": args.min_candidates,
+        "min_votes": args.min_votes,
+        "require_both_models": args.require_both_models,
+        "stack_model": args.stack_model if ensemble_method == "stacked_llm" else "",
+        "stack_requirement_source": args.stack_requirement_source,
+        "stack_max_candidates": args.stack_max_candidates,
+        "stack_temperature": args.stack_temperature,
+        "stack_top_p": args.stack_top_p,
+        "stack_max_tokens": args.stack_max_tokens,
+        "stack_timeout": args.stack_timeout,
+        "stack_ollama_host": args.stack_ollama_host,
+        "stack_fallback_majority": args.stack_fallback_majority,
+        "produced_case_runs": produced_runs,
+        "skipped_case_runs": skipped_cases,
+        "generated_at_epoch": time.time(),
+    }
+    write_json(ensemble_root / "manifest.json", manifest)
+    print(
+        f"Ensemble complete ({ensemble_method}): produced={produced_runs}, skipped={skipped_cases}, "
+        f"metrics={metrics_dir / 'summary_by_config.json'}"
+    )
+    return 0
+
+
+def command_validate(args: argparse.Namespace) -> int:
+    puml_path = _resolve_root(args.puml)
+    if not puml_path.exists():
+        print(f"File not found: {puml_path}", file=sys.stderr)
+        return 1
+
+    text = read_text(puml_path)
+    graph, validation = parse_and_validate_puml_text(text)
+    payload = {
+        "file": str(puml_path),
+        "validation": validation.to_dict(),
+        "graph": {
+            "states": sorted(graph.states),
+            "transitions": sorted(list(set(graph.transitions))),
+            "initial_targets": sorted(set(graph.initial_targets)),
+            "final_states": sorted(graph.final_states),
+            "aliases": graph.aliases,
+        },
+    }
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print(f"File: {payload['file']}")
+        print(f"Valid: {payload['validation']['valid']}")
+        print(f"States ({len(payload['graph']['states'])}): {', '.join(payload['graph']['states'])}")
+        print(f"Transitions ({len(payload['graph']['transitions'])})")
+        if payload["validation"]["errors"]:
+            print("Errors:")
+            for err in payload["validation"]["errors"]:
+                print(f"  - {err}")
+        if payload["validation"]["warnings"]:
+            print("Warnings:")
+            for warn in payload["validation"]["warnings"]:
+                print(f"  - {warn}")
+    return 0
+
+
+def command_run(args: argparse.Namespace) -> int:
+    dataset_root = _resolve_root(args.dataset_root)
+    results_root = _resolve_root(args.results_root)
+    rag_docs_dir = _resolve_root(args.rag_docs_dir)
+
+    cases = load_cases(dataset_root)
+    for case in cases:
+        if not case.gold_validation.valid:
+            print(
+                f"Warning: gold diagram in {case.case_id} failed validation: "
+                f"{'; '.join(case.gold_validation.errors)}",
+                file=sys.stderr,
+            )
+
+    baseline_cases = balanced_subset(cases, target_size=args.baseline_subset_size, seed=args.seed)
+    rag_docs = load_rag_docs(rag_docs_dir)
+
+    configs = build_experiment_configs(
+        gpt_model=args.gpt_model,
+        qwen_model=args.qwen_model,
+        llama_model=args.llama_model,
+    )
+    # Allow running open-source experiments without requiring OpenAI credentials.
+    if args.skip_gpt_baseline:
+        configs = [cfg for cfg in configs if cfg.model_group != "proprietary_baseline"]
+    elif not os.getenv("OPENAI_API_KEY", "").strip():
+        configs = [cfg for cfg in configs if cfg.model_group != "proprietary_baseline"]
+        print(
+            "[info] OPENAI_API_KEY not set, skipping GPT-4o baseline. "
+            "Use --gpt-model with key configured to include it.",
+            file=sys.stderr,
+        )
+
+    if args.only_run_id:
+        wanted = set(args.only_run_id)
+        configs = [cfg for cfg in configs if cfg.run_id in wanted]
+        if not configs:
+            print("No configurations matched --only-run-id", file=sys.stderr)
+            return 1
+
+    manifest = {
+        "generated_at_epoch": time.time(),
+        "dataset_root": str(dataset_root),
+        "results_root": str(results_root),
+        "rag_docs_dir": str(rag_docs_dir),
+        "runs_per_case": args.runs,
+        "baseline_subset_size_target": args.baseline_subset_size,
+        "baseline_subset_size_actual": len(baseline_cases),
+        "baseline_subset_case_ids": [c.case_id for c in baseline_cases],
+        "configs": [cfg.to_dict() for cfg in configs],
+    }
+    write_json(results_root / "manifest.json", manifest)
+
+    metrics_rows: list[dict[str, Any]] = []
+
+    for cfg in configs:
+        selected_cases = baseline_cases if cfg.baseline_subset_only else cases
+        print(f"[run] {cfg.run_id} | cases={len(selected_cases)}")
+        for case in selected_cases:
+            for run_index in range(1, args.runs + 1):
+                run_dir = results_root / "runs" / cfg.run_id / case.case_id
+                puml_path = run_dir / f"run_{run_index:02d}.puml"
+                meta_path = run_dir / f"run_{run_index:02d}.meta.json"
+                if args.skip_existing and puml_path.exists() and meta_path.exists():
+                    print(f"  skip existing {cfg.run_id}/{case.case_id}/run_{run_index:02d}")
+                    continue
+
+                status = "ok"
+                error_message = ""
+                prompt_text = ""
+                requirement_used = ""
+                processing_steps: list[dict[str, Any]] = []
+                final_puml = ""
+                final_validation: ValidationResult | None = None
+
+                try:
+                    final_puml, final_validation, prompt_text, requirement_used, processing_steps = (
+                        run_single_generation(
+                            case=case,
+                            cfg=cfg,
+                            all_cases=cases,
+                            rag_docs=rag_docs,
+                            requirement_source=args.requirement_source,
+                            top_k_rag=args.top_k_rag,
+                            ollama_host=args.ollama_host,
+                            temperature=args.temperature,
+                            top_p=args.top_p,
+                            max_tokens=args.max_tokens,
+                            timeout=args.timeout,
+                        )
+                    )
+                except Exception as exc:  # noqa: BLE001 - preserve all run errors
+                    status = "error"
+                    error_message = str(exc)
+                    final_puml = "@startuml\n' generation error\n@enduml\n"
+                    final_graph, final_validation = parse_and_validate_puml_text(final_puml)
+                    processing_steps.append({"stage": "error", "message": error_message})
+                else:
+                    final_graph, final_validation = parse_and_validate_puml_text(final_puml)
+
+                run_dir.mkdir(parents=True, exist_ok=True)
+                write_text(puml_path, final_puml)
+
+                metrics = compute_metrics(
+                    pred_graph=final_graph,
+                    pred_validation=final_validation,
+                    gold_graph=case.gold_graph,
+                )
+                metrics_row = {
+                    "run_id": cfg.run_id,
+                    "model_group": cfg.model_group,
+                    "model_label": cfg.model_label,
+                    "model_name": cfg.model_name,
+                    "strategy": cfg.strategy,
+                    "case_id": case.case_id,
+                    "complexity": case.complexity,
+                    "run_index": run_index,
+                    "status": status,
+                    "error_message": error_message,
+                    **metrics,
+                }
+                metrics_rows.append(metrics_row)
+
+                meta = {
+                    "run_id": cfg.run_id,
+                    "case_id": case.case_id,
+                    "run_index": run_index,
+                    "status": status,
+                    "error_message": error_message,
+                    "prompt": prompt_text if args.save_prompts else "",
+                    "requirement_used": requirement_used if args.save_prompts else "",
+                    "puml_path": str(puml_path),
+                    "validation": final_validation.to_dict(),
+                    "processing_steps": processing_steps,
+                    "metrics": metrics,
+                }
+                write_json(meta_path, meta)
+                print(
+                    f"  {case.case_id}/run_{run_index:02d} "
+                    f"status={status} valid={metrics['structural_valid']} "
+                    f"overall_f1={metrics['overall_f1']:.4f}"
+                )
+
+    metrics_dir = results_root / "metrics"
+    write_jsonl(metrics_dir / "per_run_metrics.jsonl", metrics_rows)
+    summary_cfg, summary_cmp, stability_rows = summarize_metrics(metrics_rows)
+    write_json(metrics_dir / "summary_by_config.json", summary_cfg)
+    write_json(metrics_dir / "summary_by_config_and_complexity.json", summary_cmp)
+    write_jsonl(metrics_dir / "stability_by_case.jsonl", stability_rows)
+
+    print(f"Wrote metrics: {metrics_dir / 'per_run_metrics.jsonl'} ({len(metrics_rows)} rows)")
+    return 0
+
+
+def command_metrics(args: argparse.Namespace) -> int:
+    dataset_root = _resolve_root(args.dataset_root)
+    results_root = _resolve_root(args.results_root)
+
+    cases = {case.case_id: case for case in load_cases(dataset_root)}
+    runs_root = results_root / "runs"
+    if not runs_root.exists():
+        print(f"No runs directory found at: {runs_root}", file=sys.stderr)
+        return 1
+
+    metrics_rows: list[dict[str, Any]] = []
+    for puml_path in sorted(runs_root.glob("*/*/run_*.puml")):
+        run_id = puml_path.parent.parent.name
+        case_id = puml_path.parent.name
+        run_match = re.search(r"run_(\d+)\.puml$", puml_path.name)
+        run_index = int(run_match.group(1)) if run_match else 0
+
+        case = cases.get(case_id)
+        if case is None:
+            continue
+        pred_puml = read_text(puml_path)
+        pred_graph, pred_validation = parse_and_validate_puml_text(pred_puml)
+        metrics = compute_metrics(pred_graph, pred_validation, case.gold_graph)
+        metrics_rows.append(
+            {
+                "run_id": run_id,
+                "case_id": case_id,
+                "complexity": case.complexity,
+                "run_index": run_index,
+                **metrics,
+            }
+        )
+
+    metrics_dir = results_root / "metrics"
+    write_jsonl(metrics_dir / "per_run_metrics.jsonl", metrics_rows)
+    summary_cfg, summary_cmp, stability_rows = summarize_metrics(metrics_rows)
+    write_json(metrics_dir / "summary_by_config.json", summary_cfg)
+    write_json(metrics_dir / "summary_by_config_and_complexity.json", summary_cmp)
+    write_jsonl(metrics_dir / "stability_by_case.jsonl", stability_rows)
+    print(f"Recomputed metrics for {len(metrics_rows)} run files")
+    return 0
+
+
+def _format_table_value(value: Any) -> str:
+    if isinstance(value, float):
+        if math.isnan(value) or math.isinf(value):
+            return str(value)
+        return f"{value:.4f}"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    return str(value)
+
+
+def _print_table(rows: list[dict[str, Any]], columns: list[str]) -> None:
+    if not rows:
+        print("No rows to display.")
+        return
+
+    widths: dict[str, int] = {col: len(col) for col in columns}
+    rendered_rows: list[dict[str, str]] = []
+    for row in rows:
+        rendered: dict[str, str] = {}
+        for col in columns:
+            text = _format_table_value(row.get(col, ""))
+            rendered[col] = text
+            widths[col] = max(widths[col], len(text))
+        rendered_rows.append(rendered)
+
+    header = " | ".join(col.ljust(widths[col]) for col in columns)
+    sep = "-+-".join("-" * widths[col] for col in columns)
+    print(header)
+    print(sep)
+    for row in rendered_rows:
+        print(" | ".join(row[col].ljust(widths[col]) for col in columns))
+
+
+def _sort_rows(
+    rows: list[dict[str, Any]],
+    sort_by: str,
+    descending: bool,
+) -> list[dict[str, Any]]:
+    def key_fn(item: dict[str, Any]) -> tuple[int, Any]:
+        value = item.get(sort_by)
+        if value is None:
+            return (1, "")
+        return (0, value)
+
+    return sorted(rows, key=key_fn, reverse=descending)
+
+
+def command_table(args: argparse.Namespace) -> int:
+    results_root = _resolve_root(args.results_root)
+
+    metrics_dir = results_root / "metrics"
+    source_map = {
+        "summary": "summary_by_config.json",
+        "complexity": "summary_by_config_and_complexity.json",
+        "per-run": "per_run_metrics.jsonl",
+    }
+    source_file = metrics_dir / source_map[args.source]
+    if not source_file.exists():
+        print(
+            f"Metrics source not found: {source_file}\n"
+            "Run `metrics` first or complete a `run` execution.",
+            file=sys.stderr,
+        )
+        return 1
+
+    rows: list[dict[str, Any]] = []
+    if source_file.suffix == ".jsonl":
+        with source_file.open("r", encoding="utf-8") as handle:
+            for line in handle:
+                line = line.strip()
+                if not line:
+                    continue
+                rows.append(json.loads(line))
+    else:
+        rows = json.loads(source_file.read_text(encoding="utf-8"))
+
+    # Add a derived percentage field for convenient reporting.
+    for row in rows:
+        if "structural_valid_rate" in row:
+            try:
+                row["structural_valid_percentage"] = float(row["structural_valid_rate"]) * 100.0
+            except Exception:
+                row["structural_valid_percentage"] = None
+        elif "structural_valid" in row:
+            row["structural_valid_percentage"] = 100.0 if bool(row["structural_valid"]) else 0.0
+
+    if args.model_family != "all":
+        family_patterns = {
+            "qwen": "qwen25_7b_instruct",
+            "llama": "llama31_8b_instruct",
+            "ensemble": "ensemble__",
+            "gpt": "gpt4o",
+        }
+        pattern = family_patterns.get(args.model_family, "")
+        rows = [row for row in rows if pattern in str(row.get("run_id", ""))]
+
+    if args.run_id:
+        rows = [row for row in rows if str(row.get("run_id", "")) in set(args.run_id)]
+
+    if args.source == "summary":
+        default_columns = [
+            "run_id",
+            "samples",
+            "overall_f1_mean",
+            "overall_f1_relaxed_mean",
+            "weighted_f1_relaxed_70_30_mean",
+            "state_f1_mean",
+            "transition_f1_mean",
+            "structural_valid_rate",
+            "stability_overall_f1_stddev_mean",
+        ]
+        default_sort = "overall_f1_mean"
+    elif args.source == "complexity":
+        default_columns = [
+            "run_id",
+            "complexity",
+            "samples",
+            "overall_f1_mean",
+            "overall_f1_relaxed_mean",
+            "weighted_f1_relaxed_70_30_mean",
+            "state_f1_mean",
+            "transition_f1_mean",
+            "structural_valid_rate",
+        ]
+        default_sort = "overall_f1_mean"
+    else:
+        default_columns = [
+            "run_id",
+            "case_id",
+            "run_index",
+            "status",
+            "overall_f1",
+            "state_f1",
+            "transition_f1",
+            "structural_valid",
+        ]
+        default_sort = "overall_f1"
+
+    if args.structural_only:
+        if args.source == "summary":
+            default_columns = ["run_id", "samples", "structural_valid_percentage"]
+        elif args.source == "complexity":
+            default_columns = ["run_id", "complexity", "samples", "structural_valid_percentage"]
+        else:
+            default_columns = [
+                "run_id",
+                "case_id",
+                "run_index",
+                "status",
+                "structural_valid_percentage",
+            ]
+        default_sort = "structural_valid_percentage"
+
+    columns = args.columns.split(",") if args.columns else default_columns
+    columns = [col.strip() for col in columns if col.strip()]
+    if not columns:
+        print("No columns selected.", file=sys.stderr)
+        return 1
+
+    sort_by = args.sort_by or default_sort
+    rows = _sort_rows(rows, sort_by=sort_by, descending=not args.asc)
+    if args.limit > 0:
+        rows = rows[: args.limit]
+
+    if not rows:
+        print("No rows matched filters.")
+        return 0
+
+    _print_table(rows, columns)
+    print(f"\nRows shown: {len(rows)} | Source: {source_file}")
+    return 0
