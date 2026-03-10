@@ -41,13 +41,15 @@ def command_ensemble(args: argparse.Namespace) -> int:
     results_root = _resolve_root(args.results_root)
     ensemble_root = _resolve_root(args.ensemble_root, parent=results_root)
     ensemble_method = str(args.ensemble_method).strip().lower()
+    stack_rag_mode = str(args.stack_rag_mode).strip().lower()
     stack_rag_domain_hints = {
         s.strip().lower() for s in (args.stack_rag_domain_hint or []) if s.strip()
     }
     stack_rag_docs_dir = _resolve_root(args.stack_rag_docs_dir)
+    stack_rag_db_dir = _resolve_root(args.stack_rag_db_dir)
     stack_rag_docs = (
         load_rag_docs(stack_rag_docs_dir)
-        if ensemble_method == "stacked_llm" and args.stack_use_rag
+        if ensemble_method == "stacked_llm" and args.stack_use_rag and stack_rag_mode == "lexical"
         else []
     )
 
@@ -115,6 +117,9 @@ def command_ensemble(args: argparse.Namespace) -> int:
                         top_k_rag=args.stack_top_k_rag,
                         rag_max_chars_per_doc=args.stack_rag_max_chars_per_doc,
                         rag_domain_hints=stack_rag_domain_hints,
+                        rag_mode=stack_rag_mode,
+                        rag_db_dir=stack_rag_db_dir,
+                        rag_collection_name=args.stack_rag_collection_name,
                     )
                 else:
                     states, transitions, initial_state, final_states, vote_meta = majority_vote_graph(
@@ -228,7 +233,10 @@ def command_ensemble(args: argparse.Namespace) -> int:
         "stack_model": args.stack_model if ensemble_method == "stacked_llm" else "",
         "stack_requirement_source": args.stack_requirement_source,
         "stack_use_rag": args.stack_use_rag,
+        "stack_rag_mode": stack_rag_mode,
         "stack_rag_docs_dir": str(stack_rag_docs_dir),
+        "stack_rag_db_dir": str(stack_rag_db_dir),
+        "stack_rag_collection_name": args.stack_rag_collection_name,
         "stack_rag_doc_count": len(stack_rag_docs),
         "stack_top_k_rag": args.stack_top_k_rag,
         "stack_rag_max_chars_per_doc": args.stack_rag_max_chars_per_doc,
@@ -293,6 +301,8 @@ def command_run(args: argparse.Namespace) -> int:
     dataset_root = _resolve_root(args.dataset_root)
     results_root = _resolve_root(args.results_root)
     rag_docs_dir = _resolve_root(args.rag_docs_dir)
+    rag_db_dir = _resolve_root(args.rag_db_dir)
+    rag_mode = str(args.rag_mode).strip().lower()
     rag_domain_hints = {s.strip().lower() for s in (args.rag_domain_hint or []) if s.strip()}
 
     cases = load_cases(dataset_root)
@@ -305,7 +315,7 @@ def command_run(args: argparse.Namespace) -> int:
             )
 
     baseline_cases = balanced_subset(cases, target_size=args.baseline_subset_size, seed=args.seed)
-    rag_docs = load_rag_docs(rag_docs_dir)
+    rag_docs = load_rag_docs(rag_docs_dir) if rag_mode == "lexical" else []
 
     configs = build_experiment_configs(
         gpt_model=args.gpt_model,
@@ -335,6 +345,9 @@ def command_run(args: argparse.Namespace) -> int:
         "dataset_root": str(dataset_root),
         "results_root": str(results_root),
         "rag_docs_dir": str(rag_docs_dir),
+        "rag_mode": rag_mode,
+        "rag_db_dir": str(rag_db_dir),
+        "rag_collection_name": args.rag_collection_name,
         "rag_doc_count": len(rag_docs),
         "rag_top_k": args.top_k_rag,
         "rag_max_chars_per_doc": args.rag_max_chars_per_doc,
@@ -385,6 +398,9 @@ def command_run(args: argparse.Namespace) -> int:
                             timeout=args.timeout,
                             rag_max_chars_per_doc=args.rag_max_chars_per_doc,
                             rag_domain_hints=rag_domain_hints,
+                            rag_mode=rag_mode,
+                            rag_db_dir=rag_db_dir,
+                            rag_collection_name=args.rag_collection_name,
                         )
                     )
                 except Exception as exc:  # noqa: BLE001 - preserve all run errors

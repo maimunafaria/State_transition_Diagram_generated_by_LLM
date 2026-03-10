@@ -10,7 +10,7 @@ from .io_utils import read_text
 from .model_client import call_model
 from .models import Case, DiagramGraph, ValidationResult
 from .parser import normalize_puml_text, parse_and_validate_puml_text
-from .prompting import retrieve_rag_context
+from .prompting import resolve_rag_context
 
 
 def safe_strategy_tag(strategy: str) -> str:
@@ -255,6 +255,9 @@ def run_stacked_ensemble(
     top_k_rag: int = 0,
     rag_max_chars_per_doc: int = 1200,
     rag_domain_hints: set[str] | None = None,
+    rag_mode: str = "lexical",
+    rag_db_dir: Path | None = None,
+    rag_collection_name: str = "uml_docs",
 ) -> tuple[str, dict[str, Any]]:
     if not candidates:
         raise ValueError("No candidates available for stacked ensemble")
@@ -269,13 +272,16 @@ def run_stacked_ensemble(
 
     rag_context = ""
     rag_trace: list[dict[str, Any]] = []
-    if rag_docs and top_k_rag > 0:
-        rag_context, rag_trace = retrieve_rag_context(
+    if top_k_rag > 0 and (rag_mode == "vector" or rag_docs):
+        rag_context, rag_trace = resolve_rag_context(
             query=requirement,
             docs=rag_docs,
             top_k=top_k_rag,
             max_chars_per_doc=rag_max_chars_per_doc,
             query_domain_hints=rag_domain_hints,
+            rag_mode=rag_mode,
+            rag_db_dir=rag_db_dir,
+            rag_collection_name=rag_collection_name,
         )
 
     prompt = build_stacked_ensemble_prompt(
@@ -297,7 +303,8 @@ def run_stacked_ensemble(
         "stack_model": model_name,
         "candidate_count_total": len(candidates),
         "candidate_count_used": len(selected),
-        "rag_enabled": bool(rag_docs and top_k_rag > 0),
+        "rag_enabled": bool(top_k_rag > 0 and (rag_mode == "vector" or rag_docs)),
+        "rag_mode": rag_mode,
         "rag_top_k": top_k_rag,
         "rag_max_chars_per_doc": rag_max_chars_per_doc,
         "rag_domain_hints": sorted(rag_domain_hints or set()),

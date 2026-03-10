@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from .model_client import call_model
@@ -22,6 +23,9 @@ def run_single_generation(
     timeout: int,
     rag_max_chars_per_doc: int = 1200,
     rag_domain_hints: set[str] | None = None,
+    rag_mode: str = "lexical",
+    rag_db_dir: Path | None = None,
+    rag_collection_name: str = "uml_docs",
 ) -> tuple[str, ValidationResult, str, str, list[dict[str, Any]]]:
     requirement = case.structured_requirement if requirement_source == "structured" else case.raw_requirement
     if not requirement.strip():
@@ -37,6 +41,9 @@ def run_single_generation(
         top_k_rag=top_k_rag,
         rag_max_chars_per_doc=rag_max_chars_per_doc,
         rag_domain_hints=rag_domain_hints,
+        rag_mode=rag_mode,
+        rag_db_dir=rag_db_dir,
+        rag_collection_name=rag_collection_name,
     )
     if prompt_meta.get("few_shot_case_ids"):
         steps.append(
@@ -50,6 +57,7 @@ def run_single_generation(
         steps.append(
             {
                 "stage": "rag_retrieval",
+                "mode": str(rag_meta.get("mode", "lexical")),
                 "top_k": int(rag_meta.get("top_k", 0)),
                 "query_domains": list(rag_meta.get("query_domains", [])),
                 "retrieved_docs": list(rag_meta.get("retrieved_docs", [])),

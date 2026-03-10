@@ -9,7 +9,13 @@ from .commands import (
     command_table,
     command_validate,
 )
-from .constants import DEFAULT_DATASET_ROOT, DEFAULT_RAG_DOCS_DIR, DEFAULT_RESULTS_ROOT
+from .constants import (
+    DEFAULT_DATASET_ROOT,
+    DEFAULT_RAG_COLLECTION_NAME,
+    DEFAULT_RAG_DB_DIR,
+    DEFAULT_RAG_DOCS_DIR,
+    DEFAULT_RESULTS_ROOT,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -41,6 +47,22 @@ def build_parser() -> argparse.ArgumentParser:
         "--rag-docs-dir",
         default=str(DEFAULT_RAG_DOCS_DIR),
         help="RAG documents directory",
+    )
+    p_run.add_argument(
+        "--rag-mode",
+        choices=["lexical", "vector"],
+        default="lexical",
+        help="RAG retrieval mode",
+    )
+    p_run.add_argument(
+        "--rag-db-dir",
+        default=str(DEFAULT_RAG_DB_DIR),
+        help="Persisted vector database directory for --rag-mode vector",
+    )
+    p_run.add_argument(
+        "--rag-collection-name",
+        default=DEFAULT_RAG_COLLECTION_NAME,
+        help="Vector collection name for --rag-mode vector",
     )
     p_run.add_argument("--runs", type=int, default=3, help="Runs per case/config")
     p_run.add_argument(
@@ -183,6 +205,22 @@ def build_parser() -> argparse.ArgumentParser:
         "--stack-rag-docs-dir",
         default=str(DEFAULT_RAG_DOCS_DIR),
         help="RAG documents directory for stacked_llm",
+    )
+    p_ensemble.add_argument(
+        "--stack-rag-mode",
+        choices=["lexical", "vector"],
+        default="lexical",
+        help="RAG retrieval mode for stacked_llm",
+    )
+    p_ensemble.add_argument(
+        "--stack-rag-db-dir",
+        default=str(DEFAULT_RAG_DB_DIR),
+        help="Persisted vector database directory for stacked_llm vector RAG",
+    )
+    p_ensemble.add_argument(
+        "--stack-rag-collection-name",
+        default=DEFAULT_RAG_COLLECTION_NAME,
+        help="Vector collection name for stacked_llm RAG",
     )
     p_ensemble.add_argument(
         "--stack-top-k-rag",

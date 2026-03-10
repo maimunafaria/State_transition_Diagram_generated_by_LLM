@@ -144,6 +144,103 @@ def retrieve_rag_context(
     return "\n\n".join(sections), trace
 
 
+def retrieve_vector_rag_context(
+    query: str,
+    top_k: int,
+    max_chars_per_doc: int,
+    rag_db_dir: Path,
+    rag_collection_name: str,
+) -> tuple[str, list[dict[str, Any]]]:
+    if top_k <= 0:
+        return "", []
+    if not rag_db_dir.exists():
+        raise FileNotFoundError(
+            f"RAG vector database not found: {rag_db_dir}. Build it with Code/Scripts/build_rag_index.py"
+        )
+
+    try:
+        import chromadb  # type: ignore
+    except ModuleNotFoundError as exc:
+        raise RuntimeError(
+            "chromadb is not installed. Install it before using --rag-mode vector."
+        ) from exc
+
+    try:
+        client = chromadb.PersistentClient(path=str(rag_db_dir))
+    except AttributeError:
+        from chromadb.config import Settings  # type: ignore
+
+        client = chromadb.Client(
+            Settings(
+                chroma_db_impl="duckdb+parquet",
+                persist_directory=str(rag_db_dir),
+            )
+        )
+
+    try:
+        collection = client.get_collection(rag_collection_name)
+    except AttributeError:
+        collection = client.get_or_create_collection(rag_collection_name)
+    except Exception as exc:  # noqa: BLE001 - backend compatibility varies
+        raise RuntimeError(
+            f"Chroma collection '{rag_collection_name}' is not available in {rag_db_dir}"
+        ) from exc
+
+    result = collection.query(query_texts=[query], n_results=top_k)
+    ids = (result.get("ids") or [[]])[0]
+    docs = (result.get("documents") or [[]])[0]
+    distances = (result.get("distances") or [[]])[0]
+
+    sections: list[str] = []
+    trace: list[dict[str, Any]] = []
+    for idx, doc_text in enumerate(docs):
+        if not doc_text:
+            continue
+        clipped = str(doc_text)[:max_chars_per_doc].strip()
+        doc_id = str(ids[idx]) if idx < len(ids) else f"doc_{idx + 1}"
+        distance = float(distances[idx]) if idx < len(distances) else None
+        sections.append(f"[{doc_id}]\n{clipped}")
+        trace.append(
+            {
+                "name": doc_id,
+                "vector_distance": distance,
+                "clipped_chars": len(clipped),
+            }
+        )
+
+    return "\n\n".join(sections), trace
+
+
+def resolve_rag_context(
+    query: str,
+    docs: list[tuple[str, str, set[str]]],
+    top_k: int,
+    max_chars_per_doc: int = 1200,
+    query_domain_hints: set[str] | None = None,
+    rag_mode: str = "lexical",
+    rag_db_dir: Path | None = None,
+    rag_collection_name: str = "uml_docs",
+) -> tuple[str, list[dict[str, Any]]]:
+    mode = rag_mode.strip().lower()
+    if mode == "vector":
+        if rag_db_dir is None:
+            raise ValueError("rag_db_dir is required when rag_mode='vector'")
+        return retrieve_vector_rag_context(
+            query=query,
+            top_k=top_k,
+            max_chars_per_doc=max_chars_per_doc,
+            rag_db_dir=rag_db_dir,
+            rag_collection_name=rag_collection_name,
+        )
+    return retrieve_rag_context(
+        query=query,
+        docs=docs,
+        top_k=top_k,
+        max_chars_per_doc=max_chars_per_doc,
+        query_domain_hints=query_domain_hints,
+    )
+
+
 def select_fewshot_examples(cases: list[Case], current_case_id: str, max_examples: int = 3) -> list[Case]:
     by_complexity: dict[str, list[Case]] = {"simple": [], "medium": [], "complex": []}
     for case in cases:
@@ -176,6 +273,9 @@ def build_generation_prompt(
     top_k_rag: int,
     rag_max_chars_per_doc: int = 1200,
     rag_domain_hints: set[str] | None = None,
+    rag_mode: str = "lexical",
+    rag_db_dir: Path | None = None,
+    rag_collection_name: str = "uml_docs",
 ) -> tuple[str, dict[str, Any]]:
     requirement = case.structured_requirement if requirement_source == "structured" else case.raw_requirement
     if not requirement.strip():
@@ -186,6 +286,7 @@ def build_generation_prompt(
         "few_shot_case_ids": [],
         "rag": {
             "enabled": bool(cfg.use_rag),
+            "mode": rag_mode,
             "top_k": top_k_rag,
             "max_chars_per_doc": rag_max_chars_per_doc,
             "query_domains": sorted(
@@ -225,12 +326,15 @@ def build_generation_prompt(
             parts.append("\n\n".join(example_texts))
 
     if cfg.use_rag:
-        rag_context, rag_trace = retrieve_rag_context(
+        rag_context, rag_trace = resolve_rag_context(
             query=requirement,
             docs=rag_docs,
             top_k=top_k_rag,
             max_chars_per_doc=rag_max_chars_per_doc,
             query_domain_hints=rag_domain_hints,
+            rag_mode=rag_mode,
+            rag_db_dir=rag_db_dir,
+            rag_collection_name=rag_collection_name,
         )
         prompt_meta["rag"]["retrieved_docs"] = rag_trace
         if rag_context:
