@@ -1,0 +1,76 @@
+{
+  "case_id": "case_63_atm_many_scenarios",
+  "timestamp_utc": "2026-04-12T22:36:20.784205+00:00",
+  "model": "llama3.1:8b",
+  "functional_requirements": [
+    {
+      "requirement": "The ATM transitions from Idle state to Waiting for PIN state when the Card Inserted event arrives.",
+      "evidence_quote": "When the Card Inserted event arrives, the ATM statechart transitions from the Idle state to the Waiting for PIN state..."
+    },
+    {
+      "requirement": "The ATM waits for customer input of PIN in the Waiting for PIN state.",
+      "evidence_quote": "...during which time the ATM is waiting for the customer to input the PIN."
+    },
+    {
+      "requirement": "The ATM transitions from Waiting for PIN state to Validating PIN state when the PIN Entered event arrives.",
+      "evidence_quote": "When the PIN Entered event arrives, the ATM transitions to the Validating PIN state."
+    },
+    {
+      "requirement": "The bank system determines whether the customer-entered PIN matches the stored PIN for this card in the Validating PIN state.",
+      "evidence_quote": "In this state the bank system determines whether the customer-entered PIN matches the stored PIN for this card..."
+    },
+    {
+      "requirement": "If the two PIN numbers match, the ATM makes the Valid PIN transition to Waiting for Customer Choice state.",
+      "evidence_quote": "...the ATM makes the Valid PIN transition to the Waiting for Customer Choice state."
+    },
+    {
+      "requirement": "If the PIN numbers do not match, the ATM makes the Invalid PIN transition to re-enter the Waiting for PIN state and prompts the customer to enter a different PIN number.",
+      "evidence_quote": "...the ATM makes the Invalid PIN transition to re-enter the Waiting for PIN state and prompts the customer to enter a different PIN number."
+    },
+    {
+      "requirement": "If the customer-entered PIN is invalid after the third attempt, the ATM makes the Third Invalid PIN transition to Confiscating state.",
+      "evidence_quote": "...if the customer-entered PIN is invalid after the third attempt, the ATM makes the Third Invalid PIN transition to the Confiscating state..."
+    },
+    {
+      "requirement": "The ATM transitions to Confiscating state if the ATM card is reported lost or stolen during card validation.",
+      "evidence_quote": "...or if the card has expired."
+    },
+    {
+      "requirement": "If the customer decides to enter Cancel in any of the three states Waiting for PIN, Validating PIN, or Waiting for Customer Choice, the statechart enters Ejecting state and the ATM card is ejected.",
+      "evidence_quote": "...the customer may decide to enter Cancel in any of the three states Waiting for PIN, Validating PIN, or Waiting for Customer Choice..."
+    },
+    {
+      "requirement": "If the PIN Entered event arrives in Idle state, it is ignored.",
+      "evidence_quote": "...if the PIN Entered event arrives in Idle state, it is ignored."
+    },
+    {
+      "requirement": "After successful PIN validation, the customer can select withdrawal from Waiting for Customer Choice state.",
+      "evidence_quote": "Next consider the case in which, after successful PIN validation, the customer decides to withdraw cash from the ATM..."
+    },
+    {
+      "requirement": "The Processing Withdrawal state is entered when the customer selects withdrawal and the Withdrawal Selected event arrives.",
+      "evidence_quote": "...the customer makes a selection – for example, the customer selects withdrawal. The statechart then receives a Withdrawal Selected event..."
+    },
+    {
+      "requirement": "If the withdrawal is approved, the statechart goes into Dispensing state where cash is dispensed.",
+      "evidence_quote": "...if the withdrawal is approved, the statechart goes into the Dispensing state, where the cash is dispensed."
+    },
+    {
+      "requirement": "The ATM transitions to Printing state when the Cash Dispensed event arrives and prints the receipt.",
+      "evidence_quote": "...When the Cash Dispensed event arrives, the ATM transitions to the Printing state to print the receipt."
+    },
+    {
+      "requirement": "The Ejecting state is entered when the receipt is printed and the card has been ejected.",
+      "evidence_quote": "...When the receipt is printed, the Ejecting state is entered. When the card has been ejected..."
+    },
+    {
+      "requirement": "The Terminating state is entered when the Card Ejected event arrives.",
+      "evidence_quote": "...as indicated by the Card Ejected event, the Terminating state is entered."
+    }
+  ],
+  "errors": {
+    "llm_extraction_error": ""
+  },
+  "prompt": "You are a requirements engineer.\nExtract functional software requirements from the source text.\n\nReturn ONLY valid JSON with this schema:\n{\n  \"functional_requirements\": [\n    {\n      \"requirement\": \"string\",\n      \"evidence_quote\": \"short exact quote from source text\"\n    }\n  ]\n}\n\nRules:\n1. Include only system capabilities/behaviors.\n2. Exclude background context, impact statements, problem motivation, and pure business goals.\n3. Keep each requirement atomic and clear.\n4. Preserve original meaning. Do not invent functionality.\n5. If uncertain, keep the item but keep evidence_quote explicit.\n\nSource text:\n<<<\nConsider an example, shown in Figure 10.1, of a partial statechart for an automated\nteller machine. The initial state of the ATM statechart is Idle. Consider the scenario\nconsisting of the customer inserting the card into the ATM, entering the PIN, and\nthen selecting cash withdrawal. When the Card Inserted event arrives, the ATM statechart transitions from the Idle state to the Waiting for PIN state, during which time\nthe ATM is waiting for the customer to input the PIN. When the PIN Entered event\narrives, the ATM transitions to the Validating PIN state. In this state the bank system\ndetermines whether the customer-entered PIN matches the stored PIN for this card,\nand whether the ATM card has been reported lost or stolen. Assuming that the card\nand PIN validation is successful (event Valid PIN), the ATM transitions into Waiting\nfor Customer Choice state.\nIt is possible to have more than one transition out of a state, with each transition\ncaused by a different event. Consider the alternative transitions that could result\nfrom PIN validation. Figure 10.2 shows three possible state transitions out of the\nValidating PIN state. If the two PIN numbers match, the ATM makes the Valid PIN transition to the Waiting\nfor Customer Choice state. If the PIN numbers do not match,\nthe ATM makes the Invalid PIN transition to re-enter the Waiting for PIN state and\nprompts the customer to enter a different PIN number. If the customer-entered PIN\nis invalid after the third attempt, the ATM makes the Third Invalid PIN transition\nto the Confiscating state, which results in the card being confiscated. The ATM also\ntransitions to the same state if the ATM card is reported lost or stolen during card\nvalidation, or if the card has expired.\nIn some cases, it is also possible for the same event to occur in different states and\nhave the same effect; an example is given in Figure 10.3. The customer may decide\nto enter Cancel in any of the three states Waiting for PIN, Validating PIN, or Waiting\nfor Customer Choice, which results in the statechart entering the Ejecting state, the\nATM card being ejected, and the transaction terminated.\nIt is also possible for the same event to occur in a different state and have a different effect. For example, if the PIN Entered event arrives in Idle state, it is ignored.\nNext consider the case in which, after successful PIN validation, the customer\ndecides to withdraw cash from the ATM, as shown in Figure 10.4. From the Waiting\nfor Customer Choice state, the customer makes a selection – for example, the customer selects withdrawal. The statechart then receives a Withdrawal Selected event,\nupon which the Processing Withdrawal state is entered. If the withdrawal is approved,\nthe statechart goes into the Dispensing state, where the cash is dispensed. When the\nCash Dispensed event arrives, the ATM transitions to the Printing state to print the\nreceipt. When the receipt is printed, the Ejecting state is entered. When the card has\nbeen ejected, as indicated by the Card Ejected event, the Terminating state is entered.\n>>>",
+  "llm_response": "Here are the extracted functional software requirements in JSON format:\n\n```\n{\n  \"functional_requirements\": [\n    {\n      \"requirement\": \"The ATM transitions from Idle state to Waiting for PIN state when the Card Inserted event arrives.\",\n      \"evidence_quote\": \"When the Card Inserted event arrives, the ATM statechart transitions from the Idle state to the Waiting for PIN state...\"\n    },\n    {\n      \"requirement\": \"The ATM waits for customer input of PIN in the Waiting for PIN state.\",\n      \"evidence_quote\": \"...during which time the ATM is waiting for the customer to input the PIN.\"\n    },\n    {\n      \"requirement\": \"The ATM transitions from Waiting for PIN state to Validating PIN state when the PIN Entered event arrives.\",\n      \"evidence_quote\": \"When the PIN Entered event arrives, the ATM transitions to the Validating PIN state.\"\n    },\n    {\n      \"requirement\": \"The bank system determines whether the customer-entered PIN matches the stored PIN for this card in the Validating PIN state.\",\n      \"evidence_quote\": \"In this state the bank system determines whether the customer-entered PIN matches the stored PIN for this card...\"\n    },\n    {\n      \"requirement\": \"If the two PIN numbers match, the ATM makes the Valid PIN transition to Waiting for Customer Choice state.\",\n      \"evidence_quote\": \"...the ATM makes the Valid PIN transition to the Waiting for Customer Choice state.\"\n    },\n    {\n      \"requirement\": \"If the PIN numbers do not match, the ATM makes the Invalid PIN transition to re-enter the Waiting for PIN state and prompts the customer to enter a different PIN number.\",\n      \"evidence_quote\": \"...the ATM makes the Invalid PIN transition to re-enter the Waiting for PIN state and prompts the customer to enter a different PIN number.\"\n    },\n    {\n      \"requirement\": \"If the customer-entered PIN is invalid after the third attempt, the ATM makes the Third Invalid PIN transition to Confiscating state.\",\n      \"evidence_quote\": \"...if the customer-entered PIN is invalid after the third attempt, the ATM makes the Third Invalid PIN transition to the Confiscating state...\"\n    },\n    {\n      \"requirement\": \"The ATM transitions to Confiscating state if the ATM card is reported lost or stolen during card validation.\",\n      \"evidence_quote\": \"...or if the card has expired.\"\n    },\n    {\n      \"requirement\": \"If the customer decides to enter Cancel in any of the three states Waiting for PIN, Validating PIN, or Waiting for Customer Choice, the statechart enters Ejecting state and the ATM card is ejected.\",\n      \"evidence_quote\": \"...the customer may decide to enter Cancel in any of the three states Waiting for PIN, Validating PIN, or Waiting for Customer Choice...\"\n    },\n    {\n      \"requirement\": \"If the PIN Entered event arrives in Idle state, it is ignored.\",\n      \"evidence_quote\": \"...if the PIN Entered event arrives in Idle state, it is ignored.\"\n    },\n    {\n      \"requirement\": \"After successful PIN validation, the customer can select withdrawal from Waiting for Customer Choice state.\",\n      \"evidence_quote\": \"Next consider the case in which, after successful PIN validation, the customer decides to withdraw cash from the ATM...\"\n    },\n    {\n      \"requirement\": \"The Processing Withdrawal state is entered when the customer selects withdrawal and the Withdrawal Selected event arrives.\",\n      \"evidence_quote\": \"...the customer makes a selection – for example, the customer selects withdrawal. The statechart then receives a Withdrawal Selected event...\"\n    },\n    {\n      \"requirement\": \"If the withdrawal is approved, the statechart goes into Dispensing state where cash is dispensed.\",\n      \"evidence_quote\": \"...if the withdrawal is approved, the statechart goes into the Dispensing state, where the cash is dispensed.\"\n    },\n    {\n      \"requirement\": \"The ATM transitions to Printing state when the Cash Dispensed event arrives and prints the receipt.\",\n      \"evidence_quote\": \"...When the Cash Dispensed event arrives, the ATM transitions to the Printing state to print the receipt.\"\n    },\n    {\n      \"requirement\": \"The Ejecting state is entered when the receipt is printed and the card has been ejected.\",\n      \"evidence_quote\": \"...When the receipt is printed, the Ejecting state is entered. When the card has been ejected...\"\n    },\n    {\n      \"requirement\": \"The Terminating state is entered when the Card Ejected event arrives.\",\n      \"evidence_quote\": \"...as indicated by the Card Ejected event, the Terminating state is entered.\"\n    }\n  ]\n}\n```"
+}

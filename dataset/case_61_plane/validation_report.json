@@ -1,0 +1,101 @@
+{
+  "case_id": "case_61_plane",
+  "timestamp_utc": "2026-04-12T22:31:12.776493+00:00",
+  "model": "llama3.1:8b",
+  "disable_llm_validator": false,
+  "deterministic_validation": {
+    "duplicates": [],
+    "ambiguities": [],
+    "potential_missing": [
+      {
+        "source_sentence": "The event is allowed if a transition (an arrow) to another state exists that is labeled with the event name, or if an internal transition exists (an entry in the lower part of the state symbol).",
+        "max_overlap": 0.13
+      },
+      {
+        "source_sentence": "In our example, a transition to another state does not exist but an internal transition does.",
+        "max_overlap": 0.111
+      },
+      {
+        "source_sentence": "In our example, we have a transition to another state, as well as an internal transition.",
+        "max_overlap": 0.118
+      },
+      {
+        "source_sentence": "Since only one transition is possible, (the plane object is supposed to be in exactly one definite state and not two) we need criteria in order to determine which transition is supposed to take place.",
+        "max_overlap": 0.185
+      },
+      {
+        "source_sentence": "We have to check if there are more flights assigned to the plane.",
+        "max_overlap": 0.083
+      },
+      {
+        "source_sentence": "In our example, neither a transition to another state nor an internal transition exists.",
+        "max_overlap": 0.111
+      },
+      {
+        "source_sentence": "In order to answer this question, we search all transitions (arrows) that go from the state in maintenance (5) to another state.",
+        "max_overlap": 0.105
+      },
+      {
+        "source_sentence": "Our example has two such transitions.",
+        "max_overlap": 0.0
+      },
+      {
+        "source_sentence": "In order to answer this question, we search for all transitions (arrows) that lead to the state ready for use (1).",
+        "max_overlap": 0.15
+      },
+      {
+        "source_sentence": "Our example has exactly one such transition.",
+        "max_overlap": 0.062
+      }
+    ],
+    "potential_hallucinations": [
+      {
+        "requirement": "The system shall inform the user if assigning a plane fails.",
+        "max_overlap": 0.083
+      }
+    ],
+    "overall_assessment": "needs_review"
+  },
+  "llm_validation": {
+    "missing_requirements": [
+      {
+        "evidence_quote": "The IT system should inform the user about the reason why assigning the plane did not work.",
+        "suggested_requirement": "The system shall provide a notification to the user when assigning a plane fails."
+      },
+      {
+        "evidence_quote": "All other events are not relevant for the plane object.",
+        "suggested_requirement": "The system shall prevent any event that is not contained in the statechart diagram of the class plane from affecting a plane object."
+      }
+    ],
+    "hallucinations": [
+      {
+        "rewritten_requirement": "The system shall allow a plane object to transition from the state in maintenance (2) to the state ready for use (1) only through the event «M» plane available.",
+        "reason": "This requirement is not supported by any evidence in the source text. The correct transition path is not specified."
+      },
+      {
+        "rewritten_requirement": "The system shall allow a plane object in the state in maintenance (5) to transition out of that state only through the events «M» plane available or «M» plane withdrawn.",
+        "reason": "This requirement is not supported by any evidence in the source text. The correct transition paths are not specified."
+      }
+    ],
+    "duplicates": [
+      {
+        "requirement_a": "The system shall allow a plane object in the state scheduled for maintenance (2) to accept the event «M» complete flight and transition to the state in maintenance (5).",
+        "requirement_b": "The system shall allow a plane object in the state scheduled for maintenance (2) accepts the event «M» complete flight and remains in the state scheduled for maintenance (2).",
+        "reason": "These two requirements are essentially the same, but with different wording."
+      }
+    ],
+    "ambiguities": [
+      {
+        "rewritten_requirement": "The system shall allow a plane object to transition from the state in maintenance (2) to the state ready for use (1) only through the event «M» plane available.",
+        "reason": "This requirement is ambiguous because it does not specify what happens if there are multiple transitions possible."
+      }
+    ],
+    "overall_assessment": "needs_review"
+  },
+  "errors": {
+    "llm_validator_error": ""
+  },
+  "prompt": "You are a strict requirements validator.\nCompare rewritten requirements against the source text.\n\nReturn ONLY valid JSON with this schema:\n{\n  \"missing_requirements\": [\n    {\n      \"evidence_quote\": \"string\",\n      \"suggested_requirement\": \"The system shall ...\"\n    }\n  ],\n  \"hallucinations\": [\n    {\n      \"rewritten_requirement\": \"string\",\n      \"reason\": \"string\"\n    }\n  ],\n  \"duplicates\": [\n    {\n      \"requirement_a\": \"string\",\n      \"requirement_b\": \"string\",\n      \"reason\": \"string\"\n    }\n  ],\n  \"ambiguities\": [\n    {\n      \"rewritten_requirement\": \"string\",\n      \"reason\": \"string\"\n    }\n  ],\n  \"overall_assessment\": \"pass|needs_review\"\n}\n\nSource text:\n<<<\nHow does a plane object in the state ready for use (1) react to the event\n«M» assign plane? In order to answer this question, we have to check first if\nthe event «M» assign plane even exists in the state ready for use (1). The\nevent is allowed if a transition (an arrow) to another state exists that is\nlabeled with the event name, or if an internal transition exists (an entry in the\nlower part of the state symbol). In our example, a transition to another state\ndoes not exist but an internal transition does. This means: A plane object in\nthe state ready for use (1) accepts the event «M» assign plane and remains\nin the state ready for use (1).\n• How does a plane object in the state scheduled for maintenance (2) react to\nthe event «M» complete flight? In order to answer this question we check\nfirst if the event «M» complete flight even exists in the state scheduled for\nmaintenance (2). In our example, we have a transition to another state, as\nwell as an internal transition. Since only one transition is possible, (the plane\nobject is supposed to be in exactly one definite state and not two) we need\ncriteria in order to determine which transition is supposed to take place.\nHere, we have the help of the guard conditions [more flights] (3) and [no\n157\nModeling IT Systems\nmore flights] (4). We have to check if there are more flights assigned to the\nplane. In our case we assume that no more flights are assigned to the plane.\nThis means: A plane object in the state scheduled for maintenance (2)\naccepts the event «M» complete flight and transitions to the state in\nmaintenance (5), since no more flights are assigned to it.\n• How does a plane object in the state scheduled for maintenance (2) react to\nthe event «M» assign flight? In order to answer this question, we check first\nif the event «M» assign flight even exists in the state scheduled for\nmaintenance (2). In our example, neither a transition to another state nor an\ninternal transition exists. This means: A plane object in the state scheduled\nfor maintenance (2) does not accept the event «M» assign plane.\n(The IT system should inform the user about the reason why assigning the\nplane did not work.)\n• Which events are relevant for a plane object? The answer is: All events that\nare contained in the statechart diagram of the class plane, meaning all events\nthat are accepted in at least one state. All other events are not relevant for the\nplane object. This means: The only events relevant for a plane object are\n«M» plane ordered, «M» plane delivered, «M» plane available, «M»\nplane not available, «M» assign plane, «M» complete flight, «M»\nscheduling plane for maintenance, and «M» plane withdrawn.\n\n• Through which event can the plane object leave the state in maintenance\n(5)? In order to answer this question, we search all transitions (arrows) that\ngo from the state in maintenance (5) to another state. Our example has two\nsuch transitions. This means: A plane object in the state in maintenance (5)\ncan only leave this state through the event «M» plane available, or «M»\nplane withdrawn.\n• Through which events does a plane object reach the state ready for use (1)?\nIn order to answer this question, we search for all transitions (arrows) that\nlead to the state ready for use (1). Our example has exactly one such\ntransition. This means: A plane object can only reach the state ready\nfor use (1) though the event «M» plane available (namely, from the\nstate in maintenance (2)).\n>>>\n\nRewritten requirements JSON:\n{\n  \"rewritten_requirements\": [\n    \"The system shall allow a plane object in the state ready for use (1) to accept the event «M» assign plane without changing its state.\",\n    \"The system shall allow a plane object in the state scheduled for maintenance (2) to accept the event «M» complete flight and transition to the state in maintenance (5).\",\n    \"The system shall prevent a plane object in the state scheduled for maintenance (2) from accepting the event «M» assign flight.\",\n    \"The system shall inform the user if assigning a plane fails.\",\n    \"The system shall allow a plane object to transition from the state in maintenance (2) to the state ready for use (1) only through the event «M» plane available.\",\n    \"The system shall allow a plane object in the state in maintenance (5) to transition out of that state only through the events «M» plane available or «M» plane withdrawn.\",\n    \"The system shall only allow the following events to affect a plane object: «M» plane ordered, «M» plane delivered, «M» plane available, «M» plane not available, «M» assign plane, «M» complete flight, «M» scheduling plane for maintenance, and «M» plane withdrawn.\"\n  ]\n}",
+  "llm_response": "After comparing the rewritten requirements against the source text, I have identified some discrepancies. Here is the JSON output:\n\n```json\n{\n  \"missing_requirements\": [\n    {\n      \"evidence_quote\": \"The IT system should inform the user about the reason why assigning the plane did not work.\",\n      \"suggested_requirement\": \"The system shall provide a notification to the user when assigning a plane fails.\"\n    },\n    {\n      \"evidence_quote\": \"All other events are not relevant for the plane object.\",\n      \"suggested_requirement\": \"The system shall prevent any event that is not contained in the statechart diagram of the class plane from affecting a plane object.\"\n    }\n  ],\n  \"hallucinations\": [\n    {\n      \"rewritten_requirement\": \"The system shall allow a plane object to transition from the state in maintenance (2) to the state ready for use (1) only through the event «M» plane available.\",\n      \"reason\": \"This requirement is not supported by any evidence in the source text. The correct transition path is not specified.\"\n    },\n    {\n      \"rewritten_requirement\": \"The system shall allow a plane object in the state in maintenance (5) to transition out of that state only through the events «M» plane available or «M» plane withdrawn.\",\n      \"reason\": \"This requirement is not supported by any evidence in the source text. The correct transition paths are not specified.\"\n    }\n  ],\n  \"duplicates\": [\n    {\n      \"requirement_a\": \"The system shall allow a plane object in the state scheduled for maintenance (2) to accept the event «M» complete flight and transition to the state in maintenance (5).\",\n      \"requirement_b\": \"The system shall allow a plane object in the state scheduled for maintenance (2) accepts the event «M» complete flight and remains in the state scheduled for maintenance (2).\",\n      \"reason\": \"These two requirements are essentially the same, but with different wording.\"\n    }\n  ],\n  \"ambiguities\": [\n    {\n      \"rewritten_requirement\": \"The system shall allow a plane object to transition from the state in maintenance (2) to the state ready for use (1) only through the event «M» plane available.\",\n      \"reason\": \"This requirement is ambiguous because it does not specify what happens if there are multiple transitions possible.\"\n    }\n  ],\n  \"overall_assessment\": \"needs_review\"\n}\n```\n\nNote that I have identified several issues with the rewritten requirements, including missing requirements, hallucinations (requirements that are not supported by any evidence in the source text), duplicates (essentially the same requirement with different wording), and ambiguities. The overall assessment is \"needs_review\" because there are significant discrepancies between the rewritten requirements and the source text.",
+  "final_assessment": "needs_review"
+}
