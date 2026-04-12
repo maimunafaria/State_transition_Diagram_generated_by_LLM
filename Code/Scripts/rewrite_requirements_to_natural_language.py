@@ -352,6 +352,41 @@ def extract_rationale(raw_text: str) -> str:
     return sentences[1] if len(sentences) > 1 else (sentences[0] if sentences else "")
 
 
+def infer_capability_sentences(raw_text: str) -> list[str]:
+    positive_re = re.compile(
+        r"\b("
+        r"allow|allows|enable|enables|support|supports|generate|generates|calculate|calculates|"
+        r"notify|notifies|update|updates|manage|manages|monitor|monitors|track|tracks|"
+        r"operate|operated|submit|submitted|cancel|cancelled|pass|passed|regulate|regulated|"
+        r"detect|detection|warn|stock|view|check|log|register|issue|search|replace|remove|add|place|create|"
+        r"transition|transitions|enter|enters|reenter|reenters|leave|leaves|open|opens|close|closes|"
+        r"press|presses|input|inputs|expire|expires"
+        r")\b",
+        re.IGNORECASE,
+    )
+    negative_re = re.compile(
+        r"^(in our|the outcome|as the|conventional|the demand|there is|this case study|with the current|"
+        r"as a second example|consider a scenario)",
+        re.IGNORECASE,
+    )
+
+    candidates: list[str] = []
+    for sent in sentence_split(raw_text):
+        clean = clean_clause(sent)
+        if not clean:
+            continue
+        low = clean.lower()
+        if "figure" in low:
+            continue
+        if negative_re.search(low):
+            continue
+        if "need to" in low and not positive_re.search(low):
+            continue
+        if positive_re.search(low) or re.search(r"\bto\s+[a-z]+\b", low):
+            candidates.append(clean)
+    return dedupe_keep_order(candidates)
+
+
 def format_shall(name: str, description: str) -> str:
     desc = clean_clause(description)
     if not desc:
@@ -398,6 +433,15 @@ def format_shall(name: str, description: str) -> str:
         return ensure_period(f"The system shall allow {desc}")
     if re.match(r"^[a-z]+ing\b", low):
         return ensure_period(f"The system shall allow {desc}")
+    if re.match(
+        r"^(details?|street lights?|traffic lights?|license|number plate|violations?|signals?)\b",
+        low,
+    ):
+        return ensure_period(f"The system shall ensure that {desc}")
+    if re.search(r"\b(regulate|regulated|operate|operated|submit|submitted|pass|passed|cancel|cancelled)\b", low):
+        return ensure_period(f"The system shall ensure that {desc}")
+    if re.search(r"\b(is|are|will be|shall be)\b", low):
+        return ensure_period(f"The system shall ensure that {desc}")
     return ensure_period(f"The system shall support {desc}")
 
 
@@ -447,12 +491,16 @@ def build_polished_text(case_dir: Path) -> str:
     for feat in features:
         reqs.append(format_shall(feat["name"], feat["description"]))
 
+    inferred = infer_capability_sentences(raw_text)
     if not reqs:
-        for sent in sentence_split(raw_text):
-            low = sent.lower()
-            if any(k in low for k in ("allow", "enable", "support", "generate", "calculate", "notify", "update", "manage", "monitor", "track")):
-                reqs.append(format_shall("", sent))
-            if len(reqs) >= 10:
+        for sent in inferred[:15]:
+            reqs.append(format_shall("", sent))
+    elif len(reqs) < 5:
+        for sent in inferred:
+            req = format_shall("", sent)
+            if canonical(req) not in {canonical(x) for x in reqs}:
+                reqs.append(req)
+            if len(reqs) >= 12:
                 break
 
     reqs = dedupe_keep_order(reqs)
