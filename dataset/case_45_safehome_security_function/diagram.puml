@@ -1,14 +1,62 @@
 @startuml
+title State Diagram for SafeHome Security Function
 
-' Placeholder diagram for EXAMPLE_45 - SafeHome Security Function
-' TODO: replace this with the final diagram derived from the case image.
+[*] --> Resetting : Start/stop switch power "on"
 
-[*] --> Start
+state Resetting {
+}
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+Resetting : entry / set systemStatus "inactive"
+Resetting : entry / set displayMsg1 "Starting system"
+Resetting : entry / set displayMsg2 "Please wait"
+Resetting : entry / set displayStatus slowBlinking
+Resetting : do / run diagnostics
 
-Start --> [*] : complete
+state Idle {
+}
+
+Idle : entry / set systemStatus "inactive"
+Idle : entry / set displayMsg1 "Ready"
+Idle : entry / set displayMsg2 ""
+Idle : entry / set displayStatus steady
+Idle : do / handleKey
+
+state "MonitoringSystemStatus" as Monitoring {
+}
+
+Monitoring : entry / set systemStatus "monitoring"
+Monitoring : entry / set displayMsg1 "Armed"
+Monitoring : entry / set displayMsg2 ""
+Monitoring : entry / set displayStatus steady
+Monitoring : do / monitorAndControlSystem
+Monitoring : do / handleKey
+
+state "ActingOnAlarm" as Acting {
+}
+
+Acting : entry / set systemStatus "monitorAndAlarm"
+Acting : entry / set displayMsg1 "ALARM"
+Acting : entry / set displayMsg2 triggeringSensor
+Acting : entry / set displayStatus fastBlinking
+Acting : do / monitorAndControlSystem
+Acting : do / soundAlarm
+Acting : do / notifyAlarmResponders
+Acting : do / handleKey
+
+' Transitions
+Resetting --> Idle : systemOK
+Resetting --> [*] : failureDetected / set displayMsg2 "contact Vendor"
+
+Idle --> Resetting : Reset
+Idle --> Monitoring : Activate
+Idle --> [*] : off / powerOff
+
+Monitoring --> Acting : sensorTriggered / startTimer
+Monitoring --> Idle : deactivatePassword
+
+Acting --> Monitoring : falseAlarm
+Acting --> Monitoring : timeOut
+Acting --> Idle : deactivatePassword
+Acting --> Acting : sensorTriggered / restartTimer
 
 @enduml

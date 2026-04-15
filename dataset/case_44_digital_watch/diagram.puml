@@ -1,14 +1,59 @@
 @startuml
+title State Diagram of Watch with Concurrent Regions
 
-' Placeholder diagram for EXAMPLE_44 - Digital watch
-' TODO: replace this with the final diagram derived from the case image.
+state Watch {
 
-[*] --> Start
+  state TimeSetting {
+    [*] --> Display
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+    state Display
+    state "Change Hour" as ChangeHour
+    state "Change minutes" as ChangeMinute
+    state "Change alarm hour" as ChangeAlarmHour
+    state "Change alarm minute" as ChangeAlarmMinute
 
-Start --> [*] : complete
+    Display --> ChangeHour : pressMode
+    ChangeHour --> ChangeMinute : pressMode
+    ChangeMinute --> ChangeAlarmHour : pressMode
+    ChangeAlarmHour --> ChangeAlarmMinute : pressMode
+    ChangeAlarmMinute --> Display : pressMode
+
+    ChangeHour --> ChangeHour : pressAdvance / currentHour++
+    ChangeMinute --> ChangeMinute : pressAdvance / currentMinute++
+    ChangeAlarmHour --> ChangeAlarmHour : pressAdvance / alarmHour++
+    ChangeAlarmMinute --> ChangeAlarmMinute : pressAdvance / alarmMinute++
+  }
+
+  --
+
+  state AlarmSystem {
+    [*] --> Unprepared
+
+    state Unprepared
+    state Prepared
+    state Ringing
+
+    Ringing : do / ring
+
+    Unprepared --> Prepared : pressAlarm
+    Prepared --> Unprepared : pressAlarm
+    Prepared --> Ringing : when(currentHour==alarmHour AND currentMinute==alarmMinute)
+    Ringing --> Prepared : pressAlarm
+    Ringing --> Unprepared : pressAlarm
+  }
+
+  --
+
+  state LightSystem {
+    state "Turned off" as Off
+    state "Turned on" as On
+
+    [*] --> Off
+    Off --> On : pressLight
+    On --> Off : releaseLight
+
+    On : do / lightWatchFace
+  }
+}
 
 @enduml

@@ -1,14 +1,33 @@
 @startuml
+title Complete state diagram of the training request
 
-' Placeholder diagram for EXAMPLE_41 - information system
-' TODO: replace this with the final diagram derived from the case image.
+[*] --> Creation
 
-[*] --> Start
+state Creation
+state "WaitingForAcknowledgement" as WaitingAck
+state SearchForSession
+state "WaitingForEnrolment" as WaitingEnrolment
+state Satisfied
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+state rejected <<final>>
+state cancelled <<final>>
+state completed <<final>>
 
-Start --> [*] : complete
+Creation --> WaitingAck : validate / send personincharge.self
+Creation --> cancelled : cancel
+
+WaitingAck --> rejected : reject / send employee.rejection
+WaitingAck --> SearchForSession : accept / send employee.agreement
+WaitingAck --> cancelled : cancel
+
+SearchForSession --> WaitingEnrolment : sessionChoice / send body.order
+SearchForSession --> cancelled : cancel
+
+WaitingEnrolment --> Satisfied : enrolment / send employee.confirmation
+WaitingEnrolment --> cancelled : cancel / send body.cancellation
+
+Satisfied --> WaitingEnrolment : cancelSession / send employee.cancellation
+Satisfied --> cancelled : cancel / send body.cancellation
+Satisfied --> completed : endSession
 
 @enduml
