@@ -1,14 +1,111 @@
 @startuml
+title UML State Machine Diagram
 
-' Placeholder diagram for EXAMPLE_18 - for Online College Magazine System
-' TODO: replace this with the final diagram derived from the case image.
+' -----------------------------
+' Initial flow
+' -----------------------------
+[*] --> C1
 
-[*] --> Start
+state C1 <<choice>>
+C1 --> Register
+C1 --> Login
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+state Register
+Register : do / Fill details
+Register : exit / Registration successful
 
-Start --> [*] : complete
+state Login
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+' -----------------------------
+' After register/login
+' -----------------------------
+state C2 <<choice>>
+
+Register --> C2
+Login --> C2
+
+C2 --> ManageProfiles
+C2 --> InvalidUser
+C2 --> Writing
+C2 --> Editing
+
+' -----------------------------
+' Upper branch
+' -----------------------------
+state ManageProfiles
+ManageProfiles : entry / Admin logged in
+ManageProfiles : do / Manage profile in database
+ManageProfiles : do / Add, delete or edit profiles if necessary
+ManageProfiles : exit / Action completed
+
+state InvalidUser
+InvalidUser : entry / Invalid login or invalid registration
+InvalidUser : do / Block entry to system
+InvalidUser : exit / Abnormal termination
+
+state Abort <<choice>>
+
+ManageProfiles --> Publishing
+InvalidUser --> Abort
+
+' -----------------------------
+' Writing/editing/publishing
+' -----------------------------
+state Writing
+Writing : entry / Writer logged in
+Writing : do / Write article
+Writing : exit / Send to editor
+
+state Editing
+Editing : entry / Editor logged in and article to be edited
+Editing : do / Edit article
+Editing : exit / Send to moderator/admin
+
+state Publishing
+Publishing : entry / Admin logged in and an article to be approved
+Publishing : do / Choose to approve and publish or reject article
+Publishing : do / Add article to database if approved
+Publishing : exit / Publish article
+
+Writing --> Editing
+Editing --> Publishing
+
+' -----------------------------
+' Reading/search/feedback
+' -----------------------------
+state Reading
+Reading : entry / Published article
+Reading : do / Read article
+Reading : exit / Completed reading
+
+state Search
+Search : entry / Choose to search for articles
+Search : do / Read searched articles
+Search : exit / Completed reading
+
+state Feedback
+Feedback : entry / Reader chosen to give feedback
+Feedback : do / Get feedback
+Feedback : exit / Feedback entry successful
+
+Publishing --> Reading
+Publishing --> Search
+
+state C3 <<choice>>
+Reading --> C3
+Search --> C3
+C3 --> Feedback
+Feedback --> C3
+
+' -----------------------------
+' Final flow
+' -----------------------------
+state J1 <<choice>>
+C3 --> J1
+Search --> J1
+J1 --> [*]
 
 @enduml

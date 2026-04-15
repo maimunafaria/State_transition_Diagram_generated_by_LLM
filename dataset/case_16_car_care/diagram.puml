@@ -1,14 +1,152 @@
 @startuml
+title UML State Machine Diagram (Service Center System)
 
-' Placeholder diagram for EXAMPLE_13 - Car Care
-' TODO: replace this with the final diagram derived from the case image.
+'------------------------
+' Initial branching
+'------------------------
+[*] --> PortalChoice
 
-[*] --> Start
+state PortalChoice <<choice>>
+PortalChoice --> ServiceCenterPath : [Service Center Portal]
+PortalChoice --> CarOwnerPath : [Car Owner Portal]
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+'========================
+' SERVICE CENTER FLOW
+'========================
 
-Start --> [*] : complete
+state ServiceCenterPath <<choice>>
+ServiceCenterPath --> SC_Register : [New Service Center]
+ServiceCenterPath --> SC_Login : [Registered Service center]
+
+state "Service Center Registration" as SC_Register
+SC_Register : entry / Unregistered service center
+SC_Register : do / Enter Valid Credentials
+SC_Register : exit / Account registered
+
+state "Service center Verification" as SC_Verify
+SC_Verify : entry / Service Center account registered
+SC_Verify : do / Verify Service center
+SC_Verify : exit / Login Service center
+
+SC_Register --> SC_Verify
+
+state "Service Center Login" as SC_Login
+SC_Login : entry / Verified Service center
+SC_Login : do / Authenticate Service Center
+SC_Login : exit / Logged in Successfully
+
+SC_Verify --> SC_Login
+
+state "Service center Home" as SC_Home
+SC_Home : entry / Logged in Service Center
+SC_Home : do / Display home page
+SC_Home : do / Select damaged parts list
+SC_Home : do / Updating Information list
+
+SC_Login --> SC_Home
+
+'--- Service center actions ---
+state SC_Choice <<choice>>
+
+SC_Home --> SC_Choice
+
+state "Updating parts information" as UpdateParts
+UpdateParts : entry / Update changed parts information
+UpdateParts : do / Update Information
+UpdateParts : exit / Return to Service center home page
+
+state "Entering Damaged parts list" as DamagedParts
+DamagedParts : entry / To Enter Damaged parts list
+DamagedParts : do / Prepare damaged parts list
+DamagedParts : exit / Return to service center home page
+
+state "Service center Home page" as SC_HomePage
+SC_HomePage : entry / To view expiry notification
+SC_HomePage : do / Send service request to Car owner
+SC_HomePage : exit / Return to Service center home page
+
+state "Logout" as Logout
+Logout : entry / To Logout
+Logout : do / Logout
+Logout : exit / Logged out Successfully
+
+SC_Choice --> UpdateParts
+SC_Choice --> DamagedParts
+SC_Choice --> SC_HomePage
+SC_Choice --> Logout
+
+Logout --> [*]
+
+'========================
+' CAR OWNER FLOW
+'========================
+
+state CarOwnerPath <<choice>>
+CarOwnerPath --> CO_Register : [New Car Owner]
+CarOwnerPath --> CO_Login : [Registered Car Owner]
+
+state "Car owner Registration" as CO_Register
+CO_Register : entry / Unregistered Car Owner
+CO_Register : do / Enter Valid Credentials
+CO_Register : exit / Account registered
+
+state "Car owner Verification" as CO_Verify
+CO_Verify : entry / Car Owner account registered
+CO_Verify : do / Verify Car owner
+CO_Verify : exit / Login Car Owner
+
+CO_Register --> CO_Verify
+
+state "Car Owner Login" as CO_Login
+CO_Login : entry / Verified Car Owner
+CO_Login : do / Authenticate Car owner
+CO_Login : exit / Logged in Successfully
+
+CO_Verify --> CO_Login
+
+state "Car Owner Home" as CO_Home
+CO_Home : entry / Logged in Car Owner
+CO_Home : do / Display home page
+CO_Home : do / View service information
+CO_Home : exit / Report
+
+CO_Login --> CO_Home
+
+'--- Car owner actions ---
+state CO_Choice <<choice>>
+CO_Home --> CO_Choice
+
+state "Report" as Report
+Report : entry / To Report Service center
+Report : do / Enter the report
+Report : exit / Return to car owner home page
+
+state "View Parts Information" as ViewParts
+ViewParts : entry / To view parts information
+ViewParts : do / View car parts information
+ViewParts : exit / Return to Car Owner home page
+
+state "Service" as Service
+Service : entry / Service request from service center
+Service : do / Accept or deny request
+Service : exit / Return to Car Owner home page
+
+state "Choose parts" as ChooseParts
+ChooseParts : entry / To choose selected parts
+ChooseParts : do / Choose parts to be serviced
+ChooseParts : exit / Return to service page
+
+state "Make Payment" as Payment
+Payment : entry / To make payments
+Payment : do / Make payments
+Payment : exit / Return to Service page
+
+CO_Choice --> Report
+CO_Choice --> ViewParts
+CO_Choice --> Service
+
+Service --> ChooseParts
+ChooseParts --> Payment
+Payment --> CO_Home
 
 @enduml

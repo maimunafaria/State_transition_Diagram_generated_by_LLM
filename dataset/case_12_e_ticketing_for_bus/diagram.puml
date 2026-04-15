@@ -1,14 +1,97 @@
 @startuml
+title UML State Machine Diagram (Booking System)
 
-' Placeholder diagram for EXAMPLE_04 - E-Ticketing for Bus
-' TODO: replace this with the final diagram derived from the case image.
+'-----------------------
+' Initial branching
+'-----------------------
+[*] --> UserType
 
-[*] --> Start
+state UserType <<choice>>
+UserType --> Register : [New user]
+UserType --> System : [Existing user]
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+'-----------------------
+' Registration
+'-----------------------
+state Register
+Register : entry / When a passenger is new
+Register : do / Registration process
+Register : do / Add personal details
+Register : exit / Valid Registration
 
-Start --> [*] : complete
+Register --> System
+
+'-----------------------
+' MAIN SYSTEM (Composite State)
+'-----------------------
+state "Booking System" as System {
+
+    [*] --> Choice1
+
+    state Choice1 <<choice>>
+
+    Choice1 --> CheckStatus : [Check status]
+    Choice1 --> Reservation : [Reserve ticket]
+    Choice1 --> ManageAccount : [Modify account]
+
+    '-------------------
+    ' Check Status
+    '-------------------
+    state CheckStatus
+    CheckStatus : entry / User checks status
+    CheckStatus : do / Status process
+    CheckStatus : exit / Go back
+
+    CheckStatus --> Choice1
+
+    '-------------------
+    ' Reservation
+    '-------------------
+    state Reservation
+    Reservation : entry / Reserve ticket
+    Reservation : do / Reservation process
+    Reservation : exit / After booking
+
+    state Confirm
+    Confirm : entry / After confirming
+    Confirm : do / Confirmation process
+    Confirm : exit / Ticket confirmed
+
+    state Payment
+    Payment : entry / Ticket confirmed
+    Payment : do / Payment process
+    Payment : exit / Logout
+
+    Reservation --> Confirm
+    Confirm --> Payment
+    Payment --> EndInside
+
+    '-------------------
+    ' Manage Account
+    '-------------------
+    state ManageAccount
+    ManageAccount : entry / Modify account
+    ManageAccount : do / Account edit/delete
+    ManageAccount : exit / Logout
+
+    ManageAccount --> EndInside
+
+    '-------------------
+    ' Internal End
+    '-------------------
+    state EndInside <<choice>>
+    EndInside --> [*]
+}
+
+'-----------------------
+' Logout (outside system)
+'-----------------------
+state Logout
+Logout : entry / End booking transaction
+Logout : do / Logout
+Logout : exit / User logged out
+
+System --> Logout
+Logout --> [*]
 
 @enduml

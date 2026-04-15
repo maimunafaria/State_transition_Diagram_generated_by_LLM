@@ -1,14 +1,119 @@
 @startuml
+title UML State Machine Diagram (Certificate System)
 
-' Placeholder diagram for EXAMPLE_07 - DigiDocLocker
-' TODO: replace this with the final diagram derived from the case image.
+'-----------------------
+' Initial
+'-----------------------
+[*] --> ValidateUser
 
-[*] --> Start
+state "validate the type of user" as ValidateUser
+ValidateUser : entry / Enter the User Details
+ValidateUser : do / Validate the Login Details
+ValidateUser : exit / User Operation or Registrar Operation
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+'-----------------------
+' Registration / Login
+'-----------------------
+state Choice1 <<choice>>
+ValidateUser --> Choice1
 
-Start --> [*] : complete
+Choice1 --> Register : [New Operation]
+Choice1 --> Login : [Existing User]
+
+state Register
+Register : entry / Fill the Registration Details
+Register : do / Validate the Register Details
+Register : exit / Registration Successful
+
+state InvalidReg
+InvalidReg : entry / Invalid Registration
+InvalidReg : do / Reject
+InvalidReg : exit / End
+
+Register --> Login : [Valid Registration]
+Register --> InvalidReg : [Invalid Registration]
+
+state Login
+Login : entry / Enter the Login Details
+Login : do / Validate the Login Details
+Login : exit / Login Successful
+
+state InvalidLogin
+InvalidLogin : entry / Invalid Login
+InvalidLogin : do / Reject Login
+InvalidLogin : exit / End
+
+Login --> InvalidLogin : [Invalid Login]
+
+'-----------------------
+' After Login
+'-----------------------
+state Choice2 <<choice>>
+Login --> Choice2 : [Valid Login]
+
+Choice2 --> UploadDocs
+Choice2 --> ViewProfile
+Choice2 --> ApplyCert
+
+'-----------------------
+' Left branch
+'-----------------------
+state "Upload Document" as UploadDocs
+UploadDocs : entry / Upload the Documents
+UploadDocs : do / Validate Documents
+UploadDocs : exit / Move to End
+
+state "View Profile" as ViewProfile
+ViewProfile : entry / View Profile
+ViewProfile : do / Display the Profile
+ViewProfile : exit / Move to End
+
+'-----------------------
+' Apply Certificate Flow
+'-----------------------
+state "Apply for a Certificate" as ApplyCert
+ApplyCert : entry / Apply for certificate
+ApplyCert : do / Fill Application Form
+ApplyCert : exit / Send Request
+
+state Choice3 <<choice>>
+ApplyCert --> Choice3
+
+Choice3 --> IssueCert : [Approved]
+Choice3 --> RegistrarOp : [Registrar Operation]
+
+state "Certificate Issued" as IssueCert
+IssueCert : entry / Issue Certificate
+IssueCert : do / Update Certificate Database
+IssueCert : exit / Move to End
+
+'-----------------------
+' Registrar flow
+'-----------------------
+state "Request to another Certificate" as RegistrarOp
+RegistrarOp : entry / Request verification
+RegistrarOp : do / Send request to DigiLocker
+RegistrarOp : exit / Wait for response
+
+state "DigiLocker provides the Certificate" as DigiLocker
+DigiLocker : entry / Provide Certificate
+DigiLocker : do / Validate Certificate
+DigiLocker : exit / Certificate Ready
+
+RegistrarOp --> DigiLocker
+DigiLocker --> IssueCert
+
+'-----------------------
+' Final merge
+'-----------------------
+state EndMerge <<choice>>
+
+UploadDocs --> EndMerge
+ViewProfile --> EndMerge
+IssueCert --> EndMerge
+InvalidReg --> EndMerge
+InvalidLogin --> EndMerge
+
+EndMerge --> [*]
 
 @enduml

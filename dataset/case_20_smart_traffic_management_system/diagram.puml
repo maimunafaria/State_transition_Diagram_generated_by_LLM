@@ -1,14 +1,137 @@
 @startuml
+title UML State Machine Diagram (Traffic Control & Violation System)
 
-' Placeholder diagram for EXAMPLE_20 - Smart Traffic Management System
-' TODO: replace this with the final diagram derived from the case image.
+[*] --> Idle
 
-[*] --> Start
+'-----------------------
+' Idle → Traffic Analysis
+'-----------------------
+state Idle
+Idle : entry / road empty
+Idle : do / remain same
+Idle : exit / people waiting to cross
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+Idle --> AnalyseTraffic
 
-Start --> [*] : complete
+state "Analyse traffic flow" as AnalyseTraffic
+AnalyseTraffic : entry / encounter vehicle
+AnalyseTraffic : do / analyse traffic density
+AnalyseTraffic : do / people waiting to cross road
+AnalyseTraffic : exit / emergency situation
+
+'-----------------------
+' Traffic Decisions
+'-----------------------
+state ChoiceTraffic <<choice>>
+
+AnalyseTraffic --> ChoiceTraffic
+
+ChoiceTraffic --> SmartLights : [low traffic]
+ChoiceTraffic --> Pedestrian : [pedestrian waiting]
+ChoiceTraffic --> TrafficSignal : [signal empty]
+
+state "smart lights" as SmartLights
+SmartLights : entry / population density
+SmartLights : do / turn on/off street lights
+SmartLights : exit / density zero
+
+state "Pedestrians detection" as Pedestrian
+Pedestrian : entry / pedestrians waiting
+Pedestrian : do / change signal to red
+Pedestrian : exit / pedestrians crossed
+
+state "Traffic signal" as TrafficSignal
+TrafficSignal : entry / vehicles at signal
+TrafficSignal : do / read number plate
+TrafficSignal : exit / vehicle crossed
+
+'-----------------------
+' Emergency handling
+'-----------------------
+state "Medical Emergency" as Emergency
+Emergency : entry / emergency situation
+Emergency : do / call medical assistance
+
+AnalyseTraffic --> Emergency : [emergency situation]
+
+'-----------------------
+' Number plate + penalty
+'-----------------------
+state "Number plate recognition" as NPR
+NPR : entry / number plate captured
+NPR : do / get driver details
+NPR : exit / penalty check
+
+TrafficSignal --> NPR
+Emergency --> NPR
+
+state "penalty check" as PenaltyCheck
+PenaltyCheck : entry / law violation
+PenaltyCheck : do / check violation count
+
+NPR --> PenaltyCheck
+
+'-----------------------
+' Violation Types
+'-----------------------
+state ChoiceViolation <<choice>>
+PenaltyCheck --> ChoiceViolation
+
+ChoiceViolation --> Speeding : [speeding]
+ChoiceViolation --> Seatbelt : [seat belt]
+ChoiceViolation --> Helmet : [helmet]
+ChoiceViolation --> EndNoViolation : [no violations]
+
+state "speeding" as Speeding
+Speeding : entry / exceeding speed limit
+Speeding : do / violation count +1
+
+state "seat belt violation" as Seatbelt
+Seatbelt : entry / not wearing seat belt
+Seatbelt : do / violation count +1
+
+state "helmet violation" as Helmet
+Helmet : entry / not wearing helmet
+Helmet : do / violation count +1
+
+state EndNoViolation <<choice>>
+EndNoViolation --> [*]
+
+' Merge violations
+state MergeViolation <<choice>>
+Speeding --> MergeViolation
+Seatbelt --> MergeViolation
+Helmet --> MergeViolation
+
+'-----------------------
+' Fine processing
+'-----------------------
+state "fine payment" as Fine
+Fine : entry / impose penalty
+Fine : do / payment processing
+
+MergeViolation --> Fine
+
+state ChoicePayment <<choice>>
+Fine --> ChoicePayment
+
+ChoicePayment --> Warning : [not paid]
+ChoicePayment --> HoldLicense : [violation count > 3]
+ChoicePayment --> EndPaid : [paid]
+
+state "warning" as Warning
+Warning : entry / not paid
+Warning : do / send notice
+
+state "Hold license" as HoldLicense
+HoldLicense : entry / violation count > 3
+HoldLicense : do / temporary cancellation
+HoldLicense : exit / repayment
+
+state EndPaid <<choice>>
+EndPaid --> [*]
+
+Warning --> [*]
+HoldLicense --> [*]
 
 @enduml

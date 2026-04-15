@@ -1,0 +1,92 @@
+@startuml
+title UML State Machine Diagram (Upload or Accept Request)
+
+state "Upload or Accept request" as UAR {
+
+    [*] --> ChoiceUser
+
+    ' Entry / do / exit
+    UAR : entry / Regarding request details
+    UAR : do / Project dealings
+    UAR : exit / After finishing rating
+
+    '-----------------------
+    ' User type decision
+    '-----------------------
+    state ChoiceUser <<choice>>
+
+    ChoiceUser --> EnterDetails : [user = BPO organization]
+    ChoiceUser --> SearchCategory : [user = client]
+
+    '-----------------------
+    ' BPO flow
+    '-----------------------
+    state "Enter project details" as EnterDetails
+    state "Update database" as UpdateDB
+
+    EnterDetails --> UpdateDB
+    UpdateDB --> [*]
+
+    '-----------------------
+    ' Client flow
+    '-----------------------
+    state "Search project category" as SearchCategory
+    state ChoiceBPO <<choice>>
+    state ChoiceClient <<choice>>
+
+    SearchCategory --> ChoiceBPO
+
+    ChoiceBPO --> EndDecline : [BPO org declines]
+    ChoiceBPO --> ChoiceClient : [BPO org accepts]
+
+    ChoiceClient --> EndReject : [client rejects]
+    ChoiceClient --> UpdateStatus : [client accepts]
+
+    state EndDecline <<choice>>
+    EndDecline --> [*]
+
+    state EndReject <<choice>>
+    EndReject --> [*]
+
+    '-----------------------
+    ' Project execution
+    '-----------------------
+    state "Update status of project" as UpdateStatus
+
+    state ChoiceTracking <<choice>>
+
+    UpdateStatus --> ChoiceTracking
+
+    ChoiceTracking --> DisplayProgress : [client wishes to track]
+    ChoiceTracking --> UpdateProgress : [user = BPO org]
+
+    state "Display progress" as DisplayProgress
+    DisplayProgress --> [*]
+
+    state "Update progress" as UpdateProgress
+
+    '-----------------------
+    ' Completion flow
+    '-----------------------
+    UpdateProgress --> UploadFinal : [End of project]
+
+    state "Upload final project" as UploadFinal
+
+    state QualityCheck <<choice>>
+
+    UploadFinal --> QualityCheck : [Quality check]
+
+    QualityCheck --> Payment : [satisfied]
+    QualityCheck --> UpdateProgress : [Not satisfied]
+
+    state Payment
+    state Shipment
+    state Rating
+
+    Payment --> Shipment
+    Shipment --> Rating
+
+    Rating --> [*]
+}
+
+@enduml

@@ -1,14 +1,85 @@
 @startuml
+title UML State Machine Diagram
 
-' Placeholder diagram for EXAMPLE_14 - E-Ration Shop
-' TODO: replace this with the final diagram derived from the case image.
+'-----------------------
+' Initial state
+'-----------------------
+[*] --> C1
 
-[*] --> Start
+state C1 <<choice>>
+C1 --> Auth : [possibilities to start]
+C1 --> Complaints
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+'-----------------------
+' Authentication
+'-----------------------
+state "Authentication of aadhar card by OTP" as Auth
+Auth : entry / card holder
+Auth : do / Generates OTP
+Auth : do / OTP should match
+Auth : exit / authentication completed
 
-Start --> [*] : complete
+state Complaints
+Complaints : entry / fill
+Complaints : do / raise a complaint
+Complaints : exit / complaint send
+
+Complaints --> [*]
+
+'-----------------------
+' Shopping flow
+'-----------------------
+Auth --> ViewItems
+
+state "View items" as ViewItems
+ViewItems : entry / from Authentication
+ViewItems : do / items shown based on category
+ViewItems : do / select items required
+ViewItems : exit / after selecting
+
+ViewItems --> Purchase
+
+state "make purchase" as Purchase
+Purchase : entry / from view items
+Purchase : do / payment
+Purchase : exit / chose the mode of payment
+
+'-----------------------
+' Payment choice
+'-----------------------
+state C2 <<choice>>
+Purchase --> C2 : [possibilities for payment]
+
+state PAYTM
+PAYTM : entry / make purchase
+PAYTM : do / making payment
+PAYTM : exit / payment done
+
+state COD
+COD : entry / make purchase
+COD : do / making payment
+COD : exit / payment done
+
+C2 --> PAYTM
+C2 --> COD
+
+'-----------------------
+' Merge after payment
+'-----------------------
+state C3 <<choice>>
+PAYTM --> C3
+COD --> C3
+
+C3 --> Delivery : [payment completed]
+
+'-----------------------
+' Delivery
+'-----------------------
+state Delivery
+Delivery : entry / COD
+Delivery : entry / PAYTM
+Delivery : do / product delivered
+
+Delivery --> [*]
 
 @enduml

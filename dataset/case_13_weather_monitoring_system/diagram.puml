@@ -1,14 +1,103 @@
 @startuml
+title UML State Machine Diagram (Location Tracking System)
 
-' Placeholder diagram for EXAMPLE_05 - Weather Monitoring System
-' TODO: replace this with the final diagram derived from the case image.
+'-----------------------
+' Initial Flow
+'-----------------------
+[*] --> Register
 
-[*] --> Start
+state Register
+Register : entry / User registration
+Register : do / Validate user credentials
+Register : exit / Registration successful
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+Register --> Login : [valid]
+Register --> [*] : [invalid]
 
-Start --> [*] : complete
+state Login
+Login : entry / User login
+Login : do / Authenticate user
+Login : exit / Login success
+
+Login --> NewLocation
+
+'-----------------------
+' Location Handling
+'-----------------------
+state "New Location" as NewLocation
+NewLocation : entry / Detect new beacon/location
+NewLocation : do / Compare with previous location
+NewLocation : exit / Location updated
+
+state "Visited Place" as Visited
+Visited : entry / Mark visited
+Visited : do / Store visit history
+Visited : exit / Ready for measurement
+
+NewLocation --> Visited
+
+'-----------------------
+' Measurements
+'-----------------------
+state "Measure Temperature" as Temp
+state "Measure Humidity" as Hum
+state "Measure Noise" as Noise
+state "Measure Crowd" as Crowd
+
+Visited --> Temp
+Visited --> Hum
+Visited --> Noise
+Visited --> Crowd
+
+state Merge1 <<choice>>
+
+Temp --> Merge1
+Hum --> Merge1
+Noise --> Merge1
+Crowd --> Merge1
+
+'-----------------------
+' Upload Data
+'-----------------------
+state "Upload to server" as Upload
+Upload : entry / Send collected data
+Upload : do / Store in database
+Upload : exit / Data uploaded
+
+Merge1 --> Upload
+
+'-----------------------
+' Risk Analysis
+'-----------------------
+state ChoiceRisk <<choice>>
+Upload --> ChoiceRisk
+
+state "Safe" as Safe
+state "Risky situation" as Risk
+state "Alert" as Alert
+state "Graph" as Graph
+state "Future Prediction" as Prediction
+
+ChoiceRisk --> Safe
+ChoiceRisk --> Risk
+
+Risk --> Alert
+Risk --> Graph
+Risk --> Prediction
+
+Safe --> Display
+Alert --> Display
+Graph --> Display
+Prediction --> Display
+
+'-----------------------
+' Display Results
+'-----------------------
+state Display
+Display : entry / Show result
+Display : do / Display risk / prediction
+Display : exit / Done
+
+Display --> [*]
 
 @enduml
