@@ -1,14 +1,82 @@
 @startuml
+title UML State Chart Diagram
 
-' Placeholder diagram for EXAMPLE_31 - Farm Management System
-' TODO: replace this with the final diagram derived from the case image.
+'========================
+' Start
+'========================
+[*] --> UserLogin
 
-[*] --> Start
+state "user login" as UserLogin
+UserLogin : entry / enter login
+UserLogin : do / authenticate
+UserLogin : exit / successfully logged in
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+UserLogin --> UserHome
 
-Start --> [*] : complete
+'========================
+' Home
+'========================
+state "user home" as UserHome
+UserHome : entry / user logged in
+UserHome : do / select options
+UserHome : exit / conditions
+
+state HomeChoice <<choice>>
+UserHome --> HomeChoice
+
+state logout
+logout : entry / to logout
+logout : do / logout user
+logout : exit / user logged out
+
+state "market conditions" as MarketConditions
+MarketConditions : entry / view market conditions
+MarketConditions : do / gather reports
+MarketConditions : exit / show report
+
+state "crop suitable based on soil" as CropSuggestion
+state "soil condition" as SoilCondition
+state "weather insights" as WeatherInsights
+state "labour availability" as LabourAvailability
+
+HomeChoice --> logout
+HomeChoice --> MarketConditions
+HomeChoice --> CropSuggestion
+HomeChoice --> SoilCondition
+HomeChoice --> WeatherInsights
+HomeChoice --> LabourAvailability
+
+logout --> [*]
+
+'========================
+' Market flow
+'========================
+state "market conditions report" as MarketReport
+MarketConditions --> MarketReport
+MarketReport --> UserHome
+
+'========================
+' Soil flow
+'========================
+state "soil condition view" as SoilView
+state "pest control techniques" as PestControl
+
+SoilCondition --> SoilView
+SoilView --> UserHome
+PestControl --> UserHome
+
+'========================
+' Weather flow
+'========================
+state "weather insights view" as WeatherView
+WeatherInsights --> WeatherView
+WeatherView --> UserHome
+
+'========================
+' Labour flow
+'========================
+state "labour availability view" as LabourView
+LabourAvailability --> LabourView
+LabourView --> UserHome
 
 @enduml

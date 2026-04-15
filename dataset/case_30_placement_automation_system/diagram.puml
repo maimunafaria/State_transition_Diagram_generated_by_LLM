@@ -1,14 +1,67 @@
 @startuml
+title UML State Chart Diagram
 
-' Placeholder diagram for EXAMPLE_30 - Placement Automation System
-' TODO: replace this with the final diagram derived from the case image.
+'========================
+' Start
+'========================
+[*] --> ChoiceStart
 
-[*] --> Start
+state ChoiceStart <<choice>>
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+state "Account Creation" as AccountCreation
+AccountCreation : entry / monthOfUsage
+AccountCreation : do / createAccount
+AccountCreation : exit / watchVideos
 
-Start --> [*] : complete
+state "Show Likes" as ShowLikes
+ShowLikes : entry / watchVideosAndSaveLikes
+ShowLikes : do / showLikesList
+ShowLikes : exit / uploadBasedOnLikes
+
+ChoiceStart --> AccountCreation : [Create account based on usage]
+ChoiceStart --> ShowLikes : [Upload videos based on likes]
+
+'========================
+' Update flow
+'========================
+state "Updation" as Updation
+Updation : entry / prepareTimelineViewLikes
+Updation : do / uploadVideos
+Updation : exit / viewVideos
+
+AccountCreation --> NextChoice
+ShowLikes --> Updation
+
+state NextChoice <<choice>>
+AccountCreation --> NextChoice
+
+state "Discussion State" as Discussion
+Discussion : entry / premiumAccount
+Discussion : do / adminUserDiscussion
+Discussion : exit / endDiscussion
+
+state MergePoint <<choice>>
+NextChoice --> Discussion
+NextChoice --> MergePoint
+
+'========================
+' View
+'========================
+state "View" as View
+View : entry / previouslyUpdatedVideos
+View : do / viewVideos
+View : exit / saveVideosInLikes
+
+Updation --> MergePoint
+MergePoint --> View
+
+'========================
+' Final choices
+'========================
+state EndChoice <<choice>>
+View --> EndChoice
+
+EndChoice --> [*]
+Discussion --> [*]
 
 @enduml

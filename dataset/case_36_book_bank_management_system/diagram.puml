@@ -1,14 +1,111 @@
 @startuml
+title UML State Chart Diagram
 
-' Placeholder diagram for EXAMPLE_36 - Book Bank Management System
-' TODO: replace this with the final diagram derived from the case image.
+' =========================
+' Top-level start
+' =========================
+state StartChoice <<choice>>
+[*] --> StartChoice
 
-[*] --> Start
+StartChoice --> Registration
+StartChoice --> Authentication
+StartChoice --> SearchBooks
+StartChoice --> GetBooksState
+StartChoice --> BuyBooks
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+' =========================
+' Registration
+' =========================
+state "Registration" as Registration {
+  [*] --> EnterDetails
 
-Start --> [*] : complete
+  state "Enter Details" as RegEnterDetails
+  state "Get Member_ID" as GetMemberID
+  state "Successful Registration" as SuccessfulRegistration
+  state "Re-enter Details" as ReEnterDetails
+
+  RegEnterDetails --> GetMemberID : [Valid]
+  RegEnterDetails --> ReEnterDetails : [Invalid]
+  ReEnterDetails --> RegEnterDetails
+  GetMemberID --> SuccessfulRegistration
+}
+
+' =========================
+' Authentication
+' =========================
+state "Authentication" as Authentication {
+  [*] --> EnterMemberID
+
+  state "Enter Member_ID" as AuthEnterMemberID
+  state "Enter Password" as EnterPassword
+  state "successful Login" as SuccessfulLogin
+  state "Invalid Member_ID or Password" as InvalidCreds
+
+  AuthEnterMemberID --> EnterPassword
+  EnterPassword --> SuccessfulLogin : [Valid]
+  EnterPassword --> InvalidCreds : [Invalid]
+}
+
+SuccessfulRegistration --> Authentication
+
+' =========================
+' Search Books
+' =========================
+state "Search Books" as SearchBooks {
+  [*] --> EnterBookDetails
+
+  state "Enter Book Details" as EnterBookDetails
+  state "Display Suggestion" as DisplaySuggestion
+  state "choose Alternate option" as ChooseAlternate
+
+  EnterBookDetails --> DisplaySuggestion : [Found]
+  EnterBookDetails --> ChooseAlternate : [Not Found]
+}
+
+SuccessfulLogin --> SearchBooks
+
+' =========================
+' Get Books
+' =========================
+state "Get Books" as GetBooksState {
+  [*] --> EnterBookID_Get
+
+  state "Enter Book_ID" as EnterBookID_Get
+  state "Enter Member_ID" as GetEnterMemberID
+  state "Obtain Books" as ObtainBooks
+  state "Pay Fine Amount" as PayFineAmount
+
+  EnterBookID_Get --> GetEnterMemberID
+  GetEnterMemberID --> ObtainBooks : [Active Member]
+  GetEnterMemberID --> PayFineAmount : [Inactive Member]
+}
+
+SuccessfulLogin --> GetBooksState
+
+' =========================
+' Buy Books
+' =========================
+state "Buy Books" as BuyBooks {
+  [*] --> EnterBookID_Buy
+
+  state "Enter Book_ID" as EnterBookID_Buy
+  state "Display Book Amount" as DisplayBookAmount
+  state "Get Books" as BuyGetBooks
+  state NotPaidEnd <<choice>>
+
+  EnterBookID_Buy --> DisplayBookAmount
+  DisplayBookAmount --> BuyGetBooks : [Paid]
+  DisplayBookAmount --> NotPaidEnd : [Not Paid]
+  NotPaidEnd --> [*]
+}
+
+SuccessfulLogin --> BuyBooks
+
+' =========================
+' Finals
+' =========================
+DisplaySuggestion --> [*]
+ObtainBooks --> [*]
+BuyGetBooks --> [*]
 
 @enduml

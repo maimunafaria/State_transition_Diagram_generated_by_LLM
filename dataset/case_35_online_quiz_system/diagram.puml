@@ -1,14 +1,100 @@
 @startuml
+title UML State Chart Diagram
 
-' Placeholder diagram for EXAMPLE_35 - Online Quiz System
-' TODO: replace this with the final diagram derived from the case image.
+'========================
+' Top flow
+'========================
+[*] --> RegLogin
 
-[*] --> Start
+state "Registration or login" as RegLogin
+RegLogin : entry / userDetail
+RegLogin : do / verifyDetails
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+state ChoiceUser <<choice>>
+RegLogin --> ChoiceUser
 
-Start --> [*] : complete
+state "Teacher profile" as TeacherProfile
+state "Student profile" as StudentProfile
+
+ChoiceUser --> TeacherProfile
+ChoiceUser --> StudentProfile
+ChoiceUser --> [*]
+
+'========================
+' Teacher side
+'========================
+state "Create/Edit Quiz by Teacher" as TeacherSystem {
+
+  [*] --> TStart
+
+  state TStart <<choice>>
+
+  state "New Quiz" as NewQuiz
+  state "Edit Quiz" as EditQuiz
+  state "Save Draft" as SaveDraft
+  state "Post Quiz" as PostQuiz
+  state "View Result" as ViewResult
+
+  NewQuiz : entry / validCourse
+  NewQuiz : do / enterQuestionAnswerOption
+
+  EditQuiz : entry / quizExists
+  EditQuiz : do / editQuiz
+
+  SaveDraft : entry / quizCreated
+  SaveDraft : do / saveDraft
+
+  PostQuiz : entry / userConfirm
+  PostQuiz : do / notifyStudent
+
+  ViewResult : entry / quizOver
+
+  TStart --> NewQuiz
+  TStart --> EditQuiz
+
+  NewQuiz --> SaveDraft
+  EditQuiz --> SaveDraft
+
+  SaveDraft --> PostQuiz
+  PostQuiz --> ViewResult
+  ViewResult --> [*]
+}
+
+TeacherProfile --> TeacherSystem
+
+'========================
+' Student side
+'========================
+state "Answer Quiz by Student" as StudentSystem {
+
+  [*] --> SelectQuiz
+
+  state "Select Quiz" as SelectQuiz
+  state "Answer Quiz" as AnswerQuiz
+  state "Submit" as Submit
+  state "Quiz Result" as Result
+  state "Feedback" as Feedback
+
+  SelectQuiz : entry / alertFromTeacher
+
+  AnswerQuiz : entry / validQuiz
+  AnswerQuiz : do / answerQuiz
+
+  Submit : entry / quizComplete
+  Submit : do / submitQuiz
+
+  Result : entry / resultGenerated
+
+  Feedback : entry / quizComplete
+  Feedback : do / giveFeedback
+
+  SelectQuiz --> AnswerQuiz
+  AnswerQuiz --> Submit
+  Submit --> Result
+  Result --> Feedback
+  Feedback --> [*]
+}
+
+StudentProfile --> StudentSystem
 
 @enduml

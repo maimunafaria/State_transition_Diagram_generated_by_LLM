@@ -1,14 +1,104 @@
 @startuml
+title UML State Chart Diagram
 
-' Placeholder diagram for EXAMPLE_33 - 
-' TODO: replace this with the final diagram derived from the case image.
+'========================
+' Start
+'========================
+[*] --> Login
 
-[*] --> Start
+state Login
+Login : entry / getInfo
+Login : do / verifyData
+Login : exit / verified
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+state LoginDecision <<choice>>
+Login --> LoginDecision
 
-Start --> [*] : complete
+state "Valid Login" as ValidLogin
+ValidLogin : entry / containInfo
+ValidLogin : do / allowAccess
+ValidLogin : exit / galleryEntry
+
+state "Invalid Login" as InvalidLogin
+InvalidLogin : entry / wrongInfo
+InvalidLogin : do / displayError
+InvalidLogin : exit / returnToStart
+
+LoginDecision --> ValidLogin
+LoginDecision --> InvalidLogin
+
+'========================
+' After valid login
+'========================
+state NavChoice <<choice>>
+ValidLogin --> NavChoice
+
+state Gallery
+Gallery : entry / showProducts
+Gallery : do / selectProducts
+Gallery : exit / saveProducts
+
+state Update
+Update : entry / containInfo
+Update : do / takeNewInfo
+Update : exit / saveInfo
+
+NavChoice --> Gallery
+NavChoice --> Update
+
+Update --> [*]
+
+'========================
+' Shopping flow
+'========================
+state Order
+Order : entry / selectItems
+Order : do / allowOrderIfInStock
+Order : exit / verification
+
+state Cart
+Cart : entry / containSelectedItems
+Cart : do / billingInfo
+Cart : exit / paymentMethod
+
+Gallery --> Order
+Order --> Cart
+
+state Payment
+Payment : entry / getPaymentMethod
+Payment : do / confirmPayment
+Payment : exit / verify
+
+Cart --> Payment
+
+state PayDecision <<choice>>
+Payment --> PayDecision
+
+state "Valid Payment" as ValidPayment
+ValidPayment : entry / paymentMethod
+ValidPayment : do / getCash
+ValidPayment : exit / confirmation
+
+state "Invalid Payment" as InvalidPayment
+InvalidPayment : entry / wrongEntry
+InvalidPayment : do / errorMessage
+InvalidPayment : exit / return
+
+PayDecision --> ValidPayment
+PayDecision --> InvalidPayment
+
+'========================
+' Delivery
+'========================
+state Delivery
+Delivery : entry / takeOrder
+Delivery : do / deliverProduct
+Delivery : exit / exitSystem
+
+ValidPayment --> Delivery
+Delivery --> [*]
+
+InvalidPayment --> [*]
+InvalidLogin --> [*]
 
 @enduml

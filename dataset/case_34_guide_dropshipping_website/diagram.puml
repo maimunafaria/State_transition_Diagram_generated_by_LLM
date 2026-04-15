@@ -1,14 +1,100 @@
 @startuml
+title UML State Chart Diagram
 
-' Placeholder diagram for EXAMPLE_34 - GUIDE – Dropshipping Website
-' TODO: replace this with the final diagram derived from the case image.
+'========================
+' Start
+'========================
+[*] --> StartChoice
 
-[*] --> Start
+state StartChoice <<choice>>
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+StartChoice --> SellerLogin
+StartChoice --> CustomerLogin
 
-Start --> [*] : complete
+'========================
+' Seller side
+'========================
+state "Seller Login" as SellerLogin
+SellerLogin : entry / sellerRegistered
+SellerLogin : do / provideLoginDetails
+SellerLogin : exit / loginSuccessful
+
+state "Add/Remove Products" as ManageProducts
+ManageProducts : entry / sellerLoggedIn
+ManageProducts : do / addRemoveProducts
+ManageProducts : exit / finalizeProductList
+
+SellerLogin --> ManageProducts
+
+'========================
+' Customer side
+'========================
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry / customerRegistered
+CustomerLogin : do / provideLoginDetails
+CustomerLogin : exit / loginSuccessful
+
+state "View Products" as ViewProducts
+ViewProducts : entry / customerLoggedIn
+ViewProducts : do / viewProductList
+ViewProducts : exit / decideToBuy
+
+state "Purchase Products" as PurchaseProducts
+PurchaseProducts : entry / selectProduct
+PurchaseProducts : do / contactSeller
+PurchaseProducts : exit / readyToMessage
+
+CustomerLogin --> ViewProducts
+ViewProducts --> PurchaseProducts
+
+'========================
+' Merge point
+'========================
+state MergePoint <<choice>>
+
+ManageProducts --> MergePoint
+PurchaseProducts --> MergePoint
+
+'========================
+' Messaging
+'========================
+state Message
+Message : entry / intentToPurchase
+Message : do / buyerSellerDiscussion
+Message : exit / decisionMade
+
+MergePoint --> Message
+
+'========================
+' Decision
+'========================
+state Decision <<choice>>
+Message --> Decision
+
+state "Purchase successful" as Success
+Success : entry / agreementReached
+Success : do / paymentDone
+Success : exit / requestFeedback
+
+state "Purchase Unsuccessful" as Fail
+Fail : entry / notInterested
+Fail : do / declineOffer
+Fail : exit / end
+
+Decision --> Success
+Decision --> Fail
+
+'========================
+' Final steps
+'========================
+state "Rate Products" as RateProducts
+RateProducts : entry / purchaseComplete
+RateProducts : do / giveFeedback
+RateProducts : exit / end
+
+Success --> RateProducts
+
+RateProducts --> [*]
+Fail --> [*]
 
 @enduml

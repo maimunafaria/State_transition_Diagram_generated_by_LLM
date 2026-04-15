@@ -1,14 +1,69 @@
 @startuml
+title UML State Chart Diagram (Video Suggestion System)
 
-' Placeholder diagram for EXAMPLE_39 - Video Suggestion System
-' TODO: replace this with the final diagram derived from the case image.
+[*] --> RequestSuggestion
 
-[*] --> Start
+'-----------------------
+' Initial steps
+'-----------------------
+state "Request Suggestion" as RequestSuggestion
+RequestSuggestion : entry / Check network connection
+RequestSuggestion : do / send request signal
+RequestSuggestion : exit / Get user ID
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+state "Retrieve Unique Id" as RetrieveID
+RetrieveID : entry / Request from user
+RetrieveID : do / Get unique ID
+RetrieveID : exit / trigger suggestion functions
 
-Start --> [*] : complete
+RequestSuggestion --> RetrieveID
+
+'-----------------------
+' Fork into parallel paths
+'-----------------------
+state Fork1 <<fork>>
+RetrieveID --> Fork1
+
+state "Other Videos watched by similar users" as SimilarUsers
+state "Trending Videos" as Trending
+state "Similar Tag Videos" as SimilarTag
+state "Similar Genre Videos" as SimilarGenre
+state "Paid Promotion Videos" as PaidPromo
+
+Fork1 --> SimilarUsers
+Fork1 --> Trending
+Fork1 --> SimilarTag
+Fork1 --> SimilarGenre
+Fork1 --> PaidPromo
+
+'-----------------------
+' Join back
+'-----------------------
+state Join1 <<join>>
+
+SimilarUsers --> Join1
+Trending --> Join1
+SimilarTag --> Join1
+SimilarGenre --> Join1
+PaidPromo --> Join1
+
+'-----------------------
+' Final processing
+'-----------------------
+state "Retrieve Other Attributes of videos" as RetrieveAttr
+RetrieveAttr : entry / Get video IDs
+RetrieveAttr : do / Retrieve thumbnails, views
+RetrieveAttr : exit / Suggest video
+
+Join1 --> RetrieveAttr
+
+state "Suggest Videos" as SuggestVideos
+SuggestVideos : entry / Get suggestion videos
+SuggestVideos : do / Send videos to user
+SuggestVideos : exit / Ensure delivery
+
+RetrieveAttr --> SuggestVideos
+
+SuggestVideos --> [*]
 
 @enduml
