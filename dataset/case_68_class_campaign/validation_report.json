@@ -1,65 +1,38 @@
 {
   "case_id": "case_68_class_campaign",
-  "timestamp_utc": "2026-04-12T22:44:46.590231+00:00",
-  "model": "llama3.1:8b",
+  "source_changed_file": "raw_requirement_changed.txt",
+  "timestamp_utc": "2026-04-18T22:50:07.552760+00:00",
+  "model": "qwen2.5:7b-instruct",
   "disable_llm_validator": false,
   "deterministic_validation": {
     "duplicates": [],
     "ambiguities": [],
-    "potential_missing": [
-      {
-        "source_sentence": "The transition from the initial pseudostate to the Commissioned state has been labelled only with an activity-expression that comprises the operations assignManager and assignStaff.",
-        "max_overlap": 0.174
-      },
-      {
-        "source_sentence": "Only one of the two transitions from the Completed state (one of which is recursive) can be triggered by the paymentReceived event since the guard conditions are mutually exclusive.",
-        "max_overlap": 0.174
-      },
-      {
-        "source_sentence": "It would be bad practice to construct a state machine where one event can trigger two different transitions from the same state.",
-        "max_overlap": 0.12
-      },
-      {
-        "source_sentence": "A state machine is only unambiguous when all the transitions from each state are mutually exclusive.",
-        "max_overlap": 0.1
-      }
-    ],
-    "potential_hallucinations": [
-      {
-        "requirement": "The system shall assign a manager and at least one member of staff when a campaign is created.",
-        "max_overlap": 0.048
-      }
-    ],
-    "overall_assessment": "needs_review"
+    "potential_missing": [],
+    "potential_hallucinations": [],
+    "overall_assessment": "pass"
   },
   "llm_validation": {
     "missing_requirements": [
       {
-        "evidence_quote": "The operations are triggered by the event that creates a Campaign object.",
-        "suggested_requirement": "The system shall trigger the creation of a Campaign object."
+        "evidence_quote": "Once everything is approved and the contract is signed, the campaign becomes active and starts running.",
+        "suggested_requirement": "The system shall activate and start running a campaign upon approval and signing of the contract."
       },
       {
-        "evidence_quote": "A state machine is only unambiguous when all the transitions from each state are mutually exclusive.",
-        "suggested_requirement": "The system shall ensure that all transitions from each state are mutually exclusive."
+        "evidence_quote": "After that, payment is handled.",
+        "suggested_requirement": "The system shall handle payment after the final statement is prepared."
       }
     ],
     "hallucinations": [
       {
-        "rewritten_requirement": "The system shall modify the guard conditions of the Completed state when an overpayment results in automatic generation of a refund.",
-        "reason": "This requirement is not mentioned in the source text. The original text only mentions that the user requirements could change to result in an automatic refund, but it does not specify how the state machine should be modified."
+        "rewritten_requirement": "The system shall generate a refund if the payment exceeds the due amount.",
+        "reason": "The source text states that a refund is generated only when the payment is less than what is due, not when it exceeds."
       }
     ],
-    "duplicates": [
-      {
-        "requirement_a": "The system shall trigger the transition from the Completed state to the Paid state only when the total amount due for the Campaign has been completely paid.",
-        "requirement_b": "The system shall trigger the transition from the Completed state to the Paid state only when the total amount due for the Campaign has been completely paid.",
-        "reason": "This requirement is a duplicate of itself."
-      }
-    ],
+    "duplicates": [],
     "ambiguities": [
       {
-        "rewritten_requirement": "The system shall assign a manager and at least one member of staff when a campaign is created.",
-        "reason": "This requirement is ambiguous because it does not specify what happens if no staff members are available to be assigned."
+        "rewritten_requirement": "The system shall handle payment after the final statement is prepared.",
+        "reason": "This requirement could be interpreted as handling any type of payment, but the source text specifically refers to the due amount."
       }
     ],
     "overall_assessment": "needs_review"
@@ -67,7 +40,7 @@
   "errors": {
     "llm_validator_error": ""
   },
-  "prompt": "You are a strict requirements validator.\nCompare rewritten requirements against the source text.\n\nReturn ONLY valid JSON with this schema:\n{\n  \"missing_requirements\": [\n    {\n      \"evidence_quote\": \"string\",\n      \"suggested_requirement\": \"The system shall ...\"\n    }\n  ],\n  \"hallucinations\": [\n    {\n      \"rewritten_requirement\": \"string\",\n      \"reason\": \"string\"\n    }\n  ],\n  \"duplicates\": [\n    {\n      \"requirement_a\": \"string\",\n      \"requirement_b\": \"string\",\n      \"reason\": \"string\"\n    }\n  ],\n  \"ambiguities\": [\n    {\n      \"rewritten_requirement\": \"string\",\n      \"reason\": \"string\"\n    }\n  ],\n  \"overall_assessment\": \"pass|needs_review\"\n}\n\nSource text:\n<<<\nFigure 11.6 shows a state machine for the class Campaign. The transition from the initial\npseudostate to the Commissioned state has been labelled only with an activity-expression that\ncomprises the operations assignManager and assignStaff. Execution of these operations\nensures that when a campaign is created a manager and at least one member of staff are\nassigned to it.4 The operations are triggered by the event that creates a Campaign object. The\ntransition from the Completed state to the Paid state has a guard condition that only allows the\ntransition to fire if total amount due (paymentDue) for the Campaign has been completely paid\n(note that this guard condition allows a Campaign to enter the Paid state when the client\noverpays).\nThe reflexive transition from the Completed state models any payment event that does not\nreduce the amount due to zero or less. Only one of the two transitions from the Completed\nstate (one of which is recursive) can be triggered by the paymentReceived event since the\nguard conditions are mutually exclusive. It would be bad practice to construct a state machine\nwhere one event can trigger two different transitions from the same state. A state machine is\nonly unambiguous when all the transitions from each state are mutually exclusive.\nf the user requirements were to change, so that an overpayment is now to result in the\nautomatic generation of a refund, the state machine could be changed. Since the action that\nresults from an overpayment is different from the action that results from a payment that\nreduces paymentDue to zero, a new transition is needed from the Completed state to the Paid\nstate. The guard conditions from the Completed state must also be modified. Figure 11.7\nshows a state machine that captures this requirement. It is important to appreciate that the\nstate machines in Figs 11.6 and 11.7 are not equivalent to each other, but capture different\nversions of the users’ requirements.\n>>>\n\nRewritten requirements JSON:\n{\n  \"rewritten_requirements\": [\n    \"The system shall assign a manager and at least one member of staff when a campaign is created.\",\n    \"The system shall trigger the transition from the Completed state to the Paid state only when the total amount due for the Campaign has been completely paid.\",\n    \"The system shall trigger a reflexive transition from the Completed state for any payment event that does not reduce the amount due to zero or less.\",\n    \"The system shall modify the guard conditions of the Completed state when an overpayment results in automatic generation of a refund.\"\n  ]\n}",
-  "llm_response": "After comparing the rewritten requirements against the source text, I have identified some discrepancies. Here is the JSON output:\n\n```json\n{\n  \"missing_requirements\": [\n    {\n      \"evidence_quote\": \"The operations are triggered by the event that creates a Campaign object.\",\n      \"suggested_requirement\": \"The system shall trigger the creation of a Campaign object.\"\n    },\n    {\n      \"evidence_quote\": \"A state machine is only unambiguous when all the transitions from each state are mutually exclusive.\",\n      \"suggested_requirement\": \"The system shall ensure that all transitions from each state are mutually exclusive.\"\n    }\n  ],\n  \"hallucinations\": [\n    {\n      \"rewritten_requirement\": \"The system shall modify the guard conditions of the Completed state when an overpayment results in automatic generation of a refund.\",\n      \"reason\": \"This requirement is not mentioned in the source text. The original text only mentions that the user requirements could change to result in an automatic refund, but it does not specify how the state machine should be modified.\"\n    }\n  ],\n  \"duplicates\": [\n    {\n      \"requirement_a\": \"The system shall trigger the transition from the Completed state to the Paid state only when the total amount due for the Campaign has been completely paid.\",\n      \"requirement_b\": \"The system shall trigger the transition from the Completed state to the Paid state only when the total amount due for the Campaign has been completely paid.\",\n      \"reason\": \"This requirement is a duplicate of itself.\"\n    }\n  ],\n  \"ambiguities\": [\n    {\n      \"rewritten_requirement\": \"The system shall assign a manager and at least one member of staff when a campaign is created.\",\n      \"reason\": \"This requirement is ambiguous because it does not specify what happens if no staff members are available to be assigned.\"\n    }\n  ],\n  \"overall_assessment\": \"needs_review\"\n}\n```\n\nNote that the overall assessment is set to \"needs_review\" because there are several issues with the rewritten requirements, including missing requirements, hallucinations, duplicates, and ambiguities.",
+  "prompt": "You are a strict requirements validator.\nCompare rewritten requirements against the source text.\n\nReturn ONLY valid JSON with this schema:\n{\n  \"missing_requirements\": [\n    {\n      \"evidence_quote\": \"string\",\n      \"suggested_requirement\": \"The system shall ...\"\n    }\n  ],\n  \"hallucinations\": [\n    {\n      \"rewritten_requirement\": \"string\",\n      \"reason\": \"string\"\n    }\n  ],\n  \"duplicates\": [\n    {\n      \"requirement_a\": \"string\",\n      \"requirement_b\": \"string\",\n      \"reason\": \"string\"\n    }\n  ],\n  \"ambiguities\": [\n    {\n      \"rewritten_requirement\": \"string\",\n      \"reason\": \"string\"\n    }\n  ],\n  \"overall_assessment\": \"pass|needs_review\"\n}\n\nSource text:\n<<<\nA campaign begins after a manager and staff are assigned to it. Once everything is approved and the contract is signed, the campaign becomes active and starts running.\n\nWhen the campaign is finished, a final statement is prepared and the process moves toward completion. After that, payment is handled.\n\nIf the payment is less than what is due, a refund is generated. If the payment is more, the system waits until the correct amount is settled. When the payment matches exactly, the campaign is marked as fully paid.\n\nAfter everything is settled, the campaign is archived and the assigned staff and manager are released.\n>>>\n\nRewritten requirements JSON:\n{\n  \"rewritten_requirements\": [\n    \"The system shall begin a campaign once a manager and staff are assigned.\",\n    \"The system shall activate and start running a campaign upon approval and signing of the contract.\",\n    \"The system shall prepare a final statement when the campaign is finished and move the process toward completion.\",\n    \"The system shall handle payment after the final statement is prepared.\",\n    \"The system shall generate a refund if the payment is less than what is due.\",\n    \"The system shall wait for the correct amount to be settled if the payment exceeds the due amount.\",\n    \"The system shall mark the campaign as fully paid when the payment matches exactly.\",\n    \"The system shall archive the campaign and release the assigned staff and manager after everything is settled.\"\n  ]\n}",
+  "llm_response": "```json\n{\n  \"missing_requirements\": [\n    {\n      \"evidence_quote\": \"Once everything is approved and the contract is signed, the campaign becomes active and starts running.\",\n      \"suggested_requirement\": \"The system shall activate and start running a campaign upon approval and signing of the contract.\"\n    },\n    {\n      \"evidence_quote\": \"After that, payment is handled.\",\n      \"suggested_requirement\": \"The system shall handle payment after the final statement is prepared.\"\n    }\n  ],\n  \"hallucinations\": [\n    {\n      \"rewritten_requirement\": \"The system shall generate a refund if the payment exceeds the due amount.\",\n      \"reason\": \"The source text states that a refund is generated only when the payment is less than what is due, not when it exceeds.\"\n    }\n  ],\n  \"duplicates\": [],\n  \"ambiguities\": [\n    {\n      \"rewritten_requirement\": \"The system shall handle payment after the final statement is prepared.\",\n      \"reason\": \"This requirement could be interpreted as handling any type of payment, but the source text specifically refers to the due amount.\"\n    }\n  ],\n  \"overall_assessment\": \"needs_review\"\n}\n```",
   "final_assessment": "needs_review"
 }
