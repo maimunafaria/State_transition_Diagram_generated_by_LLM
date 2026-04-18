@@ -1,0 +1,53 @@
+@startuml
+title ATM Integrated State Machine
+
+[*] --> Idle
+
+' ===== STATES =====
+state Idle
+Idle : entry / Display Welcome
+
+state "Waiting for PIN" as WaitingForPIN
+state "Validating PIN" as ValidatingPIN
+state "Waiting for Customer Choice" as WaitingForChoice
+state "Processing Withdrawal" as ProcessingWithdrawal
+state Dispensing
+state Printing
+state Ejecting
+state Terminating
+state Confiscating
+state "Closed Down" as ClosedDown
+
+ClosedDown : entry / Display System Down
+
+' ===== MAIN FLOW =====
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu
+WaitingForChoice --> ProcessingWithdrawal : Withdrawal Selected /\nRequest Withdrawal,\nDisplay Wait
+
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash,\nUpdate Status
+Dispensing --> Printing : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+Printing --> Ejecting : Receipt Printed /\nEject
+Ejecting --> Terminating : Card Ejected /\nDisplay Ejected
+Terminating --> Idle : After (Elapsed Time) [Closedown Not Requested]
+
+' ===== CANCEL / EJECT FROM MULTIPLE STATES =====
+WaitingForPIN --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+WaitingForChoice --> Ejecting : Cancel / Eject
+ProcessingWithdrawal --> Ejecting : Rejected / Eject
+
+' ===== CONFISCATION LOGIC =====
+ValidatingPIN --> Confiscating : Third Invalid PIN / Confiscate
+ValidatingPIN --> Confiscating : Card Stolen, Card Expired /\nConfiscate, Update Status
+
+Confiscating --> Terminating : Card Confiscated /\nDisplay Confiscated
+
+' ===== FAILURE CASE =====
+Dispensing --> ClosedDown : Insufficient Cash / Eject
+
+@enduml
