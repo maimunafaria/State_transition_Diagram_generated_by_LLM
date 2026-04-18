@@ -1,14 +1,40 @@
 @startuml
+title Initial state machine for StaffMember
 
-' Placeholder diagram for EXAMPLE_72 - staff member class
-' TODO: replace this with the final diagram derived from the case image.
+[*] --> Employed : /assignNewStaffGrade()
 
-[*] --> Start
+state Employed {
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+  state "Staff Contact" as StaffContact {
+    [*] --> NotAssigned
 
-Start --> [*] : complete
+    state NotAssigned
+    state AssignedCampaign
+
+    NotAssigned --> AssignedCampaign : assignStaffContact() / client.assignStaffContact()
+    AssignedCampaign --> NotAssigned : removeStaffContact() / client.assignStaffContact()
+
+    AssignedCampaign : exit / removeStaffcontact;
+  }
+
+  --
+
+  state "Campaign Staff" as CampaignStaffRegion {
+    [*] --> NotCampaignStaff
+
+    state NotCampaignStaff
+    state CampaignStaff
+
+    NotCampaignStaff --> CampaignStaff : assignStaff() / campaign.assignStaff()
+    CampaignStaff --> NotCampaignStaff : removeStaff() / campaign.removeStaff()
+
+    CampaignStaff : exit / removeStaff();
+  }
+}
+
+state "Ex-employee" as ExEmployee
+
+Employed --> ExEmployee : leaveEmployment
+ExEmployee --> [*] : after (1 year) / archive()
 
 @enduml

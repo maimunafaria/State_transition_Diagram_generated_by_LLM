@@ -1,14 +1,29 @@
 @startuml
+title Alert Notifier Component States
 
-' Placeholder diagram for EXAMPLE_65 - Alert notifier
-' TODO: replace this with the final diagram derived from the case image.
+[*] --> InitializeComponent : Load Component
 
-[*] --> Start
+state "Initialize\nComponent" as InitializeComponent
+state "Waiting for Update" as WaitingForUpdate
+state "Processing Update" as ProcessingUpdate
+state "Unloading Component" as UnloadingComponent
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+WaitingForUpdate : do / checkForUpdate
 
-Start --> [*] : complete
+ProcessingUpdate : entry / storeUpdate
+ProcessingUpdate : do / evaluateUpdate
+ProcessingUpdate : exit / [update > delta] Operator.Notify(update)
+
+UnloadingComponent : exit / compMgr.compUnloaded()
+
+InitializeComponent --> WaitingForUpdate : [ init. success ]
+InitializeComponent --> UnloadingComponent : [ init. failure ]
+
+WaitingForUpdate --> ProcessingUpdate : stock update
+ProcessingUpdate --> WaitingForUpdate
+
+WaitingForUpdate --> UnloadingComponent : shutdown
+
+UnloadingComponent --> [*]
 
 @enduml

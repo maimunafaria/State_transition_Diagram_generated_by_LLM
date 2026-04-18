@@ -1,14 +1,24 @@
 @startuml
+title Selective reading of a statechart diagram
 
-' Placeholder diagram for EXAMPLE_61 - plane
-' TODO: replace this with the final diagram derived from the case image.
+[*] --> Ordered : «M» Plane Ordered/
 
-[*] --> Start
+state Ordered
+state "In Maintenance" as InMaintenance
+state "Ready for Use" as ReadyForUse
+state "Scheduled for Maintenance" as ScheduledForMaintenance
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+Ordered --> InMaintenance : «M» Plane Delivered/
+InMaintenance --> ReadyForUse : «M» Plane Available/
+ReadyForUse --> InMaintenance : «M» Plane not Available/
 
-Start --> [*] : complete
+ReadyForUse : «M» Assign Plane/
+ReadyForUse : «M» Complete Flight/
+
+ReadyForUse --> ScheduledForMaintenance : «M» Scheduling Plane\nfor Maintenance
+ScheduledForMaintenance --> ReadyForUse : «M» Complete Flight [More Flights]/
+ScheduledForMaintenance --> InMaintenance : «M» Complete Flight\n[No more Flights]/
+
+InMaintenance --> [*] : «M» Plane Withdrawn/
 
 @enduml

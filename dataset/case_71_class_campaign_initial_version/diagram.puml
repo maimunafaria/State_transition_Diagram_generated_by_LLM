@@ -1,14 +1,55 @@
 @startuml
+title State machine for Campaign
 
-' Placeholder diagram for EXAMPLE_71 - class campaign initial version
-' TODO: replace this with the final diagram derived from the case image.
+[*] --> Commissioned : /assignManager; assignStaff
 
-[*] --> Start
+state Commissioned
+state Completed
+state Paid
+state Suspended
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
 
-Start --> [*] : complete
+state Active {
+
+  state Monitoring {
+    [*] --> Survey
+
+    state Survey
+    state Evaluation
+    state MH <<history>>
+
+    Survey --> Evaluation : surveyComplete
+    Evaluation --> Survey : runSurvey
+  }
+
+  --
+
+  state Running {
+    [*] --> AdvertPreparation
+
+    state AdvertPreparation
+    state Scheduling
+    state "Running Adverts" as RunningAdverts
+    state RH <<history>>
+
+    AdvertPreparation --> Scheduling : advertsApproved\n/authorize
+    Scheduling --> RunningAdverts : confirmSchedule
+    RunningAdverts --> AdvertPreparation : extendCampaign\n/modifyBudget
+  }
+
+}
+
+Active --> Suspended : suspendCampaign\n/stopAdverts
+Suspended --> Active : resumeCampaign
+
+Active --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+Active --> Completed : campaignCompleted\n/prepareFinalStatement
+
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = zero]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment > zero]
+Completed --> [*] : paymentReceived(payment)\n[paymentDue - payment < zero]\n/generateRefund
+
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
 
 @enduml
