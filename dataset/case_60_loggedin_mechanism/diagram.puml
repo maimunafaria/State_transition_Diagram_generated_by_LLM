@@ -1,14 +1,40 @@
 @startuml
+title LoggingOn State Machine
 
-' Placeholder diagram for EXAMPLE_60 - loggedIn Mechanism
-' TODO: replace this with the final diagram derived from the case image.
+state LoggingOn {
+  [*] --> AcceptingUserName
 
-[*] --> Start
+  state AcceptingUserName
+  state AcceptingPassword
+  state VerifyingDetails
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+  state BadDetails {
+    [*] --> BadUsername
+    state BadUsername
+    state BadPassword
+  }
 
-Start --> [*] : complete
+  BadDetails : entry / ++tries
+
+  AcceptingUserName --> AcceptingPassword : ok
+  AcceptingUserName --> Canceling : cancel
+
+  AcceptingPassword --> VerifyingDetails : ok
+  AcceptingPassword --> Canceling : cancel
+
+  VerifyingDetails --> BadUsername : badUserName
+  VerifyingDetails --> BadPassword : badPassword
+  VerifyingDetails --> Authenticated : detailsVerified
+
+  BadDetails --> AcceptingUserName : [tries < 4]
+  BadDetails --> Fail : [tries = 4]
+}
+
+LoggingOn : entry / tries := 0
+
+state Canceling
+state Authenticated
+state Fail
+Fail : entry / logFailure
 
 @enduml

@@ -1,14 +1,40 @@
 @startuml
+title BrowseCatalog State Machine
 
-' Placeholder diagram for EXAMPLE_59 - DisplayItem
-' TODO: replace this with the final diagram derived from the case image.
+state BrowseCatalog {
 
-[*] --> Start
+  [*] --> DisplayingItem
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+  state DisplayingItem
 
-Start --> [*] : complete
+  state DisplayingIndex {
+
+    [*] --> Alphabetical
+
+    state Alphabetical
+    state ByCategory
+
+    Alphabetical --> ByCategory : byCategory
+    ByCategory --> Alphabetical : alphabetical
+  }
+
+  state H <<history*>>
+
+  DisplayingItem --> DisplayingIndex : goToIndex
+  DisplayingIndex --> DisplayingItem : selectProduct
+
+  H --> DisplayingIndex
+}
+
+state DisplayingBasket
+state CheckingOut
+
+BrowseCatalog --> DisplayingBasket : goToBasket
+DisplayingIndex --> CheckingOut : goToCheckout
+
+DisplayingBasket --> H : goToCatalog
+CheckingOut --> H : goToCatalog
+
+BrowseCatalog --> [*] : exit
 
 @enduml

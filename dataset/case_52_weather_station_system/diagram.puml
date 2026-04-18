@@ -1,14 +1,36 @@
 @startuml
+title State Diagram
 
-' Placeholder diagram for EXAMPLE_52 - weather station system
-' TODO: replace this with the final diagram derived from the case image.
+[*] --> Shutdown
 
-[*] --> Start
+state Shutdown
+state Configuring
+state Controlled
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+state Operation {
+  state Running
+  state Testing
+  state Collecting
+  state Summarizing
+  state Transmitting
 
-Start --> [*] : complete
+  [*] --> Running
+
+  Running --> Testing : reportStatus()
+  Running --> Collecting : clock
+  Collecting --> Running : collection done
+
+  Running --> Summarizing : reportWeather()
+  Summarizing --> Transmitting : weather summary complete
+  Transmitting --> Running : transmission done
+
+  Testing --> Transmitting : test complete
+}
+
+Shutdown --> Running : restart()
+Shutdown --> Configuring : reconfigure()\npowerSave()
+Configuring --> Running : configuration done
+Running --> Shutdown : shutdown()
+Running --> Controlled : remoteControl()
 
 @enduml

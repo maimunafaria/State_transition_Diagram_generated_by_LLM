@@ -1,14 +1,35 @@
 @startuml
+title State Diagram - Control Panel
 
-' Placeholder diagram for EXAMPLE_46 - ControlPanel Class
-' TODO: replace this with the final diagram derived from the case image.
+[*] --> Reading : Key hit
 
-[*] --> Start
+state Reading
+state Comparing
+state Locked
+state Selecting
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+' internal behavior
+Comparing : do / validatePassword
 
-Start --> [*] : complete
+' main flow
+Reading --> Comparing : Password entered
+
+' incorrect password but tries left
+Comparing --> Comparing : Password incorrect\nnumberOfTries < maxTries
+
+' too many tries → locked
+Comparing --> Locked : numberOfTries > maxTries
+
+' correct password → selecting
+Comparing --> Selecting : Password correct
+
+' locked condition loop
+Locked --> Locked : Timer <= lockedTime
+
+' unlock after time
+Locked --> Reading : Timer > lockedTime
+
+' after success → back to reading
+Selecting --> Reading : Activation successful
 
 @enduml

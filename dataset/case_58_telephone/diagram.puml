@@ -1,14 +1,55 @@
 @startuml
+title Telephone State Machine
 
-' Placeholder diagram for EXAMPLE_58 - telephone
-' TODO: replace this with the final diagram derived from the case image.
+[*] --> Idle
 
-[*] --> Start
+Idle --> Active : lift receiver / get dial tone
+Active --> Idle : caller hangs up / disconnect
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+state Active {
 
-Start --> [*] : complete
+    [*] --> DialTone
+
+    state DialTone
+    DialTone : do / play dial tone
+
+    DialTone --> Dialing : dial digit(n)
+    DialTone --> TimeOut : after (15 sec.)
+
+    state Dialing
+
+    Dialing --> Dialing : dial digit(n) [incomplete]
+    Dialing --> Connecting : dial digit(n) [valid] / connect
+    Dialing --> Invalid : dial digit(n) [invalid]
+    Dialing --> TimeOut : after (15 sec.)
+
+    state Invalid
+    Invalid : do / play message
+
+    state TimeOut
+    TimeOut : do / play message
+
+    state Connecting
+    Connecting --> Busy : busy
+    Connecting --> Ringing : connected
+
+    state Busy
+    Busy : do / play busy tone
+
+    state Ringing
+    Ringing : do / play ringing tone
+
+    Ringing --> Talking : callee answers / enable speech
+
+    state Talking
+    Talking --> Pinned : callee hangs up
+    Talking --> Pinned : callee answers
+
+    state Pinned
+
+}
+
+Active --> [*] : terminate
+Active --> [*] : abort
 
 @enduml
