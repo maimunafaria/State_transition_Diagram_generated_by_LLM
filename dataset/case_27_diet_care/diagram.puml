@@ -1,14 +1,66 @@
 @startuml
+title UML State Chart Diagram
 
-' Placeholder diagram for EXAMPLE_27 - Diet Care
-' TODO: replace this with the final diagram derived from the case image.
+[*] --> StartChoice
 
-[*] --> Start
+state StartChoice <<choice>>
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+state Input
+Input : entry / validate user
+Input : do / provide data to model
+Input : exit / processing of data
 
-Start --> [*] : complete
+state Consult
+Consult : entry / user's choice of consultation
+Consult : do / consult professional nutritionist
+Consult : exit / rate professional nutritionist
+
+state Analysis
+Analysis : entry / input data for processing
+Analysis : do / analyse data
+Analysis : exit / detect unhealthy diet or deficiencies
+
+state "Unhealthy diet" as UnhealthyDiet
+UnhealthyDiet : entry / detection of unhealthy diet
+UnhealthyDiet : do / find healthy diet
+UnhealthyDiet : exit / suggest to users
+
+state "Disease or deficiencies" as DiseaseDef
+DiseaseDef : entry / presence of disease or deficiencies
+DiseaseDef : do / find food that fights that disease
+DiseaseDef : exit / suggest to users
+
+state "Healthy diet" as HealthyDiet
+HealthyDiet : do / presence of healthy diet
+HealthyDiet : do / appreciate user's diet
+HealthyDiet : exit / terminate
+
+state Suggestion
+Suggestion : entry / presence of disease or deficiency or unhealthy diet
+Suggestion : do / search for nutrient food
+Suggestion : exit / suggest to users
+
+state AnalysisChoice <<choice>>
+state MergeSuggest <<choice>>
+
+[*] --> StartChoice
+StartChoice --> Input
+StartChoice --> Consult
+
+Input --> Analysis
+Analysis --> AnalysisChoice
+
+AnalysisChoice --> UnhealthyDiet
+AnalysisChoice --> DiseaseDef
+AnalysisChoice --> HealthyDiet
+
+UnhealthyDiet --> MergeSuggest
+DiseaseDef --> MergeSuggest
+
+MergeSuggest --> Suggestion
+
+Consult --> [*]
+HealthyDiet --> [*]
+Suggestion --> [*]
 
 @enduml

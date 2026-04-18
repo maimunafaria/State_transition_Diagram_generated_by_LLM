@@ -1,14 +1,95 @@
 @startuml
+title UML State Machine Diagram
 
-' Placeholder diagram for EXAMPLE_21 - Job Seeker Portal System
-' TODO: replace this with the final diagram derived from the case image.
+[*] --> UserChoice
 
-[*] --> Start
+state UserChoice <<choice>>
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+UserChoice --> Registration : [FOR CUSTOMERS]
+UserChoice --> MenuUpdation : [FOR ADMIN]
 
-Start --> [*] : complete
+state "REGISTRATION" as Registration
+Registration : entry / ENTER DETAILS
+Registration : do / REGISTER ACCOUNT
+Registration : exit / TO LOGIN
+
+state "LOGIN" as Login
+Login : entry / ACCOUNT REGISTERED
+Login : do / TO LOGIN
+Login : exit / ENTER INTO THE ACCOUNT
+
+state "SELECT ITEM" as SelectItem
+SelectItem : entry / ENTER INTO THE ACCOUNT
+SelectItem : do / SELECT ITEM
+SelectItem : exit / ITEM SELECTED
+
+state "ADD/REMOVE ITEM" as AddRemoveItem
+AddRemoveItem : entry / FROM ITEM SELECTED
+AddRemoveItem : do / ADD/REMOVE ITEM
+AddRemoveItem : exit / ITEM ADDED OR REMOVED
+
+state "REVIEW ORDER" as ReviewOrder
+ReviewOrder : entry / ITEM ORDERED BEFORE
+ReviewOrder : do / TO REVIEW ORDER
+ReviewOrder : exit / REVIEW DONE
+
+state "REPLACE ORDER" as ReplaceOrder
+ReplaceOrder : entry / ITEM ORDERED BEFORE
+ReplaceOrder : do / TO REPLACE ORDER
+ReplaceOrder : exit / ORDER REPLACED
+
+state MergeOrder <<choice>>
+
+state "PAY FOR ORDER" as PayForOrder
+PayForOrder : entry / ITEM SELECTED
+PayForOrder : do / PAY FOR ORDER
+PayForOrder : exit / PAID FOR ORDER
+
+state "RECEIVE CONFIRMATION" as ReceiveConfirmation
+ReceiveConfirmation : entry / ITEM ORDERED
+ReceiveConfirmation : do / TO RECEIVE CONFIRMATION
+ReceiveConfirmation : exit / RECEIVED CONFIRMATION
+
+state "DELIVER ORDER" as DeliverOrder
+DeliverOrder : entry / RECEIVE CONFIRMATION
+DeliverOrder : do / TO DELIVER ORDER
+DeliverOrder : exit / ITEM DELIVERED
+
+state "CHECKOUT" as Checkout
+Checkout : entry / VISIT ORDER ITEM
+Checkout : do / TO LOGOUT FROM SYSTEM
+Checkout : exit / ACCOUNT LOGOUT
+
+Registration --> Login
+Login --> SelectItem
+SelectItem --> AddRemoveItem
+
+state ChoiceAfterAdd <<choice>>
+AddRemoveItem --> ChoiceAfterAdd
+
+ChoiceAfterAdd --> ReviewOrder
+ChoiceAfterAdd --> ReplaceOrder
+
+ReviewOrder --> MergeOrder
+ReplaceOrder --> MergeOrder
+
+MergeOrder --> PayForOrder : [PLACE ORDER]
+PayForOrder --> ReceiveConfirmation
+ReceiveConfirmation --> DeliverOrder
+DeliverOrder --> Checkout
+Checkout --> [*]
+
+state "MENU UPDATION" as MenuUpdation
+MenuUpdation : entry / ENTER INTO SYSTEM
+MenuUpdation : do / TO UPDATE MENU
+MenuUpdation : exit / MENU UPDATED
+
+state "MENU NAVIGATION" as MenuNavigation
+MenuNavigation : entry / AFTER MENU UPDATION
+MenuNavigation : do / TO NAVIGATE MENU
+MenuNavigation : exit / MENU NAVIGATED
+
+MenuUpdation --> MenuNavigation
+MenuNavigation --> [*] : [AFTER MENU UPDATION]
 
 @enduml

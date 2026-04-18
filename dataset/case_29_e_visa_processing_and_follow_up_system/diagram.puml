@@ -1,14 +1,130 @@
 @startuml
+title UML State Chart Diagram
 
-' Placeholder diagram for EXAMPLE_29 - E-Visa Processing and Follow-Up System
-' TODO: replace this with the final diagram derived from the case image.
+[*] --> StartChoice
 
-[*] --> Start
+state StartChoice <<choice>>
+state "Register" as Register
+state "Login" as Login
+state "Apply for Visa" as ApplyVisa
+state "Make Payment" as MakePayment
+state "Accept Application" as AcceptApplication
+state "View purpose of application" as ViewPurpose
+state "Verify Document Proofs" as VerifyDocs
+state VerifyChoice <<choice>>
+state "Accept Visa" as AcceptVisa
+state "Reject Visa" as RejectVisa
+state "Update Status" as UpdateStatus
+state "View Status" as ViewStatus
+state "Check Status" as CheckStatus
+state "Give Feedback" as GiveFeedback
+state "Cancel Application" as CancelApplication
+state "Modify Details" as ModifyDetails
+state "View Details" as ViewDetails
+state EndMerge <<choice>>
+state "Log Out" as LogOut
 
-Start : entry / Begin flow
-Start : do / Process system actions
-Start : exit / End flow
+Register : entry / fill details
+Register : do / register
+Register : exit / registration completed
 
-Start --> [*] : complete
+Login : entry / registration should be done
+Login : do / login
+Login : exit / logged in
+
+ApplyVisa : entry / application details
+ApplyVisa : do / upload application form
+ApplyVisa : exit / applied for visa
+
+MakePayment : entry / applied for visa
+MakePayment : do / pay the fee
+MakePayment : exit / payment done
+
+AcceptApplication : entry / payment verified
+AcceptApplication : do / application accepted
+AcceptApplication : exit / process started
+
+ViewPurpose : entry / login
+ViewPurpose : do / view purpose of application
+ViewPurpose : exit / purpose reviewed
+
+VerifyDocs : entry / purpose of application viewed
+VerifyDocs : do / document proofs checked
+VerifyDocs : exit / document proofs verified
+
+AcceptVisa : entry / document proofs checked
+AcceptVisa : do / approve visa
+AcceptVisa : exit / visa approved
+
+RejectVisa : entry / document proofs checked
+RejectVisa : do / reject visa
+RejectVisa : exit / visa rejected
+
+UpdateStatus : entry / login
+UpdateStatus : do / change status of application
+UpdateStatus : exit / status updated
+
+ViewStatus : entry / login
+ViewStatus : do / view status
+ViewStatus : exit / status viewed
+
+CheckStatus : entry / login
+CheckStatus : do / checking status
+CheckStatus : exit / status checked
+
+GiveFeedback : entry / status checked
+GiveFeedback : do / give feedback
+GiveFeedback : exit / feedback submitted
+
+CancelApplication : entry / login
+CancelApplication : do / cancel application
+CancelApplication : exit / application cancelled
+
+ModifyDetails : entry / login
+ModifyDetails : do / modify details by applicant
+ModifyDetails : exit / details modified
+
+ViewDetails : entry / login
+ViewDetails : do / view details of applicant
+ViewDetails : exit / details viewed
+
+LogOut : entry / login
+LogOut : do / logout
+LogOut : exit / logged out
+
+StartChoice --> Register
+StartChoice --> Login
+
+Register --> Login
+
+Login --> ApplyVisa
+Login --> ViewStatus
+Login --> CheckStatus
+Login --> CancelApplication
+Login --> ModifyDetails
+Login --> ViewDetails
+
+ApplyVisa --> MakePayment
+MakePayment --> AcceptApplication
+AcceptApplication --> ViewPurpose
+ViewPurpose --> VerifyDocs
+VerifyDocs --> VerifyChoice
+
+VerifyChoice --> AcceptVisa : [Yes]
+VerifyChoice --> RejectVisa : [No]
+
+AcceptVisa --> UpdateStatus
+RejectVisa --> UpdateStatus
+
+ViewStatus --> EndMerge
+CheckStatus --> GiveFeedback
+GiveFeedback --> EndMerge
+CancelApplication --> EndMerge
+ModifyDetails --> EndMerge
+ViewDetails --> EndMerge
+UpdateStatus --> EndMerge
+
+EndMerge --> LogOut
+LogOut --> [*]
 
 @enduml
