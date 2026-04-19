@@ -15,8 +15,8 @@ state "Picked up receiver" as PickedUp {
     state Communication
     state "End communication" as EndCommunication
 
-    [*] --> WaitingCoin
-    H --> WaitingCoin
+    HungUp --> WaitingCoin : pickUpReceiver / credit = 0
+    
 
     WaitingCoin --> WaitingNumber : [credit >= 20]
     WaitingNumber --> WaitingValidity : dialNumber
@@ -27,7 +27,7 @@ state "Picked up receiver" as PickedUp {
     Communication --> EndCommunication : UT[insufficient credit] / assess
 }
 
-HungUp --> PickedUp : pickUpReceiver / credit = 0
+
 PickedUp --> H : insertCoin(c) / incrementCredit(c)
 PickedUp --> HungUp : replaceReceiver / returnUnusedCoins
 
