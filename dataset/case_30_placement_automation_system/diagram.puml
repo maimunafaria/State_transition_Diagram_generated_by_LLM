@@ -1,67 +1,56 @@
 @startuml
-title UML State Chart Diagram
+title UML state chart diagram
 
-'========================
-' Start
-'========================
-[*] --> ChoiceStart
+[*] --> J1
+state J1 <<choice>>
+state J7 <<choice>>
 
-state ChoiceStart <<choice>>
-
+J1 --> AccountCreation : [Create Account based on Date of Usage]
+J1 --> J7
 state "Account Creation" as AccountCreation
-AccountCreation : entry / monthOfUsage
-AccountCreation : do / createAccount
-AccountCreation : exit / watchVideos
+AccountCreation : entry/1 month of usage
+AccountCreation : do/Creates Account
+AccountCreation : exit/Watch videos
 
-state "Show Likes" as ShowLikes
-ShowLikes : entry / watchVideosAndSaveLikes
-ShowLikes : do / showLikesList
-ShowLikes : exit / uploadBasedOnLikes
-
-ChoiceStart --> AccountCreation : [Create account based on usage]
-ChoiceStart --> ShowLikes : [Upload videos based on likes]
-
-'========================
-' Update flow
-'========================
 state "Updation" as Updation
-Updation : entry / prepareTimelineViewLikes
-Updation : do / uploadVideos
-Updation : exit / viewVideos
-
-AccountCreation --> NextChoice
-ShowLikes --> Updation
-
-state NextChoice <<choice>>
-AccountCreation --> NextChoice
+Updation : entry/Prepare Timeline/view LIKES
+Updation : do/Upload Videos
+Updation : exit/view Videos
 
 state "Discussion State" as Discussion
-Discussion : entry / premiumAccount
-Discussion : do / adminUserDiscussion
-Discussion : exit / endDiscussion
+Discussion : entry/Premium Account
+Discussion : do/Discussion between Admin and User
+Discussion : exit/End of Discussion
 
-state MergePoint <<choice>>
-NextChoice --> Discussion
-NextChoice --> MergePoint
-
-'========================
-' View
-'========================
 state "View" as View
-View : entry / previouslyUpdatedVideos
-View : do / viewVideos
-View : exit / saveVideosInLikes
+View : entry/Previously Updated videos
+View : do/View Videos
+View : exit/Save Videos in LIKES/End
 
-Updation --> MergePoint
-MergePoint --> View
+state "Show Likes" as ShowLikes
+ShowLikes : entry/Watch Videos and Save in LIKES
+ShowLikes : do/Show the list of LIKES
+ShowLikes : exit/Upload Videos based on list
 
-'========================
-' Final choices
-'========================
-state EndChoice <<choice>>
-View --> EndChoice
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
 
-EndChoice --> [*]
+AccountCreation --> J2 : [Possibilities]
+J7 --> Updation
+ShowLikes --> J7 : [ upload vidoes based on likes]
+J2 --> Discussion
+J2 --> J3
+
+Updation--> J3 
+J3 --> View
+
+View --> J4 : [Possibilities]
+J4 --> [*]
+
+
+J4 --> ShowLikes : [Save Videos in LIKES]
+
 Discussion --> [*]
 
 @enduml

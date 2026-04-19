@@ -1,54 +1,104 @@
 @startuml
-title UML State Chart Diagram
+title UML state machine diagram
 
-[*] --> Choice1
+[*] --> J1 : [check user]
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state "Register" as Register
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/ successful registration
+Register : exit/ invalid registration
 
-state Choice1 <<choice>>
-state Choice2 <<choice>>
-state Choice3 <<choice>>
-state Merge1 <<choice>>
+state "Login" as Login {
 
-state "Account Creation" as AccountCreation
-AccountCreation : entry / 1 month of usage
-AccountCreation : do / Creates Account
-AccountCreation : exit / Watch videos
+  state "Patient dashboard" as PatientDashboard
+  PatientDashboard : entry/if the user is logged in as patient
+  PatientDashboard : do/dashboard is displayed
+  PatientDashboard : exit/when user logout
 
-state "Discussion State" as DiscussionState
-DiscussionState : entry / Premium Account
-DiscussionState : do / Discussion between Admin and User
-DiscussionState : exit / End of Discussion
+  state "Health worker Dashboard" as HealthWorkerDashboard
+  HealthWorkerDashboard : entry/if the user is logged in as health worker
+  HealthWorkerDashboard : do/display the health worker dashboard
+  HealthWorkerDashboard : exit/if health worker logout
 
-state "Updation" as Updation
-Updation : entry / Prepare Timeline/view LIKES
-Updation : do / Upload Videos
-Updation : exit / View Videos
+  state "Government dashboard" as GovernmentDashboard
+  GovernmentDashboard : entry/if the user is government official
+  GovernmentDashboard : do/display government dashboard
+  GovernmentDashboard : exit/after his activity is finished
 
-state "View" as View
-View : entry / Previously Updated Videos
-View : do / View Videos
-View : exit / Save Videos in LIKES
+  state "Data Entry" as DataEntry
+  DataEntry : entry/if the data entry is logged in as patient
+  DataEntry : do/data entry is processed
+  DataEntry : exit/after data entry is completed
+  DataEntry : exit/send the data for validation
 
-state "Show LIKES" as ShowLikes
-ShowLikes : entry / Watch Videos and Save in LIKES
-ShowLikes : do / Show the list of LIKES
-ShowLikes : exit / Upload Videos based on list
+  state "Validation of medical data" as ValidationMedicalData
+  ValidationMedicalData : entry/if the data entry by the patient is completed
+  ValidationMedicalData : do/validate the data by healthworker
+  ValidationMedicalData : exit/after validation of medical data is completed
 
-Choice1 --> AccountCreation : [Create Account based on Date of Usage]
-Choice1 --> Choice2 : [Upload videos based on LIKES]
+  state "Health Financing" as HealthPlanning
+  HealthPlanning : entry/analysis of data should be done
+  HealthPlanning : do/the basis of analysed data the best health schemes are drafted
+  HealthPlanning : exit/ the health schemes are sent to the government dashboard
 
-Choice2 --> ShowLikes
-Choice2 --> Updation
+  state "Analysis" as Analysis
+  Analysis : entry/if the data entered is validated
+  Analysis : do/analysis of data
+  Analysis : exit/after analysis of data
+  Analysis : exit/send data to health monitoring
+  Analysis : exit/send data to activity scheduling module
 
-AccountCreation --> Choice3 : [Possibilities]
+  state "Activity Scheduling" as ActivityScheduling
+  ActivityScheduling : entry/analysis of data should be done
+  ActivityScheduling : do/activity is scheduled for the healthworkers
+  ActivityScheduling : exit/the activity scheduling is complete
+  ActivityScheduling : exit/send data to alert module
+  ActivityScheduling : exit/send the schedule to health worker dashboard
 
-Choice3 --> DiscussionState
-Choice3 --> Merge1
+  state "Alerts" as Alerts
+  Alerts : entry/when data from analysis is received
+  Alerts : do/prepare alerts
+  Alerts : exit/after sending alerts patient dashboard and health worker dashboard
 
-ShowLikes --> Merge1 : [Save Videos in LIKES]
-Updation --> Merge1
+  [*] --> LJ
+  state LJ <<choice>>
 
-Merge1 --> View
-View --> [*] : [Possibilities]
-DiscussionState --> [*]
+  LJ --> PatientDashboard
+  LJ --> HealthWorkerDashboard
+  LJ --> GovernmentDashboard
+
+  PatientDashboard --> DataEntry
+  DataEntry --> ValidationMedicalData
+  DataEntry --> Analysis
+
+  Analysis --> ActivityScheduling
+  Analysis --> Alerts
+  Analysis --> HealthPlanning
+  Alerts --> PatientDashboard
+  Alerts --> HealthWorkerDashboard
+  ActivityScheduling --> HealthWorkerDashboard
+  HealthWorkerDashboard --> ValidationMedicalData
+  HealthPlanning --> GovernmentDashboard
+}
+
+state "Logout" as Logout
+Logout : entry/when the user completes his process
+Logout : do/logout user
+Logout : exit/successfully logged out
+
+J1 --> Register : [ new user ]
+Register --> J2
+J1 --> J2
+J2 --> J3
+J3 --> Login
+J3 --> J4
+Login --> J4
+J4 --> Logout
+J2 --> [*]
+Logout --> [*]
 
 @enduml

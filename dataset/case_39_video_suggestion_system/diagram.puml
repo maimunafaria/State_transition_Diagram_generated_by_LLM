@@ -3,32 +3,43 @@ title UML State Chart Diagram (Video Suggestion System)
 
 [*] --> RequestSuggestion
 
-'-----------------------
-' Initial steps
-'-----------------------
+
 state "Request Suggestion" as RequestSuggestion
-RequestSuggestion : entry / Check network connection
+RequestSuggestion : entry / Check network connection between server and user 
 RequestSuggestion : do / send request signal
-RequestSuggestion : exit / Get user ID
+RequestSuggestion : exit / Get unique user ID
 
 state "Retrieve Unique Id" as RetrieveID
-RetrieveID : entry / Request from user
-RetrieveID : do / Get unique ID
-RetrieveID : exit / trigger suggestion functions
+RetrieveID : entry / Request from a user
+RetrieveID : do / Get unique ID of that user
+RetrieveID : exit / trigger all suggestion functions
 
 RequestSuggestion --> RetrieveID
 
-'-----------------------
-' Fork into parallel paths
-'-----------------------
+
 state Fork1 <<fork>>
 RetrieveID --> Fork1
 
 state "Other Videos watched by similar users" as SimilarUsers
+SimilarUsers : entry / Get user ID
+SimilarUsers : do / Get similar users watching videos
+SimilarUsers : exit / retreive the attributes of videos 
 state "Trending Videos" as Trending
+Trending : entry / Get user ID
+Trending : do / Get trending for the user's localty
+Trending : exit / retreive the attributes of videos 
 state "Similar Tag Videos" as SimilarTag
+SimilarTag : entry / Get user ID
+SimilarTag : do / Get similar tag videos
+SimilarTag : exit / retreive the attributes of videos 
 state "Similar Genre Videos" as SimilarGenre
+SimilarGenre : entry / Get user ID
+SimilarGenre : do / Get similar videos
+SimilarGenre : exit / retreive the attributes of videos 
 state "Paid Promotion Videos" as PaidPromo
+PaidPromo : entry / Get user ID
+PaidPromo : do / Get promotion videos for the user
+PaidPromo : exit / retreive the attributes of videos 
 
 Fork1 --> SimilarUsers
 Fork1 --> Trending
@@ -36,9 +47,7 @@ Fork1 --> SimilarTag
 Fork1 --> SimilarGenre
 Fork1 --> PaidPromo
 
-'-----------------------
-' Join back
-'-----------------------
+
 state Join1 <<join>>
 
 SimilarUsers --> Join1
@@ -47,9 +56,7 @@ SimilarTag --> Join1
 SimilarGenre --> Join1
 PaidPromo --> Join1
 
-'-----------------------
-' Final processing
-'-----------------------
+
 state "Retrieve Other Attributes of videos" as RetrieveAttr
 RetrieveAttr : entry / Get video IDs
 RetrieveAttr : do / Retrieve thumbnails, views
@@ -58,9 +65,9 @@ RetrieveAttr : exit / Suggest video
 Join1 --> RetrieveAttr
 
 state "Suggest Videos" as SuggestVideos
-SuggestVideos : entry / Get suggestion videos
-SuggestVideos : do / Send videos to user
-SuggestVideos : exit / Ensure delivery
+SuggestVideos : entry / Get suggestion videos with attributes
+SuggestVideos : do / Send videos to the user
+SuggestVideos : exit / Ensure sent videos reached
 
 RetrieveAttr --> SuggestVideos
 

@@ -1,9 +1,7 @@
 @startuml
 title UML State Chart Diagram
 
-'========================
-' Start
-'========================
+
 [*] --> StartChoice
 
 state StartChoice <<choice>>
@@ -11,85 +9,71 @@ state StartChoice <<choice>>
 StartChoice --> SellerLogin
 StartChoice --> CustomerLogin
 
-'========================
-' Seller side
-'========================
+
 state "Seller Login" as SellerLogin
-SellerLogin : entry / sellerRegistered
-SellerLogin : do / provideLoginDetails
-SellerLogin : exit / loginSuccessful
+SellerLogin : entry / seller should be registered
+SellerLogin : do / user provide Login Details
+SellerLogin : exit / login Successful
 
 state "Add/Remove Products" as ManageProducts
-ManageProducts : entry / sellerLoggedIn
-ManageProducts : do / addRemoveProducts
-ManageProducts : exit / finalizeProductList
+ManageProducts : entry / seller should be LoggedIn
+ManageProducts : do / the seller should be able to add and remove products from the lists
+ManageProducts : exit / fthe seller finalise his products list 
 
 SellerLogin --> ManageProducts
 
-'========================
-' Customer side
-'========================
+
 state "Customer Login" as CustomerLogin
-CustomerLogin : entry / customerRegistered
-CustomerLogin : do / provideLoginDetails
-CustomerLogin : exit / loginSuccessful
+CustomerLogin : entry / customer should be registered
+CustomerLogin : do / user provide Login Details
+CustomerLogin : exit / login Successful
 
 state "View Products" as ViewProducts
-ViewProducts : entry / customerLoggedIn
-ViewProducts : do / viewProductList
-ViewProducts : exit / decideToBuy
+ViewProducts : entry / customer should be LoggedIn
+ViewProducts : do / the customer view Product List
+ViewProducts : exit / customer decides to buy a product
 
 state "Purchase Products" as PurchaseProducts
-PurchaseProducts : entry / selectProduct
-PurchaseProducts : do / contactSeller
-PurchaseProducts : exit / readyToMessage
-
+PurchaseProducts : entry / customer select a Product
+PurchaseProducts : do / customer contacts Seller via messaging
+PurchaseProducts : exit / customer should be able to message the seller
 CustomerLogin --> ViewProducts
 ViewProducts --> PurchaseProducts
 
-'========================
-' Merge point
-'========================
+
 state MergePoint <<choice>>
 
 ManageProducts --> MergePoint
 PurchaseProducts --> MergePoint
 
-'========================
-' Messaging
-'========================
+
 state Message
-Message : entry / intentToPurchase
-Message : do / buyerSellerDiscussion
-Message : exit / decisionMade
+Message : entry /customer wanting to purchase a product 
+Message : do / customer seller messaging each other discussing the deal 
+Message : exit / conclusion is drawn
 
 MergePoint --> Message
 
-'========================
-' Decision
-'========================
 state Decision <<choice>>
 Message --> Decision
 
 state "Purchase successful" as Success
-Success : entry / agreementReached
-Success : do / paymentDone
-Success : exit / requestFeedback
+Success : entry / customer and the seller agrees on the deal
+Success : do / customer pays the seller through external means 
+Success : exit / customer asks for product feedback
 
 state "Purchase Unsuccessful" as Fail
-Fail : entry / notInterested
-Fail : do / declineOffer
+Fail : entry / customer not Interested in the offer
+Fail : do / customer decline sellers's Offer
 Fail : exit / end
 
 Decision --> Success
 Decision --> Fail
 
-'========================
-' Final steps
-'========================
+
 state "Rate Products" as RateProducts
-RateProducts : entry / purchaseComplete
-RateProducts : do / giveFeedback
+RateProducts : entry / customer purchases the products
+RateProducts : do / customer gives Feedback for the transaction
 RateProducts : exit / end
 
 Success --> RateProducts
