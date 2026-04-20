@@ -9,7 +9,7 @@ state Completed
 state Paid
 
 Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
-
+Commissioned --> Completed : campaignCancelled;\ncalculateCosts;\nprepareFinalStatement
 state Active {
 
   state Monitoring {
@@ -40,20 +40,20 @@ state Active {
 
 }
 
-' Suspend / Resume with history
+
 Active --> Suspended : suspendCampaign\n/stopAdverts
 Suspended --> Active : resumeCampaign
 
-' Completion paths
-Active --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
-Active --> Completed : campaignCompleted\n/prepareFinalStatement
 
-' Payment logic
+Active --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+AdvertPreparation --> Completed : campaignCompleted\n/prepareFinalStatement
+
+
 Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
 Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > 0]
 Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
 
-' Final archive
+
 Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
 
 @enduml

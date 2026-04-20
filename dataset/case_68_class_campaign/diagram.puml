@@ -1,23 +1,21 @@
 @startuml
-title Campaign State Machine (Basic Version)
-
-[*] --> Commissioned : /assignManager; assignStaff
+title State machine for Campaign
 
 state Commissioned
 state Active
 state Completed
 state Paid
 
+[*] --> Commissioned : /assignManager;\nassignStaff
+
 Commissioned --> Active : Authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
 
 Active --> Completed : campaignCompleted\n/prepareFinalStatement
 
-' Payment logic
-Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
-Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > 0]
-Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = zero]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > zero]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < zero]\n/generateRefund
 
-' Final
 Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
 
 @enduml
