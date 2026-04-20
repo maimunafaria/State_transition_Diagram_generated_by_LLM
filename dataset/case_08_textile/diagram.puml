@@ -1,7 +1,8 @@
 @startuml
 
 [*] --> CustomerRegistration
-
+state Choice1 <<choice>>
+state Choice2 <<choice>>
 CustomerRegistration : entry / Start state
 CustomerRegistration : do / Fill in required details
 CustomerRegistration : exit / Getting garment orders
@@ -19,26 +20,26 @@ Sampling : entry / Getting garment orders
 Sampling : do / Send out sample materials while ordering
 Sampling : exit / decision
 
-Sampling --> StockChecking : proceed
+Sampling --> Choice1 : proceed
+StockChecking --> Choice1
 
 StockChecking : entry / Getting garment orders
 StockChecking : do / Check availability of raw material
 StockChecking : exit / decision making
 
-StockChecking --> PurchasingRawMaterials : not in stock
-StockChecking --> ProcessingRawMaterials : in stock
+Choice1 --> PurchasingRawMaterials : not in stock
+Choice1 --> ProcessingRawMaterials : in stock
 
 PurchasingRawMaterials : entry / Stock checking
 PurchasingRawMaterials : do / Buy raw materials
 PurchasingRawMaterials : exit / Production of garments
 
-PurchasingRawMaterials --> ProductionOfGarments
-
 ProcessingRawMaterials : entry / Stock checking
 ProcessingRawMaterials : do / Processing
 ProcessingRawMaterials : exit / Production of garments
-
-ProcessingRawMaterials --> ProductionOfGarments
+ProcessingRawMaterials --> Choice2
+PurchasingRawMaterials --> Choice2
+Choice2 --> ProductionOfGarments
 
 ProductionOfGarments : entry / Purchasing or processing of raw materials
 ProductionOfGarments : do / Manufacturing

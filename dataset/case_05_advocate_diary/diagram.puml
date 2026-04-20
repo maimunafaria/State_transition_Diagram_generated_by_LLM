@@ -1,102 +1,152 @@
 @startuml
+title UML state machine diagram
 
-[*] --> Register
+state "View blogs as news updates" as ViewBlogs
+ViewBlogs : entry/Visit page
+ViewBlogs : do/Shows blogs and news updates
+ViewBlogs : exit/Leave the page
 
-Register : entry / New user
-Register : do / Verify details
-Register : exit / Verified details
+state "Register" as Register
+Register : entry/New user
+Register : do/Verify details
+Register : exit/Verified details
 
-Register --> Login : valid credentials
-Register --> [*] : invalid credentials
+state "Login" as Login
+Login : entry/Registered
+Login : do/Verify password
+Login : exit/View details
 
-Login : entry / Registered
-Login : do / Verify password
-Login : exit / View details
+state "View details and logs" as ViewDetails
+ViewDetails : entry/Login
+ViewDetails : do/Show details of case and logs
+ViewDetails : exit/Do required function
 
-Login --> ViewDetails : proper
-Login --> [*] : improper
+state "Add case" as AddCase
+AddCase : entry/Wants to add case
+AddCase : do/Show Category
+AddCase : exit/Selects a category
 
-ViewDetails : entry / Login
-ViewDetails : do / Show details of case and logs
-ViewDetails : exit / Do required function
+state "Civil" as Civil
+Civil : entry/Selects this category
+Civil : do/update view table
+Civil : exit/Allows to add details
 
-ViewDetails --> AddCase : add case
-ViewDetails --> FileOnline : file online
-ViewDetails --> DownloadForms : download forms
-ViewDetails --> Reference : reference
-ViewDetails --> Feedback : give feedback
-ViewDetails --> Logout : logout
+state "Criminal" as Criminal
+Criminal : entry/Selects this category
+Criminal : do/Update the view table
+Criminal : exit/Allows to add details
 
-AddCase : entry / Wants to add case
-AddCase : do / Show category
-AddCase : exit / Select category
+state "Add details" as AddDetails
+AddDetails : entry/Selects category
+AddDetails : do/Add details about case
+AddDetails : exit/Update view table
 
-AddCase --> Civil : civil
-AddCase --> Criminal : criminal
+state "Add remainder" as AddReminder
+AddReminder : entry/Adds details
+AddReminder : do/Add remainder
+AddReminder : exit/Update calender
 
-Civil : entry / Select civil
-Civil : do / Update view table
-Civil : exit / Add details
+state "Upload document" as UploadDocument
+UploadDocument : entry/Add details
+UploadDocument : do/Upload documents
+UploadDocument : exit/leave page
 
-Criminal : entry / Select criminal
-Criminal : do / Update view table
-Criminal : exit / Add details
+state "File online" as FileOnline
+FileOnline : entry/Prefers online filing
+FileOnline : do/Select category
+FileOnline : exit/Click a link
 
-Civil --> AddDetails
-Criminal --> AddDetails
+state "Redirect to page" as RedirectPage
+RedirectPage : entry/Click a link
+RedirectPage : do/Redirects to page
+RedirectPage : exit/Returns to page
 
-AddDetails : entry / Add case details
-AddDetails : do / Update table
-AddDetails : exit / Return
+state "Download model forms" as DownloadForms
+DownloadForms : entry/wants to download forms
+DownloadForms : do/Select a form
+DownloadForms : exit/Downloads form
 
-AddDetails --> ViewDetails
+state "Reference" as Reference
+Reference : entry/Pefers to refer
+Reference : do/Select a category
+Reference : exit/prefered categoried is showed
 
-FileOnline : entry / Online filing
-FileOnline : do / Select category
-FileOnline : exit / Click link
+state "Quick References" as QuickReferences
+QuickReferences : entry/Selects quick references
+QuickReferences : do/Shows some Quick references
+QuickReferences : exit/Leave the page
+
+state "Books" as Books
+Books : entry/Selects books
+Books : do/Shows books
+Books : exit/Leave page
+
+state "Feedback" as Feedback
+Feedback : entry/Wants to give feedback
+Feedback : do/Add feedback
+Feedback : exit/Exit page
+
+state "Logout" as Logout
+Logout : entry/Wants to leave the site
+Logout : do/The session of logged in user ended
+Logout : exit/Leave the site
+
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+
+state J10 <<choice>>
+
+[*] --> J1
+
+J1 --> ViewBlogs
+J1 --> Register
+
+ViewBlogs --> [*]
+
+Register --> J2
+J2 --> [*] : [Invalid Credentials]
+J2 --> Login : [Valid]
+
+Login --> [*] : [Improper]
+Login --> ViewDetails : [Proper]
+
+ViewDetails --> J3
+
+J3 --> AddCase
+J3 --> FileOnline
+J3 --> DownloadForms
+J3 --> Reference
+J3 --> Feedback
+
+AddCase --> J4
+J4 --> Civil
+J4 --> Criminal
+
+Civil --> J5
+Criminal --> J5
+J5 --> AddDetails
+AddDetails --> AddReminder
+AddReminder --> UploadDocument
+UploadDocument --> J10
 
 FileOnline --> RedirectPage
+RedirectPage --> J10
 
-RedirectPage : entry / Click link
-RedirectPage : do / Redirect
-RedirectPage : exit / Return
+DownloadForms --> J10
 
-RedirectPage --> ViewDetails
+Reference --> J6
+J6 --> QuickReferences
+J6 --> Books
+QuickReferences --> J10
+Books --> J10
 
-DownloadForms : entry / Select form
-DownloadForms : do / Download form
-DownloadForms : exit / Return
+Feedback --> J10
 
-DownloadForms --> ViewDetails
-
-Reference : entry / Select category
-Reference : do / Show reference
-Reference : exit / Return
-
-Reference --> QuickReferences
-Reference --> Books
-
-QuickReferences : entry / Select quick reference
-QuickReferences : do / Show reference
-QuickReferences : exit / Leave page
-
-Books : entry / Select books
-Books : do / Show books
-Books : exit / Leave page
-
-QuickReferences --> ViewDetails
-Books --> ViewDetails
-
-Feedback : entry / Add feedback
-Feedback : do / Submit feedback
-Feedback : exit / Exit page
-
-Feedback --> ViewDetails
-
-Logout : entry / Leave site
-Logout : do / End session
-Logout : exit / Leave site
-
+J10 --> Logout
 Logout --> [*]
 
 @enduml

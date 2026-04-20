@@ -1,107 +1,101 @@
 @startuml
+title UML state machine diagram
 
-[*] --> AuthenticationLogin
+state "Authentication Login" as Auth
+Auth : entry/User opens the application
+Auth : do/User enters username and password
+Auth : exit/Login Successful
+Auth : exit/Application close
 
-AuthenticationLogin : entry / User opens the application
-AuthenticationLogin : do / Enter username and password
-AuthenticationLogin : exit / Login successful / Application close
+state "Final State" as FinalState
+FinalState : entry/User clicks on close application
+FinalState : do/Close all current sessions
+FinalState : exit/End application
 
-AuthenticationLogin --> Dashboard : login successful
-AuthenticationLogin --> [*] : application close
+state "Dashboard" as Dashboard {
 
-Dashboard : entry / Login successful
-Dashboard : do / Select an option
-Dashboard : exit / Logout
+  state "Add Goods" as AddGoods
+  AddGoods : entry/User adds goods
+  AddGoods : do/Add goods details to database
+  AddGoods : exit/User successfully adds
 
-Dashboard --> AddGoods
-Dashboard --> RemoveGoods
-Dashboard --> EditGoods
-Dashboard --> SearchItem
-Dashboard --> PlaceOrder
-Dashboard --> CustomerRequest
-Dashboard --> ReceiptGeneration
-Dashboard --> InvoiceGeneration
-Dashboard --> ViewSummaryReport
-Dashboard --> ExpiredGoods
-Dashboard --> ChangePassword
-Dashboard --> Logout
+  state "Expired Goods" as ExpiredGoods
+  ExpiredGoods : entry/User does on expired goods
+  ExpiredGoods : do/Displays expired goods from database
+  ExpiredGoods : exit/Item removed from database
 
-AddGoods : entry / User adds goods
-AddGoods : do / Add goods details to database
-AddGoods : exit / Successfully added
-AddGoods --> Dashboard
+  state "Edit Goods" as EditGoods
+  EditGoods : entry/User edits goods
+  EditGoods : do/Update goods in database
+  EditGoods : exit/Successfully updated
 
-RemoveGoods : entry / Remove goods
-RemoveGoods : do / Remove goods from database
-RemoveGoods : exit / Successfully removed
-RemoveGoods --> Dashboard
+  state "Search Item" as SearchItem
+  SearchItem : entry/User searches item
+  SearchItem : do/Retrieve item from database
+  SearchItem : exit/Item successfully retrieved
 
-EditGoods : entry / Edit goods
-EditGoods : do / Update goods details
-EditGoods : exit / Successfully updated
-EditGoods --> Dashboard
+  state "Place Order" as PlaceOrder
+  PlaceOrder : entry/User places order
+  PlaceOrder : do/Enter order details
+  PlaceOrder : exit/Order placed to supplier
 
-SearchItem : entry / User searches item
-SearchItem : do / Search in database
-SearchItem : exit / Item retrieved
-SearchItem --> Dashboard
+  state "Customer Request" as CustomerRequest
+  CustomerRequest : entry/User handles request
+  CustomerRequest : do/Obtain input from customer
+  CustomerRequest : exit/Request sent to supplier
 
-PlaceOrder : entry / User places order
-PlaceOrder : do / Enter wholesale order
-PlaceOrder : exit / Order placed to supplier
-PlaceOrder --> InvoiceGeneration
+  state "Remove Goods" as RemoveGoods
+  RemoveGoods : entry/User removes goods
+  RemoveGoods : do/Delete goods from database
+  RemoveGoods : exit/Successfully removed
 
-InvoiceGeneration : entry / Place order
-InvoiceGeneration : do / Generate invoice
-InvoiceGeneration : exit / Bill added to database
-InvoiceGeneration --> Dashboard
+  state "Receipt Generation" as Receipt
+  Receipt : entry/User generates receipt
+  Receipt : do/Create receipt
+  Receipt : exit/Receipt added to database
 
-ReceiptGeneration : entry / Generate receipt
-ReceiptGeneration : do / Create bill for customer
-ReceiptGeneration : exit / Receipt added to database
+  state "Invoice Generation" as Invoice
+  Invoice : entry/User places order
+  Invoice : do/Generate bill and add to database
+  Invoice : exit/Bill added
 
-ReceiptGeneration --> DiscountTaxGeneration
-ReceiptGeneration --> ReplaceItem
-ReceiptGeneration --> CancelReceipt
+  state "View Summary Report" as Report
+  Report : entry/User views report
+  Report : do/Generate monthly comparison
+  Report : exit/Report generated
 
-DiscountTaxGeneration : entry / Tax and discount
-DiscountTaxGeneration : do / Calculate discount and tax
-DiscountTaxGeneration : exit / Added to receipt
-DiscountTaxGeneration --> Dashboard
+  state "Tax Generation" as Tax
+  Tax : entry/User generates tax
+  Tax : do/Calculate tax
+  Tax : exit/Tax added to receipt
 
-ReplaceItem : entry / Replace item
-ReplaceItem : do / Replace item in receipt
-ReplaceItem : exit / Successfully replaced
-ReplaceItem --> Dashboard
+  state "Replace Item" as Replace
+  Replace : entry/User replaces item
+  Replace : do/Edit receipt contents
+  Replace : exit/Item replaced
 
-CancelReceipt : entry / Cancel receipt
-CancelReceipt : do / Remove receipt from database
-CancelReceipt : exit / Receipt cancelled
-CancelReceipt --> Dashboard
+  state "Cancel Receipt" as Cancel
+  Cancel : entry/User cancels receipt
+  Cancel : do/Remove from database
+  Cancel : exit/Receipt removed
 
-CustomerRequest : entry / Customer request
-CustomerRequest : do / Log customer request
-CustomerRequest : exit / Sent to supplier
-CustomerRequest --> Dashboard
+  SearchItem --> PlaceOrder
+  PlaceOrder --> Invoice
+  Invoice --> Receipt
 
-ViewSummaryReport : entry / Generate summary report
-ViewSummaryReport : do / Compare transactions
-ViewSummaryReport : exit / Report generated
-ViewSummaryReport --> Dashboard
+  Receipt --> Tax
+  Receipt --> Replace
+  Receipt --> Cancel
 
-ExpiredGoods : entry / Expired goods check
-ExpiredGoods : do / Remove expired goods
-ExpiredGoods : exit / Successfully removed
-ExpiredGoods --> Dashboard
+  ExpiredGoods --> RemoveGoods
+  Invoice --> Report
 
-ChangePassword : entry / Change password
-ChangePassword : do / Update password
-ChangePassword : exit / Password updated
-ChangePassword --> Dashboard
+}
 
-Logout : entry / User logs out
-Logout : do / Close session
-Logout : exit / End application
-Logout --> [*]
+[*] --> Auth
+Auth --> Dashboard : login successful
+Auth --> FinalState : application close
+
+Dashboard --> FinalState
 
 @enduml

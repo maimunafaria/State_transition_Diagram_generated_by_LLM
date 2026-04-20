@@ -1,48 +1,70 @@
 @startuml
 
-[*] --> DonorRegistration
+[*] --> Choice1
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+state Choice3 <<choice>>
+Choice1 --> Verification : Indian
+Choice1 --> [*] : not Indian
 
-DonorRegistration : entry / Enter personal details
-DonorRegistration : do / Verify details
-DonorRegistration : exit / Request contact details
+Verification : entry / Citizenship status
+Verification : do / Verify details
+Verification : exit / Verified status
 
-DonorRegistration --> GetContacts : registration complete
+Verification --> Registration : verified
 
-GetContacts : entry / Registered donor
-GetContacts : do / Receive contact details
-GetContacts : exit / Donate a device
+Registration : entry / Citizenship status
+Registration : do / Register with ID
+Registration : exit / Unique National Health ID
 
-GetContacts --> DeviceDetails : proceed
+Registration --> Login : registered
 
-DeviceDetails : entry / Give contacts
-DeviceDetails : do / Receive device details
-DeviceDetails : exit / Request approval
+Login : entry / National Health ID
+Login : do / Login with the ID
+Login : exit / Logged in to the account
 
-DeviceDetails --> DeviceVerification : submit for verification
+Login --> Choice2 
+Choice2 --> Activation : login success
+Choice2 --> [*] 
+Activation : entry / Logged in the account
+Activation : do / Activate the account
+Activation : exit / Activated account
 
-DeviceVerification : entry / Provided device details
-DeviceVerification : do / Check details
-DeviceVerification : exit / Acknowledge donor
+Activation --> AddFiles : add old files
+Activation --> Permission : proceed to permissions
 
-DeviceVerification --> Approved : passes verification
-DeviceVerification --> Rejected : fails verification
+AddFiles : entry / Activated account
+AddFiles : do / Add the files
+AddFiles : exit / Added old files
 
-Approved : entry / Device verified
-Approved : do / Choose an executive
-Approved : exit / Send details to executive
+AddFiles --> Repository
 
-Approved --> PickedUp : assign pickup
+Permission : entry / Activated account
+Permission : do / Providing permissions
+Permission : exit / Access of authorities
 
-PickedUp : entry / Executive receives details
-PickedUp : do / Executive picks product
-PickedUp : exit / Acknowledge status of product
+Permission --> Access : permission granted
+Permission --> Repository : saving permissions
 
-PickedUp --> [*]
+Access : entry / Checking for permission
+Access : do / Accessing the files
+Access : exit / Adding new files
 
-Rejected : entry / Fails verification
-Rejected : do / Notify donor
-Rejected : exit / Device not accepted
+Access --> Choice3 
+Choice3 --> Repository : given permission
+Choice3 --> [*] 
 
-Rejected --> [*]
+
+Government : entry / Having repository
+Government : do / Accessing the details
+Government : exit / Analysis report
+
+Government --> Repository
+
+Repository : entry / Government repository
+Repository : do / Saving the details
+Repository : exit / Logged out
+
+Repository --> [*]
 
 @enduml

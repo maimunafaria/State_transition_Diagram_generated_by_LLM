@@ -1,54 +1,160 @@
-    @startuml
-[*] --> SellerRegistration : [seller portal][new seller]
-SellerRegistration : entry / Unregistered user
-SellerRegistration : do / Get Valid Seller Credentials
-SellerRegistration : exit / Seller Account Registered
+@startuml
+title UML state machine diagram
 
-SellerRegistration --> SellerVerification : Seller Account Registered
-SellerVerification : entry / Verify Seller Account
-SellerVerification : exit / Login Seller
+state "Seller Registration" as SellerRegistration
+SellerRegistration : entry/Unregistered Seller
+SellerRegistration : do/Get Valid Seller Credentials
+SellerRegistration : exit/Seller Account Registered
 
-SellerVerification --> SellerLogin : Seller Account Registered
-SellerLogin : entry / Verify Seller Login
-SellerLogin : exit / Seller Logged In Successfully
+state "Seller Verification" as SellerVerification
+SellerVerification : entry/Seller Account Registered
+SellerVerification : do/Verify Seller
+SellerVerification : exit/Login Seller
 
-SellerLogin --> SellerHome : Seller Logged In
-SellerHome : entry / Display Seller Dashboard
-SellerHome : do / Manage Products
-SellerHome : exit / Promote Products
+state "Seller Login" as SellerLogin
+SellerLogin : entry/Unverified Seller
+SellerLogin : entry/Seller not logged in
+SellerLogin : do/Authenticate Seller
+SellerLogin : exit/Logged In Successfully
 
-SellerHome --> SaleProducts : Seller Adds New Product
-SaleProducts : entry / Add Product to Seller Inventory
-SaleProducts : exit / Product Added Successfully
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry/Not Logged In
+CustomerLogin : do/Authenticate Customer
+CustomerLogin : exit/Successfully Logged In
 
-SellerHome --> [*] : Logout
+state "Seller Home" as SellerHome
+SellerHome : entry/Logged In Seller
+SellerHome : do/Display Seller Dashboard
+SellerHome : exit/Sale Products
+SellerHome : exit/Promote Products
+SellerHome : exit/Chat
+SellerHome : exit/Logout
 
-[*] --> CustomerLogin
-CustomerLogin : entry / Authenticate Customer
-CustomerLogin : exit / Successfully Logged In
+state "Customer Home" as CustomerHome
+CustomerHome : entry/Customer Logged in
+CustomerHome : do/Display Recommended/Promoted Products
+CustomerHome : exit/View Product
+CustomerHome : exit/Buy Product
+CustomerHome : exit/Chat
+CustomerHome : exit/Report Seller
+CustomerHome : exit/Rate and Review
 
-CustomerLogin --> CustomerHome : Customer Logged In
-CustomerHome : entry / Display Recommended Products
-CustomerHome : do / Browse Products
-CustomerHome : exit / Chat with Seller
+state "View Product" as ViewProduct
+ViewProduct : entry/To View Products
+ViewProduct : do/Search and View Products
+ViewProduct : exit/Return to home
+ViewProduct : exit/Buy Product
 
-CustomerHome --> ViewProduct : User Views Product
-ViewProduct : entry / View Products
-ViewProduct : do / Search for Product
-ViewProduct : exit / Display Product Results
+state "Buy Product" as BuyProduct
+BuyProduct : entry/Opted to Buy
+BuyProduct : do/Add product to cart
+BuyProduct : exit/Proceed to Checkout
 
-ViewProduct --> BuyProduct : User Decides to Buy
-BuyProduct : entry / Select Product to Buy
-BuyProduct : do / Add to Cart
-BuyProduct : exit / Proceed to Checkout
+state "Make Purchase" as MakePurchase
+MakePurchase : entry/Proceeded to Checkout
+MakePurchase : do/Enable payment
+MakePurchase : exit/Payment Successful
+MakePurchase : exit/Payment Unsuccessful
+MakePurchase : exit/Return to Home
 
-BuyProduct --> MakePurchase : User Proceeds to Checkout
-MakePurchase : entry / Proceed to Payment
-MakePurchase : do / Complete Payment
-MakePurchase : exit / Payment Successful
+state "Chat" as CustomerChat
+CustomerChat : entry/To Chat
+CustomerChat : do/Chat with Seller
+CustomerChat : exit/Return to Home
 
-MakePurchase --> [*] : Logout
+state "Report Seller" as ReportSeller
+ReportSeller : entry/To Report Seller
+ReportSeller : entry/Seller in Purchase History
+ReportSeller : do/Issue Report to Seller
+ReportSeller : exit/Return to Home
 
-CustomerHome --> [*] : Logout
+state "Rate and Review" as RateReview
+RateReview : entry/To Rate and Review
+RateReview : entry/Product Delivered
+RateReview : do/Rate and Review the product
+RateReview : exit/Return to Home
+
+state "Sale Products" as SaleProducts
+SaleProducts : entry/To Sale Products
+SaleProducts : do/Add new Product to Seller Inventory
+SaleProducts : exit/Product added Successfully
+SaleProducts : exit/Return to Home State
+
+state "Promote Products" as PromoteProducts
+PromoteProducts : entry/To Promote Products
+PromoteProducts : entry/Product in Sale
+PromoteProducts : do/Promote a Product
+PromoteProducts : exit/Return to Home State
+
+state "Chat" as SellerChat
+SellerChat : entry/To Chat
+SellerChat : entry/Seller Product in Sale
+SellerChat : entry/Message from Customer
+SellerChat : do/Enable chat with Customer
+SellerChat : exit/Return to Home State
+
+state "Logout" as Logout
+Logout : entry/To Logout User
+Logout : do/Logout User
+Logout : exit/User Logged out
+
+state J0 <<choice>>
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+state J7 <<choice>>
+state J8 <<choice>>
+
+[*] --> J0
+J0 --> J1 : [Seller Portal]
+J0 --> CustomerLogin : [Customer Portal]
+
+J1 --> SellerRegistration : [New Seller]
+J1 --> J2 : [Registered Seller]
+
+SellerRegistration --> SellerVerification
+SellerVerification --> J2
+J2 --> SellerLogin
+
+CustomerLogin --> J3
+SellerLogin --> J7
+J7 --> SellerHome : [Go To Home]
+
+J3 --> CustomerHome : [Go To Home]
+
+CustomerHome --> J4 : [Possible Activities]
+J4 --> ViewProduct : [View Products]
+J4 --> CustomerChat : [Chat]
+J4 --> ReportSeller : [Report Seller]
+J4 --> RateReview : [Rate and Review]
+J4 --> J8 : [Logout]
+
+ViewProduct --> J5
+J5 --> J3 : [Not to Buy]
+J5 --> BuyProduct : [Proceed to Buy]
+
+BuyProduct --> MakePurchase
+MakePurchase --> J3
+
+CustomerChat --> J3
+ReportSeller --> J3
+RateReview --> J3
+
+SellerHome --> J6 : [Possible Activities]
+J6 --> PromoteProducts : [Promote Products]
+J6 --> SellerChat : [Chat]
+J6 --> SaleProducts
+J6 --> J8 : [Logout]
+
+SaleProducts --> J7
+
+PromoteProducts --> J7
+SellerChat --> J7
+
+J8 -->  Logout
+Logout --> [*]
 
 @enduml
