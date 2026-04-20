@@ -1,100 +1,113 @@
 @startuml
-title UML State Chart Diagram
-
-'========================
-' Top flow
-'========================
-[*] --> RegLogin
-
-state "Registration or login" as RegLogin
-RegLogin : entry / userDetail
-RegLogin : do / verifyDetails
-
-state ChoiceUser <<choice>>
-RegLogin --> ChoiceUser
+title UML state chart diagram
 
 state "Teacher profile" as TeacherProfile
-state "Student profile" as StudentProfile
+TeacherProfile : entry / valid teacher
 
-ChoiceUser --> TeacherProfile
-ChoiceUser --> StudentProfile
-ChoiceUser --> [*]
+state "Registration or login" as RegistrationLogin
+RegistrationLogin : entry / user detail
+RegistrationLogin : do / verify details
 
-'========================
-' Teacher side
-'========================
-state "Create/Edit Quiz by Teacher" as TeacherSystem {
+state "student profile" as StudentProfile
+StudentProfile : entry / valid student
 
-  [*] --> TStart
+state "Create quiz/edit quiz by teacher" as TeacherQuiz {
+  state "new quiz" as NewQuiz
+  NewQuiz : entry / valid course
+  NewQuiz : do / enter question,answer and option
 
-  state TStart <<choice>>
+  state "edit quiz" as EditQuiz
+  EditQuiz : entry / quiz created already
+  EditQuiz : do / edit quiz
 
-  state "New Quiz" as NewQuiz
-  state "Edit Quiz" as EditQuiz
-  state "Save Draft" as SaveDraft
-  state "Post Quiz" as PostQuiz
-  state "View Result" as ViewResult
+  state "save draft" as SaveDraft
+  SaveDraft : entry / quiz created
+  SaveDraft : do / save draft
 
-  NewQuiz : entry / validCourse
-  NewQuiz : do / enterQuestionAnswerOption
+  state "post quiz" as PostQuiz
+  PostQuiz : entry / user confirmation
+  PostQuiz : do / alert student
 
-  EditQuiz : entry / quizExists
-  EditQuiz : do / editQuiz
+  state "view result" as ViewResult
+  ViewResult : entry / quiz over
 
-  SaveDraft : entry / quizCreated
-  SaveDraft : do / saveDraft
+  state T1 <<choice>>
+  state T2 <<choice>>
+  state T3 <<choice>>
+  state T4 <<choice>>
 
-  PostQuiz : entry / userConfirm
-  PostQuiz : do / notifyStudent
+  [*] --> T1
+  T1 --> NewQuiz
+  T1 --> EditQuiz
+  T1 --> T3
+  NewQuiz --> T2
+  EditQuiz --> T2
 
-  ViewResult : entry / quizOver
+  T2 --> SaveDraft
+  T2 --> PostQuiz
+  SaveDraft --> T2
 
-  TStart --> NewQuiz
-  TStart --> EditQuiz
-
-  NewQuiz --> SaveDraft
-  EditQuiz --> SaveDraft
-
-  SaveDraft --> PostQuiz
-  PostQuiz --> ViewResult
+  T2 --> T3
+  T3 --> T4
+  T4 --> ViewResult
   ViewResult --> [*]
 }
 
-TeacherProfile --> TeacherSystem
+state "answer quiz by student" as StudentQuiz {
+  state "select quiz" as SelectQuiz
+  SelectQuiz : entry / alert from teacher
 
-'========================
-' Student side
-'========================
-state "Answer Quiz by Student" as StudentSystem {
+  state "answer quiz" as AnswerQuiz
+  AnswerQuiz : entry / valid quiz
+  AnswerQuiz : do / answer quiz
+  AnswerQuiz : exit / time over
+
+  state "quiz answer and result" as QuizResult
+  QuizResult : entry / quiz submitted
+
+  state "submit" as SubmitQuiz
+  SubmitQuiz : entry / quiz completed or time over
+  SubmitQuiz : do / submission
+
+  state "feedback" as Feedback
+  Feedback : entry / quiz completed
+  Feedback : do / feedback
+
+  state S1 <<choice>>
+  state S2 <<choice>>
+  state S3 <<choice>>
 
   [*] --> SelectQuiz
+  SelectQuiz --> S1
 
-  state "Select Quiz" as SelectQuiz
-  state "Answer Quiz" as AnswerQuiz
-  state "Submit" as Submit
-  state "Quiz Result" as Result
-  state "Feedback" as Feedback
-
-  SelectQuiz : entry / alertFromTeacher
-
-  AnswerQuiz : entry / validQuiz
-  AnswerQuiz : do / answerQuiz
-
-  Submit : entry / quizComplete
-  Submit : do / submitQuiz
-
-  Result : entry / resultGenerated
-
-  Feedback : entry / quizComplete
-  Feedback : do / giveFeedback
-
-  SelectQuiz --> AnswerQuiz
-  AnswerQuiz --> Submit
-  Submit --> Result
-  Result --> Feedback
-  Feedback --> [*]
+  S1 --> AnswerQuiz
+  S1 --> S2
+  S1 --> [*]
+  S2 --> QuizResult
+  S3 --> S2
+  Feedback -->s2
+  S3 --> Feedback
+  SubmitQuiz --> s3
+  AnswerQuiz --> SubmitQuiz
 }
 
-StudentProfile --> StudentSystem
+state TopJoin <<choice>>
+
+[*] --> RegistrationLogin
+
+RegistrationLogin --> TopJoin
+TopJoin  --> TeacherProfile
+TopJoin  --> StudentProfile
+
+
+TopJoin --> TeacherQuiz
+TopJoin --> StudentQuiz
+TopJoin --> [*]
+
+TeacherProfile --> TeacherQuiz
+StudentProfile --> StudentQuiz
+
+TeacherQuiz -->  [*]
+StudentQuiz -->  [*]
 
 @enduml

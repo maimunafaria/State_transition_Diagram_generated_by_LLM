@@ -1,14 +1,13 @@
 @startuml
 title UML State Machine Diagram
 
-' -----------------------------
-' Initial flow
-' -----------------------------
-[*] --> C1
+state StartChoice <<choice>>
+state AdminChoice <<choice>>
+state EditorChoice <<choice>>
+state ReadFeedbackChoice <<choice>>
+state EndJoin <<choice>>
 
-state C1 <<choice>>
-C1 --> Register
-C1 --> Login
+[*] --> StartChoice
 
 state Register
 Register : do / Fill details
@@ -19,41 +18,17 @@ Login : entry / Registered user
 Login : do / Enter login credentials
 Login : exit / Valid username and password
 
-' -----------------------------
-' After register/login
-' -----------------------------
-state C2 <<choice>>
-
-Register --> C2
-Login --> C2
-
-C2 --> ManageProfiles
-C2 --> InvalidUser
-C2 --> Writing
-C2 --> Editing
-
-' -----------------------------
-' Upper branch
-' -----------------------------
-state ManageProfiles
+state "Manage profiles" as ManageProfiles
 ManageProfiles : entry / Admin logged in
 ManageProfiles : do / Manage profile in database
 ManageProfiles : do / Add, delete or edit profiles if necessary
 ManageProfiles : exit / Action completed
 
-state InvalidUser
+state "Invalid user" as InvalidUser
 InvalidUser : entry / Invalid login or invalid registration
 InvalidUser : do / Block entry to system
 InvalidUser : exit / Abnormal termination
 
-state Abort <<choice>>
-
-ManageProfiles --> Publishing
-InvalidUser --> Abort
-
-' -----------------------------
-' Writing/editing/publishing
-' -----------------------------
 state Writing
 Writing : entry / Writer logged in
 Writing : do / Write article
@@ -65,47 +40,57 @@ Editing : do / Edit article
 Editing : exit / Send to moderator/admin
 
 state Publishing
-Publishing : entry / Admin logged in and an article to be approved
+Publishing : entry / Admin logged in and article to be approved
 Publishing : do / Choose to approve and publish or reject article
 Publishing : do / Add article to database if approved
 Publishing : exit / Publish article
-
-Writing --> Editing
-Editing --> Publishing
-
-' -----------------------------
-' Reading/search/feedback
-' -----------------------------
-state Reading
-Reading : entry / Published article
-Reading : do / Read article
-Reading : exit / Completed reading
 
 state Search
 Search : entry / Choose to search for articles
 Search : do / Read searched articles
 Search : exit / Completed reading
 
+state Reading
+Reading : entry / Published article
+Reading : do / Read article
+Reading : exit / Completed reading
+
 state Feedback
 Feedback : entry / Reader chosen to give feedback
 Feedback : do / Get feedback
 Feedback : exit / Feedback entry successful
 
+StartChoice --> Register
+StartChoice --> Login
+
+Register --> AdminChoice
+Login --> EditorChoice
+
+AdminChoice --> ManageProfiles
+AdminChoice --> InvalidUser
+
+EditorChoice --> Writing
+EditorChoice --> Editing
+EditorChoice --> InvalidUser
+
+Writing --> Editing
+Editing --> Publishing
+ManageProfiles --> Publishing
+
+InvalidUser --> [*]
+
 Publishing --> Reading
-Publishing --> Search
+Reading --> Reading
 
-state C3 <<choice>>
-Reading --> C3
-Search --> C3
-C3 --> Feedback
-Feedback --> C3
+Search --> Search
+Reading --> ReadFeedbackChoice
 
-' -----------------------------
-' Final flow
-' -----------------------------
-state J1 <<choice>>
-C3 --> J1
-Search --> J1
-J1 --> [*]
+ReadFeedbackChoice --> Search
+ReadFeedbackChoice --> Feedback
+
+Feedback --> EndJoin
+Search --> EndJoin
+
+EndJoin --> [*]
 
 @enduml

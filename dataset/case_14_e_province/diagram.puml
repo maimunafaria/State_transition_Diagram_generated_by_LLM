@@ -1,9 +1,7 @@
 @startuml
 title UML State Machine Diagram (Certificate Management)
 
-'-----------------------
-' Initial
-'-----------------------
+
 [*] --> Registration
 
 state Registration
@@ -11,29 +9,25 @@ Registration : entry / Get the Registration Details
 Registration : do / Validate the Details
 Registration : exit / Valid or Invalid Registration
 
-' Invalid registration
+
 Registration --> [*] : [Invalid Registration]
 
-' Valid registration → Login
+
 Registration --> Login : [Valid Registration]
 
-'-----------------------
-' Login
-'-----------------------
+
 state Login
 Login : entry / Get the Login Details
 Login : do / Validate the Login Details
 Login : exit / Valid or Invalid Login
 
-' Loop on invalid login
+
 Login --> Login : [Invalid Login]
 
-' Valid login → choice
+
 Login --> Choice1 : [Valid Login]
 
-'-----------------------
-' Main choice after login
-'-----------------------
+
 state Choice1 <<choice>>
 
 Choice1 --> CancelCert : [Cancel the Certificate]
@@ -41,9 +35,7 @@ Choice1 --> RequestCert : [Applying for Certificates]
 Choice1 --> ViewProfile : [Profile Viewing]
 Choice1 --> UpdateProfile : [Profile Updation]
 
-'-----------------------
-' Cancel Certificate
-'-----------------------
+
 state "Cancellation of Certificates" as CancelCert
 CancelCert : entry / Certificate is asked for Cancellation
 CancelCert : do / Certificate is Canceled
@@ -51,15 +43,11 @@ CancelCert : exit / Move to End
 
 CancelCert --> EndMerge
 
-'-----------------------
-' Request Certificate
-'-----------------------
 state "Request for Certificates" as RequestCert
 RequestCert : entry / Fill the Form and Upload the Details
 RequestCert : do / Request for Certificates
 RequestCert : exit / Apply for another Certificate or Move to End
 
-' Loop if applying again
 RequestCert --> RequestCert : [Apply for another Certificate if needed]
 
 RequestCert --> IssueCert : [Certificates requested]
@@ -69,11 +57,9 @@ IssueCert : entry / Validating Details
 IssueCert : do / Issuing the Certificates
 IssueCert : exit / Updating the Database
 
-IssueCert --> EndMerge : [Certificate is issued]
+IssueCert --> RequestCert : [Certificate is issued]
+RequestCert --> EndMerge : [End]
 
-'-----------------------
-' View Profile
-'-----------------------
 state "View Profile" as ViewProfile
 ViewProfile : entry / View the Profile
 ViewProfile : do / Display the Profile
@@ -81,9 +67,7 @@ ViewProfile : exit / Exit from Profile Viewing
 
 ViewProfile --> EndMerge : [End]
 
-'-----------------------
-' Update Profile
-'-----------------------
+
 state "Update the Profile" as UpdateProfile
 UpdateProfile : entry / Update the User's Profile
 UpdateProfile : do / Citizen Profile is updated
@@ -91,9 +75,7 @@ UpdateProfile : exit / Move to End
 
 UpdateProfile --> EndMerge : [End]
 
-'-----------------------
-' Final merge
-'-----------------------
+
 state EndMerge <<choice>>
 
 EndMerge --> [*]

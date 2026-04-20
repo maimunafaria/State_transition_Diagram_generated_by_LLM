@@ -1,23 +1,8 @@
 @startuml
 title UML State Chart Diagram
 
-' =========================
-' Top-level start
-' =========================
-state StartChoice <<choice>>
-[*] --> StartChoice
-
-StartChoice --> Registration
-StartChoice --> Authentication
-StartChoice --> SearchBooks
-StartChoice --> GetBooksState
-StartChoice --> BuyBooks
-
-' =========================
-' Registration
-' =========================
 state "Registration" as Registration {
-  [*] --> EnterDetails
+  [*] --> RegEnterDetails
 
   state "Enter Details" as RegEnterDetails
   state "Get Member_ID" as GetMemberID
@@ -30,11 +15,8 @@ state "Registration" as Registration {
   GetMemberID --> SuccessfulRegistration
 }
 
-' =========================
-' Authentication
-' =========================
 state "Authentication" as Authentication {
-  [*] --> EnterMemberID
+  [*] --> AuthEnterMemberID
 
   state "Enter Member_ID" as AuthEnterMemberID
   state "Enter Password" as EnterPassword
@@ -46,11 +28,6 @@ state "Authentication" as Authentication {
   EnterPassword --> InvalidCreds : [Invalid]
 }
 
-SuccessfulRegistration --> Authentication
-
-' =========================
-' Search Books
-' =========================
 state "Search Books" as SearchBooks {
   [*] --> EnterBookDetails
 
@@ -62,49 +39,49 @@ state "Search Books" as SearchBooks {
   EnterBookDetails --> ChooseAlternate : [Not Found]
 }
 
-SuccessfulLogin --> SearchBooks
-
-' =========================
-' Get Books
-' =========================
 state "Get Books" as GetBooksState {
-  [*] --> EnterBookID_Get
+  [*] --> GetEnterBookID
 
-  state "Enter Book_ID" as EnterBookID_Get
+  state "Enter Book_ID" as GetEnterBookID
   state "Enter Member_ID" as GetEnterMemberID
   state "Obtain Books" as ObtainBooks
   state "Pay Fine Amount" as PayFineAmount
 
-  EnterBookID_Get --> GetEnterMemberID
+  GetEnterBookID --> GetEnterMemberID
   GetEnterMemberID --> ObtainBooks : [Active Member]
   GetEnterMemberID --> PayFineAmount : [Inactive Member]
 }
 
-SuccessfulLogin --> GetBooksState
-
-' =========================
-' Buy Books
-' =========================
 state "Buy Books" as BuyBooks {
-  [*] --> EnterBookID_Buy
+  [*] --> BuyEnterBookID
 
-  state "Enter Book_ID" as EnterBookID_Buy
+  state "Enter Book_ID" as BuyEnterBookID
   state "Display Book Amount" as DisplayBookAmount
   state "Get Books" as BuyGetBooks
-  state NotPaidEnd <<choice>>
+  state BuyNotPaidEnd <<choice>>
 
-  EnterBookID_Buy --> DisplayBookAmount
+  BuyEnterBookID --> DisplayBookAmount
   DisplayBookAmount --> BuyGetBooks : [Paid]
-  DisplayBookAmount --> NotPaidEnd : [Not Paid]
-  NotPaidEnd --> [*]
+  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]
+  BuyNotPaidEnd --> [*]
 }
 
-SuccessfulLogin --> BuyBooks
+state StartJoin <<choice>>
 
-' =========================
-' Finals
-' =========================
-DisplaySuggestion --> [*]
+[*] --> StartJoin
+StartJoin --> Registration
+StartJoin --> Authentication
+StartJoin --> SearchBooks
+StartJoin --> GetBooksState
+StartJoin --> BuyBooks
+
+SuccessfulRegistration --> AuthEnterMemberID
+
+SuccessfulLogin --> EnterBookDetails
+SuccessfulLogin --> GetEnterBookID
+SuccessfulLogin --> BuyEnterBookID
+
+
 ObtainBooks --> [*]
 BuyGetBooks --> [*]
 
