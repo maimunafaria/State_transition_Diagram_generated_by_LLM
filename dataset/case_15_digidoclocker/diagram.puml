@@ -1,119 +1,86 @@
 @startuml
-title UML State Machine Diagram (Certificate System)
+title UML state machine diagram
 
-'-----------------------
-' Initial
-'-----------------------
-[*] --> ValidateUser
 
-state "validate the type of user" as ValidateUser
-ValidateUser : entry / Enter the User Details
-ValidateUser : do / Validate the Login Details
-ValidateUser : exit / User Operation or Registrar Operation
+state UserOps <<choice>>
+state EndJoin <<choice>>
 
-'-----------------------
-' Registration / Login
-'-----------------------
-state Choice1 <<choice>>
-ValidateUser --> Choice1
+[*] --> ValidateUserType
 
-Choice1 --> Register : [New Operation]
-Choice1 --> Login : [Existing User]
+state "validate the Type of User" as ValidateUserType
+ValidateUserType : entry / select the user details
+ValidateUserType : do / validate the registration details
+ValidateUserType : exit / choose operations as registrar operations
 
-state Register
-Register : entry / Fill the Registration Details
-Register : do / Validate the Register Details
-Register : exit / Registration Successful
-
-state InvalidReg
-InvalidReg : entry / Invalid Registration
-InvalidReg : do / Reject
-InvalidReg : exit / End
-
-Register --> Login : [Valid Registration]
-Register --> InvalidReg : [Invalid Registration]
+state Registration
+Registration : entry / fill the registration details
+Registration : do / submit the registration details
+Registration : exit / user is valid registration
 
 state Login
-Login : entry / Enter the Login Details
-Login : do / Validate the Login Details
-Login : exit / Login Successful
+Login : entry / fill the login details
+Login : do / validate the login details
+Login : exit / allow the user to login
 
-state InvalidLogin
-InvalidLogin : entry / Invalid Login
-InvalidLogin : do / Reject Login
-InvalidLogin : exit / End
-
-Login --> InvalidLogin : [Invalid Login]
-
-'-----------------------
-' After Login
-'-----------------------
-state Choice2 <<choice>>
-Login --> Choice2 : [Valid Login]
-
-Choice2 --> UploadDocs
-Choice2 --> ViewProfile
-Choice2 --> ApplyCert
-
-'-----------------------
-' Left branch
-'-----------------------
-state "Upload Document" as UploadDocs
-UploadDocs : entry / Upload the Documents
-UploadDocs : do / Validate Documents
-UploadDocs : exit / Move to End
+state "Upload a Document" as UploadDocument
+UploadDocument : entry / upload the document
+UploadDocument : do / upload the document
+UploadDocument : exit / upload another certificate / move to end
 
 state "View Profile" as ViewProfile
-ViewProfile : entry / View Profile
-ViewProfile : do / Display the Profile
-ViewProfile : exit / Move to End
+ViewProfile : entry / view the citizen profile
+ViewProfile : do / view the citizen profile
+ViewProfile : exit / move to end
 
-'-----------------------
-' Apply Certificate Flow
-'-----------------------
-state "Apply for a Certificate" as ApplyCert
-ApplyCert : entry / Apply for certificate
-ApplyCert : do / Fill Application Form
-ApplyCert : exit / Send Request
+state "Apply for a Certificate" as ApplyCertificate
+ApplyCertificate : entry / apply for a certificate with valid person
+ApplyCertificate : do / send request to apply certificate
+ApplyCertificate : exit / apply for another certificate / move to end
 
-state Choice3 <<choice>>
-ApplyCert --> Choice3
+state "Certificate Sent to User" as CertSentUser
+CertSentUser : entry / issue the certificate to user
+CertSentUser : do / provide the certificate
+CertSentUser : exit / update the citizen certificate in the citizen database
 
-Choice3 --> IssueCert : [Approved]
-Choice3 --> RegistrarOp : [Registrar Operation]
+state "Registrar asks a Certificate for verification" as RegistrarAskCert
+RegistrarAskCert : entry / registrar requests a certificate for verification
+RegistrarAskCert : do / send request to the digitlocker
+RegistrarAskCert : exit / request to digitlocker or receive the certificate provided by digitlocker or move to end
 
-state "Certificate Issued" as IssueCert
-IssueCert : entry / Issue Certificate
-IssueCert : do / Update Certificate Database
-IssueCert : exit / Move to End
+state "Digitlocker provides the Certificate" as DigitlockerCertificate
+DigitlockerCertificate : entry / issue the certificate request
+DigitlockerCertificate : do / fetch the required certificate from the citizen database
+DigitlockerCertificate : exit / sent the provided certificate
 
-'-----------------------
-' Registrar flow
-'-----------------------
-state "Request to another Certificate" as RegistrarOp
-RegistrarOp : entry / Request verification
-RegistrarOp : do / Send request to DigiLocker
-RegistrarOp : exit / Wait for response
+ValidateUserType --> Registration : [Citizen Operation]
+ValidateUserType --> RegistrarAskCert : [Registrar Operation]
 
-state "DigiLocker provides the Certificate" as DigiLocker
-DigiLocker : entry / Provide Certificate
-DigiLocker : do / Validate Certificate
-DigiLocker : exit / Certificate Ready
+Registration --> Login : [valid Registration]
+Registration --> [*] : [Invalid Registration]
 
-RegistrarOp --> DigiLocker
-DigiLocker --> IssueCert
+Login --> UserOps : [valid Login]
+Login --> Login : [Invalid Login]
 
-'-----------------------
-' Final merge
-'-----------------------
-state EndMerge <<choice>>
+UserOps --> UploadDocument : [Uploading Documents]
+UserOps --> ViewProfile : [Profile Viewing]
+UserOps --> ApplyCertificate : [Applying for Certificate]
 
-UploadDocs --> EndMerge
-ViewProfile --> EndMerge
-IssueCert --> EndMerge
-InvalidReg --> EndMerge
-InvalidLogin --> EndMerge
+UploadDocument --> EndJoin : [Move to End]
+UploadDocument --> UploadDocument : [Upload another document]
+ViewProfile --> EndJoin : [Move to End]
 
-EndMerge --> [*]
+ApplyCertificate --> ApplyCertificate : [Apply for another Certificate]
+ApplyCertificate --> CertSentUser : [Send Request to Issuer]
+ApplyCertificate --> EndJoin : [Move to End]
+
+CertSentUser --> ApplyCertificate : [Issue the Applied Certificate]
+
+RegistrarAskCert --> RegistrarAskCert : [Request for another Certificate]
+RegistrarAskCert --> DigitlockerCertificate : [Send request to Digitlocker]
+RegistrarAskCert --> EndJoin : [Move to End]
+
+DigitlockerCertificate --> RegistrarAskCert : [Issue the Certificate for verification]
+
+EndJoin --> [*]
 
 @enduml

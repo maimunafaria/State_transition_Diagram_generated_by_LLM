@@ -1,72 +1,133 @@
 @startuml
+title UML State Machine Diagram
 
-[*] --> Register
+state CheckUser <<choice>>
+state EntryJoin <<choice>>
+state FacilityChoice <<choice>>
+state HealthChoice <<choice>>
+state FinanceChoice <<choice>>
+state ResourceChoice <<choice>>
+state PaymentTypeChoice <<choice>>
+state FeedbackChoice <<choice>>
+state ExitJoin <<choice>>
+state ExitJoinFinal <<choice>>
+state LastJoin <<choice>>
+state ResourceChoiceFinal <<choice>>
 
-Register : entry / New user
-Register : do / Registration process
-Register : exit / Successfully registered
+[*] --> CheckUser : [ check user ]
 
-Register --> Login : registration complete
-Register --> [*] : invalid registration
+state Register
+Register : entry / when the user is a new user
+Register : do / registration process
+Register : exit / successfully registered
+Register : exit / invalid registration
 
-Login : entry / Registered user
-Login : do / Authenticate user
-Login : exit / Access granted
+state "Login" as Login {
+  Login : entry / registered user
+  Login : do / permitted to use facilities
+  Login : exit / required resources have been accessed
 
-Login --> Facilities : login successful
-Login --> [*] : invalid login
+  state CheckStart <<choice>>
 
-Facilities : entry / User logged in
-Facilities : do / Access available services
-Facilities : exit / Selected service
+  state Facilities
+  Facilities : entry / user must be logged in
+  Facilities : do / selection and usage of desired facilities
+  Facilities : exit / selected facility can be accessed
 
-Facilities --> Finance
-Facilities --> HealthAZ
-Facilities --> Resources
-Facilities --> DrugsAndSupplements
-Facilities --> NewsAndExperts
-Facilities --> Payment
-Facilities --> Feedback
-Facilities --> Logout
+  state "News and Experts" as NewsExperts
+  NewsExperts : entry / when the user has chosen news and experts
+  NewsExperts : do / select options
+  NewsExperts : exit / provide information
 
-Finance : entry / Insurance available
-Finance : do / Purchase insurance or pay services
-Finance : exit / Insurance validated
-Finance --> Facilities
+  state "Symptoms checker" as SymptomsChecker
+  SymptomsChecker : entry / when the user has chosen symptoms checker
+  SymptomsChecker : do / get symptoms and fetch the disease
+  SymptomsChecker : exit / display result
 
-HealthAZ : entry / Select disease
-HealthAZ : do / Display disease information
-HealthAZ : exit / View result
-HealthAZ --> Facilities
+  state "Check fitness" as CheckFitness
+  CheckFitness : entry / when the user has chosen check fitness
+  CheckFitness : do / get details and calculate fitness
+  CheckFitness : exit / display result
 
-Resources : entry / Select resource
-Resources : do / Access symptoms checker, calculator, doctor, ambulance
-Resources : exit / View result
-Resources --> Facilities
+  state Finance
+  Finance : entry / user has insurance
+  Finance : do / processing
+  Finance : exit / insurance is validated
 
-DrugsAndSupplements : entry / Doctor consulted
-DrugsAndSupplements : do / Order medicines online
-DrugsAndSupplements : exit / Medicine delivery initiated
-DrugsAndSupplements --> Payment
+  state Apply
+  Apply : entry / user doesn't have insurance
+  Apply : do / process and validate details
+  Apply : exit / insurance provided
 
-Payment : entry / Service or medicine purchased
-Payment : do / Process payment
-Payment : exit / Payment completed
-Payment --> Facilities
+  state Cash
+  Cash : entry / when the user is delivered with drugs
+  Cash : do / calculate amount, return date
+  Cash : exit / user is prompted to pay during delivery
 
-NewsAndExperts : entry / Choose news and experts
-NewsAndExperts : do / Provide health awareness information
-NewsAndExperts : exit / Information displayed
-NewsAndExperts --> Facilities
+  state Payment
+  Payment : entry / when the doctor is consulted or the drugs are purchased
+  Payment : do / check insurance details and make payment
+  Payment : exit / payment process completed
 
-Feedback : entry / User gives feedback
-Feedback : do / Collect review
-Feedback : exit / Feedback submitted
-Feedback --> Facilities
+  state Feedback
+  Feedback : entry / user has opted to give the feedback
+  Feedback : do / collect feedback for the service
+  Feedback : exit / feedback completed
 
-Logout : entry / User opts to logout
-Logout : do / End session
-Logout : exit / User logged out
+  [*] --> CheckStart
+  CheckStart --> Facilities : [ new location ]
+
+  Facilities --> FacilityChoice
+
+  FacilityChoice --> NewsExperts : [ choice="News and experts" ]
+  FacilityChoice --> HealthChoice : [ choice="Health A-Z" ]
+  FacilityChoice --> FinanceChoice : [ choice="Finance" ]
+
+  HealthChoice --> SymptomsChecker : [ option="Symptoms checker" ]
+  HealthChoice --> CheckFitness : [ option="fitness checker" ]
+
+  SymptomsChecker --> ExitJoin
+  CheckFitness --> ExitJoin
+  NewsExperts --> ExitJoin
+  ExitJoin --> ExitJoinFinal
+  ExitJoinFinal --> CheckStart
+  ExitJoinFinal --> LastJoin
+  FinanceChoice --> Finance : [ insurance="available" ]
+  FinanceChoice --> Apply : [ insurance="not available" ]
+
+  Finance --> ResourceChoice : [ when resource is utilized ]
+  Apply --> ResourceChoice
+
+  ResourceChoice --> ResourceChoiceFinal
+  ResourceChoiceFinal --> Payment : [ resource="doctor consulted" ]
+  ResourceChoiceFinal --> PaymentTypeChoice : [ resource="Drugs and supplements" ]
+
+  PaymentTypeChoice --> Cash : [ payment type="cash" ]
+  PaymentTypeChoice --> Payment : [ payment type="through insurance" ]
+
+  Payment --> FeedbackChoice
+
+  FeedbackChoice --> Feedback : [ user wishes to give feedback ]
+  FeedbackChoice --> [*] : [ user isn't willing to give feedback ]
+
+  Feedback --> LastJoin
+
+  LastJoin --> [*] : [ user needs to logout the system ]
+}
+
+state Logout
+Logout : entry / when the user opts to logout
+Logout : do / update the details
+Logout : exit / user will be logged out
+
+CheckUser --> Register : [ New user="yes" ]
+CheckUser --> EntryJoin : [ New user="no" ]
+
+Register --> EntryJoin : [ successfully registered ]
+Register --> [*] : [ invalid registration ]
+
+EntryJoin --> Login
+Login --> Logout
 Logout --> [*]
 
 @enduml

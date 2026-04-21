@@ -1,103 +1,154 @@
 @startuml
-title UML State Machine Diagram (Location Tracking System)
+title UML State Machine Diagram
 
-'-----------------------
-' Initial Flow
-'-----------------------
-[*] --> Register
+[*] --> RegisterChoice
+
+state RegisterChoice <<choice>>
+
+RegisterChoice --> Register : [new user]
+RegisterChoice --> LoginComposite : [No]
 
 state Register
-Register : entry / User registration
-Register : do / Validate user credentials
-Register : exit / Registration successful
+Register : entry / new user
+Register : do / registration process
+Register : exit / successfully registered
 
-Register --> Login : [valid]
 Register --> [*] : [invalid]
+Register --> LoginComposite
+state "login" as LoginComposite {
 
-state Login
-Login : entry / User login
-Login : do / Authenticate user
-Login : exit / Login success
+  LoginComposite : entry / registered user
+  LoginComposite : do / permitted to monitor weather
+  LoginComposite : exit / quitting the system
 
-Login --> NewLocation
+  state H <<history>>
+  state startChoice <<choice>>
+  state startChoice1 <<choice>>
+  state locationChoice <<choice>>
+  [*] --> startChoice
 
-'-----------------------
-' Location Handling
-'-----------------------
-state "New Location" as NewLocation
-NewLocation : entry / Detect new beacon/location
-NewLocation : do / Compare with previous location
-NewLocation : exit / Location updated
+  startChoice --> UserLocation : [user location]
+  startChoice --> startChoice1
+  state UserLocation
+  UserLocation : entry / user wants to see weather status
+  UserLocation : do / get user location
+  UserLocation : exit / permitted to check weather
+  H --> startChoice1
+  startChoice1 --> NewLocation : [new location]
+  NewLocation --> locationChoice : [valid]
+  UserLocation --> locationChoice
+  state NewLocation
+  NewLocation : entry / user wants weather of new location
+  NewLocation : do / get new location
+  NewLocation : exit / valid location
 
-state "Visited Place" as Visited
-Visited : entry / Mark visited
-Visited : do / Store visit history
-Visited : exit / Ready for measurement
+  locationChoice --> WeatherStatus 
+  NewLocation --> [*] : [invalid]
 
-NewLocation --> Visited
+  state WeatherStatus
+  WeatherStatus : entry / valid location
+  WeatherStatus : do / select parameter to monitor
+  WeatherStatus : exit / option selected
 
-'-----------------------
-' Measurements
-'-----------------------
-state "Measure Temperature" as Temp
-state "Measure Humidity" as Hum
-state "Measure Noise" as Noise
-state "Measure Crowd" as Crowd
+  state SensorChoice <<choice>>
 
-Visited --> Temp
-Visited --> Hum
-Visited --> Noise
-Visited --> Crowd
+  WeatherStatus --> SensorChoice
 
-state Merge1 <<choice>>
+  SensorChoice --> MeasureTemperature : [temperature]
+  SensorChoice --> MeasureHumidity : [humidity]
+  SensorChoice --> MeasureRainfall : [rainfall]
+  SensorChoice --> MeasurePressure : [pressure]
+  SensorChoice --> MeasureDewPoint : [dew point]
 
-Temp --> Merge1
-Hum --> Merge1
-Noise --> Merge1
-Crowd --> Merge1
+  state MeasureTemperature
+  MeasureTemperature : entry / temperature selected
+  MeasureTemperature : do / sensor active
+  MeasureTemperature : exit / receive signal
 
-'-----------------------
-' Upload Data
-'-----------------------
-state "Upload to server" as Upload
-Upload : entry / Send collected data
-Upload : do / Store in database
-Upload : exit / Data uploaded
+  state MeasureHumidity
+  MeasureHumidity : entry / humidity selected
+  MeasureHumidity : do / sensor active
+  MeasureHumidity : exit / receive signal
 
-Merge1 --> Upload
+  state MeasureRainfall
+  MeasureRainfall : entry / rainfall selected
+  MeasureRainfall : do / sensor active
+  MeasureRainfall : exit / receive signal
 
-'-----------------------
-' Risk Analysis
-'-----------------------
-state ChoiceRisk <<choice>>
-Upload --> ChoiceRisk
+  state MeasurePressure
+  MeasurePressure : entry / pressure selected
+  MeasurePressure : do / sensor active
+  MeasurePressure : exit / receive signal
 
-state "Safe" as Safe
-state "Risky situation" as Risk
-state "Alert" as Alert
-state "Graph" as Graph
-state "Future Prediction" as Prediction
+  state MeasureDewPoint
+  MeasureDewPoint : entry / dew point selected
+  MeasureDewPoint : do / sensor active
+  MeasureDewPoint : exit / receive signal
+  state LiveUpdateChoice <<choice>>
 
-ChoiceRisk --> Safe
-ChoiceRisk --> Risk
+  MeasureTemperature --> LiveUpdateChoice
+  MeasureHumidity --> LiveUpdateChoice
+  MeasureRainfall --> LiveUpdateChoice
+  MeasurePressure --> LiveUpdateChoice
+  MeasureDewPoint --> LiveUpdateChoice
 
-Risk --> Alert
-Risk --> Graph
-Risk --> Prediction
+  LiveUpdateChoice --> LiveUpdate
+  state LiveUpdate
+  LiveUpdate : entry / signal received
+  LiveUpdate : do / convert data
+  LiveUpdate : exit / display data
 
-Safe --> Display
-Alert --> Display
-Graph --> Display
-Prediction --> Display
+  state AnalysisChoice <<choice>>
 
-'-----------------------
-' Display Results
-'-----------------------
-state Display
-Display : entry / Show result
-Display : do / Display risk / prediction
-Display : exit / Done
+  LiveUpdate --> AnalysisChoice
+  state H1 <<history>>
+  H1 --> AnalysisChoice
+  AnalysisChoice --> Alert : [alert]
+  AnalysisChoice --> WeeklyAnalysis : [weekly]
+  AnalysisChoice --> FuturePrediction : [prediction]
+  AnalysisChoice --> Graph : [graph]
+  AnalysisChoice --> [*] : [exit]
 
-Display --> [*]
+  state Alert
+  Alert : entry / user wants alert messages
+  Alert : do / warnings based on weather
+  Alert : exit / message generated
+
+  state WeeklyAnalysis
+  WeeklyAnalysis : entry / weekly analysis
+  WeeklyAnalysis : do / analyze past 7 days
+  WeeklyAnalysis : exit / data analyzed
+
+  state FuturePrediction
+  FuturePrediction : entry / future prediction
+  FuturePrediction : do / predict next day
+  FuturePrediction : exit / forecast ready
+
+  state Graph
+  Graph : entry / graphical representation
+  Graph : do / generate graph
+  Graph : exit / graph ready
+  state DisplayChoice <<choice>>
+  Alert --> DisplayChoice
+  WeeklyAnalysis --> DisplayChoice
+  FuturePrediction --> DisplayChoice
+  Graph --> DisplayChoice
+  DisplayChoice --> Display
+  state Display
+  Display : entry / data received
+  Display : do / display messages
+  Display : exit / quit system
+  Display --> [*]
+
+}
+
+LoginComposite --> Logout
+
+state Logout
+Logout : entry / after getting required details
+Logout : do / logging out
+Logout : exit / terminate system
+
+Logout --> [*]
 
 @enduml

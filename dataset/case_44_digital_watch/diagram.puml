@@ -1,59 +1,50 @@
 @startuml
-title State Diagram of Watch with Concurrent Regions
+title State diagram of watch with concurrent regions
 
-state Watch {
+state "Watch" as Watch {
 
-  state TimeSetting {
-    [*] --> Display
+  [*] --> Display
 
-    state Display
-    state "Change Hour" as ChangeHour
-    state "Change minutes" as ChangeMinute
-    state "Change alarm hour" as ChangeAlarmHour
-    state "Change alarm minute" as ChangeAlarmMinute
+  state Display
+  state "Change Hour" as ChangeHour
+  state "Change minutes" as ChangeMinutes
+  state "Change alarm hour" as ChangeAlarmHour
+  state "Change alarm minute" as ChangeAlarmMinute
 
-    Display --> ChangeHour : pressMode
-    ChangeHour --> ChangeMinute : pressMode
-    ChangeMinute --> ChangeAlarmHour : pressMode
-    ChangeAlarmHour --> ChangeAlarmMinute : pressMode
-    ChangeAlarmMinute --> Display : pressMode
+  Display --> ChangeHour : pressMode
+  ChangeHour --> ChangeMinutes : pressMode
+  ChangeMinutes --> ChangeAlarmHour : pressMode
+  ChangeAlarmHour --> ChangeAlarmMinute : pressMode
+  ChangeAlarmMinute --> Display : pressMode
 
-    ChangeHour --> ChangeHour : pressAdvance / currentHour++
-    ChangeMinute --> ChangeMinute : pressAdvance / currentMinute++
-    ChangeAlarmHour --> ChangeAlarmHour : pressAdvance / alarmHour++
-    ChangeAlarmMinute --> ChangeAlarmMinute : pressAdvance / alarmMinute++
-  }
+  ChangeHour --> ChangeHour : pressAdvance / currentHour++
+  ChangeMinutes --> ChangeMinutes : pressAdvance / currentMinute++
+  ChangeAlarmHour --> ChangeAlarmHour : pressAdvance / alarmHour++
+  ChangeAlarmMinute --> ChangeAlarmMinute : pressAdvance / alarmMinute++
 
   --
+  [*] --> Unprepared
 
-  state AlarmSystem {
-    [*] --> Unprepared
+  state Unprepared
+  state Prepared
+  state Ringing
 
-    state Unprepared
-    state Prepared
-    state Ringing
+  Unprepared --> Prepared : pressAlarm
+  Prepared --> Unprepared : pressAlarm
 
-    Ringing : do / ring
+  Prepared --> Ringing : when(currentHour==alarmHour AND currentMinute==alarmMinute)
+  Ringing --> Unprepared : pressAlarm
 
-    Unprepared --> Prepared : pressAlarm
-    Prepared --> Unprepared : pressAlarm
-    Prepared --> Ringing : when(currentHour==alarmHour AND currentMinute==alarmMinute)
-    Ringing --> Prepared : pressAlarm
-    Ringing --> Unprepared : pressAlarm
-  }
+  Ringing : do / ring
 
   --
+  [*] --> TurnedOff
 
-  state LightSystem {
-    state "Turned off" as Off
-    state "Turned on" as On
+  state TurnedOff
+  state TurnedOn
 
-    [*] --> Off
-    Off --> On : pressLight
-    On --> Off : releaseLight
+  TurnedOff --> TurnedOn : pressLight
+  TurnedOn --> TurnedOff : releaseLight
 
-    On : do / lightWatchFace
-  }
+  TurnedOn : do / lightWatchFace
 }
-
-@enduml

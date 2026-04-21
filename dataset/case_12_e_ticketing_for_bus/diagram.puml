@@ -1,97 +1,77 @@
 @startuml
-title UML State Machine Diagram (Booking System)
+title UML State Machine Diagram
 
-'-----------------------
-' Initial branching
-'-----------------------
-[*] --> UserType
+state StartChoice <<choice>>
+state EntryJoin <<choice>>
+state UserActionChoice <<choice>>
 
-state UserType <<choice>>
-UserType --> Register : [New user]
-UserType --> System : [Existing user]
+[*] --> StartChoice
 
-'-----------------------
-' Registration
-'-----------------------
 state Register
 Register : entry / When a passenger is new
 Register : do / Registration process
-Register : do / Add personal details
-Register : exit / Valid Registration
+Register : exit / Register successfully
+Register : exit / Invalid Registration
 
-Register --> System
+state "Login" as Login {
+  Login : entry / Registered the user
+  Login : do / Ticket Booking Transaction
+  Login : exit / After terminating any one of the booking transaction
 
-'-----------------------
-' MAIN SYSTEM (Composite State)
-'-----------------------
-state "Booking System" as System {
+  state "CheckStatus" as CheckStatus
+  CheckStatus : entry / When the passenger want to check status
+  CheckStatus : do / Check Status process
+  CheckStatus : exit / LogOut
 
-    [*] --> Choice1
+  state "Reservation" as Reservation
+  Reservation : entry / When the passenger want to book a ticket
+  Reservation : do / Reservation Process
+  Reservation : exit / After booking ticket
 
-    state Choice1 <<choice>>
+  state "Confirmation" as Confirmation
+  Confirmation : entry / After reserve the ticket
+  Confirmation : do / Confirmation process
+  Confirmation : exit / Ticket reservation is confirmed
 
-    Choice1 --> CheckStatus : [Check status]
-    Choice1 --> Reservation : [Reserve ticket]
-    Choice1 --> ManageAccount : [Modify account]
+  state "Payment" as Payment
+  Payment : entry / Ticket is confirmed
+  Payment : do / Payment process
+  Payment : exit / Payment is paid for the ticket and Logout
 
-    '-------------------
-    ' Check Status
-    '-------------------
-    state CheckStatus
-    CheckStatus : entry / User checks status
-    CheckStatus : do / Status process
-    CheckStatus : exit / Go back
+  state "ManageAccount" as ManageAccount
+  ManageAccount : entry / When passenger want to modify their Account
+  ManageAccount : do / Account Edit/Delete process
+  ManageAccount : exit / LogOut
 
-    CheckStatus --> Choice1
+  [*] --> LoginStart
+  
 
-    '-------------------
-    ' Reservation
-    '-------------------
-    state Reservation
-    Reservation : entry / Reserve ticket
-    Reservation : do / Reservation process
-    Reservation : exit / After booking
+  LoginStart --> CheckStatus : [ user want to check status ]
+  LoginStart --> Reservation : [ user want to reserve the ticket ]
+  LoginStart --> ManageAccount : [ user want to modify ]
 
-    state Confirm
-    Confirm : entry / After confirming
-    Confirm : do / Confirmation process
-    Confirm : exit / Ticket confirmed
+  Reservation --> Confirmation
+  Confirmation --> Payment
 
-    state Payment
-    Payment : entry / Ticket confirmed
-    Payment : do / Payment process
-    Payment : exit / Logout
-
-    Reservation --> Confirm
-    Confirm --> Payment
-    Payment --> EndInside
-
-    '-------------------
-    ' Manage Account
-    '-------------------
-    state ManageAccount
-    ManageAccount : entry / Modify account
-    ManageAccount : do / Account edit/delete
-    ManageAccount : exit / Logout
-
-    ManageAccount --> EndInside
-
-    '-------------------
-    ' Internal End
-    '-------------------
-    state EndInside <<choice>>
-    EndInside --> [*]
+  CheckStatus --> [*]
+  Payment --> [*]
+  ManageAccount --> [*]
 }
 
-'-----------------------
-' Logout (outside system)
-'-----------------------
 state Logout
-Logout : entry / End booking transaction
-Logout : do / Logout
-Logout : exit / User logged out
+Logout : entry / After terminating any one of the booking transaction
+Logout : do / Logout process
+Logout : exit / The user is Logged out
 
-System --> Logout
+StartChoice --> Register : [ New user ]
+StartChoice --> EntryJoin : [ Existing user ]
+
+Register --> EntryJoin
+Register --> [*]
+
+EntryJoin --> Login
+Login --> Logout
 Logout --> [*]
+
 
 @enduml
