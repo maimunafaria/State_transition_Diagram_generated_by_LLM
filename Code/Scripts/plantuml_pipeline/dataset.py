@@ -155,6 +155,7 @@ def build_experiment_configs(
     gpt_model: str,
     qwen_model: str,
     llama_model: str,
+    deepseek_model: str,
 ) -> list[ExperimentConfig]:
     configs: list[ExperimentConfig] = [
         ExperimentConfig(
@@ -173,6 +174,7 @@ def build_experiment_configs(
     open_models = [
         ("Qwen2.5-7B-Instruct", qwen_model, "qwen25_7b_instruct"),
         ("Llama 3.1-8B-Instruct", llama_model, "llama31_8b_instruct"),
+        ("DeepSeek-R1-8B", deepseek_model, "deepseek_r1_8b"),
     ]
     strategies = [
         ("zero_shot", False, False, False),

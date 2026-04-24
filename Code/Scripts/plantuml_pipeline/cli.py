@@ -142,6 +142,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument("--gpt-model", default="gpt-4o", help="GPT baseline model id")
     p_run.add_argument("--qwen-model", default="qwen2.5:7b-instruct", help="Qwen model id")
     p_run.add_argument("--llama-model", default="llama3.1:8b-instruct", help="Llama model id")
+    p_run.add_argument("--deepseek-model", default="deepseek-r1:8b", help="DeepSeek model id")
     p_run.add_argument(
         "--skip-gpt-baseline",
         action="store_true",

@@ -25,6 +25,10 @@ class DiagramGraph:
     final_states: set[str]
     aliases: dict[str, str]
     parse_errors: list[str]
+    stereotypes: dict[str, set[str]]
+    explicit_states: set[str]
+    composite_states: set[str]
+    history_states: set[str]
 
     def transition_set(self) -> set[tuple[str, str, str]]:
         return set(self.transitions)
