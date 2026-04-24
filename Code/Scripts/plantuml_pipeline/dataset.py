@@ -10,6 +10,28 @@ from .models import Case, ExperimentConfig
 from .parser import normalize_puml_text, parse_and_validate_puml_text
 
 
+def prompt_requirement_from_structured(text: str) -> str:
+    stripped = text.strip()
+    if not stripped:
+        return ""
+
+    lines = stripped.splitlines()
+    title = next((line.strip() for line in lines if line.strip()), "")
+    functional_start = None
+    for index, line in enumerate(lines):
+        if line.strip().lower() == "functional requirements":
+            functional_start = index
+            break
+
+    if functional_start is None:
+        return stripped
+
+    functional_block = "\n".join(lines[functional_start:]).strip()
+    if title:
+        return f"{title}\n\n{functional_block}".strip()
+    return functional_block
+
+
 def load_cases(dataset_root: Path) -> list[Case]:
     case_dirs = sorted(
         [p for p in dataset_root.glob("case_*") if p.is_dir()],
@@ -29,7 +51,7 @@ def load_cases(dataset_root: Path) -> list[Case]:
                 "raw_requirement.txt, structured_requirement.txt, diagram.puml"
             )
         raw_req = read_text(raw_path).strip()
-        structured_req = read_text(structured_path).strip()
+        structured_req = prompt_requirement_from_structured(read_text(structured_path))
         gold_puml = normalize_puml_text(read_text(gold_path))
         gold_graph, gold_validation = parse_and_validate_puml_text(gold_puml)
         complexity = complexity_bucket(len(gold_graph.states))
