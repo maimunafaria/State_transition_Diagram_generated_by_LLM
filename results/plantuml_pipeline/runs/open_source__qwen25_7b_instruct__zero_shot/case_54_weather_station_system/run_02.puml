@@ -1,0 +1,28 @@
+@startuml
+title Weather Station System State Transition Diagram
+
+initial : [Initial]
+state Running {
+    state ConfigMode
+    state Shutdown
+    state ControlledMode
+}
+
+initial --> Running : Restart and Begin Running
+
+Running --> ConfigMode : Changes or Power-saving Settings Required
+ConfigMode --> Running : Configuration Completed
+
+Running --> Running : Data Collection (Clock Triggered)
+Running --> SummaryMode : Prepare and Send Out Weather Summary
+SummaryMode --> Running : Return to Running State
+
+Running --> StatusCheckMode : Check Own Status
+StatusCheckMode --> Running : Return to Running State
+
+Running --> ControlledMode : Remote Control
+ControlledMode --> Shutdown : Shutdown Command Given
+
+Shutdown --> Running : Shutdown Command Given (Reverse Transition)
+
+@enduml

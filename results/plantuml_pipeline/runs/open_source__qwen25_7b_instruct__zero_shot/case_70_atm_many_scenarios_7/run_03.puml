@@ -1,0 +1,34 @@
+@startuml
+
+initial state : Initial State
+
+state "Card Inserted" as CardInserted {
+    state "PIN Correct" as PINCorrect {
+        state "Options Displayed" as OptionsDisplayed {
+            state "Transaction Processed" as TransactionProcessed {
+                "Withdraw Money"
+                "Check Information"
+                "Make Transfer"
+            }
+        }
+    }
+    state "PIN Incorrect" as PINIncorrect {
+        state "Try Again" as TryAgain
+        state "Card Kept For Security" as CardKeptForSecurity
+    }
+}
+
+state "User Arrives" as UserArrives
+
+transition UserArrives->CardInserted : Card Inserted
+transition CardInserted->PINCorrect : Correct PIN
+transition CardInserted->PINIncorrect : Incorrect PIN
+transition PINIncorrect->TryAgain : Try Again
+transition TryAgain->PINIncorrect : Incorrect PIN (again)
+transition PINIncorrect->CardKeptForSecurity : Too many incorrect attempts
+transition PINCorrect->OptionsDisplayed : Options Displayed
+transition OptionsDisplayed->TransactionProcessed : Transaction Processed
+
+final state : Card Returned
+
+@enduml

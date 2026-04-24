@@ -1,0 +1,41 @@
+@startuml
+initial : Initial State
+
+state "Card Inserted" as CardInserted {
+    state "PIN Entry" as PINEntry {
+        state "PIN Verified" as PINVerified {
+            state "Options Provided" as OptionsProvided {
+                state "Withdrawal Request Approved" as WithdrawalApproved {
+                    state "Cash Dispensed" as CashDispensed {
+                        state "Receipt Printed" as ReceiptPrinted {
+                            state "Card Returned" as CardReturned {
+                                state "System Reset" as SystemReset
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+initial --> CardInserted : Insert Card
+
+CardInserted --> PINEntry : Enter PIN
+PINEntry --> PINVerified : Verify PIN
+PINVerified --> OptionsProvided : Provide Options
+OptionsProvided --> WithdrawalApproved : Approve Withdrawal Request
+WithdrawalApproved --> CashDispensed : Dispense Cash
+CashDispensed --> ReceiptPrinted : Print Receipt
+ReceiptPrinted --> CardReturned : Return Card
+CardReturned --> SystemReset : Reset System
+
+PINVerified -.- "Invalid PIN" : Invalid PIN
+
+state "System Idle" as SystemIdle {
+    state "Error State" as ErrorState
+}
+
+SystemReset --> SystemIdle : Next User
+
+@enduml

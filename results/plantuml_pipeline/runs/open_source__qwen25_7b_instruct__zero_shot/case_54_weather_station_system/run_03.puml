@@ -1,0 +1,27 @@
+@startuml
+title Weather Station System State Transition Diagram
+
+initial : [Initial]
+state Running as Running {
+    state ConfigMode as ConfigMode
+    state Shutdown as Shutdown
+    state Controlled as Controlled
+}
+
+Running --> ConfigMode : "Changes or power-saving settings required"
+ConfigMode --> Running : "Configuration completed"
+
+Running --> Running : "Data collection (clock trigger)"
+Running --> SummaryPreparation : "Prepare and send out a weather summary"
+SummaryPreparation --> Running : "Summary prepared and sent"
+
+Running --> StatusCheck : "Check status upon request"
+StatusCheck --> Running : "Status checked and transmitted"
+
+Shutdown --> Running : "Restart command received"
+Running --> Shutdown : "Shutdown command given"
+
+Controlled --> Running : "Remote control to run"
+Running --> Controlled : "Remote control to controlled mode"
+
+@enduml

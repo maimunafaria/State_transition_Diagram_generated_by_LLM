@@ -1,0 +1,33 @@
+@startuml
+state "Idle" as idle {
+  [*] --> idle
+}
+idle -->|Display Current Time|> "Waiting For User Input"
+state "Waiting For User Input" as waitingForUserInput {
+  waitingForUserInput -->|Choose Power Level|> "Selecting Power Level"
+  waitingForUserInput -->|Set Cooking Time|> "Setting Cooking Time"
+}
+state "Selecting Power Level" as selectingPowerLevel {
+  selectingPowerLevel -->|Confirm Selection|> idle
+}
+state "Setting Cooking Time" as settingCookingTime {
+  settingCookingTime -->|Confirm Entry|> idle
+}
+state "Operating" as operating {
+  operating -->|Door Opened During Operation|> idle
+  operating -->|Cancel Cooking Process|> idle
+}
+idle -->|Open Door|> idle
+waitingForUserInput -->|Open Door|> idle
+operating -->|Open Door|> idle
+
+state "Cooking" as cooking {
+  cooking -->|Cancel Cooking Process|> idle
+}
+
+state "Stopped" as stopped {
+  stopped -->|Start Again|> waitingForUserInput
+}
+idle -->|Start Again|> waitingForUserInput
+
+@enduml

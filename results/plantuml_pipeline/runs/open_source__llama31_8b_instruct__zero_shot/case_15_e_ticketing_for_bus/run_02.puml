@@ -1,0 +1,69 @@
+@startuml
+state "New User" as NewUser
+state "Registered User" as RegisteredUser
+state "Logged In" as LoggedIn
+state "Ticket Booked" as TicketBooked
+state "Account Managed" as AccountManaged
+state "Logged Out" as LoggedOut
+
+NewUser ->> RegisteredUser : Successful Registration
+note right of RegisteredUser: Validate registration (Req 2)
+
+RegisteredUser ->> LoggedIn : Successful Login
+note right of LoggedIn: User logs in successfully (Req 3)
+
+LoggedIn ->> TicketBooked : Book Ticket
+note right of TicketBooked: Confirm ticket and make payment (Req 5)
+
+TicketBooked ->> AccountManaged : Manage Account
+note right of AccountManaged: Edit or delete account details (Req 6)
+
+AccountManaged ->> LoggedOut : Complete Action
+note right of LoggedOut: Log out user after completing action (Req 7)
+
+LoggedIn ->> LoggedOut : Logout
+note right of LoggedOut: User logs out explicitly
+
+NewUser ->> NewUser : Invalid Registration
+note right of NewUser: Registration fails, stay in new user state
+
+RegisteredUser ->> RegisteredUser : Login Failure
+note right of RegisteredUser: Login fails, stay in registered user state
+
+LoggedIn ->> LoggedIn : Ticket Booking Failure
+note right of LoggedIn: Ticket booking fails, stay in logged in state
+
+AccountManaged ->> AccountManaged : Manage Account Failure
+note right of AccountManaged: Managing account details fails, stay in account managed state
+
+state NewUser {
+  [*] --> NewUser
+}
+
+state RegisteredUser {
+  NewUser --> RegisteredUser
+  RegisteredUser --> LoggedIn
+}
+
+state LoggedIn {
+  RegisteredUser --> LoggedIn
+  LoggedIn --> TicketBooked
+  LoggedIn --> AccountManaged
+  LoggedOut --> LoggedIn
+}
+
+state TicketBooked {
+  LoggedIn --> TicketBooked
+  TicketBooked --> AccountManaged
+}
+
+state AccountManaged {
+  TicketBooked --> AccountManaged
+  AccountManaged --> LoggedOut
+}
+
+state LoggedOut {
+  AccountManaged --> LoggedOut
+}
+
+@enduml

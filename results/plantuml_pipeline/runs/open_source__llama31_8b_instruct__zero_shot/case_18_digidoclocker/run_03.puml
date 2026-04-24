@@ -1,0 +1,60 @@
+@startuml
+state "Initial State" as InitialState {
+  [*] --> Unregistered
+}
+
+state "Unregistered" as Unregistered {
+  :User enters details;
+  transition: DetailsEntered -> Registered
+  transition: InvalidDetails -> InitialState
+}
+
+state "Registered" as Registered {
+  :User logs in with correct credentials;
+  transition: LoginSuccessful -> LoggedIn
+  transition: IncorrectLogin -> Registered
+}
+
+state "LoggedIn" as LoggedIn {
+  :User uploads documents;
+  transition: DocumentsUploaded -> ProfileViewed
+  transition: ContinueUploading -> LoggedIn
+
+  :User views profile;
+  transition: ProfileViewed -> ApplyForCertificate
+
+  :User applies for certificate;
+  transition: CertificateApplied -> ReapplyForCertificate
+
+  :User reapplies for certificate;
+  transition: ReapplySuccessful -> EndSession
+}
+
+state "ProfileViewed" as ProfileViewed {
+  :User views profile;
+  transition: ViewedProfile -> ApplyForCertificate
+}
+
+state "ApplyForCertificate" as ApplyForCertificate {
+  :User applies for certificate;
+  transition: CertificateApplied -> ReapplyForCertificate
+}
+
+state "ReapplyForCertificate" as ReapplyForCertificate {
+  :User reapplies for certificate;
+  transition: ReapplySuccessful -> EndSession
+}
+
+state "EndSession" as EndSession {
+  [*] --> InitialState
+}
+
+InitialState --> Unregistered
+Unregistered --> Registered
+Registered --> LoggedIn
+LoggedIn --> ProfileViewed
+ProfileViewed --> ApplyForCertificate
+ApplyForCertificate --> ReapplyForCertificate
+ReapplyForCertificate --> EndSession
+
+@enduml

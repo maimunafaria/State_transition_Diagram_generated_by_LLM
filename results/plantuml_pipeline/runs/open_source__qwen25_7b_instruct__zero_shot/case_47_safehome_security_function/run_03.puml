@@ -1,0 +1,27 @@
+@startuml
+
+title Safehome Security Function State Transition Diagram
+
+initial : Power-on;
+state "Power-on" as P {
+    initial
+}
+state "Startup Problem" as S1
+state "Ready to Use" as R
+state "Monitoring" as M
+state "Alarm Activated" as A
+state "False Alarm/Time Ends" as F
+state "Off" as O
+
+P --> S1 : Check if everything is working upon power-on
+S1 --> P : Stop if there is a problem during startup
+P --> R : Become ready to use if everything is fine during startup
+R --> M : Allow user to activate it when it is ready to use
+R --> A : Allow user to reset it when it is ready to use
+R --> O : Allow user to turn it off when it is ready to use
+M --> A : Start monitoring if it is activated
+A --> F : Start the alarm and send alerts if a sensor is triggered during monitoring
+F --> M : Continue monitoring if it turns out to be a false alarm or the time ends
+R --> P : Stop and return to normal when the user enters the password at any time
+
+@enduml

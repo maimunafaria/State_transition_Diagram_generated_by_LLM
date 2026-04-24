@@ -1,0 +1,41 @@
+@startuml
+state "Idle" as idle
+state "Adjusting Time" as adjustingTime
+state "Alarm On" as alarmOn
+state "Alarm Off" as alarmOff
+state "Light On" as lightOn
+state "Light Off" as lightOff
+
+idle ->down> adjustingTime: Press time button
+adjustingTime ->up> idle: Press time button again
+adjustingTime ->down> alarmOn: Press alarm button
+alarmOn ->up> alarmOff: Press alarm button again
+alarmOff ->down> alarmOn: Press alarm button
+alarmOff ->down> lightOn: Press light button
+lightOn ->up> lightOff: Release light button
+lightOff ->down> lightOn: Press light button
+
+idle ->down> alarmOff: Press alarm button
+alarmOff ->down> adjustingTime: Press time button
+
+adjustingTime ->right> increasingHour: Press increase button
+increasingHour ->left> adjustingTime: Press decrease button
+
+alarmOn ->down> ringingAlarm: Set alarm time matches current time
+ringingAlarm ->up> alarmOff: Press stop alarm button
+
+state "Increasing Hour" as increasingHour
+state "Increasing Minutes" as increasingMinutes
+state "Decreasing Hour" as decreasingHour
+state "Decreasing Minutes" as decreasingMinutes
+
+adjustingTime ->down> increasingHour: Press increase button
+increasingHour ->up> adjustingTime: Press decrease button
+increasingHour ->right> increasingMinutes: Press time button again
+increasingMinutes ->left> increasingHour: Press time button again
+decreasingHour ->right> decreasingMinutes: Press time button again
+decreasingMinutes ->left> decreasingHour: Press time button again
+
+idle as initial
+alarmOff as final
+@enduml

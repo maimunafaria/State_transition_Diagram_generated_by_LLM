@@ -1,0 +1,59 @@
+@startuml
+state "Unregistered" as unregistered {
+  [*] --> logged_in
+}
+
+state "Logged In" as logged_in {
+  logged_in --> create_account : User creates account
+  logged_in --> apply_for_visa : User applies for visa
+  logged_in --> view_status : User views status
+  logged_in --> cancel_application : User cancels application
+  logged_in --> modify_details : User modifies details
+  logged_in --> view_details : User views details
+  logged_in --> view_purpose : User views purpose of application
+  logged_in --> give_feedback : User gives feedback
+}
+
+state "Application Submitted" as application_submitted {
+  apply_for_visa --> application_submitted : Application submitted
+  application_submitted --> view_status : User views status
+  application_submitted --> cancel_application : User cancels application
+}
+
+state "Payment Made" as payment_made {
+  apply_for_visa --> payment_made : Payment made
+  payment_made --> application_submitted : Application accepted
+}
+
+state "Application Approved" as application_approved {
+  view_status --> application_approved : Status updated to approved
+  application_approved --> give_feedback : User gives feedback
+}
+
+state "Application Rejected" as application_rejected {
+  view_status --> application_rejected : Status updated to rejected
+  application_rejected --> give_feedback : User gives feedback
+}
+
+logged_in --> payment_made : Payment made
+
+application_submitted --> logged_in : User logs in again
+
+payment_made --> logged_in : User logs in again
+
+application_approved --> logged_in : User logs in again
+
+application_rejected --> logged_in : User logs in again
+
+modify_details --> logged_in : User logs in again
+view_details --> logged_in : User logs in again
+give_feedback --> logged_in : User logs in again
+view_purpose --> logged_in : User logs in again
+
+logged_in --> logout : User logs out
+application_submitted --> logout : User logs out
+payment_made --> logout : User logs out
+application_approved --> logout : User logs in again
+application_rejected --> logout : User logs in again
+
+@enduml

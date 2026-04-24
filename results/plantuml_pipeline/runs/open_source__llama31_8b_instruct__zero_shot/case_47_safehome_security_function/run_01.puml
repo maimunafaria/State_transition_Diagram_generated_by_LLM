@@ -1,0 +1,30 @@
+@startuml
+state Ready {
+  [*] --> PowerOn
+  PowerOn -->|check everything is working| Ready
+  Ready --> Reset
+  Ready --> Activate
+  Ready --> TurnOff
+}
+
+state Monitoring {
+  Activate -->|start monitoring| Monitoring
+  Monitoring --> SensorTriggered
+  SensorTriggered -->|start alarm and send alerts| AlarmActive
+  AlarmActive --> FalseAlarmOrTimeEnd
+  FalseAlarmOrTimeEnd -->|continue monitoring| Monitoring
+  Monitoring --> Reset
+  Monitoring --> TurnOff
+}
+
+state AlarmActive {
+  AlarmActive -->|stop alarm and return to normal| Ready
+}
+
+Ready -->|power-on check| PowerOn
+PowerOn -->|problem during startup| Shutdown
+
+Shutdown -->|reset| Ready
+AlarmActive -->|password entered| Ready
+
+@enduml

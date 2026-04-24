@@ -1,0 +1,20 @@
+@startuml
+state "Waiting for new sale" as WaitingForNewSale
+state "Adding items" as AddingItems
+state "Payment pending" as PaymentPending
+state "Payment approved" as PaymentApproved
+state "Sale completed" as SaleCompleted
+state "Payment verification failed" as PaymentVerificationFailed
+
+[*] --> WaitingForNewSale : New sale
+WaitingForNewSale -->|new item added|> AddingItems : Item selected by customer
+AddingItems -->|all items added|> PaymentPending : All items added
+PaymentPending -->|cash payment|> SaleCompleted : Cash payment
+PaymentPending -->|card/check payment|> PaymentVerificationFailed : Card or check payment
+
+PaymentVerificationFailed -->|payment approved|> PaymentApproved : Payment approved
+PaymentApproved -->|sale completed|> SaleCompleted : Sale completed
+
+SaleCompleted --> [*] : Next customer arrives
+
+@enduml

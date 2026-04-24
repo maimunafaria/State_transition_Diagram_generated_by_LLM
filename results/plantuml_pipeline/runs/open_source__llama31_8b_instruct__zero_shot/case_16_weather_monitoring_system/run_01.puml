@@ -1,0 +1,56 @@
+@startuml
+state "Account Creation" as acr {
+  [*] --> acr: Create Account
+  acr -->|Registration Successful| login: Login to Existing Account
+  acr -->|Registration Not Successful| endProcess: End Process
+}
+
+state "Login" as lg {
+  login -->|Valid Credentials| checkWeather: Check Weather for Current Location or Another Location
+  login -->|Invalid Credentials| endProcess: End Process
+}
+
+state "Check Weather" as cw {
+  checkWeather -->|Valid Location| chooseOption: Choose What to Check (Temperature, Humidity, Rainfall, Pressure, Dew Point)
+  checkWeather -->|Invalid Location| endProcess: End Process
+}
+
+state "Choose Option" as co {
+  chooseOption -->|Temperature| updateInfo: Update and Show Selected Weather Information
+  chooseOption -->|Humidity| updateInfo: Update and Show Selected Weather Information
+  chooseOption -->|Rainfall| updateInfo: Update and Show Selected Weather Information
+  chooseOption -->|Pressure| updateInfo: Update and Show Selected Weather Information
+  chooseOption -->|Dew Point| updateInfo: Update and Show Selected Weather Information
+}
+
+state "Update Info" as ui {
+  updateInfo -->|Additional Details| viewDetails: View Additional Weather Details (Alerts, Weekly Analysis, Future Prediction, Graph)
+  updateInfo -->|No Additional Details| logout: End Session When User Logs Out
+}
+
+state "View Details" as vd {
+  viewDetails -->|Alerts| endSession: End Session When User Logs Out
+  viewDetails -->|Weekly Analysis| endSession: End Session When User Logs Out
+  viewDetails -->|Future Prediction| endSession: End Session When User Logs Out
+  viewDetails -->|Graph| endSession: End Session When User Logs Out
+}
+
+state "End Process" as ep {
+  endProcess --> * : End Process
+}
+
+state "End Session" as es {
+  logout --> * : End Session
+}
+
+[*] --> acr: Initial State
+
+acr --> lg: Transition to Login State
+lg --> cw: Transition to Check Weather State
+cw --> co: Transition to Choose Option State
+co --> ui: Transition to Update Info State
+ui --> vd: Transition to View Details State
+vd --> es: Transition to End Session State
+es --> * : Final State
+
+@enduml
