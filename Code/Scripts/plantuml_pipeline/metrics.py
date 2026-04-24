@@ -84,9 +84,9 @@ def prf(pred: set[Any], gold: set[Any]) -> tuple[float, float, float, int, int, 
 
 
 def complexity_bucket(state_count: int) -> str:
-    if state_count <= 3:
+    if state_count <= 6:
         return "simple"
-    if state_count <= 7:
+    if state_count <= 14:
         return "medium"
     return "complex"
 

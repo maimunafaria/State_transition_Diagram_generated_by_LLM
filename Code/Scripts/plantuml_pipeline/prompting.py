@@ -264,6 +264,28 @@ def select_fewshot_examples(cases: list[Case], current_case_id: str, max_example
     return selected
 
 
+def build_zero_shot_prompt(requirement: str) -> str:
+    return (
+        "Act as a software requirements analyst and UML modeling expert.\n\n"
+        "Your task is to generate a UML state transition diagram in PlantUML format "
+        "from the given natural language requirement.\n\n"
+        "Follow these steps before producing the final output:\n\n"
+        "1. Identify all possible system states mentioned or implied in the requirement.\n"
+        "2. Identify events or conditions that trigger transitions between states.\n"
+        "3. Define transitions clearly using appropriate labels.\n"
+        "4. Ensure logical consistency (no unreachable or isolated states).\n"
+        "5. Identify exactly one initial state and at least one final state.\n\n"
+        "Output Rules:\n"
+        "- Generate ONLY valid PlantUML code.\n"
+        "- Include initial and final states.\n"
+        "- Use clear transition labels.\n"
+        "- Maintain correct UML state diagram syntax.\n"
+        "- Do not include explanations or extra text.\n\n"
+        "Requirement:\n"
+        f"{requirement}\n"
+    )
+
+
 def build_generation_prompt(
     case: Case,
     cfg: ExperimentConfig,
@@ -296,22 +318,14 @@ def build_generation_prompt(
         },
     }
 
-    parts: list[str] = [
-        "You convert natural language software requirements into UML state machine diagrams in PlantUML format.",
-        "Rules:",
-        "- Output ONLY PlantUML code.",
-        "- Start with @startuml and end with @enduml.",
-        "- Use [*] for exactly one initial transition.",
-        "- Use --> for transitions.",
-        "- Include transition labels when requirement evidence exists.",
-        "- Do not add explanations or markdown fences.",
-    ]
+    if cfg.strategy == "zero_shot":
+        return build_zero_shot_prompt(requirement), prompt_meta
 
     if cfg.strategy == "few_shot":
         examples = select_fewshot_examples(all_cases, case.case_id, max_examples=3)
         prompt_meta["few_shot_case_ids"] = [ex.case_id for ex in examples]
+        example_texts: list[str] = []
         if examples:
-            example_texts: list[str] = []
             for idx, ex in enumerate(examples, start=1):
                 ex_req = ex.structured_requirement.strip() or ex.raw_requirement.strip()
                 if len(ex_req) > 1200:
@@ -322,8 +336,46 @@ def build_generation_prompt(
                 example_texts.append(
                     f"Example {idx} Requirement:\n{ex_req}\n\nExample {idx} PlantUML:\n{ex_puml}"
                 )
-            parts.append("Few-shot examples:")
-            parts.append("\n\n".join(example_texts))
+        few_shot_examples = "\n\n".join(example_texts) if example_texts else "[No examples available]"
+        parts = [
+            "Act as a software requirements analyst and UML modeling expert.",
+            "",
+            "Your task is to generate a UML state transition diagram in PlantUML format "
+            "from the given natural language requirement.",
+            "",
+            "Follow the structure demonstrated in the examples below.",
+            "",
+            "--- Examples ---",
+            few_shot_examples,
+            "",
+            "--- Process ---",
+            "1. Identify all system states.",
+            "2. Identify events/conditions triggering transitions.",
+            "3. Define transitions clearly between states.",
+            "4. Ensure logical consistency (no unreachable states).",
+            "5. Identify one initial state and at least one final state.",
+            "",
+            "--- Output Rules ---",
+            "- Generate ONLY valid PlantUML code.",
+            "- Include initial and final states.",
+            "- Use proper UML state diagram syntax.",
+            "- Do not include explanations or extra text.",
+            "",
+            "--- Task ---",
+            "Requirement:",
+            requirement,
+        ]
+    else:
+        parts = [
+            "You convert natural language software requirements into UML state machine diagrams in PlantUML format.",
+            "Rules:",
+            "- Output ONLY PlantUML code.",
+            "- Start with @startuml and end with @enduml.",
+            "- Use [*] for exactly one initial transition.",
+            "- Use --> for transitions.",
+            "- Include transition labels when requirement evidence exists.",
+            "- Do not add explanations or markdown fences.",
+        ]
 
     if cfg.use_rag:
         rag_context, rag_trace = resolve_rag_context(
@@ -341,9 +393,10 @@ def build_generation_prompt(
             parts.append("Reference context (support only, not mandatory):")
             parts.append(rag_context)
 
-    parts.append("Target requirement:")
-    parts.append(requirement)
-    parts.append("Now return only the final PlantUML.")
+    if cfg.strategy != "few_shot":
+        parts.append("Target requirement:")
+        parts.append(requirement)
+        parts.append("Now return only the final PlantUML.")
     return "\n\n".join(parts).strip() + "\n", prompt_meta
 
 

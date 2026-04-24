@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from .constants import PROJECT_ROOT
-from .dataset import balanced_subset, build_experiment_configs, load_cases
+from .dataset import balanced_subset, build_experiment_configs, load_cases, stratified_split_cases
 from .ensemble import (
     build_puml_from_graph,
     collect_ensemble_candidates,
@@ -24,7 +24,7 @@ from .io_utils import read_text, write_json, write_jsonl, write_text
 from .metrics import compute_metrics, summarize_metrics
 from .models import ValidationResult
 from .parser import parse_and_validate_puml_text
-from .prompting import load_rag_docs
+from .prompting import load_rag_docs, tokenize
 
 
 def _resolve_root(path_arg: str, parent: Path | None = None) -> Path:
@@ -34,6 +34,37 @@ def _resolve_root(path_arg: str, parent: Path | None = None) -> Path:
     if parent is None:
         return (PROJECT_ROOT / path).resolve()
     return (parent / path).resolve()
+
+
+def _case_rag_docs(cases: list[Any]) -> list[tuple[str, str, set[str]]]:
+    docs: list[tuple[str, str, set[str]]] = []
+    for case in cases:
+        content = (
+            f"Case ID: {case.case_id}\n"
+            f"Complexity: {case.complexity}\n\n"
+            f"Requirement:\n{case.structured_requirement or case.raw_requirement}\n\n"
+            f"Reference PlantUML:\n{case.gold_puml}\n"
+        )
+        name = f"{case.case_id}.txt"
+        docs.append((name, content, tokenize(content)))
+    return docs
+
+
+def command_split(args: argparse.Namespace) -> int:
+    dataset_root = _resolve_root(args.dataset_root)
+    output_path = _resolve_root(args.output)
+    cases = load_cases(dataset_root)
+    _, _, split_meta = stratified_split_cases(
+        cases=cases,
+        test_size=args.test_size,
+        seed=args.seed,
+    )
+    write_json(output_path, split_meta)
+    print(
+        f"Wrote split: {output_path} "
+        f"(test={split_meta['test_count']}, rag={split_meta['rag_count']})"
+    )
+    return 0
 
 
 def command_ensemble(args: argparse.Namespace) -> int:
@@ -302,6 +333,7 @@ def command_run(args: argparse.Namespace) -> int:
     results_root = _resolve_root(args.results_root)
     rag_docs_dir = _resolve_root(args.rag_docs_dir)
     rag_db_dir = _resolve_root(args.rag_db_dir)
+    split_output = _resolve_root(args.split_output)
     rag_mode = str(args.rag_mode).strip().lower()
     rag_domain_hints = {s.strip().lower() for s in (args.rag_domain_hint or []) if s.strip()}
 
@@ -314,8 +346,21 @@ def command_run(args: argparse.Namespace) -> int:
                 file=sys.stderr,
             )
 
-    baseline_cases = balanced_subset(cases, target_size=args.baseline_subset_size, seed=args.seed)
+    test_cases, rag_cases, split_meta = stratified_split_cases(
+        cases=cases,
+        test_size=args.test_size,
+        seed=args.seed,
+    )
+    write_json(split_output, split_meta)
+
+    baseline_cases = balanced_subset(
+        test_cases,
+        target_size=args.baseline_subset_size,
+        seed=args.seed,
+    )
     rag_docs = load_rag_docs(rag_docs_dir) if rag_mode == "lexical" else []
+    if args.use_case_rag and rag_mode == "lexical":
+        rag_docs.extend(_case_rag_docs(rag_cases))
 
     configs = build_experiment_configs(
         gpt_model=args.gpt_model,
@@ -349,6 +394,13 @@ def command_run(args: argparse.Namespace) -> int:
         "rag_db_dir": str(rag_db_dir),
         "rag_collection_name": args.rag_collection_name,
         "rag_doc_count": len(rag_docs),
+        "split_output": str(split_output),
+        "test_size": args.test_size,
+        "test_case_count": len(test_cases),
+        "rag_case_count": len(rag_cases),
+        "test_case_ids": [c.case_id for c in test_cases],
+        "rag_case_ids": [c.case_id for c in rag_cases],
+        "use_case_rag": bool(args.use_case_rag),
         "rag_top_k": args.top_k_rag,
         "rag_max_chars_per_doc": args.rag_max_chars_per_doc,
         "rag_domain_hints": sorted(rag_domain_hints),
@@ -363,7 +415,7 @@ def command_run(args: argparse.Namespace) -> int:
     metrics_rows: list[dict[str, Any]] = []
 
     for cfg in configs:
-        selected_cases = baseline_cases if cfg.baseline_subset_only else cases
+        selected_cases = baseline_cases if cfg.baseline_subset_only else test_cases
         print(f"[run] {cfg.run_id} | cases={len(selected_cases)}")
         for case in selected_cases:
             for run_index in range(1, args.runs + 1):
@@ -387,7 +439,7 @@ def command_run(args: argparse.Namespace) -> int:
                         run_single_generation(
                             case=case,
                             cfg=cfg,
-                            all_cases=cases,
+                            all_cases=rag_cases,
                             rag_docs=rag_docs,
                             requirement_source=args.requirement_source,
                             top_k_rag=args.top_k_rag,

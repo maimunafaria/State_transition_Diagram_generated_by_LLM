@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 from pathlib import Path
+from typing import Any
 
 from .io_utils import read_text
 from .metrics import complexity_bucket
@@ -74,6 +75,58 @@ def balanced_subset(cases: list[Case], target_size: int, seed: int) -> list[Case
         if not made_progress:
             break
     return chosen
+
+
+def stratified_split_cases(
+    cases: list[Case],
+    test_size: float,
+    seed: int,
+) -> tuple[list[Case], list[Case], dict[str, Any]]:
+    if not 0 < test_size <= 1:
+        raise ValueError("--test-size must be greater than 0 and at most 1")
+
+    grouped: dict[str, list[Case]] = {"simple": [], "medium": [], "complex": []}
+    for case in cases:
+        grouped.setdefault(case.complexity, []).append(case)
+
+    rng = random.Random(seed)
+    test_cases: list[Case] = []
+    rag_cases: list[Case] = []
+    by_complexity: dict[str, dict[str, Any]] = {}
+
+    for complexity in ("simple", "medium", "complex"):
+        bucket = list(grouped.get(complexity, []))
+        rng.shuffle(bucket)
+        test_count = round(len(bucket) * test_size)
+        if bucket and test_count == 0:
+            test_count = 1
+        if test_size < 1 and test_count >= len(bucket) and len(bucket) > 1:
+            test_count = len(bucket) - 1
+
+        bucket_test = sorted(bucket[:test_count], key=lambda c: c.case_id)
+        bucket_rag = sorted(bucket[test_count:], key=lambda c: c.case_id)
+        test_cases.extend(bucket_test)
+        rag_cases.extend(bucket_rag)
+        by_complexity[complexity] = {
+            "total": len(bucket),
+            "test": len(bucket_test),
+            "rag": len(bucket_rag),
+        }
+
+    test_cases = sorted(test_cases, key=lambda c: c.case_id)
+    rag_cases = sorted(rag_cases, key=lambda c: c.case_id)
+    split_meta = {
+        "strategy": "stratified_by_complexity",
+        "test_size": test_size,
+        "seed": seed,
+        "total_cases": len(cases),
+        "test_count": len(test_cases),
+        "rag_count": len(rag_cases),
+        "by_complexity": by_complexity,
+        "test_case_ids": [case.case_id for case in test_cases],
+        "rag_case_ids": [case.case_id for case in rag_cases],
+    }
+    return test_cases, rag_cases, split_meta
 
 
 def build_experiment_configs(

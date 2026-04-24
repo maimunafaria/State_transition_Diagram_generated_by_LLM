@@ -6,6 +6,7 @@ from .commands import (
     command_ensemble,
     command_metrics,
     command_run,
+    command_split,
     command_table,
     command_validate,
 )
@@ -31,6 +32,26 @@ def build_parser() -> argparse.ArgumentParser:
     p_validate.add_argument("--puml", required=True, help="Path to .puml file")
     p_validate.add_argument("--json", action="store_true", help="Print JSON output")
     p_validate.set_defaults(func=command_validate)
+
+    p_split = sub.add_parser("split", help="Create a reproducible stratified test/RAG split")
+    p_split.add_argument(
+        "--dataset-root",
+        default=str(DEFAULT_DATASET_ROOT),
+        help="Dataset root containing case_* folders",
+    )
+    p_split.add_argument(
+        "--test-size",
+        type=float,
+        default=0.35,
+        help="Fraction of cases used for testing/evaluation",
+    )
+    p_split.add_argument("--seed", type=int, default=42, help="Random seed")
+    p_split.add_argument(
+        "--output",
+        default="data/processed/experiments/split_35_seed42.json",
+        help="Path where split metadata is saved",
+    )
+    p_split.set_defaults(func=command_split)
 
     p_run = sub.add_parser("run", help="Run full 11-configuration experiment batch")
     p_run.add_argument(
@@ -65,6 +86,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Vector collection name for --rag-mode vector",
     )
     p_run.add_argument("--runs", type=int, default=3, help="Runs per case/config")
+    p_run.add_argument(
+        "--test-size",
+        type=float,
+        default=0.35,
+        help=(
+            "Fraction of cases used for testing/evaluation. Use 0.35 to test on "
+            "about 35%% and reserve the rest for few-shot/RAG examples."
+        ),
+    )
+    p_run.add_argument(
+        "--split-output",
+        default="data/processed/experiments/split_35_seed42.json",
+        help="Path where the generated train/test split metadata is saved",
+    )
+    p_run.add_argument(
+        "--use-case-rag",
+        action="store_true",
+        help="Use non-test dataset cases as RAG documents in addition to --rag-docs-dir docs",
+    )
     p_run.add_argument(
         "--baseline-subset-size",
         type=int,
