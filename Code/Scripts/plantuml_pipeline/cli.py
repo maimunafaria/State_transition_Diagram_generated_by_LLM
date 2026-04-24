@@ -130,6 +130,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional domain hint to bias RAG retrieval (repeatable)",
     )
     p_run.add_argument("--seed", type=int, default=42, help="Random seed")
+    p_run.add_argument(
+        "--few-shot-seed",
+        type=int,
+        default=42,
+        help="Seed for randomized few-shot example selection",
+    )
     p_run.add_argument("--temperature", type=float, default=0.2)
     p_run.add_argument("--top-p", type=float, default=0.9)
     p_run.add_argument("--max-tokens", type=int, default=1024)

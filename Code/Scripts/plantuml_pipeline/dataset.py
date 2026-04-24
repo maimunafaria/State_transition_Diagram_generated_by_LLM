@@ -53,7 +53,7 @@ def load_cases(dataset_root: Path) -> list[Case]:
         raw_req = read_text(raw_path).strip()
         structured_req = prompt_requirement_from_structured(read_text(structured_path))
         gold_puml = normalize_puml_text(read_text(gold_path))
-        gold_graph, gold_validation = parse_and_validate_puml_text(gold_puml)
+        gold_graph, gold_validation = parse_and_validate_puml_text(gold_puml, official_syntax=False)
         complexity = complexity_bucket(len(gold_graph.states))
         cases.append(
             Case(

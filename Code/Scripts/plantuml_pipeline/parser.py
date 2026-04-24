@@ -308,11 +308,15 @@ def check_plantuml_syntax(puml_text: str, timeout: int = 30) -> list[str]:
     return [f"plantuml_syntax_error: {message}"]
 
 
-def parse_and_validate_puml_text(puml_text: str) -> tuple[DiagramGraph, ValidationResult]:
+def parse_and_validate_puml_text(
+    puml_text: str,
+    official_syntax: bool = True,
+) -> tuple[DiagramGraph, ValidationResult]:
     graph = parse_plantuml(puml_text)
     validation = validate_graph(graph)
-    syntax_errors = check_plantuml_syntax(puml_text)
-    if syntax_errors:
-        validation.errors.extend(syntax_errors)
-        validation.valid = False
+    if official_syntax:
+        syntax_errors = check_plantuml_syntax(puml_text)
+        if syntax_errors:
+            validation.errors.extend(syntax_errors)
+            validation.valid = False
     return graph, validation

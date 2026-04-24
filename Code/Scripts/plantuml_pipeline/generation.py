@@ -26,6 +26,8 @@ def run_single_generation(
     rag_mode: str = "lexical",
     rag_db_dir: Path | None = None,
     rag_collection_name: str = "uml_docs",
+    few_shot_seed: int = 42,
+    run_index: int = 1,
 ) -> tuple[str, ValidationResult, str, str, list[dict[str, Any]]]:
     requirement = case.structured_requirement if requirement_source == "structured" else case.raw_requirement
     if not requirement.strip():
@@ -44,12 +46,16 @@ def run_single_generation(
         rag_mode=rag_mode,
         rag_db_dir=rag_db_dir,
         rag_collection_name=rag_collection_name,
+        few_shot_seed=few_shot_seed,
+        run_index=run_index,
     )
     if prompt_meta.get("few_shot_case_ids"):
         steps.append(
             {
                 "stage": "few_shot_selection",
                 "case_ids": list(prompt_meta["few_shot_case_ids"]),
+                "seed": prompt_meta.get("few_shot_seed"),
+                "run_index": prompt_meta.get("few_shot_run_index"),
             }
         )
     rag_meta = prompt_meta.get("rag", {})

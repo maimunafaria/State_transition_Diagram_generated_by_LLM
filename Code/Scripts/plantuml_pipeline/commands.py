@@ -454,6 +454,8 @@ def command_run(args: argparse.Namespace) -> int:
                             rag_mode=rag_mode,
                             rag_db_dir=rag_db_dir,
                             rag_collection_name=args.rag_collection_name,
+                            few_shot_seed=args.few_shot_seed,
+                            run_index=run_index,
                         )
                     )
                 except Exception as exc:  # noqa: BLE001 - preserve all run errors

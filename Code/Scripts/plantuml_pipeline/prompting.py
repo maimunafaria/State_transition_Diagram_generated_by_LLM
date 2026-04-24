@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 import re
 from pathlib import Path
 from typing import Any
@@ -241,7 +242,13 @@ def resolve_rag_context(
     )
 
 
-def select_fewshot_examples(cases: list[Case], current_case_id: str, max_examples: int = 3) -> list[Case]:
+def select_fewshot_examples(
+    cases: list[Case],
+    current_case_id: str,
+    max_examples: int = 3,
+    rng: random.Random | None = None,
+) -> list[Case]:
+    rng = rng or random.Random(0)
     by_complexity: dict[str, list[Case]] = {"simple": [], "medium": [], "complex": []}
     for case in cases:
         if case.case_id == current_case_id:
@@ -250,13 +257,15 @@ def select_fewshot_examples(cases: list[Case], current_case_id: str, max_example
 
     selected: list[Case] = []
     for bucket in ("simple", "medium", "complex"):
-        if by_complexity.get(bucket):
-            selected.append(by_complexity[bucket][0])
+        bucket_cases = by_complexity.get(bucket, [])
+        if bucket_cases:
+            selected.append(rng.choice(bucket_cases))
             if len(selected) >= max_examples:
                 return selected
 
     if len(selected) < max_examples:
         remainder = [c for c in cases if c.case_id != current_case_id and c not in selected]
+        rng.shuffle(remainder)
         for case in remainder:
             selected.append(case)
             if len(selected) >= max_examples:
@@ -298,6 +307,8 @@ def build_generation_prompt(
     rag_mode: str = "lexical",
     rag_db_dir: Path | None = None,
     rag_collection_name: str = "uml_docs",
+    few_shot_seed: int = 42,
+    run_index: int = 1,
 ) -> tuple[str, dict[str, Any]]:
     requirement = case.structured_requirement if requirement_source == "structured" else case.raw_requirement
     if not requirement.strip():
@@ -322,8 +333,11 @@ def build_generation_prompt(
         return build_zero_shot_prompt(requirement), prompt_meta
 
     if cfg.strategy == "few_shot":
-        examples = select_fewshot_examples(all_cases, case.case_id, max_examples=3)
+        rng = random.Random(f"{few_shot_seed}:{cfg.run_id}:{case.case_id}:{run_index}")
+        examples = select_fewshot_examples(all_cases, case.case_id, max_examples=3, rng=rng)
         prompt_meta["few_shot_case_ids"] = [ex.case_id for ex in examples]
+        prompt_meta["few_shot_seed"] = few_shot_seed
+        prompt_meta["few_shot_run_index"] = run_index
         example_texts: list[str] = []
         if examples:
             for idx, ex in enumerate(examples, start=1):
