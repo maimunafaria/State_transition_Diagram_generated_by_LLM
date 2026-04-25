@@ -368,6 +368,7 @@ def command_run(args: argparse.Namespace) -> int:
         llama_model=args.llama_model,
         llama70_model=args.llama70_model,
         deepseek_model=args.deepseek_model,
+        deepseek14_model=args.deepseek14_model,
     )
     # Allow running open-source experiments without requiring OpenAI credentials.
     if args.skip_gpt_baseline:
