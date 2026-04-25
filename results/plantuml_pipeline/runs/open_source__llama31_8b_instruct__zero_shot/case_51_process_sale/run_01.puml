@@ -1,0 +1,33 @@
+@startuml
+state "Waiting for new sale" as WaitingForNewSale
+state "Adding items" as AddingItems
+state "Payment pending" as PaymentPending
+state "Payment approved" as PaymentApproved
+state "Sale completed" as SaleCompleted
+
+event "Customer selects item" as SelectItem
+event "Customer chooses payment method" as ChoosePaymentMethod
+event "Payment is verified" as PaymentVerified
+event "Payment is approved" as PaymentApprovedEvent
+event "Payment is declined" as PaymentDeclined
+
+WaitingForNewSale ->> AddingItems : SelectItem
+AddingItems ->> PaymentPending : SelectItem
+PaymentPending ->> PaymentPending : ChoosePaymentMethod
+PaymentPending ->> PaymentPending : PaymentVerified
+alt PaymentVerified == true
+  PaymentPending ->> PaymentApproved : PaymentApprovedEvent
+  PaymentApproved ->> SaleCompleted : PaymentApprovedEvent
+else
+  PaymentPending ->> WaitingForNewSale : PaymentDeclined
+endif
+
+note right of PaymentApproved
+  Complete sale immediately if payment is cash
+end note
+
+note left of PaymentVerified
+  Verify payment for card or check
+end note
+
+@enduml

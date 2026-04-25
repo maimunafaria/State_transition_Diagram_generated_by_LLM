@@ -1,0 +1,41 @@
+@startuml
+state "Idle" as idle {
+  [*] --> idle
+}
+idle -->|display_time|> "Display Time"
+idle -->|set_power|> "Set Power Level"
+
+state "Display Time" as display_time {
+  display_time -->|enter_cooking_time|> "Enter Cooking Time"
+}
+
+state "Set Power Level" as set_power_level {
+  set_power_level -->|select_full_power|> "Select Full Power"
+  set_power_level -->|select_half_power|> "Select Half Power"
+}
+
+state "Cooking" as cooking {
+  cooking -->|door_opened|> "Door Opened During Cooking"
+  cooking -->|cancel_cooking|> "Cancel Cooking"
+}
+
+state "Error" as error {
+  door_opened --> error
+  cancel_cooking --> idle
+}
+
+idle -->|door_closed|> "Cooking"
+
+set_power_level -->|enter_cooking_time|> "Enter Cooking Time"
+
+display_time -->|cancel_cooking|> "Cancel Cooking"
+display_time -->|door_opened|> "Door Opened During Cooking"
+
+cooking -->|stop_cooking|> "Stop Cooking"
+
+idle -->|start_cooking|> "Start Cooking"
+
+error -->|close_door|> "Close Door"
+error -->|continue_cooking|> "Continue Cooking"
+
+@enduml

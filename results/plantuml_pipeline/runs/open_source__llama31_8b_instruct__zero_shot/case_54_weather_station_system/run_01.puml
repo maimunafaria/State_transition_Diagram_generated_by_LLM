@@ -1,0 +1,29 @@
+@startuml
+state "Shut Down" as sd {
+  [*] --> sd : Shutdown Command
+}
+
+state "Running" as r {
+  sd --> r : Restart
+  r --> r : Clock Trigger (Data Collection)
+  r --> r : Request for Weather Summary
+  r --> r : Request for Status Check
+}
+
+state "Configuration Mode" as cm {
+  r --> cm : Configuration Required or Power-Saving Settings
+  cm --> r : Configuration Completed
+}
+
+state "Controlled Mode" as co {
+  r --> co : Remote Control Command
+}
+
+state "Final State" as fs
+
+r --> sd : Shutdown Command while Running
+co --> r : Return to Running after Controlled Mode
+cm --> r : Return to Running after Configuration
+sd --> fs : Final State (Shut Down)
+
+@enduml

@@ -1,0 +1,74 @@
+@startuml
+```plantuml
+@startuml
+state Start {
+}
+state IdentifyUserType {
+  transition "Enter details" -> IdentifyUserType
+}
+state CitizenRegister {
+  transition "Register" -> LoginPage
+}
+state LoginPage {
+  transition "Login with correct credentials" -> LoggedInCitizen
+}
+state LoggedInCitizen {
+  transition "Upload documents, view profile, apply for certificate" -> UploadDocuments
+  transition "Continue uploading documents" -> ContinueUploading
+  transition "Reapply for certificate" -> ApplyForCertificate
+}
+state UploadDocuments {
+  transition "Done" -> SessionEnded
+}
+state ViewProfile {
+  transition "Back to main menu" -> LoggedInCitizen
+}
+state ApplyForCertificate {
+  transition "Request sent" -> AwaitResponse
+  transition "Reapply" -> ApplyForCertificate
+}
+state ContinueUploading {
+  transition "Done" -> SessionEnded
+  transition "Upload more documents" -> UploadDocuments
+}
+state RegistrarLoginPage {
+  transition "Login with correct credentials" -> RegistrarLoggedIn
+}
+state RegistrarLoggedIn {
+  transition "Request certificates" -> RequestCertificates
+}
+state RequestCertificates {
+  transition "Receive certificate" -> ContinueRequests
+  transition "Request more" -> RequestMore
+}
+state AwaitResponse {
+  transition "Back to main menu" -> LoggedInCitizen
+}
+state SessionEnded {
+}
+
+Start -> IdentifyUserType
+IdentifyUserType -> CitizenRegister
+IdentifyUserType -> RegistrarLoginPage
+
+LoginPage -> LoggedInCitizen
+
+LoggedInCitizen -> UploadDocuments
+LoggedInCitizen -> ViewProfile
+LoggedInCitizen -> ApplyForCertificate
+
+UploadDocuments -> SessionEnded
+ViewProfile -> LoggedInCitizen
+ApplyForCertificate -> AwaitResponse
+
+AwaitResponse -> SessionEnded
+ContinueUploading -> SessionEnded
+ContinueUploading -> UploadDocuments
+
+RegistrarLoginPage -> RegistrarLoggedIn
+
+RegistrarLoggedIn -> RequestCertificates
+
+RequestCertificates -> ContinueRequests
+RequestCertificates -> RequestMore
+@enduml

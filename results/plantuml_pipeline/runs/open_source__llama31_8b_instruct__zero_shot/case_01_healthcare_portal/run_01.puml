@@ -1,0 +1,50 @@
+@startuml
+[*] --> RegistrationFailed : Initial State
+State "Registration Failed" as RegistrationFailed {
+  [*] --> RegistrationFailed : Registration fails
+  RegistrationFailed --> Registered : User registration successful
+}
+
+State "Registered" as Registered {
+  Registered --> SignedIn : User signs in successfully
+  Registered --> RegistrationFailed : Registration fails (loop back)
+}
+
+State "Signed In" as SignedIn {
+  SignedIn --> FacilitiesAccessed : User accesses available facilities
+  SignedIn --> NewsAndExpertContentRead : User reads news and expert content
+  SignedIn --> HealthInfoAccessed : User accesses health-related information
+  SignedIn --> SessionFinished : User finishes session
+}
+
+State "Session Finished" as SessionFinished {
+  SessionFinished --> LoggedOut : User logs out
+}
+
+State "Health Info Accessed" as HealthInfoAccessed {
+  HealthInfoAccessed --> ResultViewed : User views result
+  HealthInfoAccessed --> SessionFinished : User continues using system (loop back)
+}
+
+State "Result Viewed" as ResultViewed {
+  ResultViewed --> SessionFinished : User finishes session
+}
+
+State "Facilities Accessed" as FacilitiesAccessed {
+  FacilitiesAccessed --> PaymentProcessed : User completes payment process for doctor consultations
+  FacilitiesAccessed --> PaymentProcessed : User selects insurance-based payment method (loop back)
+}
+
+State "Payment Processed" as PaymentProcessed {
+  PaymentProcessed --> SessionFinished : User finishes session
+}
+
+State "News And Expert Content Read" as NewsAndExpertContentRead {
+  NewsAndExpertContentRead --> SessionFinished : User continues using system (loop back)
+}
+
+State "Logged Out" as LoggedOut {
+  [*] --> LoggedOut : Initial State
+}
+
+@enduml

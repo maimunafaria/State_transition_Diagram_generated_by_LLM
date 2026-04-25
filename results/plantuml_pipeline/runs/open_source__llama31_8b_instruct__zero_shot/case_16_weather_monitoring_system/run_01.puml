@@ -1,0 +1,53 @@
+@startuml
+state "Account Creation" as acr {
+  [*] --> acr: Create Account
+  acr -->|Registration Successful| login: Login to Existing Account
+  acr -->|Registration Not Successful| endProcess: End Process
+}
+
+state "Login" as lg {
+  lg -->|Valid Credentials| checkWeather: Check Weather for Current Location or Another Location
+  lg -->|Invalid Credentials| endProcess: End Process
+}
+
+state "Check Weather" as cw {
+  cw -->|Valid Location| chooseOption: Choose What to Check (Temperature, Humidity, Rainfall, Pressure, Dew Point)
+  cw -->|Invalid Location| endProcess: End Process
+}
+
+state "Choose Option" as co {
+  co -->|Temperature Selected| updateInfo: Update and Show Temperature Information
+  co -->|Humidity Selected| updateInfo: Update and Show Humidity Information
+  co -->|Rainfall Selected| updateInfo: Update and Show Rainfall Information
+  co -->|Pressure Selected| updateInfo: Update and Show Pressure Information
+  co -->|Dew Point Selected| updateInfo: Update and Show Dew Point Information
+}
+
+state "Update Info" as ui {
+  ui -->|Additional Details Requested| viewDetails: View Additional Weather Details (Alerts, Weekly Analysis, Future Prediction, Graph)
+  ui -->|No Additional Details Requested| endSession: End Session
+}
+
+state "View Details" as vd {
+  vd -->|End Session| endSession: End Session
+}
+
+state "End Process" as ep {
+  ep --> [*]
+}
+
+state "End Session" as es {
+  es --> [*]
+}
+
+[*] --> acr: Initial State
+
+acr --> lg: Transition to Login
+lg --> cw: Transition to Check Weather
+cw --> co: Transition to Choose Option
+co --> ui: Transition to Update Info
+ui --> vd: Transition to View Details
+vd --> es: Final State
+es --> [*]: End Session
+
+@enduml

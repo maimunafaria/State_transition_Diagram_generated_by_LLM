@@ -1,0 +1,41 @@
+@startuml
+state Ready {
+  [*] --> PowerOn
+  PowerOn -->|check everything working| Ready
+  Ready --> Reset
+  Ready --> Activate
+  Ready --> TurnOff
+}
+
+state PowerOn {
+  Ready -->|problem during startup| Error
+  Ready -->|everything fine during startup| Ready
+}
+
+state Error {
+  PowerOn -->|reset| Ready
+}
+
+state Activated {
+  Ready -->|activate| Activated
+  Activated --> StartMonitoring
+  Activated --> TurnOff
+}
+
+state Monitoring {
+  Activated -->|sensor triggered| Alarm
+  Alarm -->|false alarm or time ends| Ready
+}
+
+state Alarm {
+  Monitoring -->|reset| Ready
+  Monitoring -->|time ends| Ready
+}
+
+Ready -->|password entered| Normal
+
+state Normal {
+  [*] --> PowerOn
+}
+
+@enduml

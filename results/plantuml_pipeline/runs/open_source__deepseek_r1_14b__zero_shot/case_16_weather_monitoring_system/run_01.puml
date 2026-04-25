@@ -1,0 +1,47 @@
+@startuml
+state Initial {
+}
+
+state Unauthenticated {
+  transition: create account -> [Registration successful] > Authenticated
+  transition: login -> [Login successful] > Authenticated
+  transition: login -> [Invalid credentials] > Initial
+}
+
+state Authenticated {
+  transition: check weather -> [Location entered] > LocationInvalid
+  transition: check weather -> [Valid location] > WeatherChecked
+}
+
+state LocationInvalid {
+  transition: enter new location -> [Valid location] > WeatherChecked
+  transition: any other action -> end process > Initial
+}
+
+state WeatherChecked {
+  transition: view additional details -> AdditionalDetailsViewed
+  transition: log out -> end session > Initial
+}
+
+state AdditionalDetailsViewed {
+  transition: back to weather check -> WeatherChecked
+  transition: log out -> end session > Initial
+}
+
+Initial --> Unauthenticated
+
+Unauthenticated --> Authenticated
+
+Authenticated --> LocationInvalid
+
+LocationInvalid --> WeatherChecked
+
+WeatherChecked --> AdditionalDetailsViewed
+
+AdditionalDetailsViewed --> WeatherChecked
+
+WeatherChecked --> Initial
+
+AdditionalDetailsViewed --> Initial
+
+@enduml

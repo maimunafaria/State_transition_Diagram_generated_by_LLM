@@ -1,0 +1,51 @@
+@startuml
+state "Campaign Initialized" {
+  transition "approveAndSignContract()" -> "Awaiting Activation"
+}
+
+state "Awaiting Activation" {
+  transition "activateCampaign()" -> "Advert Preparation"
+}
+
+state "Advert Preparation" {
+  transition "approveAndScheduleAds()" -> "Adverts Approved & Scheduled"
+}
+
+state "Adverts Approved & Scheduled" {
+  transition "runCampaign()" -> "Campaign Running"
+}
+
+state "Campaign Running" {
+  transition "extendOrAdjustCampaign()" -> "Campaign Running"
+}
+
+state "Awaiting Completion" {
+  transition "completeCampaign()" -> "Payment Handling"
+}
+
+state "Payment Handling" {
+  when underpaid:
+    transition "generateRefund()" -> "Refund Generated"
+  when overpaid:
+    transition "awaitBalanceCorrection()" -> "Awaiting Balance Adjustment"
+  else:
+    transition "markAsPaid()" -> "Campaign Paid"
+}
+
+state "Refund Generated" {
+  transition "settleAmount()" -> "Campaign Paid"
+}
+
+state "Awaiting Balance Adjustment" {
+  when balanceSettled():
+    transition "adjustBalance()" -> "Payment Handling"
+}
+
+state "Campaign Paid" {
+  transition "archiveCampaign()" -> "Campaign Archived"
+}
+
+state "Campaign Archived" {
+}
+
+@enduml
