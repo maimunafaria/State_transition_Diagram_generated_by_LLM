@@ -1,0 +1,39 @@
+@startuml
+state "Order" as order {
+  [*] --> order: New Plane Acquired
+  order -->|Delivered|> preparation: Delivery Complete
+}
+
+state "Arrival" as arrival {
+  preparation -->|Arrived|> arrival: Plane Arrives
+  arrival -->|Transitioned|> preparation: Transition to Preparation
+}
+
+state "Preparation" as preparation {
+  arrival -->|Prepared|> operations: Assignment to Operations or Maintenance
+  preparation -->|Assigned to Ops|> operations: Assigned to Operations
+  preparation -->|Assigned to Maint|> maintenance: Assigned to Maintenance
+}
+
+state "Operations" as operations {
+  operations -->|Scheduled Flights Remaining|> operations: Scheduled Flights Remain
+  operations -->|No Scheduled Flights|> maintenance: No Scheduled Flights
+  operations -->|Withdrawn from Service|> withdrawn: Withdrawn from Service
+}
+
+state "Maintenance" as maintenance {
+  maintenance -->|Serviced and Ready|> preparation: Servicing Complete
+  maintenance -->|Withdrawn from Service|> withdrawn: Withdrawn from Service
+}
+
+state "Withdrawn" as withdrawn {
+  operations -->|Withdrawn from Service|> withdrawn: Withdrawn from Service
+  maintenance -->|Withdrawn from Service|> withdrawn: Withdrawn from Service
+}
+
+order -->|Delivered|> preparation
+arrival -->|Transitioned|> preparation
+preparation -->|Assigned to Ops|> operations
+preparation -->|Assigned to Maint|> maintenance
+
+@enduml

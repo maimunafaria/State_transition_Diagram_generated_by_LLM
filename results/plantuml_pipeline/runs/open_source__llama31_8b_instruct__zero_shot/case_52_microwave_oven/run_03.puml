@@ -1,0 +1,33 @@
+@startuml
+[*] --> WaitingForInput : Initial State
+state "WaitingForInput" as waiting_for_input
+[*] --> Cooking : User selects cooking mode
+state "Cooking" as cooking
+waiting_for_input --> cooking : User enters cooking time
+cooking --> Stopped : Door is opened during cooking process
+state "Stopped" as stopped
+stopped --> WaitingForInput : User cancels cooking or stops it manually
+cooking --> Cancelled : User cancels cooking process
+cancelled --> WaitingForInput : User cancels cooking process
+
+[*] --> Idle : Initial State (alternative)
+state "Idle" as idle
+idle --> WaitingForInput : System is not in use
+
+[*] --> Error : Door is open during operation
+state "Error" as error
+waiting_for_input --> Error : Door is open during operation
+error --> Idle : User closes door and system returns to idle state
+
+[*] --> Cancelled : User cancels cooking process
+state "Cancelled" as cancelled
+
+[*] --> Stopped : System stops immediately when door is opened during cooking process
+state "Stopped" as stopped
+
+[*] --> WaitingForInput : System returns to displaying current time after stopping or cancelling and waits for the next use
+
+[*] --> Idle : Initial State (alternative)
+state "Idle" as idle
+
+@enduml
