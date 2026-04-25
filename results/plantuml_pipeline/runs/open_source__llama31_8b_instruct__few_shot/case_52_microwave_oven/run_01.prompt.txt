@@ -1,0 +1,329 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Online Pharmacy Management System Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display a list of available orders to the delivery person.
+2. The system shall allow the delivery person to contact the delivery address for coordination.
+3. The system shall enable the delivery person to update their profile as needed.
+
+Example 1 PlantUML:
+@startuml
+title UML State Machine Diagram - Delivery Man
+
+[*] --> ViewOrders
+
+state "View orders" as ViewOrders
+state "Contact delivery address" as ContactDeliveryAddress
+state "Update profile" as UpdateProfile
+
+ViewOrders --> ContactDeliveryAddress
+ContactDeliveryAddress --> UpdateProfile
+UpdateProfile --> [*]
+
+@enduml
+
+Example 2 Requirement:
+E Province — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall register a new user.
+2. The system shall end the process if registration details are not accepted.
+3. The system shall allow a user to log in after successful registration.
+4. The system shall provide multiple login attempts if the details are incorrect.
+5. The system shall allow the user to cancel a certificate after logging in.
+6. The system shall allow the user to apply for certificates after logging in.
+7. The system shall allow the user to view their profile after logging in.
+8. The system shall allow the user to update their profile after logging in.
+9. The system shall require the user to fill in the form and upload required details when applying for certificates.
+10. The system shall allow users to apply for more certificates as needed.
+11. The system shall allow the user to continue applying or finish once a certificate request is processed.
+
+Example 2 PlantUML:
+@startuml
+title UML State Machine Diagram (Certificate Management)
+
+
+[*] --> Registration
+
+state Registration
+Registration : entry / Get the Registration Details
+Registration : do / Validate the Details
+Registration : exit / Valid or Invalid Registration
+
+
+Registration --> [*] : [Invalid Registration]
+
+
+Registration --> Login : [Valid Registration]
+
+
+state Login
+Login : entry / Get the Login Details
+Login : do / Validate the Login Details
+Login : exit / Valid or Invalid Login
+
+
+Login --> Login : [Invalid Login]
+
+
+Login --> Choice1 : [Valid Login]
+
+
+state Choice1 <<choice>>
+
+Choice1 --> CancelCert : [Cancel the Certificate]
+Choice1 --> RequestCert : [Applying for Certificates]
+Choice1 --> ViewProfile : [Profile Viewing]
+Choice1 --> UpdateProfile : [Profile Updation]
+
+
+state "Cancellation of Certificates" as CancelCert
+CancelCert : entry / Certificate is asked for Cancellation
+CancelCert : do / Certificate is Canceled
+CancelCert : exit / Move to End
+
+CancelCert --> EndMerge
+
+state "Request for Certificates" as RequestCert
+RequestCert : entry / Fill the Form and Upload the Details
+RequestCert : do / Request for Certificates
+RequestCert : exit / Apply for another Certificate or Move to End
+
+RequestCert --> RequestCert : [Apply for another Certificate if needed]
+
+RequestCert --> IssueCert : [Certificates requested]
+
+state "Issuing the Certificates" as IssueCert
+IssueCert : entry / Validating Details
+IssueCert : do / Issuing the Certificates
+IssueCert : exit / Updating the Database
+
+IssueCert --> RequestCert : [Certificate is issued]
+RequestCert --> EndMerge : [End]
+
+state "View Profile" as ViewProfile
+ViewProfile : entry / View the Profile
+ViewProfile : do / Display the Profile
+ViewProfile : exit / Exit from Profile Viewing
+
+ViewProfile --> EndMerge : [End]
+
+
+state "Update the Profile" as UpdateProfile
+UpdateProfile : entry / Update the User's Profile
+UpdateProfile : do / Citizen Profile is updated
+UpdateProfile : exit / Move to End
+
+UpdateProfile --> EndMerge : [End]
+
+
+state EndMerge <<choice>>
+
+EndMerge --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Smart Traffic Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall monitor traffic conditions whenever vehicles are on the road or pedestrians are waiting to cross.
+2. The system shall control street lights according to traffic conditions.
+3. The system shall manage traffic signals in response to detected situations.
+4. The system shall capture vehicle numbers and check driver details when a vehicle passes through a signal or an emergency is identified.
+5. The system shall verify if traffic rules (overspeeding, not wearing a seat belt, or not wearing a helmet) have been broken after capturing vehicle numbers and checking driver details.
+6. The system shall support if no traffic rule has been broken, the system shall end the process.
+7. The system shall ensure that if a traffic rule is broken, the system shall record the violation and issue a fine.
+8. The system shall ensure that if the fine is paid, the system shall complete the process.
+9. The system shall ensure that if the fine is not paid, the system shall send a warning.
+10. The system shall ensure that if the number of violations exceeds the allowed limit, the system shall temporarily hold the driver's license until the fine is cleared or the probation period is over.
+
+Example 3 PlantUML:
+@startuml
+title UML state chart diagram
+
+state "idle" as Idle
+Idle : entry/road empty
+Idle : do/remain same
+Idle : exit/encounter a vehicle
+Idle : exit/people waiting to cross road
+
+state "Analyse traffic flow" as AnalyseTrafficFlow
+AnalyseTrafficFlow : entry/encounter a vehicle
+AnalyseTrafficFlow : entry/people waiting to cross road
+AnalyseTrafficFlow : do/analyse traffic density
+AnalyseTrafficFlow : exit/set signal
+AnalyseTrafficFlow : exit/emergency situation
+
+state "smart lights" as SmartLights
+SmartLights : entry/population density
+SmartLights : do/turn on/off street lights
+SmartLights : exit/population density is zero
+
+state "Pedestrians detection" as PedestriansDetection
+PedestriansDetection : entry/pedestrians waiting to cross
+PedestriansDetection : do/change signal to red
+PedestriansDetection : exit/pedestrians crossed
+
+state "Traffic signal" as TrafficSignal
+TrafficSignal : entry/vehicles at signal
+TrafficSignal : do/read number plate
+TrafficSignal : exit/signal empty
+TrafficSignal : exit/vehicle crossed the signal
+TrafficSignal : exit/number plate captured
+
+state "Medical Emergency" as MedicalEmergency
+MedicalEmergency : entry/emergency situation
+MedicalEmergency : do/call medical assistance
+MedicalEmergency : exit/number plate captured
+
+state "Number plate recognition" as NumberPlateRecognition
+NumberPlateRecognition : entry/number plate captured
+NumberPlateRecognition : do/get details about driver
+NumberPlateRecognition : exit/penalty check
+
+state "penalty check" as PenaltyCheck
+PenaltyCheck : entry/law violation
+PenaltyCheck : do/check violation count
+PenaltyCheck : exit/no violation committed
+PenaltyCheck : exit/exceeding speed limit
+PenaltyCheck : exit/seat belt violation
+PenaltyCheck : exit/helmet violation
+
+state "speeding" as Speeding
+Speeding : entry/exceeding speed limit
+Speeding : do/violation count+1
+Speeding : exit/impose penalty
+
+state "seat belt violation" as SeatBeltViolation
+SeatBeltViolation : entry/not wearing seat belt
+SeatBeltViolation : do/violation count +1
+SeatBeltViolation : exit/impose penalty
+
+state "helmet violation" as HelmetViolation
+HelmetViolation : entry/not wearing a helmet
+HelmetViolation : do/violation count +1
+HelmetViolation : exit/impose penalty
+
+state "fine payment" as FinePayment
+FinePayment : entry/impose penalty
+FinePayment : exit/paid
+FinePayment : exit/not paid
+FinePayment : exit/violation count>3
+
+state "warning" as Warning
+Warning : entry/not paid
+Warning : do/send court notice to driver
+Warning : exit/abnormal termination
+
+state "Hold license" as HoldLicense
+HoldLicense : entry/violation count>3
+HoldLicense : do/temporary license cancellation
+HoldLicense : exit/repayment of fine
+HoldLicense : exit/after the probation period
+
+state J0 <<choice>>
+state J1 <<choice>>
+state J2 <<choice>>
+state Merge1 <<choice>>
+state Merge2 <<choice>>
+
+[*] --> J0
+
+J0 --> Idle
+SmartLights --> J0 
+PedestriansDetection --> J0 
+TrafficSignal --> J0 
+
+Idle --> AnalyseTrafficFlow
+AnalyseTrafficFlow --> J1 : [possible activities]
+
+J1 --> SmartLights
+J1 --> PedestriansDetection
+AnalyseTrafficFlow --> TrafficSignal : [signal empty]
+AnalyseTrafficFlow --> MedicalEmergency : [emergency situation]
+
+TrafficSignal --> NumberPlateRecognition
+MedicalEmergency --> NumberPlateRecognition
+NumberPlateRecognition --> PenaltyCheck
+
+PenaltyCheck --> J2 : [possibilities]
+J2 --> Speeding
+J2 --> SeatBeltViolation
+J2 --> HelmetViolation
+PenaltyCheck --> Merge2 : [no violations]
+
+Speeding --> Merge1
+SeatBeltViolation --> Merge1
+HelmetViolation --> Merge1
+
+Merge1 --> FinePayment : [total fine amount calculation]
+
+FinePayment --> Warning : [fine not paid]
+FinePayment --> HoldLicense : [violation count>3]
+FinePayment --> Merge2 : [paid]
+
+HoldLicense --> Merge2 : [repayment of fine]
+
+Merge2 --> [*] : [any one of the three possibilities]
+
+Warning --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Microwave Oven — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display the current time when it is waiting for user input.
+2. The system shall allow the user to choose between full power and half power levels.
+3. The system shall enable the user to set cooking time by entering a number.
+4. The system shall remain inactive if the door is open during operation.
+5. The system shall stop immediately when the door is opened during the cooking process.
+6. The system shall allow the user to cancel the cooking process.
+7. The system shall return to displaying the current time after stopping or cancelling and wait for the next use.

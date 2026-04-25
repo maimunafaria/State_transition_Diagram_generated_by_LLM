@@ -1,0 +1,251 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Account — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start an account as empty when it is first opened.
+2. The system shall activate an account and make it ready to use after setting it up and making an initial deposit.
+3. The system shall allow a user to deposit money while the account is active.
+4. The system shall allow a user to withdraw money while the account is active.
+5. The system shall allow a user to check account details like balance while the account is active.
+6. The system shall make an account inactive if all the money is withdrawn.
+7. The system shall allow closing an account after it has become inactive.
+8. The system shall render an account unusable once it is closed.
+
+Example 1 PlantUML:
+@startuml
+title State diagram for the Account class
+
+[*] --> EmptyAcct : Open
+
+state "Empty\nacct" as EmptyAcct
+state "Set up\nacct" as SetupAcct
+state "Working\nacct" as WorkingAcct
+state "Nonworking\nacct" as NonworkingAcct
+state "Dead\nacct" as DeadAcct
+
+EmptyAcct --> SetupAcct : Setup Acct
+SetupAcct --> WorkingAcct : Deposit (initial)
+
+WorkingAcct --> WorkingAcct : Deposit
+WorkingAcct --> WorkingAcct : Withdraw
+WorkingAcct --> WorkingAcct : Balance\ncredit\nacctInfo
+
+WorkingAcct --> NonworkingAcct : Withdrawal (final)
+NonworkingAcct --> DeadAcct : Close
+DeadAcct --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Ui — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to open a budget-checking window from the main screen.
+2. The system shall wait for the user to select a client before proceeding with the checking process.
+3. The system shall require users to select a campaign related to the chosen client before allowing them to check information.
+4. The system shall display results only after both a client and a campaign are selected.
+5. The system shall allow users to refresh or recheck information by pressing the check button again.
+6. The system shall prompt users with a confirmation message before closing the window.
+7. The system shall return to the main screen if the user confirms closing the window.
+8. The system shall keep the window open and allow further interaction if the user cancels the close action.
+
+Example 2 PlantUML:
+@startuml
+title Check Budget Window State Machine
+
+state "Main Window" as MainWindow
+state "5 Alert Dialog" as AlertDialog
+
+state "Check Budget Window" as CBW {
+  [*] --> NoClientSelected
+
+  state "1 No Client Selected" as NoClientSelected
+
+  state "Selection Flow" as SelectionFlow {
+    [*] --> NoCampaignSelected
+
+    state "2 No Campaign Selected" as NoCampaignSelected
+
+    state "Result Flow" as ResultFlow {
+      [*] --> Blank
+      state "3 Blank" as Blank
+      state "4 Display Result" as DisplayResult
+
+      Blank --> DisplayResult : checkButtonClicked()
+      DisplayResult --> DisplayResult : checkButtonClicked()
+    }
+
+    NoCampaignSelected --> ResultFlow : campaignSelected()
+    ResultFlow --> ResultFlow : campaignSelected()
+  }
+
+  NoClientSelected --> SelectionFlow : clientSelected()
+  SelectionFlow --> SelectionFlow : clientSelected()
+  state H <<history*>>
+}
+
+MainWindow --> CBW : checkCampaignBudget\nMenuSelected()
+
+CBW --> AlertDialog : closeButtonClicked()
+
+AlertDialog --> MainWindow : OK
+AlertDialog --> H : Cancel
+
+@enduml
+
+Example 3 Requirement:
+Business Process Outsourcing Bpo Management System Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to upload a new request.
+2. The system shall enable a BPO organization to save the details of a project.
+3. The system shall allow a client to search for a suitable project category.
+4. The system shall enable an BPO organization to accept or decline a request from a client.
+5. The system shall allow a client to decide whether to proceed with an accepted project or reject it.
+6. The system shall update the project status after acceptance by both parties.
+7. The system shall allow a client to track the progress of a project.
+8. The system shall enable an BPO organization to update the progress of a project.
+9. The system shall upload a final project once work is completed.
+10. The system shall perform a quality check on the final project.
+11. The system shall restart the process if a client is unsatisfied with the final project.
+12. The system shall make payment if the client is satisfied with the final project.
+13. The system shall deliver the project after payment.
+14. The system shall allow a client to provide a rating for the completed project.
+
+Example 3 PlantUML:
+@startuml
+title UML State Machine Diagram (Upload or Accept Request)
+
+state "Upload or Accept request" as UAR {
+
+    [*] --> ChoiceUser
+
+
+    UAR : entry / Regarding request details
+    UAR : do / Project dealings
+    UAR : exit / After finishing rating
+
+
+    state ChoiceUser <<choice>>
+
+    ChoiceUser --> EnterDetails : [user = BPO organization]
+    ChoiceUser --> SearchCategory : [user = client]
+
+
+    state "Enter project details" as EnterDetails
+    state "Update database" as UpdateDB
+
+    EnterDetails --> UpdateDB
+    UpdateDB --> [*]
+
+
+    state "Search project category" as SearchCategory
+    state ChoiceBPO <<choice>>
+    state ChoiceClient <<choice>>
+
+    SearchCategory --> ChoiceBPO
+
+    ChoiceBPO --> EndDecline : [BPO org declines]
+    ChoiceBPO --> ChoiceClient : [BPO org accepts]
+
+    ChoiceClient --> EndReject : [client rejects]
+    ChoiceClient --> UpdateStatus : [client accepts]
+
+    state EndDecline <<choice>>
+    EndDecline --> [*]
+
+    state EndReject <<choice>>
+    EndReject --> [*]
+
+    state "Update status of project" as UpdateStatus
+
+    state ChoiceTracking <<choice>>
+
+    UpdateStatus --> ChoiceTracking
+
+    ChoiceTracking --> DisplayProgress : [client wishes to track]
+    ChoiceTracking --> UpdateProgress : [user = BPO org]
+
+    state "Display progress" as DisplayProgress
+    DisplayProgress --> [*]
+
+    state "Update progress" as UpdateProgress
+
+
+    UpdateProgress --> UploadFinal : [End of project]
+
+    state "Upload final project" as UploadFinal
+
+    state QualityCheck <<choice>>
+
+    UploadFinal --> QualityCheck : [Quality check]
+
+    QualityCheck --> Payment : [satisfied]
+    QualityCheck --> ChoiceTracking : [Not satisfied]
+
+    state Payment
+    state Shipment
+    state Rating
+
+    Payment --> Shipment
+    Shipment --> Rating
+
+    Rating --> [*]
+}
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Atm Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose or enter a withdrawal amount.
+2. The system shall support predefined amounts for selection by the user.
+3. The system shall allow users to input their own custom withdrawal amount.
+4. The system shall provide an option for the user to cancel the transaction at any point.
+5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.

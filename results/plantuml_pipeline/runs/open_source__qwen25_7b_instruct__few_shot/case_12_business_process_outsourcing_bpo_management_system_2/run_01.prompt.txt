@@ -1,0 +1,286 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Account — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start an account as empty when it is first opened.
+2. The system shall activate an account and make it ready to use after setting it up and making an initial deposit.
+3. The system shall allow a user to deposit money while the account is active.
+4. The system shall allow a user to withdraw money while the account is active.
+5. The system shall allow a user to check account details like balance while the account is active.
+6. The system shall make an account inactive if all the money is withdrawn.
+7. The system shall allow closing an account after it has become inactive.
+8. The system shall render an account unusable once it is closed.
+
+Example 1 PlantUML:
+@startuml
+title State diagram for the Account class
+
+[*] --> EmptyAcct : Open
+
+state "Empty\nacct" as EmptyAcct
+state "Set up\nacct" as SetupAcct
+state "Working\nacct" as WorkingAcct
+state "Nonworking\nacct" as NonworkingAcct
+state "Dead\nacct" as DeadAcct
+
+EmptyAcct --> SetupAcct : Setup Acct
+SetupAcct --> WorkingAcct : Deposit (initial)
+
+WorkingAcct --> WorkingAcct : Deposit
+WorkingAcct --> WorkingAcct : Withdraw
+WorkingAcct --> WorkingAcct : Balance\ncredit\nacctInfo
+
+WorkingAcct --> NonworkingAcct : Withdrawal (final)
+NonworkingAcct --> DeadAcct : Close
+DeadAcct --> [*]
+
+@enduml
+
+Example 2 Requirement:
+My Helper — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users or users who have forgotten their password to create a new password.
+2. The system shall enable the user to continue using the app after setting a correct password.
+3. The system shall allow users to send messages from another mobile phone if they cannot use their own phone.
+4. The system shall read incoming messages to understand the user's needs.
+5. The system shall check the user’s password for correctness and inform the user if it is wrong.
+6. The system shall ensure that if the user's password is correct, the system shall check the user’s request.
+7. The system shall support for valid requests, the system shall complete them and send back required details to the user.
+8. The system shall support for invalid requests, the system shall inform the user that the request cannot be accepted.
+
+Example 2 PlantUML:
+@startuml
+
+[*] --> LoginSignup
+
+LoginSignup : entry / Download app
+LoginSignup : do / Enables the user to use app
+LoginSignup : exit / Verifies details
+
+LoginSignup --> SetPassword : signup / forgot password
+SetPassword : entry / Signup
+SetPassword : do / Set password
+SetPassword : exit / Validate password
+
+SetPassword --> LoginSignup : password set
+
+LoginSignup --> SendSMS : forgot phone
+SendSMS : entry / Forgot phone
+SendSMS : do / Send SMS from any other mobile
+SendSMS : exit / NIL
+
+SendSMS --> ReadsSMS : SMS sent
+ReadsSMS : entry / SMS received
+ReadsSMS : do / Scans SMS
+ReadsSMS : exit / Performs required action
+
+ReadsSMS --> VerifyPassword : verify request
+VerifyPassword : entry / Read SMS
+VerifyPassword : do / Check whether password is correct
+VerifyPassword : exit / Password is correct
+
+VerifyPassword --> ChecksRequirement : password correct
+VerifyPassword --> PasswordError : incorrect password
+
+PasswordError : entry / Incorrect password
+PasswordError : do / Send SMS stating incorrect password
+PasswordError : exit / SMS sent
+PasswordError --> [*]
+
+ChecksRequirement : entry / Password is correct
+ChecksRequirement : do / Check for requirement
+ChecksRequirement : exit / Requirement is valid
+
+ChecksRequirement --> FulfilRequirements : requirement valid
+ChecksRequirement --> RequirementError : invalid requirement
+
+FulfilRequirements : entry / Requirement is valid
+FulfilRequirements : do / Fulfils requirement
+FulfilRequirements : exit / NIL
+
+FulfilRequirements --> SendRequestedDetails : fulfil completed
+SendRequestedDetails : entry / Requirement is fulfilled
+SendRequestedDetails : do / Send requested details back in form of SMS
+SendRequestedDetails : exit / SMS has been sent
+SendRequestedDetails --> [*]
+
+RequirementError : entry / Invalid requirement
+RequirementError : do / Send SMS stating invalid requirement
+RequirementError : exit / SMS sent
+RequirementError --> [*]
+
+@enduml
+
+Example 3 Requirement:
+E Med Medical Assistance Tool — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to fill in their personal medical history if it is missing, and then check and save the information.
+2. The system shall provide users with the ability to view their medical history, receive reminders for medication, receive reminders for medicine restocking, schedule appointments, use an emergency button, write and view medical notes.
+3. The system shall allow users to update their medical history if they choose to do so after viewing it.
+4. The system shall allow users to update their medical notes if they choose to do so after viewing them.
+5. The system shall call emergency contacts if they use the emergency button.
+
+Example 3 PlantUML:
+@startuml
+title UML State Chart Diagram - Medical System
+
+[*] --> CheckHistory
+
+state CheckHistory <<choice>>
+CheckHistory --> FillHistory : [No]
+CheckHistory --> Hub : [Yes]
+
+state "Fill personal medical history" as FillHistory
+FillHistory : entry / start state
+FillHistory : do / fill details in personal medical history
+FillHistory : exit / verify medical history
+
+state "Validate and store" as ValidateStore
+ValidateStore : entry / verify medical history
+ValidateStore : do / validate and store
+ValidateStore : exit / medical history stored
+
+FillHistory --> ValidateStore
+ValidateStore --> Hub
+
+state Hub <<choice>>
+
+state "View Medical History" as ViewHistory
+ViewHistory : entry / entered the app
+ViewHistory : do / view medical history stored
+ViewHistory : exit / viewed medical history
+
+state "Reminder to have medicines on time" as ReminderTime
+ReminderTime : entry / entered the app
+ReminderTime : do / user is reminded to have medicines
+ReminderTime : exit / notification acknowledged
+
+state "Reminder to buy medicines when not in stock" as ReminderBuy
+ReminderBuy : entry / entered the app
+ReminderBuy : do / user is reminded to buy medicines
+ReminderBuy : exit / notification acknowledged
+
+state "Schedule Appointments Regularly" as Schedule
+Schedule : entry / entered the app
+Schedule : do / schedule the appointment regularly
+Schedule : exit / scheduled appointment
+
+state "Press Emergency Button" as Emergency
+Emergency : entry / entered the app
+Emergency : do / press emergency button
+Emergency : exit / pressed emergency button
+
+state "Write medical notes for reference" as WriteNotes
+WriteNotes : entry / entered the app
+WriteNotes : do / write medical notes
+WriteNotes : exit / store in database
+
+state "View medical notes" as ViewNotes
+ViewNotes : entry / entered the app
+ViewNotes : do / view medical notes stored
+ViewNotes : exit / viewed medical notes
+
+state "Send message to receptionist" as MessageReception
+MessageReception : entry / scheduled appointment
+MessageReception : do / send message to receptionist based on schedule
+MessageReception : exit / message sent
+
+state "Call Emergency Contacts" as CallEmergency
+CallEmergency : entry / pressed emergency button
+CallEmergency : do / call the emergency contacts
+CallEmergency : exit / called emergency contacts
+
+state "Update Medical History" as UpdateHistory
+UpdateHistory : entry / want to update medical history
+UpdateHistory : do / update medical history
+UpdateHistory : exit / updated details are stored in the database
+
+state "Update Medical Notes" as UpdateNotes
+UpdateNotes : entry / want to update medical notes
+UpdateNotes : do / update medical notes
+UpdateNotes : exit / updated details are stored in the database
+
+state UpdateChoice <<choice>>
+state UpdateChoice1 <<choice>>
+Hub --> ViewHistory
+Hub --> ReminderTime
+Hub --> ReminderBuy
+Hub --> Schedule
+Hub --> Emergency
+Hub --> WriteNotes
+Hub --> ViewNotes
+
+Schedule --> MessageReception
+Emergency --> CallEmergency
+
+ViewHistory --> UpdateChoice : [Update ?]
+ViewNotes --> UpdateChoice1 : [Update ?]
+
+UpdateChoice --> UpdateHistory : [Yes]
+UpdateChoice1 --> UpdateNotes : [Yes]
+UpdateChoice --> [*] : [No]
+UpdateChoice1 --> [*] : [No]
+ReminderTime --> [*]
+ReminderBuy --> [*]
+WriteNotes --> [*]
+MessageReception --> [*]
+CallEmergency --> [*]
+UpdateHistory --> [*]
+UpdateNotes --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Business Process Outsourcing Bpo Management System Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to search by selecting a filter category.
+2. The system shall allow users to search by selecting a price range as a filter.
+3. The system shall display matching users based on the chosen criteria after the user selects a filter.

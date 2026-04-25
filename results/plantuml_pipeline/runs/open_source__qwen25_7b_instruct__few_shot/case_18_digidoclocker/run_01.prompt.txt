@@ -1,0 +1,285 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Accountapplication — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall store an application in a pending state during review.
+2. The system shall update the application status to either approved or rejected after review.
+3. The system shall finalize the application process once a decision is made.
+4. The system shall mark every application as finalized upon process completion.
+
+Example 1 PlantUML:
+@startuml
+title Account Application State Diagram
+
+[*] --> pending
+
+state pending
+state approved
+state rejected
+state finalizing
+
+pending --> approved : approve
+pending --> rejected : reject
+
+approved --> finalizing : complete
+rejected --> finalizing : complete
+
+finalizing --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Information System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start a training request upon creation.
+2. The system shall send the request for approval after its creation.
+3. The system shall end the process if the request is rejected.
+4. The system shall look for a suitable session if the request is accepted.
+5. The system shall perform enrolment once a session is chosen.
+6. The system shall satisfy the request if enrolment is confirmed.
+7. The system shall allow completion of the session after enrolment confirmation.
+8. The system shall allow cancellation of a selected session and selection of a new one.
+9. The system shall end the process if the request is cancelled at any point before completion.
+
+Example 2 PlantUML:
+@startuml
+title Complete state diagram of the training request
+
+[*] --> Creation
+
+state Creation
+state "WaitingForAcknowledgement" as WaitingAck
+state SearchForSession
+state "WaitingForEnrolment" as WaitingEnrolment
+state Satisfied
+
+state rejected <<final>>
+state cancelled <<final>>
+state completed <<final>>
+
+Creation --> WaitingAck : validate / send personincharge.self
+Creation --> cancelled : cancel
+
+WaitingAck --> rejected : reject / send employee.rejection
+WaitingAck --> SearchForSession : accept / send employee.agreement
+WaitingAck --> cancelled : cancel
+
+SearchForSession --> WaitingEnrolment : sessionChoice / send body.order
+SearchForSession --> cancelled : cancel
+
+WaitingEnrolment --> Satisfied : enrolment / send employee.confirmation
+WaitingEnrolment --> cancelled : cancel / send body.cancellation
+
+Satisfied --> WaitingEnrolment : cancelSession / send employee.cancellation
+Satisfied --> cancelled : cancel / send body.cancellation
+Satisfied --> completed : endSession
+
+@enduml
+
+Example 3 Requirement:
+Smart Traffic Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall monitor traffic conditions whenever vehicles are on the road or pedestrians are waiting to cross.
+2. The system shall control street lights according to traffic conditions.
+3. The system shall manage traffic signals in response to detected situations.
+4. The system shall capture vehicle numbers and check driver details when a vehicle passes through a signal or an emergency is identified.
+5. The system shall verify if traffic rules (overspeeding, not wearing a seat belt, or not wearing a helmet) have been broken after capturing vehicle numbers and checking driver details.
+6. The system shall support if no traffic rule has been broken, the system shall end the process.
+7. The system shall ensure that if a traffic rule is broken, the system shall record the violation and issue a fine.
+8. The system shall ensure that if the fine is paid, the system shall complete the process.
+9. The system shall ensure that if the fine is not paid, the system shall send a warning.
+10. The system shall ensure that if the number of violations exceeds the allowed limit, the system shall temporarily hold the driver's license until the fine is cleared or the probation period is over.
+
+Example 3 PlantUML:
+@startuml
+title UML state chart diagram
+
+state "idle" as Idle
+Idle : entry/road empty
+Idle : do/remain same
+Idle : exit/encounter a vehicle
+Idle : exit/people waiting to cross road
+
+state "Analyse traffic flow" as AnalyseTrafficFlow
+AnalyseTrafficFlow : entry/encounter a vehicle
+AnalyseTrafficFlow : entry/people waiting to cross road
+AnalyseTrafficFlow : do/analyse traffic density
+AnalyseTrafficFlow : exit/set signal
+AnalyseTrafficFlow : exit/emergency situation
+
+state "smart lights" as SmartLights
+SmartLights : entry/population density
+SmartLights : do/turn on/off street lights
+SmartLights : exit/population density is zero
+
+state "Pedestrians detection" as PedestriansDetection
+PedestriansDetection : entry/pedestrians waiting to cross
+PedestriansDetection : do/change signal to red
+PedestriansDetection : exit/pedestrians crossed
+
+state "Traffic signal" as TrafficSignal
+TrafficSignal : entry/vehicles at signal
+TrafficSignal : do/read number plate
+TrafficSignal : exit/signal empty
+TrafficSignal : exit/vehicle crossed the signal
+TrafficSignal : exit/number plate captured
+
+state "Medical Emergency" as MedicalEmergency
+MedicalEmergency : entry/emergency situation
+MedicalEmergency : do/call medical assistance
+MedicalEmergency : exit/number plate captured
+
+state "Number plate recognition" as NumberPlateRecognition
+NumberPlateRecognition : entry/number plate captured
+NumberPlateRecognition : do/get details about driver
+NumberPlateRecognition : exit/penalty check
+
+state "penalty check" as PenaltyCheck
+PenaltyCheck : entry/law violation
+PenaltyCheck : do/check violation count
+PenaltyCheck : exit/no violation committed
+PenaltyCheck : exit/exceeding speed limit
+PenaltyCheck : exit/seat belt violation
+PenaltyCheck : exit/helmet violation
+
+state "speeding" as Speeding
+Speeding : entry/exceeding speed limit
+Speeding : do/violation count+1
+Speeding : exit/impose penalty
+
+state "seat belt violation" as SeatBeltViolation
+SeatBeltViolation : entry/not wearing seat belt
+SeatBeltViolation : do/violation count +1
+SeatBeltViolation : exit/impose penalty
+
+state "helmet violation" as HelmetViolation
+HelmetViolation : entry/not wearing a helmet
+HelmetViolation : do/violation count +1
+HelmetViolation : exit/impose penalty
+
+state "fine payment" as FinePayment
+FinePayment : entry/impose penalty
+FinePayment : exit/paid
+FinePayment : exit/not paid
+FinePayment : exit/violation count>3
+
+state "warning" as Warning
+Warning : entry/not paid
+Warning : do/send court notice to driver
+Warning : exit/abnormal termination
+
+state "Hold license" as HoldLicense
+HoldLicense : entry/violation count>3
+HoldLicense : do/temporary license cancellation
+HoldLicense : exit/repayment of fine
+HoldLicense : exit/after the probation period
+
+state J0 <<choice>>
+state J1 <<choice>>
+state J2 <<choice>>
+state Merge1 <<choice>>
+state Merge2 <<choice>>
+
+[*] --> J0
+
+J0 --> Idle
+SmartLights --> J0 
+PedestriansDetection --> J0 
+TrafficSignal --> J0 
+
+Idle --> AnalyseTrafficFlow
+AnalyseTrafficFlow --> J1 : [possible activities]
+
+J1 --> SmartLights
+J1 --> PedestriansDetection
+AnalyseTrafficFlow --> TrafficSignal : [signal empty]
+AnalyseTrafficFlow --> MedicalEmergency : [emergency situation]
+
+TrafficSignal --> NumberPlateRecognition
+MedicalEmergency --> NumberPlateRecognition
+NumberPlateRecognition --> PenaltyCheck
+
+PenaltyCheck --> J2 : [possibilities]
+J2 --> Speeding
+J2 --> SeatBeltViolation
+J2 --> HelmetViolation
+PenaltyCheck --> Merge2 : [no violations]
+
+Speeding --> Merge1
+SeatBeltViolation --> Merge1
+HelmetViolation --> Merge1
+
+Merge1 --> FinePayment : [total fine amount calculation]
+
+FinePayment --> Warning : [fine not paid]
+FinePayment --> HoldLicense : [violation count>3]
+FinePayment --> Merge2 : [paid]
+
+HoldLicense --> Merge2 : [repayment of fine]
+
+Merge2 --> [*] : [any one of the three possibilities]
+
+Warning --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.

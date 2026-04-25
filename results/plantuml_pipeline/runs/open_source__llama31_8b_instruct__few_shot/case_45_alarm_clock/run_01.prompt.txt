@@ -1,0 +1,350 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Cd Player — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start in a stopped state.
+2. The system shall begin playing music when a disc is inserted and the user presses play.
+3. The system shall allow the user to pause the music at any time while it is playing.
+4. The system shall stop the music temporarily when paused but allow resuming from the same point.
+5. The system shall allow the user to stop the player at any time, regardless of whether the music is playing or paused.
+6. The system shall return to a stopped state when the player is stopped.
+7. The system shall allow switching to another disc and continuing playback if multiple discs are available.
+8. The system shall remain in a stopped state when no more discs are left.
+
+Example 1 PlantUML:
+@startuml
+title CD Player State Machine
+
+[*] --> Stopped
+
+state Playing
+Playing : do / read disc
+
+state Stopped
+state Paused
+
+Stopped --> Playing : press play [disc in tray]
+Playing --> Stopped : press stop
+Playing --> Stopped : [no more discs]
+
+Playing --> Paused : press pause
+Paused --> Playing : press play
+Paused --> Stopped : press stop
+
+Playing --> Playing : [another disc] / change disc
+
+@enduml
+
+Example 2 Requirement:
+Textile — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow customers to create an account by filling in required details.
+2. The system shall enable customers to place orders for garments once they are registered.
+3. The system shall send out sample materials if a customer needs them after placing an order.
+4. The system shall review the availability of raw materials for orders that require stock checking.
+5. The system shall purchase raw materials if they are not available after stock checking.
+6. The system shall process raw materials if they are already available.
+7. The system shall begin garment production once raw materials are ready, either through purchasing or processing.
+8. The system shall conduct a defect check on the produced garments.
+9. The system shall deliver the finished garments to the customer if all checks pass.
+10. The system shall complete billing and payment processes after delivering the garments.
+11. The system shall generate a report along with feedback at the end of the process.
+
+Example 2 PlantUML:
+@startuml
+
+[*] --> CustomerRegistration
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+CustomerRegistration : entry / Start state
+CustomerRegistration : do / Fill in required details
+CustomerRegistration : exit / Getting garment orders
+
+CustomerRegistration --> GettingGarmentOrders : registration complete
+
+GettingGarmentOrders : entry / Customer registration
+GettingGarmentOrders : do / Place the orders
+GettingGarmentOrders : exit / Sampling / Stock checking
+
+GettingGarmentOrders --> Sampling : sampling required
+GettingGarmentOrders --> StockChecking : check stock
+
+Sampling : entry / Getting garment orders
+Sampling : do / Send out sample materials while ordering
+Sampling : exit / decision
+
+Sampling --> Choice1 : proceed
+StockChecking --> Choice1
+
+StockChecking : entry / Getting garment orders
+StockChecking : do / Check availability of raw material
+StockChecking : exit / decision making
+
+Choice1 --> PurchasingRawMaterials : not in stock
+Choice1 --> ProcessingRawMaterials : in stock
+
+PurchasingRawMaterials : entry / Stock checking
+PurchasingRawMaterials : do / Buy raw materials
+PurchasingRawMaterials : exit / Production of garments
+
+ProcessingRawMaterials : entry / Stock checking
+ProcessingRawMaterials : do / Processing
+ProcessingRawMaterials : exit / Production of garments
+ProcessingRawMaterials --> Choice2
+PurchasingRawMaterials --> Choice2
+Choice2 --> ProductionOfGarments
+
+ProductionOfGarments : entry / Purchasing or processing of raw materials
+ProductionOfGarments : do / Manufacturing
+ProductionOfGarments : exit / Product checking
+
+ProductionOfGarments --> ProductChecking
+
+ProductChecking : entry / Production of garments
+ProductChecking : do / Checking for defects and clearance
+ProductChecking : exit / Receiving the ordered garments
+
+ProductChecking --> ReceivingOrderedGarments
+
+ReceivingOrderedGarments : entry / Product checking
+ReceivingOrderedGarments : do / Garment delivered
+ReceivingOrderedGarments : exit / Billing
+
+ReceivingOrderedGarments --> Billing
+
+Billing : entry / Receiving the ordered garments
+Billing : do / Making payments
+Billing : exit / Report generation
+
+Billing --> ReportGeneration
+
+ReportGeneration : entry / Billing
+ReportGeneration : do / Giving feedback
+ReportGeneration : exit / final state
+
+ReportGeneration --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Covid — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to create an account by entering their details.
+2. The system shall allow users to sign in using a correct username and password.
+3. The system shall enable logged-in users to read blogs shared by recovered patients.
+4. The system shall allow users to update the number of infected people in their area, triggering updates on infection statistics and mask demand.
+5. The system shall enable users in home quarantine to share their information.
+6. The system shall allow doctors to view shared information from quarantined users and suggest medicines.
+7. The system shall enable users to view a list of nearby medical shops and purchase medicines online.
+8. The system shall allow assigning workers to clean an area, updating the cleanliness status accordingly.
+
+Example 3 PlantUML:
+@startuml
+title UML state machine diagram
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Login / Register
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state "Invalid registration" as InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state "Invalid login" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state "Read blog" as ReadBlog
+ReadBlog : entry/To home page
+ReadBlog : entry/Read blogs of recovered patients
+ReadBlog : exit/Idle
+
+state "Update current no. of infected people" as UpdateInfected
+UpdateInfected : entry/To home page
+UpdateInfected : do/Update current no. of infected people in the locality
+UpdateInfected : exit/View
+
+state "View number of infected people in the locality" as ViewInfected
+ViewInfected : entry/View
+ViewInfected : do/View number of infected people in the locality
+ViewInfected : exit/Idle
+
+state "No. of deaths in the locality" as DeathCount
+DeathCount : entry/View
+DeathCount : do/View no. of deaths in the locality
+DeathCount : exit/Idle
+
+state "View mask demand" as ViewMaskDemand
+ViewMaskDemand : entry/View
+ViewMaskDemand : do/View mask demand in the locality
+ViewMaskDemand : exit/Stock
+
+state "Stock up" as StockUp
+StockUp : entry/Stock
+StockUp : do/Stock up masks and gloves by the shops
+StockUp : exit/End
+
+state "Send patient info" as SendPatientInfo
+SendPatientInfo : entry/To home page
+SendPatientInfo : do/Update data by home quarantined patients
+SendPatientInfo : exit/View patient info
+
+state "View patient info" as ViewPatientInfo
+ViewPatientInfo : entry/View patient info
+ViewPatientInfo : do/View patient info by the medical professional
+ViewPatientInfo : exit/Prescribe
+
+state "Prescribe medicines if needed" as PrescribeMedicines
+PrescribeMedicines : entry/Prescribe
+PrescribeMedicines : do/Prescribe medicines if needed
+PrescribeMedicines : exit/View data from doc
+
+state "View data shared by doctor" as ViewDoctorData
+ViewDoctorData : entry/View data from doc
+ViewDoctorData : do/View data shared by doctor
+ViewDoctorData : exit/Buy medicines
+
+state "List all medical shops" as ListMedicalShops
+ListMedicalShops : entry/To home page
+ListMedicalShops : do/List all medical shops in the locality
+ListMedicalShops : exit/Buy medicines
+
+state "Assign corporation worker" as AssignWorker
+AssignWorker : entry/To home page
+AssignWorker : do/Assign workers to disinfect in an area
+AssignWorker : exit/Update status
+
+state "Update status of cleanliness" as CleanlinessStatus
+CleanlinessStatus : entry/Update status
+CleanlinessStatus : do/Update status of cleanliness in the locality
+CleanlinessStatus : exit/End
+
+state "Buy medicines" as BuyMedicines
+BuyMedicines : entry/Buy medicines
+BuyMedicines : do/Buy medicines if needed
+BuyMedicines : exit/End
+
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+state J7 <<choice>>
+[*] --> Idle
+
+Idle --> J1
+J1 --> Register
+J1 --> Login
+
+Register --> J2
+J2 --> Login
+J2 --> InvalidRegistration
+InvalidRegistration --> [*]
+
+Login --> J3
+J3 --> InvalidLogin
+J3 --> ReadBlog
+J3 --> UpdateInfected
+J3 --> SendPatientInfo
+J3 --> ListMedicalShops
+J3 --> AssignWorker
+InvalidLogin --> [*]
+
+ReadBlog --> J7
+UpdateInfected --> J4
+ViewInfected --> J7
+DeathCount --> J7
+J7 --> Idle
+J4 --> ViewInfected
+J4 --> DeathCount
+J4 --> ViewMaskDemand
+
+ViewMaskDemand --> StockUp
+StockUp --> J6
+
+SendPatientInfo --> ViewPatientInfo
+ViewPatientInfo --> PrescribeMedicines
+PrescribeMedicines --> ViewDoctorData
+ViewDoctorData --> J5
+ListMedicalShops --> J5
+J5 --> BuyMedicines
+BuyMedicines --> J6
+
+AssignWorker --> CleanlinessStatus
+CleanlinessStatus --> J6
+
+J6 --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Alarm Clock — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall be in an off state initially.
+2. The system shall support when the user sets an alarm time, the system shall activate the alarm.
+3. The system shall ensure that the user shall be able to turn off the activated alarm.
+4. The system shall support when the current time matches the set alarm time, the system shall start ringing the alarm.
+5. The system shall ensure that once the alarm is ringing, the user shall be able to stop it.
+6. The system shall support after stopping the alarm, the system shall remain active for the next scheduled alarm time.

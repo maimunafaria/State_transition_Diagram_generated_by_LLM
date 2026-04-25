@@ -1,0 +1,294 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Java — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall skip non-meaningful elements like spaces or comments.
+2. The system shall ignore empty spaces and line breaks at the beginning.
+3. The system shall skip all characters from // to the end of the line.
+4. The system shall continue skipping content until the end of a block comment (*/).
+
+Example 1 PlantUML:
+@startuml
+title State diagram for advancing past whitespace and comments in Java
+
+[*] --> Start
+
+state Start
+state "saw '/'" as SawSlash
+state "line comment" as LineComment
+state "saw '*'" as SawStar
+state "block comment" as BlockComment
+state EndWhitespace
+
+' whitespace loop
+Start --> Start : next char = ' ' \\t \\r \\n / advance
+
+' detect slash
+Start --> SawSlash : next char = '/' / advance
+
+' anything else → end
+Start --> EndWhitespace : next char = anything else
+
+' after seeing '/'
+SawSlash --> LineComment : next char = '/' / advance
+SawSlash --> SawStar : next char = '*' / advance
+SawSlash --> EndWhitespace : next char != '/' or '*' / pushback '/'
+
+' line comment behavior
+LineComment --> LineComment : next char != eoln / advance
+LineComment --> Start : next char = eoln / advance
+
+' saw '*' (possible block comment)
+SawStar --> BlockComment : next char = '*' / advance
+
+' block comment behavior
+BlockComment --> BlockComment : next char != '*' / advance
+BlockComment --> SawStar : next char = '*' / advance
+
+' loop back
+SawStar --> BlockComment : next char = '*' / advance
+BlockComment --> Start : next char = '/' / advance
+
+EndWhitespace --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Loggedin Mechanism — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall prompt the user to enter their username.
+2. The system shall terminate the login process and exit if the user cancels at any point.
+3. The system shall check the entered username against its records.
+4. The system shall prompt for a password if the username is valid.
+5. The system shall verify both the username and password to allow login.
+6. The system shall allow the user to try again if the credentials are incorrect.
+7. The system shall increase the number of failed attempts with each incorrect entry.
+8. The system shall limit the number of login attempts for a user.
+9. The system shall block further login attempts if the maximum number of attempts is reached.
+10. The system shall prevent login if it cannot recognize the user during any step.
+
+Example 2 PlantUML:
+@startuml
+title LoggingOn State Machine
+
+state LoggingOn {
+  [*] --> AcceptingUserName
+
+  state AcceptingUserName
+  state AcceptingPassword
+  state VerifyingDetails
+
+  state BadDetails {
+    state BadUsername
+    state BadPassword
+  }
+
+  BadDetails : entry / ++tries
+
+  AcceptingUserName --> AcceptingPassword : ok
+  
+  AcceptingUserName --> Canceling : cancel
+
+  AcceptingPassword --> VerifyingDetails : ok
+  AcceptingPassword --> Canceling : cancel
+
+  VerifyingDetails --> BadUsername : badUserName
+  VerifyingDetails --> BadPassword : badPassword
+  VerifyingDetails --> Authenticated : detailsVerified
+
+  BadDetails --> AcceptingUserName : [tries < 4]
+  BadDetails --> Fail : [tries = 4]
+}
+
+LoggingOn : entry / tries := 0
+
+state Canceling
+state Authenticated
+state Fail
+Fail : entry / logFailure
+userRecognized --> AcceptingPassword
+@enduml
+
+Example 3 Requirement:
+Student Counselling Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a student to log in.
+2. The system shall prompt the student to try again if login details are incorrect.
+3. The system shall proceed with registration and payment upon a successful login.
+4. The system shall end there if the registration payment is not completed.
+5. The system shall register the student and declare ranks if the registration payment is completed.
+6. The system shall allow the student to pay enrollment fees after rank declaration.
+7. The system shall end there if the payment for enrollment fees is not successful.
+8. The system shall allow the student to fill in their choices if the payment for enrollment fees is successful.
+9. The system shall lock the choices and allocate seats based on rank if they are correct.
+10. The system shall generate an admit letter once a seat is allotted.
+11. The system shall allow the student to accept or decline the admit letter.
+
+Example 3 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+[*] --> StartMerge
+
+state StartMerge <<choice>>
+state Login
+state LoginDecision <<choice>>
+state "Invalid Login" as InvalidLogin
+state "Valid Login" as ValidLogin
+state RegistrationDecision <<choice>>
+state "Failed Registration" as FailedRegistration
+state "Rank Declaration" as RankDeclaration
+state "Enrollment Fees" as EnrollmentFees
+state PaymentDecision <<choice>>
+state "Invalid Payment" as InvalidPayment
+state "Valid Payment" as ValidPayment
+state "Choice Filing" as ChoiceFiling
+state ChoiceDecision <<choice>>
+state "Failed choice filing" as FailedChoiceFiling
+state "Seat Allotment" as SeatAllotment
+state "Admit Letter Generation" as AdmitLetterGeneration
+state "Accept/Decline" as AcceptDecline
+
+Login : entry / To Action
+Login : do / Log in to the system
+Login : exit / Username and password entered
+
+InvalidLogin : entry / Trying to log in
+InvalidLogin : do / Invalid username and password
+InvalidLogin : exit / Back to login page
+
+ValidLogin : entry / Student logged in
+ValidLogin : do / Registration form submission with payment
+ValidLogin : exit / Student Registered
+
+FailedRegistration : entry / Payment not made
+FailedRegistration : do / Throw an error
+FailedRegistration : exit / Abnormal termination
+
+RankDeclaration : entry / Student registered
+RankDeclaration : do / Declare ranks for all the students
+RankDeclaration : exit / Rank published
+
+EnrollmentFees : entry / Rank declared
+EnrollmentFees : do / Pay enrollment fees
+EnrollmentFees : exit / Payment done
+
+InvalidPayment : entry / Payment not made
+InvalidPayment : do / Show the errors
+InvalidPayment : exit / Abnormal Termination
+
+ValidPayment : entry / Payment made
+ValidPayment : do / Allow to fill choices
+ValidPayment : exit / log out from payment portal
+
+ChoiceFiling : entry / Valid payment
+ChoiceFiling : do / Fill choices
+ChoiceFiling : exit / Lock choices
+
+FailedChoiceFiling : entry / Invalid choices
+FailedChoiceFiling : do / Show the errors
+FailedChoiceFiling : exit / Abnormal Termination
+
+SeatAllotment : entry / Choices must be locked
+SeatAllotment : do / Allot seats based on rank
+SeatAllotment : exit / Publish alloted results
+
+AdmitLetterGeneration : entry / Seat alotted
+AdmitLetterGeneration : do / Generate admit letter
+AdmitLetterGeneration : exit / Publish admit letters to students and colleges
+
+AcceptDecline : entry / Received admit letter
+AcceptDecline : do / Accept/Decline
+AcceptDecline : exit / After decision is made
+
+StartMerge --> Login
+Login --> LoginDecision
+LoginDecision --> InvalidLogin
+LoginDecision --> ValidLogin
+InvalidLogin --> StartMerge
+
+ValidLogin --> RegistrationDecision
+RegistrationDecision --> FailedRegistration
+RegistrationDecision --> RankDeclaration
+
+RankDeclaration --> EnrollmentFees
+EnrollmentFees --> PaymentDecision
+PaymentDecision --> InvalidPayment
+PaymentDecision --> ValidPayment
+
+ValidPayment --> ChoiceFiling
+ChoiceFiling --> ChoiceDecision
+ChoiceDecision --> FailedChoiceFiling
+ChoiceDecision --> SeatAllotment
+
+SeatAllotment --> AdmitLetterGeneration
+AdmitLetterGeneration --> AcceptDecline
+AcceptDecline --> [*]
+
+FailedRegistration --> [*]
+InvalidPayment --> [*]
+FailedChoiceFiling --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.

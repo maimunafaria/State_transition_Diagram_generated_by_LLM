@@ -1,0 +1,318 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Flight — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall schedule and assign a flight number when a new flight is created.
+2. The system shall change the flight status to 'on journey' once it takes off.
+3. The system shall mark the flight as inactive and record it as a past record upon landing.
+4. The system shall record cancelled flights in the same manner as landed flights if they are cancelled before starting.
+5. The system shall remove inactive flights over time.
+
+Example 1 PlantUML:
+@startuml
+title Statechart diagram of the class "Flight"
+
+[*] --> Planned : «M» Flight Defined/
+
+state Planned
+state "In Transit" as InTransit
+state Historic
+
+Planned : «M» New Flight Number/
+
+Planned --> InTransit : «M» Flight Started/
+InTransit --> Historic : «M» Flight Landed/
+
+Planned --> Historic : «M» Flight Cancelled/
+Historic --> [*] : «M» Flight Irrelevant/
+Planned --> [*] : «M» Flight Number Irrelevant/
+
+@enduml
+
+Example 2 Requirement:
+Displayitem — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to browse products through a catalog.
+2. The system shall enable users to view items directly or explore different ways of browsing in the catalog.
+3. The system shall allow users to browse products using an index, either alphabetically or by category.
+4. The system shall enable users to switch between browsing options based on their preferences.
+5. The system shall allow users to select a product once they find one of interest to view its details.
+6. The system shall enable users to review the items in their basket at any time.
+7. The system shall allow users from the basket to either return to the catalog or proceed to checkout.
+8. The system shall enable users to review their selections during checkout and proceed with the purchase.
+9. The system shall allow users to return to the catalog from the checkout page to make changes before completing the process.
+
+Example 2 PlantUML:
+@startuml
+title BrowseCatalog State Machine
+[*] --> BrowseCatalog
+state BrowseCatalog {
+
+  
+
+  state DisplayingItem
+
+  state DisplayingIndex {
+
+    [*] --> Alphabetical
+
+    state Alphabetical
+    state ByCategory
+
+    Alphabetical --> ByCategory : byCategory
+    ByCategory --> Alphabetical : alphabetical
+  }
+
+  state H <<history*>>
+
+  DisplayingItem --> DisplayingIndex : goToIndex
+  DisplayingIndex --> DisplayingItem : selectProduct
+
+  H --> DisplayingIndex
+}
+
+state DisplayingBasket
+state CheckingOut
+
+BrowseCatalog --> DisplayingBasket : goToBasket
+DisplayingIndex --> CheckingOut : goToCheckout
+
+DisplayingBasket --> H : goToCatalog
+CheckingOut --> H : goToCatalog
+
+BrowseCatalog --> [*] : exit
+
+@enduml
+
+Example 3 Requirement:
+Car Care — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose whether they are using the service center side or the car owner side.
+2. The system shall allow service center users to register or log in if already registered.
+3. The system shall allow service center users to enter damaged parts, update parts information, or send expiry-related notifications after logging in.
+4. The system shall allow service center users to log out after finishing any of the above activities.
+5. The system shall allow car owner users to register or log in.
+6. The system shall allow car owners to view parts information, request or respond to services, or report a service center after logging in.
+7. The system shall allow car owners to select required parts and make a payment when choosing a service.
+8. The system shall allow car owners to log out after completing their activities.
+
+Example 3 PlantUML:
+@startuml
+title UML state machine diagram
+
+state PortalChoice1 <<choice>>
+state PortalChoice2 <<choice>>
+state PortalChoice3 <<choice>>
+state ServiceJoin <<choice>>
+state OwnerJoin <<choice>>
+
+
+[*] --> PortalChoice1
+
+PortalChoice1 --> PortalChoice2 : [Service Center Portal]
+PortalChoice1 --> PortalChoice3 : [Car Owner Portal]
+
+PortalChoice2 --> ServiceCenterRegistration : [New Service Center]
+PortalChoice2 --> ServiceJoin : [Registered Service center]
+PortalChoice3 --> CarOwnerRegistration : [New Car Owner]
+PortalChoice3 --> OwnerJoin : [Registered Car Owner]
+
+state "Service Center Registration" as ServiceCenterRegistration
+ServiceCenterRegistration : entry / Unregistered service center
+ServiceCenterRegistration : do / Enter Valid Credentials
+ServiceCenterRegistration : exit / Account registered
+
+state "Service Center Verification" as ServiceCenterVerification
+ServiceCenterVerification : entry / Service Center account registered
+ServiceCenterVerification : do / Verify Service center
+ServiceCenterVerification : exit / Login Service center
+
+state "Service Center Login" as ServiceCenterLogin
+ServiceCenterLogin : entry / Verified Service Center
+ServiceCenterLogin : entry / Service Center not logged in
+ServiceCenterLogin : do / Authenticate Service Center
+ServiceCenterLogin : exit / Logged In Successfully
+
+state "Service center Home" as ServiceCenterHome
+ServiceCenterHome : entry / Logged in Service Center
+ServiceCenterHome : do / Display home page
+ServiceCenterHome : exit / Enter Damaged parts list
+ServiceCenterHome : exit / Expiry Notification page
+ServiceCenterHome : exit / Updating Information list
+
+state "Expiry Notification page" as ExpiryNotification
+ExpiryNotification : entry / To view expiry notification
+ExpiryNotification : do / Send service request to Car owner
+ExpiryNotification : exit / Return to Service center home page
+
+state "Entering Damaged parts list" as DamagedParts
+DamagedParts : entry / To enter Damaged parts list
+DamagedParts : do / Preparing and entering damaged parts list
+DamagedParts : exit / Return to service center home page
+
+state "Updating parts Information" as UpdatingParts
+UpdatingParts : entry / To update changed parts information
+UpdatingParts : do / Update Information
+UpdatingParts : exit / Return to Service center home page
+
+state "Logout" as Logout
+Logout : entry / To Logout
+Logout : do / Logout
+Logout : exit / Logged out Successfully
+
+state "Car Owner Registration" as CarOwnerRegistration
+CarOwnerRegistration : entry / Unregistered Car Owner
+CarOwnerRegistration : do / Enter valid Credentials
+CarOwnerRegistration : exit / Account registered
+
+state "Car owner Verification" as CarOwnerVerification
+CarOwnerVerification : entry / Car owner account registered
+CarOwnerVerification : do / Verify Car owner
+CarOwnerVerification : exit / Login Car Owner
+
+state "Car Owner Login" as CarOwnerLogin
+CarOwnerLogin : entry / Verified Car Owner
+CarOwnerLogin : entry / Car owner not logged in
+CarOwnerLogin : do / Authenticate Car Owner
+CarOwnerLogin : exit / Logged In Successfully
+
+state "Car Owner Home" as CarOwnerHome
+CarOwnerHome : entry / Logged in Car Owner
+CarOwnerHome : do / Display home page
+CarOwnerHome : exit / View parts information
+CarOwnerHome : exit / Service
+CarOwnerHome : exit / Report
+
+state "Report" as Report
+Report : entry / To Report Service center
+Report : do / Enter the report
+Report : exit / Return to car owner home page
+
+state "View Parts Information" as ViewPartsInformation
+ViewPartsInformation : entry / To view parts information
+ViewPartsInformation : do / View car parts Information
+ViewPartsInformation : exit / Return to Car owner home page
+
+state "Service" as Service
+Service : entry / Service request from service center
+Service : do / Accept or deny request
+Service : exit / Return to Car Owner home page
+
+state "Choose parts" as ChooseParts
+ChooseParts : entry / To choose selected parts
+ChooseParts : do / Choose the part to be serviced
+ChooseParts : exit / Return to service page
+
+state "Make Payment" as MakePayment
+MakePayment : entry / To make payments
+MakePayment : do / Make payments
+MakePayment : exit / Return to Service page
+
+
+state ServiceHomeChoice <<choice>>
+state ServiceLoginChoice <<choice>>
+state OwnerHomeChoice <<choice>>
+state OwnerLoginChoice <<choice>>
+state FinalJoin <<choice>>
+
+
+ServiceCenterRegistration --> ServiceCenterVerification
+ServiceCenterVerification --> ServiceJoin
+ServiceJoin --> ServiceCenterLogin
+ServiceCenterLogin --> ServiceLoginChoice
+ServiceLoginChoice --> ServiceCenterHome
+ExpiryNotification --> ServiceLoginChoice 
+UpdatingParts --> ServiceLoginChoice 
+DamagedParts --> ServiceLoginChoice 
+
+ServiceCenterHome --> ServiceHomeChoice : [Possible Activities]
+ServiceHomeChoice --> ExpiryNotification
+ServiceHomeChoice --> DamagedParts
+ServiceHomeChoice --> UpdatingParts
+ServiceHomeChoice --> FinalJoin
+
+FinalJoin --> Logout
+Logout --> [*]
+
+
+
+CarOwnerRegistration --> CarOwnerVerification
+CarOwnerVerification --> OwnerJoin
+OwnerJoin --> CarOwnerLogin
+
+CarOwnerLogin --> OwnerLoginChoice
+OwnerLoginChoice --> CarOwnerHome
+CarOwnerHome --> OwnerHomeChoice : [Possible Activities]
+ViewPartsInformation --> OwnerLoginChoice
+Report --> OwnerLoginChoice
+Service --> OwnerLoginChoice
+
+OwnerHomeChoice --> Report
+OwnerHomeChoice --> ViewPartsInformation
+OwnerHomeChoice --> Service
+OwnerHomeChoice --> FinalJoin
+
+Service --> ChooseParts
+ChooseParts --> MakePayment
+MakePayment --> Service
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Atm Many Scenarios Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall prompt the user to enter their PIN after the card is inserted.
+2. The system shall verify the entered PIN against the stored information.
+3. The system shall ensure that if the PIN is verified successfully, the system shall provide options to the user.
+4. The system shall support upon user approval, the system shall process the withdrawal request.
+5. The system shall support after dispensing cash, the system shall print a receipt for the transaction.
+6. The system shall support after completing the transaction, the system shall return the user's card.
+7. The system shall support after a brief moment, the system shall reset itself and become ready for the next user.

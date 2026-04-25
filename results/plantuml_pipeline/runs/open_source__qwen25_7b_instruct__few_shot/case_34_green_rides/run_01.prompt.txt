@@ -1,0 +1,262 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Account — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start an account as empty when it is first opened.
+2. The system shall activate an account and make it ready to use after setting it up and making an initial deposit.
+3. The system shall allow a user to deposit money while the account is active.
+4. The system shall allow a user to withdraw money while the account is active.
+5. The system shall allow a user to check account details like balance while the account is active.
+6. The system shall make an account inactive if all the money is withdrawn.
+7. The system shall allow closing an account after it has become inactive.
+8. The system shall render an account unusable once it is closed.
+
+Example 1 PlantUML:
+@startuml
+title State diagram for the Account class
+
+[*] --> EmptyAcct : Open
+
+state "Empty\nacct" as EmptyAcct
+state "Set up\nacct" as SetupAcct
+state "Working\nacct" as WorkingAcct
+state "Nonworking\nacct" as NonworkingAcct
+state "Dead\nacct" as DeadAcct
+
+EmptyAcct --> SetupAcct : Setup Acct
+SetupAcct --> WorkingAcct : Deposit (initial)
+
+WorkingAcct --> WorkingAcct : Deposit
+WorkingAcct --> WorkingAcct : Withdraw
+WorkingAcct --> WorkingAcct : Balance\ncredit\nacctInfo
+
+WorkingAcct --> NonworkingAcct : Withdrawal (final)
+NonworkingAcct --> DeadAcct : Close
+DeadAcct --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Displayitem — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to browse products through a catalog.
+2. The system shall enable users to view items directly or explore different ways of browsing in the catalog.
+3. The system shall allow users to browse products using an index, either alphabetically or by category.
+4. The system shall enable users to switch between browsing options based on their preferences.
+5. The system shall allow users to select a product once they find one of interest to view its details.
+6. The system shall enable users to review the items in their basket at any time.
+7. The system shall allow users from the basket to either return to the catalog or proceed to checkout.
+8. The system shall enable users to review their selections during checkout and proceed with the purchase.
+9. The system shall allow users to return to the catalog from the checkout page to make changes before completing the process.
+
+Example 2 PlantUML:
+@startuml
+title BrowseCatalog State Machine
+[*] --> BrowseCatalog
+state BrowseCatalog {
+
+  
+
+  state DisplayingItem
+
+  state DisplayingIndex {
+
+    [*] --> Alphabetical
+
+    state Alphabetical
+    state ByCategory
+
+    Alphabetical --> ByCategory : byCategory
+    ByCategory --> Alphabetical : alphabetical
+  }
+
+  state H <<history*>>
+
+  DisplayingItem --> DisplayingIndex : goToIndex
+  DisplayingIndex --> DisplayingItem : selectProduct
+
+  H --> DisplayingIndex
+}
+
+state DisplayingBasket
+state CheckingOut
+
+BrowseCatalog --> DisplayingBasket : goToBasket
+DisplayingIndex --> CheckingOut : goToCheckout
+
+DisplayingBasket --> H : goToCatalog
+CheckingOut --> H : goToCatalog
+
+BrowseCatalog --> [*] : exit
+
+@enduml
+
+Example 3 Requirement:
+For Online College Magazine System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall require a person to either create an account or log in.
+2. The system shall allow admins to add, edit, or remove user profiles.
+3. The system shall enable admins to review articles and decide on their publication or rejection.
+4. The system shall permit content creators to write articles and send them for editing.
+5. The system shall have editors review articles from content creators and pass them for approval.
+6. The system shall restrict access if a login attempt is invalid.
+7. The system shall make published articles available for user reading.
+8. The system shall allow users to search for more articles during their reading session.
+9. The system shall enable users to provide feedback after reading articles.
+10. The system shall end when users complete their search or provide feedback.
+
+Example 3 PlantUML:
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>>
+state EditorChoice <<choice>>
+state ReadFeedbackChoice <<choice>>
+state EndJoin <<choice>>
+
+[*] --> StartChoice
+
+state Register
+Register : do / Fill details
+Register : exit / Registration successful
+
+state Login
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+state "Manage profiles" as ManageProfiles
+ManageProfiles : entry / Admin logged in
+ManageProfiles : do / Manage profile in database
+ManageProfiles : do / Add, delete or edit profiles if necessary
+ManageProfiles : exit / Action completed
+
+state "Invalid user" as InvalidUser
+InvalidUser : entry / Invalid login or invalid registration
+InvalidUser : do / Block entry to system
+InvalidUser : exit / Abnormal termination
+
+state Writing
+Writing : entry / Writer logged in
+Writing : do / Write article
+Writing : exit / Send to editor
+
+state Editing
+Editing : entry / Editor logged in and article to be edited
+Editing : do / Edit article
+Editing : exit / Send to moderator/admin
+
+state Publishing
+Publishing : entry / Admin logged in and article to be approved
+Publishing : do / Choose to approve and publish or reject article
+Publishing : do / Add article to database if approved
+Publishing : exit / Publish article
+
+state Search
+Search : entry / Choose to search for articles
+Search : do / Read searched articles
+Search : exit / Completed reading
+
+state Reading
+Reading : entry / Published article
+Reading : do / Read article
+Reading : exit / Completed reading
+
+state Feedback
+Feedback : entry / Reader chosen to give feedback
+Feedback : do / Get feedback
+Feedback : exit / Feedback entry successful
+
+StartChoice --> Register
+StartChoice --> Login
+
+Register --> AdminChoice
+Login --> EditorChoice
+
+AdminChoice --> ManageProfiles
+AdminChoice --> InvalidUser
+
+EditorChoice --> Writing
+EditorChoice --> Editing
+EditorChoice --> InvalidUser
+
+Writing --> Editing
+Editing --> Publishing
+ManageProfiles --> Publishing
+
+InvalidUser --> [*]
+
+Publishing --> Reading
+Reading --> Reading
+
+Search --> Search
+Reading --> ReadFeedbackChoice
+
+ReadFeedbackChoice --> Search
+ReadFeedbackChoice --> Feedback
+
+Feedback --> EndJoin
+Search --> EndJoin
+
+EndJoin --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Green Rides — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display journey details upon user login and destination selection.
+2. The system shall allow users to activate driving mode or choose other options after viewing journey details.
+3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.
+4. The system shall inform relevant authorities in the event of an accident.
+5. The system shall send notifications during driving or in case of an accident.
+6. The system shall allow users to provide feedback upon completion of their journey.

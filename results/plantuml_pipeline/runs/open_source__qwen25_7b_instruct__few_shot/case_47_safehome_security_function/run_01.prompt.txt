@@ -1,0 +1,229 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Online Pharmacy Management System Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow admins to update medicine details.
+2. The system shall allow admins to manage customer orders.
+3. The system shall allow admins to view delivery addresses related to customer orders.
+4. The system shall allow admins to update attendance records.
+5. The system shall allow admins to update salary details.
+
+Example 1 PlantUML:
+@startuml
+title UML State Machine Diagram - Admin
+
+[*] --> UpdateMedicine
+
+state "Update medicine" as UpdateMedicine
+state "Manage orders" as ManageOrders
+state "View delivery address" as ViewDeliveryAddress
+state "Update attendance" as UpdateAttendance
+state "Update salary" as UpdateSalary
+
+UpdateMedicine --> ManageOrders
+ManageOrders --> ViewDeliveryAddress
+ViewDeliveryAddress --> UpdateAttendance
+UpdateAttendance --> UpdateSalary
+UpdateSalary --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Information System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start a training request upon creation.
+2. The system shall send the request for approval after its creation.
+3. The system shall end the process if the request is rejected.
+4. The system shall look for a suitable session if the request is accepted.
+5. The system shall perform enrolment once a session is chosen.
+6. The system shall satisfy the request if enrolment is confirmed.
+7. The system shall allow completion of the session after enrolment confirmation.
+8. The system shall allow cancellation of a selected session and selection of a new one.
+9. The system shall end the process if the request is cancelled at any point before completion.
+
+Example 2 PlantUML:
+@startuml
+title Complete state diagram of the training request
+
+[*] --> Creation
+
+state Creation
+state "WaitingForAcknowledgement" as WaitingAck
+state SearchForSession
+state "WaitingForEnrolment" as WaitingEnrolment
+state Satisfied
+
+state rejected <<final>>
+state cancelled <<final>>
+state completed <<final>>
+
+Creation --> WaitingAck : validate / send personincharge.self
+Creation --> cancelled : cancel
+
+WaitingAck --> rejected : reject / send employee.rejection
+WaitingAck --> SearchForSession : accept / send employee.agreement
+WaitingAck --> cancelled : cancel
+
+SearchForSession --> WaitingEnrolment : sessionChoice / send body.order
+SearchForSession --> cancelled : cancel
+
+WaitingEnrolment --> Satisfied : enrolment / send employee.confirmation
+WaitingEnrolment --> cancelled : cancel / send body.cancellation
+
+Satisfied --> WaitingEnrolment : cancelSession / send employee.cancellation
+Satisfied --> cancelled : cancel / send body.cancellation
+Satisfied --> completed : endSession
+
+@enduml
+
+Example 3 Requirement:
+Startup Meet — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select their roll (investor, entrepreneur, or mentor).
+2. The system shall enable the user to sign in after choosing a role.
+3. The system shall allow the signed-in user to submit a startup idea.
+4. The system shall review the submitted startup idea.
+5. The system shall provide mentorship based on the review result.
+6. The system shall make an investment decision if the startup idea is presented to an investor.
+7. The system shall provide funding based on the investment decision.
+8. The system shall end the process once all actions are completed.
+
+Example 3 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+[*] --> UserType
+
+state UserType <<choice>>
+
+UserType --> InvestorLogin : [Investor user]
+UserType --> EntrepreneurLogin : [Entrepreneur user]
+UserType --> MentorLogin : [Mentor user]
+
+state "Investor Login" as InvestorLogin
+InvestorLogin : entry / Action needed
+InvestorLogin : do / enter login credentials
+InvestorLogin : exit / Entered into system
+
+state "Entrepreneur Login" as EntrepreneurLogin
+EntrepreneurLogin : entry / Action needed
+EntrepreneurLogin : do / enter login credentials
+EntrepreneurLogin : exit / Entered into system
+
+state "Mentor Login" as MentorLogin
+MentorLogin : entry / Action needed
+MentorLogin : do / enter login credentials
+MentorLogin : exit / Entered into system
+
+state MergeLogin <<choice>>
+
+InvestorLogin --> MergeLogin
+EntrepreneurLogin --> MergeLogin
+MentorLogin --> MergeLogin
+
+state "Startup idea" as StartupIdea
+StartupIdea : entry / Submitted by entrepreneur
+StartupIdea : do / file the idea
+StartupIdea : exit / accept or decline state
+
+MergeLogin --> StartupIdea
+
+state "Decision on Startup idea" as DecisionIdea
+DecisionIdea : entry / startup idea state
+DecisionIdea : do / accept or decline
+DecisionIdea : exit / NIL
+
+StartupIdea --> DecisionIdea
+
+state ChoiceDecision <<choice>>
+DecisionIdea --> ChoiceDecision
+
+state "Accept mentorship" as AcceptMentorship
+AcceptMentorship : entry / decision on mentorship
+AcceptMentorship : do / mentorship
+AcceptMentorship : exit / NIL
+
+state "Present Idea" as PresentIdea
+PresentIdea : entry / Decision on startup
+PresentIdea : do / present idea to investor
+PresentIdea : exit / Decision on investing
+
+state "Investment" as Investment
+Investment : entry / Decision to invest
+Investment : do / give investment
+Investment : exit / share in profit
+
+ChoiceDecision --> AcceptMentorship
+ChoiceDecision --> PresentIdea
+
+state MergeEnd <<choice>>
+
+AcceptMentorship --> MergeEnd
+PresentIdea --> Investment
+Investment --> MergeEnd
+ChoiceDecision --> MergeEnd
+MergeEnd --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.

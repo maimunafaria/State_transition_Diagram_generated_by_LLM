@@ -1,0 +1,365 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Product Recommendation — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or sign in to access the platform.
+2. The system shall enable users to search for products after they have registered or logged in.
+3. The system shall display matching product results based on the user's search query.
+4. The system shall allow users to apply filters to refine their search results.
+5. The system shall update the displayed product results based on the applied filters.
+6. The system shall allow users to select a product from search or filtered results.
+7. The system shall redirect the user to the official website of the selected product upon selection.
+
+Example 1 PlantUML:
+@startuml
+[*] --> Register
+Register : entry / nil
+Register : do / login / Register
+Register : exit / valid registration / login
+
+Register --> SearchProduct : user registers
+SearchProduct : entry / login
+SearchProduct : do / search for the product
+SearchProduct : exit / display search results
+
+SearchProduct --> SearchFilterProductFilter : user applies filters
+SearchFilterProductFilter : entry / search product
+SearchFilterProductFilter : do / apply filters to get desired results
+SearchFilterProductFilter : exit / display filtered results
+state J1 <<choice>>
+SearchProduct --> J1 : user selects product
+SearchFilterProductFilter --> J1 : user selects product
+GetProduct : entry / login
+GetProduct : do / get the product from the official website
+GetProduct : exit / redirect to the website
+J1 --> GetProduct 
+GetProduct --> [*]
+@enduml
+
+Example 2 Requirement:
+Textile — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow customers to create an account by filling in required details.
+2. The system shall enable customers to place orders for garments once they are registered.
+3. The system shall send out sample materials if a customer needs them after placing an order.
+4. The system shall review the availability of raw materials for orders that require stock checking.
+5. The system shall purchase raw materials if they are not available after stock checking.
+6. The system shall process raw materials if they are already available.
+7. The system shall begin garment production once raw materials are ready, either through purchasing or processing.
+8. The system shall conduct a defect check on the produced garments.
+9. The system shall deliver the finished garments to the customer if all checks pass.
+10. The system shall complete billing and payment processes after delivering the garments.
+11. The system shall generate a report along with feedback at the end of the process.
+
+Example 2 PlantUML:
+@startuml
+
+[*] --> CustomerRegistration
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+CustomerRegistration : entry / Start state
+CustomerRegistration : do / Fill in required details
+CustomerRegistration : exit / Getting garment orders
+
+CustomerRegistration --> GettingGarmentOrders : registration complete
+
+GettingGarmentOrders : entry / Customer registration
+GettingGarmentOrders : do / Place the orders
+GettingGarmentOrders : exit / Sampling / Stock checking
+
+GettingGarmentOrders --> Sampling : sampling required
+GettingGarmentOrders --> StockChecking : check stock
+
+Sampling : entry / Getting garment orders
+Sampling : do / Send out sample materials while ordering
+Sampling : exit / decision
+
+Sampling --> Choice1 : proceed
+StockChecking --> Choice1
+
+StockChecking : entry / Getting garment orders
+StockChecking : do / Check availability of raw material
+StockChecking : exit / decision making
+
+Choice1 --> PurchasingRawMaterials : not in stock
+Choice1 --> ProcessingRawMaterials : in stock
+
+PurchasingRawMaterials : entry / Stock checking
+PurchasingRawMaterials : do / Buy raw materials
+PurchasingRawMaterials : exit / Production of garments
+
+ProcessingRawMaterials : entry / Stock checking
+ProcessingRawMaterials : do / Processing
+ProcessingRawMaterials : exit / Production of garments
+ProcessingRawMaterials --> Choice2
+PurchasingRawMaterials --> Choice2
+Choice2 --> ProductionOfGarments
+
+ProductionOfGarments : entry / Purchasing or processing of raw materials
+ProductionOfGarments : do / Manufacturing
+ProductionOfGarments : exit / Product checking
+
+ProductionOfGarments --> ProductChecking
+
+ProductChecking : entry / Production of garments
+ProductChecking : do / Checking for defects and clearance
+ProductChecking : exit / Receiving the ordered garments
+
+ProductChecking --> ReceivingOrderedGarments
+
+ReceivingOrderedGarments : entry / Product checking
+ReceivingOrderedGarments : do / Garment delivered
+ReceivingOrderedGarments : exit / Billing
+
+ReceivingOrderedGarments --> Billing
+
+Billing : entry / Receiving the ordered garments
+Billing : do / Making payments
+Billing : exit / Report generation
+
+Billing --> ReportGeneration
+
+ReportGeneration : entry / Billing
+ReportGeneration : do / Giving feedback
+ReportGeneration : exit / final state
+
+ReportGeneration --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Car Care — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose whether they are using the service center side or the car owner side.
+2. The system shall allow service center users to register or log in if already registered.
+3. The system shall allow service center users to enter damaged parts, update parts information, or send expiry-related notifications after logging in.
+4. The system shall allow service center users to log out after finishing any of the above activities.
+5. The system shall allow car owner users to register or log in.
+6. The system shall allow car owners to view parts information, request or respond to services, or report a service center after logging in.
+7. The system shall allow car owners to select required parts and make a payment when choosing a service.
+8. The system shall allow car owners to log out after completing their activities.
+
+Example 3 PlantUML:
+@startuml
+title UML state machine diagram
+
+state PortalChoice1 <<choice>>
+state PortalChoice2 <<choice>>
+state PortalChoice3 <<choice>>
+state ServiceJoin <<choice>>
+state OwnerJoin <<choice>>
+
+
+[*] --> PortalChoice1
+
+PortalChoice1 --> PortalChoice2 : [Service Center Portal]
+PortalChoice1 --> PortalChoice3 : [Car Owner Portal]
+
+PortalChoice2 --> ServiceCenterRegistration : [New Service Center]
+PortalChoice2 --> ServiceJoin : [Registered Service center]
+PortalChoice3 --> CarOwnerRegistration : [New Car Owner]
+PortalChoice3 --> OwnerJoin : [Registered Car Owner]
+
+state "Service Center Registration" as ServiceCenterRegistration
+ServiceCenterRegistration : entry / Unregistered service center
+ServiceCenterRegistration : do / Enter Valid Credentials
+ServiceCenterRegistration : exit / Account registered
+
+state "Service Center Verification" as ServiceCenterVerification
+ServiceCenterVerification : entry / Service Center account registered
+ServiceCenterVerification : do / Verify Service center
+ServiceCenterVerification : exit / Login Service center
+
+state "Service Center Login" as ServiceCenterLogin
+ServiceCenterLogin : entry / Verified Service Center
+ServiceCenterLogin : entry / Service Center not logged in
+ServiceCenterLogin : do / Authenticate Service Center
+ServiceCenterLogin : exit / Logged In Successfully
+
+state "Service center Home" as ServiceCenterHome
+ServiceCenterHome : entry / Logged in Service Center
+ServiceCenterHome : do / Display home page
+ServiceCenterHome : exit / Enter Damaged parts list
+ServiceCenterHome : exit / Expiry Notification page
+ServiceCenterHome : exit / Updating Information list
+
+state "Expiry Notification page" as ExpiryNotification
+ExpiryNotification : entry / To view expiry notification
+ExpiryNotification : do / Send service request to Car owner
+ExpiryNotification : exit / Return to Service center home page
+
+state "Entering Damaged parts list" as DamagedParts
+DamagedParts : entry / To enter Damaged parts list
+DamagedParts : do / Preparing and entering damaged parts list
+DamagedParts : exit / Return to service center home page
+
+state "Updating parts Information" as UpdatingParts
+UpdatingParts : entry / To update changed parts information
+UpdatingParts : do / Update Information
+UpdatingParts : exit / Return to Service center home page
+
+state "Logout" as Logout
+Logout : entry / To Logout
+Logout : do / Logout
+Logout : exit / Logged out Successfully
+
+state "Car Owner Registration" as CarOwnerRegistration
+CarOwnerRegistration : entry / Unregistered Car Owner
+CarOwnerRegistration : do / Enter valid Credentials
+CarOwnerRegistration : exit / Account registered
+
+state "Car owner Verification" as CarOwnerVerification
+CarOwnerVerification : entry / Car owner account registered
+CarOwnerVerification : do / Verify Car owner
+CarOwnerVerification : exit / Login Car Owner
+
+state "Car Owner Login" as CarOwnerLogin
+CarOwnerLogin : entry / Verified Car Owner
+CarOwnerLogin : entry / Car owner not logged in
+CarOwnerLogin : do / Authenticate Car Owner
+CarOwnerLogin : exit / Logged In Successfully
+
+state "Car Owner Home" as CarOwnerHome
+CarOwnerHome : entry / Logged in Car Owner
+CarOwnerHome : do / Display home page
+CarOwnerHome : exit / View parts information
+CarOwnerHome : exit / Service
+CarOwnerHome : exit / Report
+
+state "Report" as Report
+Report : entry / To Report Service center
+Report : do / Enter the report
+Report : exit / Return to car owner home page
+
+state "View Parts Information" as ViewPartsInformation
+ViewPartsInformation : entry / To view parts information
+ViewPartsInformation : do / View car parts Information
+ViewPartsInformation : exit / Return to Car owner home page
+
+state "Service" as Service
+Service : entry / Service request from service center
+Service : do / Accept or deny request
+Service : exit / Return to Car Owner home page
+
+state "Choose parts" as ChooseParts
+ChooseParts : entry / To choose selected parts
+ChooseParts : do / Choose the part to be serviced
+ChooseParts : exit / Return to service page
+
+state "Make Payment" as MakePayment
+MakePayment : entry / To make payments
+MakePayment : do / Make payments
+MakePayment : exit / Return to Service page
+
+
+state ServiceHomeChoice <<choice>>
+state ServiceLoginChoice <<choice>>
+state OwnerHomeChoice <<choice>>
+state OwnerLoginChoice <<choice>>
+state FinalJoin <<choice>>
+
+
+ServiceCenterRegistration --> ServiceCenterVerification
+ServiceCenterVerification --> ServiceJoin
+ServiceJoin --> ServiceCenterLogin
+ServiceCenterLogin --> ServiceLoginChoice
+ServiceLoginChoice --> ServiceCenterHome
+ExpiryNotification --> ServiceLoginChoice 
+UpdatingParts --> ServiceLoginChoice 
+DamagedParts --> ServiceLoginChoice 
+
+ServiceCenterHome --> ServiceHomeChoice : [Possible Activities]
+ServiceHomeChoice --> ExpiryNotification
+ServiceHomeChoice --> DamagedParts
+ServiceHomeChoice --> UpdatingParts
+ServiceHomeChoice --> FinalJoin
+
+FinalJoin --> Logout
+Logout --> [*]
+
+
+
+CarOwnerRegistration --> CarOwnerVerification
+CarOwnerVerification --> OwnerJoin
+OwnerJoin --> CarOwnerLogin
+
+CarOwnerLogin --> OwnerLoginChoice
+OwnerLoginChoice --> CarOwnerHome
+CarOwnerHome --> OwnerHomeChoice : [Possible Activities]
+ViewPartsInformation --> OwnerLoginChoice
+Report --> OwnerLoginChoice
+Service --> OwnerLoginChoice
+
+OwnerHomeChoice --> Report
+OwnerHomeChoice --> ViewPartsInformation
+OwnerHomeChoice --> Service
+OwnerHomeChoice --> FinalJoin
+
+Service --> ChooseParts
+ChooseParts --> MakePayment
+MakePayment --> Service
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.

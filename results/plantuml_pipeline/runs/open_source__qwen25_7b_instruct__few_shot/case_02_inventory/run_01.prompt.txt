@@ -1,0 +1,295 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Product Recommendation — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or sign in to access the platform.
+2. The system shall enable users to search for products after they have registered or logged in.
+3. The system shall display matching product results based on the user's search query.
+4. The system shall allow users to apply filters to refine their search results.
+5. The system shall update the displayed product results based on the applied filters.
+6. The system shall allow users to select a product from search or filtered results.
+7. The system shall redirect the user to the official website of the selected product upon selection.
+
+Example 1 PlantUML:
+@startuml
+[*] --> Register
+Register : entry / nil
+Register : do / login / Register
+Register : exit / valid registration / login
+
+Register --> SearchProduct : user registers
+SearchProduct : entry / login
+SearchProduct : do / search for the product
+SearchProduct : exit / display search results
+
+SearchProduct --> SearchFilterProductFilter : user applies filters
+SearchFilterProductFilter : entry / search product
+SearchFilterProductFilter : do / apply filters to get desired results
+SearchFilterProductFilter : exit / display filtered results
+state J1 <<choice>>
+SearchProduct --> J1 : user selects product
+SearchFilterProductFilter --> J1 : user selects product
+GetProduct : entry / login
+GetProduct : do / get the product from the official website
+GetProduct : exit / redirect to the website
+J1 --> GetProduct 
+GetProduct --> [*]
+@enduml
+
+Example 2 Requirement:
+Class Campaign Final Version — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall activate a campaign once a manager and staff are assigned, it is approved, and the contract is signed.
+2. The system shall allow surveys to be carried out and evaluated during the campaign.
+3. The system shall prepare, approve, schedule, and run adverts during the campaign.
+4. The system shall allow adjustments to the campaign, such as extending its duration or changing the budget.
+5. The system shall pause a campaign, stopping all adverts, and allow resuming to continue work.
+6. The system shall calculate costs and prepare a final statement if the campaign is cancelled.
+7. The system shall complete the campaign and prepare a final statement when all work is finished.
+8. The system shall handle payment after completion; if the amount does not match what is due, it may make adjustments such as refunds.
+9. The system shall mark a campaign as paid once the correct payment is settled.
+10. The system shall archive the campaign and release all assigned staff and managers after completion.
+
+Example 2 PlantUML:
+@startuml
+title Campaign State Machine (Final Version)
+
+[*] --> Commissioned : /assignManager; assignStaff
+
+state Commissioned
+state Suspended
+state Completed
+state Paid
+
+Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+Commissioned --> Completed : campaignCancelled;\ncalculateCosts;\nprepareFinalStatement
+state Active {
+
+  state Monitoring {
+    [*] --> Survey
+
+    state Survey
+    state Evaluation
+    state H1 <<history>>
+
+    Survey --> Evaluation : surveyComplete
+    Evaluation --> Survey : runSurvey
+  }
+
+  --
+
+  state Running {
+    [*] --> AdvertPreparation
+
+    state AdvertPreparation
+    state Scheduling
+    state "Running Adverts" as RunningAdverts
+    state H2 <<history>>
+
+    AdvertPreparation --> Scheduling : advertsApproved\n/authorize
+    Scheduling --> RunningAdverts : confirmSchedule
+    RunningAdverts --> AdvertPreparation : extendCampaign\n/modifyBudget
+  }
+
+}
+
+
+Active --> Suspended : suspendCampaign\n/stopAdverts
+Suspended --> Active : resumeCampaign
+
+
+Active --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+AdvertPreparation --> Completed : campaignCompleted\n/prepareFinalStatement
+
+
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > 0]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
+
+
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+
+@enduml
+
+Example 3 Requirement:
+E Med Medical Assistance Tool — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to fill in their personal medical history if it is missing, and then check and save the information.
+2. The system shall provide users with the ability to view their medical history, receive reminders for medication, receive reminders for medicine restocking, schedule appointments, use an emergency button, write and view medical notes.
+3. The system shall allow users to update their medical history if they choose to do so after viewing it.
+4. The system shall allow users to update their medical notes if they choose to do so after viewing them.
+5. The system shall call emergency contacts if they use the emergency button.
+
+Example 3 PlantUML:
+@startuml
+title UML State Chart Diagram - Medical System
+
+[*] --> CheckHistory
+
+state CheckHistory <<choice>>
+CheckHistory --> FillHistory : [No]
+CheckHistory --> Hub : [Yes]
+
+state "Fill personal medical history" as FillHistory
+FillHistory : entry / start state
+FillHistory : do / fill details in personal medical history
+FillHistory : exit / verify medical history
+
+state "Validate and store" as ValidateStore
+ValidateStore : entry / verify medical history
+ValidateStore : do / validate and store
+ValidateStore : exit / medical history stored
+
+FillHistory --> ValidateStore
+ValidateStore --> Hub
+
+state Hub <<choice>>
+
+state "View Medical History" as ViewHistory
+ViewHistory : entry / entered the app
+ViewHistory : do / view medical history stored
+ViewHistory : exit / viewed medical history
+
+state "Reminder to have medicines on time" as ReminderTime
+ReminderTime : entry / entered the app
+ReminderTime : do / user is reminded to have medicines
+ReminderTime : exit / notification acknowledged
+
+state "Reminder to buy medicines when not in stock" as ReminderBuy
+ReminderBuy : entry / entered the app
+ReminderBuy : do / user is reminded to buy medicines
+ReminderBuy : exit / notification acknowledged
+
+state "Schedule Appointments Regularly" as Schedule
+Schedule : entry / entered the app
+Schedule : do / schedule the appointment regularly
+Schedule : exit / scheduled appointment
+
+state "Press Emergency Button" as Emergency
+Emergency : entry / entered the app
+Emergency : do / press emergency button
+Emergency : exit / pressed emergency button
+
+state "Write medical notes for reference" as WriteNotes
+WriteNotes : entry / entered the app
+WriteNotes : do / write medical notes
+WriteNotes : exit / store in database
+
+state "View medical notes" as ViewNotes
+ViewNotes : entry / entered the app
+ViewNotes : do / view medical notes stored
+ViewNotes : exit / viewed medical notes
+
+state "Send message to receptionist" as MessageReception
+MessageReception : entry / scheduled appointment
+MessageReception : do / send message to receptionist based on schedule
+MessageReception : exit / message sent
+
+state "Call Emergency Contacts" as CallEmergency
+CallEmergency : entry / pressed emergency button
+CallEmergency : do / call the emergency contacts
+CallEmergency : exit / called emergency contacts
+
+state "Update Medical History" as UpdateHistory
+UpdateHistory : entry / want to update medical history
+UpdateHistory : do / update medical history
+UpdateHistory : exit / updated details are stored in the database
+
+state "Update Medical Notes" as UpdateNotes
+UpdateNotes : entry / want to update medical notes
+UpdateNotes : do / update medical notes
+UpdateNotes : exit / updated details are stored in the database
+
+state UpdateChoice <<choice>>
+state UpdateChoice1 <<choice>>
+Hub --> ViewHistory
+Hub --> ReminderTime
+Hub --> ReminderBuy
+Hub --> Schedule
+Hub --> Emergency
+Hub --> WriteNotes
+Hub --> ViewNotes
+
+Schedule --> MessageReception
+Emergency --> CallEmergency
+
+ViewHistory --> UpdateChoice : [Update ?]
+ViewNotes --> UpdateChoice1 : [Update ?]
+
+UpdateChoice --> UpdateHistory : [Yes]
+UpdateChoice1 --> UpdateNotes : [Yes]
+UpdateChoice --> [*] : [No]
+UpdateChoice1 --> [*] : [No]
+ReminderTime --> [*]
+ReminderBuy --> [*]
+WriteNotes --> [*]
+MessageReception --> [*]
+CallEmergency --> [*]
+UpdateHistory --> [*]
+UpdateNotes --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Inventory — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to add new goods to the inventory.
+2. The system shall allow the user to update the price of existing items in the inventory.
+3. The system shall allow the user to remove goods from the inventory that are no longer required.
+4. The system shall identify expired goods and notify the user about their removal from the inventory.
+5. The system shall allow the user to place an order to a supplier for additional goods when required.
+6. The system shall generate an invoice for the order once it is placed.
+7. The system shall allow the user to search for items available in the inventory and select them for purchase.
+8. The system shall calculate the applicable discount and tax based on the selected items.
+9. The system shall generate a receipt for the customer after the purchase.
+10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.
+11. The system shall record customer requests for items that may not be currently available.
+12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.
