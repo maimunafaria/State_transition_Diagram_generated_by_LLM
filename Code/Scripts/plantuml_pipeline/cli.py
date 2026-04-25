@@ -160,6 +160,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         help="Run only selected run_id (repeatable)",
     )
+    p_run.add_argument(
+        "--only-case-id",
+        action="append",
+        help="Run only selected case_id from the test split (repeatable)",
+    )
     p_run.add_argument("--skip-existing", action="store_true", help="Skip existing run files")
     p_run.add_argument("--save-prompts", action="store_true", help="Store prompts in .meta.json")
     p_run.set_defaults(func=command_run)

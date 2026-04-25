@@ -387,6 +387,17 @@ def command_run(args: argparse.Namespace) -> int:
             print("No configurations matched --only-run-id", file=sys.stderr)
             return 1
 
+    if args.only_case_id:
+        wanted_cases = set(args.only_case_id)
+        test_cases = [case for case in test_cases if case.case_id in wanted_cases]
+        missing_cases = sorted(wanted_cases - {case.case_id for case in test_cases})
+        if missing_cases:
+            print(
+                "No test-split cases matched --only-case-id: " + ", ".join(missing_cases),
+                file=sys.stderr,
+            )
+            return 1
+
     manifest = {
         "generated_at_epoch": time.time(),
         "dataset_root": str(dataset_root),
@@ -470,6 +481,9 @@ def command_run(args: argparse.Namespace) -> int:
 
                 run_dir.mkdir(parents=True, exist_ok=True)
                 write_text(puml_path, final_puml)
+                if args.save_prompts and prompt_text:
+                    prompt_path = run_dir / f"run_{run_index:02d}.prompt.txt"
+                    write_text(prompt_path, prompt_text)
 
                 metrics = compute_metrics(
                     pred_graph=final_graph,

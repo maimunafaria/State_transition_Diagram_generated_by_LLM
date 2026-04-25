@@ -342,11 +342,7 @@ def build_generation_prompt(
         if examples:
             for idx, ex in enumerate(examples, start=1):
                 ex_req = ex.structured_requirement.strip() or ex.raw_requirement.strip()
-                if len(ex_req) > 1200:
-                    ex_req = ex_req[:1200].rstrip() + "..."
                 ex_puml = ex.gold_puml.strip()
-                if len(ex_puml) > 1800:
-                    ex_puml = ex_puml[:1800].rstrip() + "\n@enduml"
                 example_texts.append(
                     f"Example {idx} Requirement:\n{ex_req}\n\nExample {idx} PlantUML:\n{ex_puml}"
                 )
