@@ -1,0 +1,254 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Cd Player — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start in a stopped state.
+2. The system shall begin playing music when a disc is inserted and the user presses play.
+3. The system shall allow the user to pause the music at any time while it is playing.
+4. The system shall stop the music temporarily when paused but allow resuming from the same point.
+5. The system shall allow the user to stop the player at any time, regardless of whether the music is playing or paused.
+6. The system shall return to a stopped state when the player is stopped.
+7. The system shall allow switching to another disc and continuing playback if multiple discs are available.
+8. The system shall remain in a stopped state when no more discs are left.
+
+Example 1 PlantUML:
+@startuml
+title CD Player State Machine
+
+[*] --> Stopped
+
+state Playing
+Playing : do / read disc
+
+state Stopped
+state Paused
+
+Stopped --> Playing : press play [disc in tray]
+Playing --> Stopped : press stop
+Playing --> Stopped : [no more discs]
+
+Playing --> Paused : press pause
+Paused --> Playing : press play
+Paused --> Stopped : press stop
+
+Playing --> Playing : [another disc] / change disc
+
+@enduml
+
+Example 2 Requirement:
+Atm Many Scenarios Scenario 6 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if the entered PIN is correct.
+2. The system shall ask for the PIN again if it is incorrect.
+3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.
+4. The system shall return the card if the user cancels the process at any moment during this stage.
+5. The system shall display options for the user to choose from if the PIN is correct.
+6. The system shall process the withdrawal request and check if it can approve the transaction.
+7. The system shall cancel everything and return the card if the withdrawal request is rejected.
+8. The system shall dispense cash, print a receipt, and return the card if the withdrawal request is approved.
+9. The system shall stop the operation if it runs out of cash during the process.
+10. The system shall reset itself to be ready for the next user after completing or ending the session.
+
+Example 2 PlantUML:
+@startuml
+title ATM Control - Validate PIN and Withdraw Funds
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForCustomerChoice
+state ProcessingWithdrawal
+state Dispensing
+state Printing
+state Ejecting
+state Confiscating
+state Terminating
+state ClosedDown
+
+Idle : entry / Display Welcome
+ClosedDown : entry / Display System Down
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+WaitingForPIN --> Confiscating : Card Confiscated / display Confiscated
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> Confiscating : Card Stolen, Card Expired /\nConfiscate, Update Status
+ValidatingPIN --> Confiscating : Third Invalid PIN /\nConfiscate
+
+ValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+WaitingForCustomerChoice --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+
+WaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected /\nRequest Withdrawal, Display Wait
+
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash, Update Status
+ProcessingWithdrawal --> Ejecting : Rejected / Eject
+
+Dispensing --> Printing : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+Dispensing --> ClosedDown : Insufficient Cash / Eject
+
+Printing --> Ejecting : Receipt Printed / Eject
+
+Ejecting --> Terminating : Card Ejected / Display Ejected
+Confiscating --> Terminating : Card Confiscated / Display Confiscated
+
+Terminating --> Idle : After (Elapsed Time)\n[Closedown Not Requested]
+
+
+@enduml
+
+Example 3 Requirement:
+Startup Meet — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select their roll (investor, entrepreneur, or mentor).
+2. The system shall enable the user to sign in after choosing a role.
+3. The system shall allow the signed-in user to submit a startup idea.
+4. The system shall review the submitted startup idea.
+5. The system shall provide mentorship based on the review result.
+6. The system shall make an investment decision if the startup idea is presented to an investor.
+7. The system shall provide funding based on the investment decision.
+8. The system shall end the process once all actions are completed.
+
+Example 3 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+[*] --> UserType
+
+state UserType <<choice>>
+
+UserType --> InvestorLogin : [Investor user]
+UserType --> EntrepreneurLogin : [Entrepreneur user]
+UserType --> MentorLogin : [Mentor user]
+
+state "Investor Login" as InvestorLogin
+InvestorLogin : entry / Action needed
+InvestorLogin : do / enter login credentials
+InvestorLogin : exit / Entered into system
+
+state "Entrepreneur Login" as EntrepreneurLogin
+EntrepreneurLogin : entry / Action needed
+EntrepreneurLogin : do / enter login credentials
+EntrepreneurLogin : exit / Entered into system
+
+state "Mentor Login" as MentorLogin
+MentorLogin : entry / Action needed
+MentorLogin : do / enter login credentials
+MentorLogin : exit / Entered into system
+
+state MergeLogin <<choice>>
+
+InvestorLogin --> MergeLogin
+EntrepreneurLogin --> MergeLogin
+MentorLogin --> MergeLogin
+
+state "Startup idea" as StartupIdea
+StartupIdea : entry / Submitted by entrepreneur
+StartupIdea : do / file the idea
+StartupIdea : exit / accept or decline state
+
+MergeLogin --> StartupIdea
+
+state "Decision on Startup idea" as DecisionIdea
+DecisionIdea : entry / startup idea state
+DecisionIdea : do / accept or decline
+DecisionIdea : exit / NIL
+
+StartupIdea --> DecisionIdea
+
+state ChoiceDecision <<choice>>
+DecisionIdea --> ChoiceDecision
+
+state "Accept mentorship" as AcceptMentorship
+AcceptMentorship : entry / decision on mentorship
+AcceptMentorship : do / mentorship
+AcceptMentorship : exit / NIL
+
+state "Present Idea" as PresentIdea
+PresentIdea : entry / Decision on startup
+PresentIdea : do / present idea to investor
+PresentIdea : exit / Decision on investing
+
+state "Investment" as Investment
+Investment : entry / Decision to invest
+Investment : do / give investment
+Investment : exit / share in profit
+
+ChoiceDecision --> AcceptMentorship
+ChoiceDecision --> PresentIdea
+
+state MergeEnd <<choice>>
+
+AcceptMentorship --> MergeEnd
+PresentIdea --> Investment
+Investment --> MergeEnd
+ChoiceDecision --> MergeEnd
+MergeEnd --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Process Sale — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a new sale.
+2. The system shall enter items one by one as they are selected by the customer.
+3. The system shall move to payment after all items have been added.
+4. The system shall complete the sale immediately if the customer pays with cash.
+5. The system shall verify the payment if the customer chooses to pay by card or check.
+6. The system shall complete the sale once the payment is approved.
+7. The system shall return to waiting for the next customer after the payment has been finished.

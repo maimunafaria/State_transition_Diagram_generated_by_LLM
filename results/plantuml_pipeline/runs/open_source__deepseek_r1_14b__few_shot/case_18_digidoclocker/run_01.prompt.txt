@@ -1,0 +1,296 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+First Person Shooter Fps Games — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall keep the troll in a calm state with no actions if there is no detected threat.
+2. The system shall determine the troll's reaction based on the perceived strength of the detected opponent.
+3. The system shall make the troll aggressive and start an attack if the opponent appears weak enough to defeat.
+4. The system shall continue the troll's fight while it can see the opponent.
+5. The system shall calm the troll and return it to a normal state if it loses sight of the opponent.
+6. The system shall make the troll scared and panic if the opponent appears too strong.
+7. The system shall calm the troll and return it to a normal state if it gets away from or loses sight of a stronger opponent.
+8. The system shall remove the troll from the game if it takes a fatal hit and its health reaches zero.
+
+Example 1 PlantUML:
+@startuml
+title Troll State Diagram
+
+[*] --> Neutral
+
+state Neutral
+state Attack
+state Panic
+state Die
+
+Neutral --> Attack : see opponent [defeatable]
+Attack --> Neutral : lost opponent
+
+Neutral --> Panic : see opponent [undefeatable]
+Panic --> Neutral : lost opponent
+
+Attack --> Die : receive blow [health = 0] / pray
+Panic --> Die : receive blow [health = 0] / pray
+
+Die --> [*]
+
+@enduml
+
+Example 2 Requirement:
+E Ration Shop — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to raise a complaint directly.
+2. The system shall end the process after a user raises a complaint.
+3. The system shall allow users to authenticate their identity using an OTP.
+4. The system shall allow multiple attempts for OTP authentication if the initial attempt fails.
+5. The system shall enable users to view items based on different categories once they are successfully authenticated.
+6. The system shall allow users to select items for purchase after viewing them.
+7. The system shall provide users with the option to pay either through an online method or by cash on delivery.
+8. The system shall deliver the product after the payment is completed.
+
+Example 2 PlantUML:
+@startuml
+title UML State Machine Diagram
+
+
+[*] --> C1
+
+state C1 <<choice>>
+C1 --> Auth : [possibilities to start]
+C1 --> Complaints
+
+
+state "Authentication of aadhar card by OTP" as Auth
+Auth : entry / card holder
+Auth : do / Generates OTP
+Auth : do / OTP should match
+Auth : exit / authentication completed
+
+state Complaints
+Complaints : entry / fill
+Complaints : do / raise a complaint
+Complaints : exit / complaint send
+
+Complaints --> [*]
+
+Auth --> Auth 
+Auth --> ViewItems
+
+state "View items" as ViewItems
+ViewItems : entry / from Authentication
+ViewItems : do / items shown based on category
+ViewItems : do / select items required
+ViewItems : exit / after selecting
+
+ViewItems --> Purchase
+
+state "make purchase" as Purchase
+Purchase : entry / from view items
+Purchase : do / payment
+Purchase : exit / chose the mode of payment
+
+
+state C2 <<choice>>
+Purchase --> C2 : [possibilities for payment]
+
+state PAYTM
+PAYTM : entry / make purchase
+PAYTM : do / making payment
+PAYTM : exit / payment done
+
+state COD
+COD : entry / make purchase
+COD : do / making payment
+COD : exit / payment done
+
+C2 --> PAYTM
+C2 --> COD
+
+
+state C3 <<choice>>
+PAYTM --> C3
+COD --> C3
+
+C3 --> Delivery : [payment completed]
+
+
+state Delivery
+Delivery : entry / COD
+Delivery : entry / PAYTM
+Delivery : do / product delivered
+
+Delivery --> [*]
+
+@enduml
+
+Example 3 Requirement:
+For Online College Magazine System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall require a person to either create an account or log in.
+2. The system shall allow admins to add, edit, or remove user profiles.
+3. The system shall enable admins to review articles and decide on their publication or rejection.
+4. The system shall permit content creators to write articles and send them for editing.
+5. The system shall have editors review articles from content creators and pass them for approval.
+6. The system shall restrict access if a login attempt is invalid.
+7. The system shall make published articles available for user reading.
+8. The system shall allow users to search for more articles during their reading session.
+9. The system shall enable users to provide feedback after reading articles.
+10. The system shall end when users complete their search or provide feedback.
+
+Example 3 PlantUML:
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>>
+state EditorChoice <<choice>>
+state ReadFeedbackChoice <<choice>>
+state EndJoin <<choice>>
+
+[*] --> StartChoice
+
+state Register
+Register : do / Fill details
+Register : exit / Registration successful
+
+state Login
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+state "Manage profiles" as ManageProfiles
+ManageProfiles : entry / Admin logged in
+ManageProfiles : do / Manage profile in database
+ManageProfiles : do / Add, delete or edit profiles if necessary
+ManageProfiles : exit / Action completed
+
+state "Invalid user" as InvalidUser
+InvalidUser : entry / Invalid login or invalid registration
+InvalidUser : do / Block entry to system
+InvalidUser : exit / Abnormal termination
+
+state Writing
+Writing : entry / Writer logged in
+Writing : do / Write article
+Writing : exit / Send to editor
+
+state Editing
+Editing : entry / Editor logged in and article to be edited
+Editing : do / Edit article
+Editing : exit / Send to moderator/admin
+
+state Publishing
+Publishing : entry / Admin logged in and article to be approved
+Publishing : do / Choose to approve and publish or reject article
+Publishing : do / Add article to database if approved
+Publishing : exit / Publish article
+
+state Search
+Search : entry / Choose to search for articles
+Search : do / Read searched articles
+Search : exit / Completed reading
+
+state Reading
+Reading : entry / Published article
+Reading : do / Read article
+Reading : exit / Completed reading
+
+state Feedback
+Feedback : entry / Reader chosen to give feedback
+Feedback : do / Get feedback
+Feedback : exit / Feedback entry successful
+
+StartChoice --> Register
+StartChoice --> Login
+
+Register --> AdminChoice
+Login --> EditorChoice
+
+AdminChoice --> ManageProfiles
+AdminChoice --> InvalidUser
+
+EditorChoice --> Writing
+EditorChoice --> Editing
+EditorChoice --> InvalidUser
+
+Writing --> Editing
+Editing --> Publishing
+ManageProfiles --> Publishing
+
+InvalidUser --> [*]
+
+Publishing --> Reading
+Reading --> Reading
+
+Search --> Search
+Reading --> ReadFeedbackChoice
+
+ReadFeedbackChoice --> Search
+ReadFeedbackChoice --> Feedback
+
+Feedback --> EndJoin
+Search --> EndJoin
+
+EndJoin --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
