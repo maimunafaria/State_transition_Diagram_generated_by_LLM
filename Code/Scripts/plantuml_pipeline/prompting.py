@@ -586,16 +586,18 @@ def build_generation_prompt(
 
 
 def build_critic_prompt(requirement: str, candidate_puml: str, validation: ValidationResult) -> str:
+    validation_issues = list(validation.errors) + list(validation.warnings)
     return (
         "You are a strict UML critic.\n"
-        "Given a requirement and candidate PlantUML, identify structural and semantic issues.\n"
-        "Do not rewrite the diagram. Return concise numbered issues only.\n\n"
+        "Review the candidate PlantUML against the requirement and the listed validation issues.\n"
+        "Line numbers, if present, refer only to the Candidate PlantUML block.\n"
+        "Do not rewrite the diagram. Return concise numbered problems only.\n\n"
         "Requirement:\n"
         f"{requirement}\n\n"
         "Candidate PlantUML:\n"
         f"{candidate_puml}\n\n"
-        "Validation errors:\n"
-        + ("\n".join(f"- {err}" for err in validation.errors) if validation.errors else "- none")
+        "Validation issues:\n"
+        + ("\n".join(f"- {err}" for err in validation_issues) if validation_issues else "- none")
     )
 
 
@@ -606,21 +608,17 @@ def build_repair_prompt(
     critic_feedback: str = "",
 ) -> str:
     feedback_block = critic_feedback.strip() or "No critic feedback provided."
+    validation_issues = list(validation.errors) + list(validation.warnings)
     return (
         "You are a UML repair assistant.\n"
-        "Repair the candidate PlantUML to satisfy the requirement and structural constraints.\n"
-        "Output ONLY corrected PlantUML. No explanations.\n\n"
-        "Constraints:\n"
-        "- Include @startuml and @enduml\n"
-        "- Exactly one initial transition [*] --> state\n"
-        "- No duplicate transitions\n"
-        "- All states should be reachable from the initial state when possible\n\n"
+        "Fix the candidate PlantUML using the listed validation issues and critic feedback.\n"
+        "Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.\n\n"
         "Requirement:\n"
         f"{requirement}\n\n"
         "Candidate PlantUML:\n"
         f"{candidate_puml}\n\n"
-        "Validation errors:\n"
-        + ("\n".join(f"- {err}" for err in validation.errors) if validation.errors else "- none")
+        "Validation issues to fix:\n"
+        + ("\n".join(f"- {err}" for err in validation_issues) if validation_issues else "- none")
         + "\n\nCritic feedback:\n"
         + feedback_block
     )

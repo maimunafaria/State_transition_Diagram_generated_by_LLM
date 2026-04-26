@@ -446,11 +446,19 @@ def command_run(args: argparse.Namespace) -> int:
                 prompt_text = ""
                 requirement_used = ""
                 processing_steps: list[dict[str, Any]] = []
+                attempt_artifacts: list[dict[str, Any]] = []
                 final_puml = ""
                 final_validation: ValidationResult | None = None
 
                 try:
-                    final_puml, final_validation, prompt_text, requirement_used, processing_steps = (
+                    (
+                        final_puml,
+                        final_validation,
+                        prompt_text,
+                        requirement_used,
+                        processing_steps,
+                        attempt_artifacts,
+                    ) = (
                         run_single_generation(
                             case=case,
                             cfg=cfg,
@@ -486,12 +494,41 @@ def command_run(args: argparse.Namespace) -> int:
                 if args.save_prompts and prompt_text:
                     prompt_path = run_dir / f"run_{run_index:02d}.prompt.txt"
                     write_text(prompt_path, prompt_text)
+                for artifact in attempt_artifacts:
+                    artifact_stage = str(artifact.get("stage", "attempt"))
+                    artifact_attempt = int(artifact.get("attempt", 0))
+                    if artifact_stage == "initial":
+                        artifact_path = run_dir / f"run_{run_index:02d}.initial.puml"
+                    else:
+                        artifact_path = run_dir / f"run_{run_index:02d}.{artifact_stage}_{artifact_attempt:02d}.puml"
+                    write_text(artifact_path, str(artifact.get("puml", "")))
+                    artifact["path"] = str(artifact_path)
+                    artifact.pop("puml", None)
+                    critic_prompt = str(artifact.get("critic_prompt", ""))
+                    if args.save_prompts and critic_prompt:
+                        critic_prompt_path = (
+                            run_dir / f"run_{run_index:02d}.critic_{artifact_attempt:02d}.prompt.txt"
+                        )
+                        write_text(critic_prompt_path, critic_prompt)
+                        artifact["critic_prompt_path"] = str(critic_prompt_path)
+                    artifact.pop("critic_prompt", None)
+                    repair_prompt = str(artifact.get("repair_prompt", ""))
+                    if args.save_prompts and repair_prompt:
+                        repair_prompt_path = (
+                            run_dir / f"run_{run_index:02d}.repair_{artifact_attempt:02d}.prompt.txt"
+                        )
+                        write_text(repair_prompt_path, repair_prompt)
+                        artifact["repair_prompt_path"] = str(repair_prompt_path)
+                    artifact.pop("repair_prompt", None)
 
                 metrics = compute_metrics(
                     pred_graph=final_graph,
                     pred_validation=final_validation,
                     gold_graph=case.gold_graph,
                 )
+                strict_issues = list(final_validation.errors) + list(final_validation.warnings)
+                metrics["strict_state_diagram_valid"] = not strict_issues
+                metrics["strict_state_diagram_issues"] = strict_issues
                 metrics_row = {
                     "run_id": cfg.run_id,
                     "model_group": cfg.model_group,
@@ -517,7 +554,12 @@ def command_run(args: argparse.Namespace) -> int:
                     "requirement_used": requirement_used if args.save_prompts else "",
                     "puml_path": str(puml_path),
                     "validation": final_validation.to_dict(),
+                    "strict_validation": {
+                        "valid": not strict_issues,
+                        "issues": strict_issues,
+                    },
                     "processing_steps": processing_steps,
+                    "attempt_artifacts": attempt_artifacts,
                     "metrics": metrics,
                 }
                 write_json(meta_path, meta)

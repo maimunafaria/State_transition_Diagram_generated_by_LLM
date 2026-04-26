@@ -8,6 +8,16 @@ from .models import Case, ExperimentConfig, ValidationResult
 from .parser import normalize_puml_text, parse_and_validate_puml_text
 from .prompting import build_critic_prompt, build_generation_prompt, build_repair_prompt
 
+MAX_REPAIR_ATTEMPTS = 3
+
+
+def strict_state_diagram_issues(validation: ValidationResult) -> list[str]:
+    return list(validation.errors) + list(validation.warnings)
+
+
+def is_strict_state_diagram_valid(validation: ValidationResult) -> bool:
+    return not strict_state_diagram_issues(validation)
+
 
 def run_single_generation(
     case: Case,
@@ -28,7 +38,7 @@ def run_single_generation(
     rag_collection_name: str = "uml_docs",
     few_shot_seed: int = 42,
     run_index: int = 1,
-) -> tuple[str, ValidationResult, str, str, list[dict[str, Any]]]:
+) -> tuple[str, ValidationResult, str, str, list[dict[str, Any]], list[dict[str, Any]]]:
     requirement = case.structured_requirement if requirement_source == "structured" else case.raw_requirement
     if not requirement.strip():
         requirement = case.raw_requirement or case.structured_requirement
@@ -81,46 +91,114 @@ def run_single_generation(
     )
     generated_puml = normalize_puml_text(generated)
     _, validation = parse_and_validate_puml_text(generated_puml)
-    steps.append({"stage": "generator", "valid": validation.valid, "errors": list(validation.errors)})
+    strict_issues = strict_state_diagram_issues(validation)
+    steps.append(
+        {
+            "stage": "generator",
+            "plantuml_valid": validation.valid,
+            "strict_state_diagram_valid": not strict_issues,
+            "errors": list(validation.errors),
+            "warnings": list(validation.warnings),
+            "strict_issues": strict_issues,
+        }
+    )
 
     final_puml = generated_puml
     final_validation = validation
+    attempt_artifacts: list[dict[str, Any]] = [
+        {
+            "stage": "initial",
+            "attempt": 0,
+            "puml": generated_puml,
+            "validation": validation.to_dict(),
+            "strict_state_diagram_valid": is_strict_state_diagram_valid(validation),
+        }
+    ]
 
-    if cfg.use_structural_validation and not final_validation.valid:
-        if cfg.use_ensemble:
-            critic_prompt = build_critic_prompt(requirement, final_puml, final_validation)
-            critic_feedback = call_model(
+    if cfg.use_structural_validation:
+        for attempt in range(1, MAX_REPAIR_ATTEMPTS + 1):
+            current_issues = strict_state_diagram_issues(final_validation)
+            if not current_issues:
+                break
+
+            if cfg.use_ensemble:
+                critic_prompt = build_critic_prompt(requirement, final_puml, final_validation)
+                critic_feedback = call_model(
+                    model_name=cfg.model_name,
+                    prompt=critic_prompt,
+                    ollama_host=ollama_host,
+                    temperature=temperature,
+                    top_p=top_p,
+                    max_tokens=max_tokens,
+                    timeout=timeout,
+                )
+                steps.append(
+                    {
+                        "stage": "critic",
+                        "attempt": attempt,
+                        "strict_issues": current_issues,
+                        "output": critic_feedback[:2000],
+                    }
+                )
+            else:
+                critic_prompt = ""
+                critic_feedback = ""
+
+            repair_prompt = build_repair_prompt(
+                requirement,
+                final_puml,
+                final_validation,
+                critic_feedback,
+            )
+            repaired = call_model(
                 model_name=cfg.model_name,
-                prompt=critic_prompt,
+                prompt=repair_prompt,
                 ollama_host=ollama_host,
                 temperature=temperature,
                 top_p=top_p,
                 max_tokens=max_tokens,
                 timeout=timeout,
             )
-            steps.append({"stage": "critic", "output": critic_feedback[:2000]})
-        else:
-            critic_feedback = ""
+            repaired_puml = normalize_puml_text(repaired)
+            _, repaired_validation = parse_and_validate_puml_text(repaired_puml)
+            final_puml = repaired_puml
+            final_validation = repaired_validation
+            repaired_issues = strict_state_diagram_issues(repaired_validation)
+            attempt_artifacts.append(
+                {
+                    "stage": "repair",
+                    "attempt": attempt,
+                    "critic_prompt": critic_prompt,
+                    "repair_prompt": repair_prompt,
+                    "critic_feedback": critic_feedback,
+                    "puml": repaired_puml,
+                    "validation": repaired_validation.to_dict(),
+                    "strict_state_diagram_valid": not repaired_issues,
+                }
+            )
+            steps.append(
+                {
+                    "stage": "repair",
+                    "attempt": attempt,
+                    "plantuml_valid": final_validation.valid,
+                    "strict_state_diagram_valid": not repaired_issues,
+                    "errors": list(final_validation.errors),
+                    "warnings": list(final_validation.warnings),
+                    "strict_issues": repaired_issues,
+                }
+            )
 
-        repair_prompt = build_repair_prompt(requirement, final_puml, final_validation, critic_feedback)
-        repaired = call_model(
-            model_name=cfg.model_name,
-            prompt=repair_prompt,
-            ollama_host=ollama_host,
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=max_tokens,
-            timeout=timeout,
-        )
-        repaired_puml = normalize_puml_text(repaired)
-        _, repaired_validation = parse_and_validate_puml_text(repaired_puml)
-        final_puml = repaired_puml
-        final_validation = repaired_validation
+            if not repaired_issues:
+                break
+
+        final_issues = strict_state_diagram_issues(final_validation)
         steps.append(
             {
-                "stage": "repair",
-                "valid": final_validation.valid,
-                "errors": list(final_validation.errors),
+                "stage": "repair_loop_summary",
+                "attempts": len(attempt_artifacts) - 1,
+                "strict_state_diagram_valid": not final_issues,
+                "remaining_issues": final_issues,
             }
         )
-    return final_puml, final_validation, prompt, requirement, steps
+
+    return final_puml, final_validation, prompt, requirement, steps, attempt_artifacts

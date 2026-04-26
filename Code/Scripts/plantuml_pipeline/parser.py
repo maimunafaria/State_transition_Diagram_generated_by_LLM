@@ -162,7 +162,9 @@ def parse_plantuml(puml_text: str) -> DiagramGraph:
                 continue
 
             if src == "[*]" and dst == "[*]":
-                parse_errors.append(f"line_{line_no}: invalid [*] -> [*] transition")
+                parse_errors.append(
+                    f"candidate_line_{line_no}: invalid [*] -> [*] transition"
+                )
                 continue
 
             if src:
@@ -173,7 +175,7 @@ def parse_plantuml(puml_text: str) -> DiagramGraph:
                 if not hidden:
                     transitions.append((src, event, dst))
             else:
-                parse_errors.append(f"line_{line_no}: empty src/dst in transition")
+                parse_errors.append(f"candidate_line_{line_no}: empty src/dst in transition")
             continue
 
     return DiagramGraph(
