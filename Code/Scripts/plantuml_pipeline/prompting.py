@@ -67,6 +67,82 @@ def _rag_doc_source_type(name: str, content: str) -> str:
     return "reference"
 
 
+def _strip_frontmatter(content: str) -> str:
+    text = content.strip()
+    if text.startswith("---"):
+        parts = text.split("---", 2)
+        if len(parts) == 3:
+            return parts[2].strip()
+    return text
+
+
+def _extract_section(content: str, heading: str) -> str:
+    pattern = rf"^##\s+{re.escape(heading)}\s*$"
+    lines = content.splitlines()
+    start = None
+    for index, line in enumerate(lines):
+        if re.match(pattern, line.strip(), re.IGNORECASE):
+            start = index + 1
+            break
+    if start is None:
+        return ""
+    end = len(lines)
+    for index in range(start, len(lines)):
+        if lines[index].startswith("## "):
+            end = index
+            break
+    return "\n".join(lines[start:end]).strip()
+
+
+def _extract_plantuml_code(content: str) -> str:
+    match = re.search(r"```plantuml\s*(.*?)```", content, re.DOTALL | re.IGNORECASE)
+    if match:
+        return match.group(1).strip()
+    start = content.find("@startuml")
+    end = content.rfind("@enduml")
+    if start != -1 and end != -1 and end >= start:
+        return content[start : end + len("@enduml")].strip()
+    return ""
+
+
+def _clip_at_line(text: str, max_chars: int) -> str:
+    clean = text.strip()
+    if len(clean) <= max_chars:
+        return clean
+    clipped = clean[:max_chars].rsplit("\n", 1)[0].strip()
+    return clipped or clean[:max_chars].strip()
+
+
+def _format_rag_doc_for_prompt(name: str, content: str, max_chars: int) -> str:
+    source_type = _rag_doc_source_type(name, content)
+    body = _strip_frontmatter(content)
+
+    if source_type == "dataset_example":
+        requirement = _extract_section(body, "Requirement")
+        puml = _extract_plantuml_code(body)
+        requirement = _clip_at_line(requirement, min(650, max_chars // 3))
+        puml_label = "Reference PlantUML"
+        if len(puml) > 5000:
+            puml = _clip_at_line(puml, 5000)
+            puml_label = "Reference PlantUML excerpt"
+        return (
+            f"Dataset example: {name}\n"
+            f"Requirement excerpt:\n{requirement}\n\n"
+            f"{puml_label}:\n"
+            "```plantuml\n"
+            f"{puml}\n"
+            "```"
+        ).strip()
+
+    if source_type == "plantuml_rule":
+        return "PlantUML rule:\n" + _clip_at_line(body, min(max_chars, 800))
+
+    if source_type == "state_diagram_theory":
+        return "State diagram theory:\n" + _clip_at_line(body, min(max_chars, 800))
+
+    return _clip_at_line(body, max_chars)
+
+
 def infer_query_domains(query: str, explicit_hints: set[str] | None = None) -> set[str]:
     domains = {tok for tok in tokenize(query) if tok in DOMAIN_TOKEN_HINTS}
     if explicit_hints:
@@ -168,8 +244,12 @@ def retrieve_rag_context(
     sections: list[str] = []
     trace: list[dict[str, Any]] = []
     for item in chosen:
-        clipped = item["content"][:max_chars_per_doc].strip()
         source_type = item.get("source_type") or _rag_doc_source_type(item["name"], item["content"])
+        clipped = _format_rag_doc_for_prompt(
+            item["name"],
+            item["content"],
+            max_chars_per_doc,
+        )
         sections.append(f"[{source_type}: {item['name']}]\n{clipped}")
         trace.append(
             {
@@ -284,7 +364,11 @@ def retrieve_vector_rag_context(
     sections: list[str] = []
     trace: list[dict[str, Any]] = []
     for item in chosen:
-        clipped = item["content"][:max_chars_per_doc].strip()
+        clipped = _format_rag_doc_for_prompt(
+            item["name"],
+            item["content"],
+            max_chars_per_doc,
+        )
         sections.append(f"[{item['source_type']}: {item['name']}]\n{clipped}")
         trace.append(
             {
@@ -473,6 +557,7 @@ def build_generation_prompt(
             "- Do not add explanations or markdown fences.",
         ]
 
+    target_requirement_added = False
     if cfg.use_rag:
         rag_context, rag_trace = resolve_rag_context(
             query=requirement,
@@ -486,12 +571,18 @@ def build_generation_prompt(
         )
         prompt_meta["rag"]["retrieved_docs"] = rag_trace
         if rag_context:
-            parts.append("Reference context (support only, not mandatory):")
+            if cfg.strategy != "few_shot":
+                parts.append("Target requirement:")
+                parts.append(requirement)
+                target_requirement_added = True
+            parts.append("Reference context (use as support; the target requirement above is primary):")
             parts.append(rag_context)
 
-    if cfg.strategy != "few_shot":
+    if cfg.strategy != "few_shot" and not target_requirement_added:
         parts.append("Target requirement:")
         parts.append(requirement)
+        parts.append("Now return only the final PlantUML.")
+    elif cfg.strategy != "few_shot":
         parts.append("Now return only the final PlantUML.")
     return "\n\n".join(parts).strip() + "\n", prompt_meta
 

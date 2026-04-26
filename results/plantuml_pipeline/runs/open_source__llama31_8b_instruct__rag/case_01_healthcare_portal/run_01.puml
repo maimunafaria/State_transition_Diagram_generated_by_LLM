@@ -1,0 +1,68 @@
+@startuml
+[*] --> Registered : [new user]
+state Registered {
+  [*] --> SignedIn : [registered user sign in]
+  state "Access to facilities" as AccessFacilities
+  AccessFacilities : entry/after signing in
+  AccessFacilities : do/display available facilities
+  AccessFacilities : exit/when user leaves facility
+
+  state "News and expert content" as NewsContent
+  NewsContent : entry/if the user is signed in
+  NewsContent : do/display news and expert content
+  NewsContent : exit/after viewing content
+
+  state "Health-related information" as HealthInfo
+  HealthInfo : entry/if the user is signed in
+  HealthInfo : do/check symptoms or use fitness checking options
+  HealthInfo : exit/after viewing result
+
+  state "Payment processing" as PaymentProcess {
+    state "Insurance validation" as InsuranceValidation
+    InsuranceValidation : entry/if payment method is insurance
+    InsuranceValidation : do/process and validate insurance
+    InsuranceValidation : exit/insurance validated
+
+    state "Cash payment details" as CashDetails
+    CashDetails : entry/if payment method is cash
+    CashDetails : do/display cash payment details
+    CashDetails : exit/cash payment completed
+
+    state "Payment completion" as PaymentComplete
+    PaymentComplete : entry/if insurance or cash payment is complete
+    PaymentComplete : do/complete payment process
+    PaymentComplete : exit/payment complete
+  }
+
+  state "User feedback" as UserFeedback {
+    [*] --> FeedbackGiven : [user provides feedback]
+    FeedbackGiven : entry/user has completed service
+    FeedbackGiven : do/collection user feedback
+    FeedbackGiven : exit/feedback collected
+  }
+}
+
+state SignedIn {
+  [*] --> AccessFacilities : [signed in user access facilities]
+  AccessFacilities --> NewsContent : [access news and expert content]
+  NewsContent --> HealthInfo : [check health-related information]
+  HealthInfo --> PaymentProcess : [process payment]
+  PaymentProcess --> PaymentComplete : [complete payment process]
+  PaymentComplete --> UserFeedback : [collect user feedback]
+}
+
+state "Logout" as Logout
+Logout : entry/when the user completes his process
+Logout : do/logout user
+Logout : exit/successfully logged out
+
+Registered --> SignedIn : [registered user sign in]
+SignedIn --> AccessFacilities : [signed in user access facilities]
+AccessFacilities --> NewsContent : [access news and expert content]
+NewsContent --> HealthInfo : [check health-related information]
+HealthInfo --> PaymentProcess : [process payment]
+PaymentProcess --> PaymentComplete : [complete payment process]
+PaymentComplete --> UserFeedback : [collect user feedback]
+UserFeedback --> Logout : [logout after collecting feedback]
+
+@enduml

@@ -1,0 +1,73 @@
+@startuml
+title Healthcare Portal State Machine
+
+state Start {
+    entry / System Initialized
+}
+
+state Registration {
+    entry / New User Attempts Registration
+    do / Complete Registration Form
+    exit / Registration Completed or Failed
+}
+
+state Login {
+    entry / Registered User Attempts Login
+    do / Submit Credentials
+    exit / Login Successful or Failed
+}
+
+state MainMenu {
+    entry / Access Granted to System
+    do / Display Main Menu Options
+    exit / Option Selected
+}
+
+state InsuranceProcessing {
+    entry / Processing Insurance Details
+    do / Validate Insurance Information
+    exit / Insurance Validated or Denied
+}
+
+state PaymentProcessing {
+    entry / Processing Payment with Insurance
+    do / Complete Transaction
+    exit / Payment Successful or Failed
+}
+
+state FeedbackCollection {
+    entry / Service Completed
+    do / Collect User Feedback
+    exit / Feedback Submitted
+}
+
+state Logout {
+    entry / Initiating Logout Process
+    do / Remove Session
+    exit / System Access Denied
+}
+
+Start --> Registration
+
+Registration --> Start : Failure
+Registration --> Login : Success
+
+Login --> MainMenu : Success
+Login --> Login : Failure (loop)
+
+MainMenu --> InsuranceProcessing : Choose Financial Services
+MainMenu --> FeedbackCollection : Provide Feedback
+MainMenu --> Logout : Logout Requested
+
+InsuranceProcessing --> PaymentProcessing : Valid Insurance
+InsuranceProcessing --> MainMenu : Invalid Insurance
+
+PaymentProcessing --> Start : Payment Failed
+PaymentProcessing --> MainMenu : Payment Successful
+
+FeedbackCollection --> Start : Session Timeout
+FeedbackCollection --> MainMenu : Return to System
+
+Logout --> Start : Complete Logout
+
+@enduml
