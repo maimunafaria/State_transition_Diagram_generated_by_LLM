@@ -1,88 +1,78 @@
 # State_transition_Diagram_generated_by_LLM
 
-Generate UML state machine diagrams (PlantUML) from natural‑language requirements using LLM prompts.
+Generate UML state machine diagrams in PlantUML from structured natural-language requirements using zero-shot, few-shot, and RAG-based LLM prompts.
 
-## Project layout
-```
-Code/
-  Scripts/                 # Python scripts
-data/
-  raw/rag_docs/            # RAG reference docs
-results/
-  diagrams/                # .puml outputs (few‑shot)
-  text/chain_of_command/   # chain‑of‑command text outputs
-  text/                    # other text outputs (e.g., zero‑shot)
-  images/fewshot/           # rendered images from few‑shot outputs
-  images/chain_of_command/  # rendered images from chain‑of‑command outputs
-  rag_db/                  # Chroma index output
-```
+## Active Project Layout
 
-## Scripts
-Run from the project root:
-```
-python Code/Scripts/Few_shot_text.py
-python Code/Scripts/Chain_Of_Command.py
-python Code/Scripts/chain_of_command_mistral.py
-python Code/Scripts/build_rag_index.py
-python Code/Scripts/build_experiment_manifest.py
+```text
+Code/Scripts/plantuml_experiment_pipeline.py   # main CLI entrypoint
+Code/Scripts/plantuml_pipeline/                # active pipeline package
+Code/Scripts/build_rag_index.py                # optional vector RAG index builder
+Code/Scripts/render_puml_batch.py              # optional PlantUML image renderer
+dataset/                                      # case folders used by experiments
+data/raw/rag_docs/                            # RAG reference documents
+data/processed/experiments/split_35_seed42.json
+data/processed/dataset/diagram_requirements_catalog.csv
+results/plantuml_pipeline/                    # current generated outputs and metrics
+results/rag_db/                               # optional persisted vector RAG index
 ```
 
-### Build Section 3.4 experiment design artifacts
-```
-python Code/Scripts/build_experiment_manifest.py \
-  --dataset data/processed/dataset/dataset_2026-02-24.jsonl
-```
-Creates:
-- `data/processed/dataset/subsets/gpt4o_balanced_30.jsonl`
-- `data/processed/experiments/run_manifest_3_4.jsonl`
-- `data/processed/experiments/experimental_design_3_4.json`
+## Main Commands
 
-## Outputs
-- PlantUML files: `results/diagrams/`
-- Chain‑of‑command text: `results/text/chain_of_command/`
-- RAG index: `results/rag_db/`
-- Images (if generated separately): `results/images/`
+Show CLI help:
+
+```bash
+python3 Code/Scripts/plantuml_experiment_pipeline.py --help
+```
+
+Run zero-shot:
+
+```bash
+python3 Code/Scripts/plantuml_experiment_pipeline.py run \
+  --skip-gpt-baseline \
+  --only-run-id open_source__llama31_8b_instruct__zero_shot \
+  --only-run-id open_source__qwen25_7b_instruct__zero_shot \
+  --only-run-id open_source__deepseek_r1_14b__zero_shot \
+  --runs 1 \
+  --test-size 0.35 \
+  --seed 42 \
+  --split-output data/processed/experiments/split_35_seed42.json \
+  --save-prompts
+```
+
+Run few-shot:
+
+```bash
+python3 Code/Scripts/plantuml_experiment_pipeline.py run \
+  --skip-gpt-baseline \
+  --only-run-id open_source__llama31_8b_instruct__few_shot \
+  --only-run-id open_source__qwen25_7b_instruct__few_shot \
+  --only-run-id open_source__deepseek_r1_14b__few_shot \
+  --runs 1 \
+  --test-size 0.35 \
+  --seed 42 \
+  --few-shot-seed 42 \
+  --split-output data/processed/experiments/split_35_seed42.json \
+  --save-prompts
+```
+
+Render generated `.puml` files to PNG:
+
+```bash
+find results/plantuml_pipeline/runs \( -path "*zero_shot*" -o -path "*few_shot*" \) -name "*.puml" -exec plantuml -tpng {} \;
+```
+
+Recompute metrics:
+
+```bash
+python3 Code/Scripts/plantuml_experiment_pipeline.py metrics \
+  --dataset-root dataset \
+  --results-root results/plantuml_pipeline
+```
 
 ## Notes
-- Scripts assume a local Ollama setup with models like `llama3` and `mistral`.
-- RAG sources live in `data/raw/rag_docs/`.
 
-## Research-Oriented Pipeline
-Use the modular pipeline entrypoint:
-```
-python Code/Scripts/plantuml_experiment_pipeline.py --help
-```
-
-### 1) Run generation with domain-aware RAG
-```
-python Code/Scripts/plantuml_experiment_pipeline.py run \
-  --only-run-id open_source__qwen25_7b_instruct__rag \
-  --rag-docs-dir data/raw/rag_docs \
-  --top-k-rag 3 \
-  --rag-max-chars-per-doc 1200 \
-  --rag-domain-hint inventory \
-  --runs 3
-```
-
-### 2) Run stacked-LLM ensemble (with optional RAG)
-```
-python Code/Scripts/plantuml_experiment_pipeline.py ensemble \
-  --ensemble-method stacked_llm \
-  --stack-model llama3.1:8b-instruct \
-  --stack-use-rag \
-  --stack-rag-docs-dir data/raw/rag_docs \
-  --stack-top-k-rag 3 \
-  --stack-rag-domain-hint inventory \
-  --stack-fallback-majority
-```
-
-### 3) Recompute and inspect metrics
-```
-python Code/Scripts/plantuml_experiment_pipeline.py metrics
-python Code/Scripts/plantuml_experiment_pipeline.py table --source summary
-```
-
-Research traceability artifacts:
-- `results/.../manifest.json`: full run configuration and RAG settings.
-- `results/.../runs/*/*.meta.json`: per-case metadata including retrieval traces.
-- `results/.../metrics/*`: aggregate and per-run metrics.
+- Requirements are loaded from each case's `structured_requirement.txt`.
+- Few-shot examples are selected from the train/RAG split, not from test cases.
+- Generated prompts are saved as `run_XX.prompt.txt` when `--save-prompts` is used.
+- Generated PlantUML is saved as `run_XX.puml`.
