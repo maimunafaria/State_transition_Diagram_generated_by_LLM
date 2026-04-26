@@ -126,8 +126,7 @@ def _format_rag_doc_for_prompt(name: str, content: str, max_chars: int) -> str:
             puml = _clip_at_line(puml, 5000)
             puml_label = "Reference PlantUML excerpt"
         return (
-            f"Dataset example: {name}\n"
-            f"Requirement excerpt:\n{requirement}\n\n"
+            f"Example requirement:\n{requirement}\n\n"
             f"{puml_label}:\n"
             "```plantuml\n"
             f"{puml}\n"
@@ -135,10 +134,10 @@ def _format_rag_doc_for_prompt(name: str, content: str, max_chars: int) -> str:
         ).strip()
 
     if source_type == "plantuml_rule":
-        return "PlantUML rule:\n" + _clip_at_line(body, min(max_chars, 800))
+        return _clip_at_line(body, min(max_chars, 800))
 
     if source_type == "state_diagram_theory":
-        return "State diagram theory:\n" + _clip_at_line(body, min(max_chars, 800))
+        return _clip_at_line(body, min(max_chars, 800))
 
     return _clip_at_line(body, max_chars)
 
@@ -221,13 +220,12 @@ def retrieve_rag_context(
     source_types = {item["source_type"] for item in scored}
     if {"dataset_example", "plantuml_rule", "state_diagram_theory"} & source_types:
         chosen: list[dict[str, Any]] = []
-        category_limits = [
+        seen: set[str] = set()
+        for source_type, limit in [
             ("plantuml_rule", 2),
             ("state_diagram_theory", 2),
             ("dataset_example", top_k),
-        ]
-        seen: set[str] = set()
-        for source_type, limit in category_limits:
+        ]:
             category_items = [item for item in scored if item["source_type"] == source_type]
             positive_items = [item for item in category_items if item["score"] > 0]
             for item in (positive_items or category_items)[:limit]:
@@ -250,7 +248,7 @@ def retrieve_rag_context(
             item["content"],
             max_chars_per_doc,
         )
-        sections.append(f"[{source_type}: {item['name']}]\n{clipped}")
+        sections.append(clipped)
         trace.append(
             {
                 "name": item["name"],
@@ -369,7 +367,7 @@ def retrieve_vector_rag_context(
             item["content"],
             max_chars_per_doc,
         )
-        sections.append(f"[{item['source_type']}: {item['name']}]\n{clipped}")
+        sections.append(clipped)
         trace.append(
             {
                 "name": item["name"],
