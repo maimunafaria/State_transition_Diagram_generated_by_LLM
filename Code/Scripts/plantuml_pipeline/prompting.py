@@ -52,6 +52,21 @@ def _extract_domain_from_name(name: str) -> set[str]:
     return domains
 
 
+def _rag_doc_source_type(name: str, content: str) -> str:
+    normalized_name = name.replace("\\", "/")
+    if normalized_name.startswith("dataset_examples/"):
+        return "dataset_example"
+    if normalized_name.startswith("plantuml_rules/"):
+        return "plantuml_rule"
+    if normalized_name.startswith("state_diagram_theory/"):
+        return "state_diagram_theory"
+
+    match = re.search(r"^source_type:\s*([A-Za-z0-9_\-/]+)\s*$", content, re.MULTILINE)
+    if match:
+        return match.group(1).strip()
+    return "reference"
+
+
 def infer_query_domains(query: str, explicit_hints: set[str] | None = None) -> set[str]:
     domains = {tok for tok in tokenize(query) if tok in DOMAIN_TOKEN_HINTS}
     if explicit_hints:
@@ -66,11 +81,14 @@ def load_rag_docs(rag_docs_dir: Path) -> list[tuple[str, str, set[str]]]:
     if not rag_docs_dir.exists():
         return []
     docs: list[tuple[str, str, set[str]]] = []
-    for path in sorted(rag_docs_dir.iterdir()):
+    for path in sorted(rag_docs_dir.rglob("*.md")):
         if not path.is_file():
             continue
+        if path.name.lower().endswith(("_manifest.md", "manifest.md")):
+            continue
         content = read_text(path)
-        docs.append((path.name, content, tokenize(content)))
+        name = str(path.relative_to(rag_docs_dir))
+        docs.append((name, content, tokenize(content)))
     return docs
 
 
@@ -121,18 +139,42 @@ def retrieve_rag_context(
         reverse=True,
     )
 
-    chosen = [item for item in scored if item["score"] > 0][:top_k]
-    if not chosen:
-        chosen = scored[:top_k]
+    for item in scored:
+        item["source_type"] = _rag_doc_source_type(item["name"], item["content"])
+
+    source_types = {item["source_type"] for item in scored}
+    if {"dataset_example", "plantuml_rule", "state_diagram_theory"} & source_types:
+        chosen: list[dict[str, Any]] = []
+        category_limits = [
+            ("plantuml_rule", 2),
+            ("state_diagram_theory", 2),
+            ("dataset_example", top_k),
+        ]
+        seen: set[str] = set()
+        for source_type, limit in category_limits:
+            category_items = [item for item in scored if item["source_type"] == source_type]
+            positive_items = [item for item in category_items if item["score"] > 0]
+            for item in (positive_items or category_items)[:limit]:
+                if item["name"] not in seen:
+                    chosen.append(item)
+                    seen.add(item["name"])
+        if not chosen:
+            chosen = scored[:top_k]
+    else:
+        chosen = [item for item in scored if item["score"] > 0][:top_k]
+        if not chosen:
+            chosen = scored[:top_k]
 
     sections: list[str] = []
     trace: list[dict[str, Any]] = []
     for item in chosen:
         clipped = item["content"][:max_chars_per_doc].strip()
-        sections.append(f"[{item['name']}]\n{clipped}")
+        source_type = item.get("source_type") or _rag_doc_source_type(item["name"], item["content"])
+        sections.append(f"[{source_type}: {item['name']}]\n{clipped}")
         trace.append(
             {
                 "name": item["name"],
+                "source_type": source_type,
                 "score": item["score"],
                 "lexical_overlap": item["lexical_overlap"],
                 "title_overlap": item["title_overlap"],
@@ -168,15 +210,10 @@ def retrieve_vector_rag_context(
 
     try:
         client = chromadb.PersistentClient(path=str(rag_db_dir))
-    except AttributeError:
-        from chromadb.config import Settings  # type: ignore
-
-        client = chromadb.Client(
-            Settings(
-                chroma_db_impl="duckdb+parquet",
-                persist_directory=str(rag_db_dir),
-            )
-        )
+    except AttributeError as exc:
+        raise RuntimeError(
+            "This project expects a Chroma version with PersistentClient support."
+        ) from exc
 
     try:
         collection = client.get_collection(rag_collection_name)
@@ -187,24 +224,73 @@ def retrieve_vector_rag_context(
             f"Chroma collection '{rag_collection_name}' is not available in {rag_db_dir}"
         ) from exc
 
-    result = collection.query(query_texts=[query], n_results=top_k)
-    ids = (result.get("ids") or [[]])[0]
-    docs = (result.get("documents") or [[]])[0]
-    distances = (result.get("distances") or [[]])[0]
+    def query_collection(
+        n_results: int,
+        source_type: str | None = None,
+    ) -> list[dict[str, Any]]:
+        kwargs: dict[str, Any] = {
+            "query_texts": [query],
+            "n_results": n_results,
+            "include": ["documents", "metadatas", "distances"],
+        }
+        if source_type:
+            kwargs["where"] = {"source_type": source_type}
+        try:
+            result = collection.query(**kwargs)
+        except Exception:
+            if source_type:
+                return []
+            raise
+
+        ids = (result.get("ids") or [[]])[0]
+        docs = (result.get("documents") or [[]])[0]
+        distances = (result.get("distances") or [[]])[0]
+        metadatas = (result.get("metadatas") or [[]])[0]
+        rows: list[dict[str, Any]] = []
+        for idx, doc_text in enumerate(docs):
+            if not doc_text:
+                continue
+            doc_id = str(ids[idx]) if idx < len(ids) else f"doc_{idx + 1}"
+            metadata = metadatas[idx] if idx < len(metadatas) and metadatas[idx] else {}
+            distance = float(distances[idx]) if idx < len(distances) else None
+            rows.append(
+                {
+                    "name": doc_id,
+                    "content": str(doc_text),
+                    "source_type": str(
+                        metadata.get("source_type")
+                        or _rag_doc_source_type(doc_id, str(doc_text))
+                    ),
+                    "vector_distance": distance,
+                }
+            )
+        return rows
+
+    chosen: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for source_type, limit in [
+        ("plantuml_rule", 2),
+        ("state_diagram_theory", 2),
+        ("dataset_example", top_k),
+    ]:
+        for item in query_collection(limit, source_type=source_type):
+            if item["name"] not in seen:
+                chosen.append(item)
+                seen.add(item["name"])
+
+    if not chosen:
+        chosen = query_collection(top_k)
 
     sections: list[str] = []
     trace: list[dict[str, Any]] = []
-    for idx, doc_text in enumerate(docs):
-        if not doc_text:
-            continue
-        clipped = str(doc_text)[:max_chars_per_doc].strip()
-        doc_id = str(ids[idx]) if idx < len(ids) else f"doc_{idx + 1}"
-        distance = float(distances[idx]) if idx < len(distances) else None
-        sections.append(f"[{doc_id}]\n{clipped}")
+    for item in chosen:
+        clipped = item["content"][:max_chars_per_doc].strip()
+        sections.append(f"[{item['source_type']}: {item['name']}]\n{clipped}")
         trace.append(
             {
-                "name": doc_id,
-                "vector_distance": distance,
+                "name": item["name"],
+                "source_type": item["source_type"],
+                "vector_distance": item["vector_distance"],
                 "clipped_chars": len(clipped),
             }
         )
