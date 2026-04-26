@@ -1,0 +1,94 @@
+@startuml
+```plantuml
+@startuml
+[*] --> Registration
+
+state Registration
+Registration : entry / Start registration
+Registration : do / Process registration
+Registration : exit / Registered or failed
+
+state RegistrationDecision <<choice>>
+Registration --> RegistrationDecision
+
+state "Successful Registration" as SuccessReg
+SuccessReg : entry / Registered successfully
+SuccessReg : do / Proceed to login
+SuccessReg : exit / Move to login state
+
+state "Failed Registration" as FailReg
+FailReg : entry / Registration failed
+FailReg : do / Display error
+FailReg : exit / Return to start
+
+RegistrationDecision --> SuccessReg
+RegistrationDecision --> FailReg
+
+state Login
+Login : entry / Enter credentials
+Login : do / Verify user
+Login : exit / Logged in
+
+state LoginDecision <<choice>>
+Login --> LoginDecision
+
+state "Valid Login" as ValidLogin
+ValidLogin : entry / User authenticated
+ValidLogin : do / Allow access
+ValidLogin : exit / Proceed to facilities
+
+state "Invalid Login" as InvalidLogin
+InvalidLogin : entry / Wrong credentials
+InvalidLogin : do / Display error
+InvalidLogin : exit / Return to login
+
+LoginDecision --> ValidLogin
+LoginDecision --> InvalidLogin
+
+state LoggedIn
+LoggedIn : entry / Access granted
+LoggedIn : do / Display facilities
+LoggedIn : exit / Choose facility
+
+state FacilityChoice <<choice>>
+LoggedIn --> FacilityChoice
+
+state "Facility A" as FacilityA
+FacilityA : entry / Access facility A
+FacilityA : do / Use services
+FacilityA : exit / Return to facilities
+
+state "Facility B" as FacilityB
+FacilityB : entry / Access facility B
+FacilityB : do / Use services
+FacilityB : exit / Return to facilities
+
+state "Facility C" as FacilityC
+FacilityC : entry / Access facility C
+FacilityC : do / Use services
+FacilityC : exit / Return to facilities
+
+FacilityChoice --> FacilityA
+FacilityChoice --> FacilityB
+FacilityChoice --> FacilityC
+
+state ActivityChoice <<choice>>
+FacilityA --> ActivityChoice
+FacilityB --> ActivityChoice
+FacilityC --> ActivityChoice
+
+state "Read News" as ReadNews
+ReadNews : entry / View content
+ReadNews : do / Display news
+ReadNews : exit / Return to facility
+
+state "Expert Content" as ExpertContent
+ExpertContent : entry / View content
+ExpertContent : do / Display expert info
+ExpertContent : exit / Return to facility
+
+state "Health Info" as HealthInfo
+HealthInfo : entry / View information
+HealthInfo : do / Display health data
+HealthInfo : exit
+@enduml
