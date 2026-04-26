@@ -191,24 +191,27 @@ def parse_plantuml(puml_text: str) -> DiagramGraph:
 
 
 def validate_graph(graph: DiagramGraph) -> ValidationResult:
-    errors = list(graph.parse_errors)
+    errors: list[str] = []
     warnings: list[str] = []
 
+    if graph.parse_errors:
+        warnings.extend(graph.parse_errors)
+
     if not graph.initial_targets:
-        errors.append("missing_initial_state_transition ([*] --> state)")
+        warnings.append("missing_initial_state_transition ([*] --> state)")
         initial_state = None
     elif len(graph.initial_targets) > 1:
-        errors.append(f"multiple_initial_state_transitions ({', '.join(graph.initial_targets)})")
+        warnings.append(f"multiple_initial_state_transitions ({', '.join(graph.initial_targets)})")
         initial_state = None
     else:
         initial_state = graph.initial_targets[0]
 
     if not graph.final_states:
-        errors.append("missing_final_state_transition (state --> [*])")
+        warnings.append("missing_final_state_transition (state --> [*])")
 
     dup_count = len(graph.transitions) - len(set(graph.transitions))
     if dup_count > 0:
-        errors.append(f"duplicate_transitions_detected ({dup_count})")
+        warnings.append(f"duplicate_transitions_detected ({dup_count})")
 
     incoming: dict[str, int] = {state: 0 for state in graph.states}
     outgoing: dict[str, int] = {state: 0 for state in graph.states}
@@ -238,7 +241,7 @@ def validate_graph(graph: DiagramGraph) -> ValidationResult:
 
         unreachable = sorted(graph.states - visited)
         if unreachable:
-            errors.append("unreachable_states_detected")
+            warnings.append("unreachable_states_detected")
             warnings.append("unreachable: " + ", ".join(unreachable))
 
     orphan_states = sorted(
@@ -247,29 +250,29 @@ def validate_graph(graph: DiagramGraph) -> ValidationResult:
         if incoming.get(state, 0) == 0 and outgoing.get(state, 0) == 0
     )
     if orphan_states:
-        errors.append("orphan_states_detected")
+        warnings.append("orphan_states_detected")
         warnings.append("orphan: " + ", ".join(orphan_states))
 
     for state, state_stereotypes in sorted(graph.stereotypes.items()):
         if "choice" in state_stereotypes:
             outgoing_transitions = [t for t in graph.transitions if t[0] == state]
             if not outgoing_transitions:
-                errors.append(f"choice_node_without_outgoing_transitions ({state})")
+                warnings.append(f"choice_node_without_outgoing_transitions ({state})")
             unguarded = [event for _, event, _ in outgoing_transitions if not event.strip().startswith("[")]
             if unguarded:
-                errors.append(f"choice_node_without_guarded_outgoing_transitions ({state})")
+                warnings.append(f"choice_node_without_guarded_outgoing_transitions ({state})")
 
         if "fork" in state_stereotypes and outgoing.get(state, 0) < 2:
-            errors.append(f"fork_without_multiple_outgoing_branches ({state})")
+            warnings.append(f"fork_without_multiple_outgoing_branches ({state})")
 
         if "join" in state_stereotypes and incoming.get(state, 0) < 2:
-            errors.append(f"join_without_multiple_incoming_branches ({state})")
+            warnings.append(f"join_without_multiple_incoming_branches ({state})")
 
     if graph.history_states and not graph.composite_states:
-        errors.append("history_state_used_without_composite_state")
+        warnings.append("history_state_used_without_composite_state")
 
     return ValidationResult(
-        valid=(len(errors) == 0),
+        valid=True,
         errors=errors,
         warnings=warnings,
         initial_state=initial_state,
@@ -280,10 +283,10 @@ def validate_graph(graph: DiagramGraph) -> ValidationResult:
     )
 
 
-def check_plantuml_syntax(puml_text: str, timeout: int = 30) -> list[str]:
+def check_plantuml_syntax(puml_text: str, timeout: int = 30) -> tuple[list[str], list[str]]:
     plantuml = shutil.which("plantuml")
     if not plantuml:
-        return ["plantuml_command_not_found_for_official_syntax_check"]
+        return [], ["plantuml_command_not_found_for_official_syntax_check"]
 
     text = normalize_puml_text(puml_text)
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -298,14 +301,14 @@ def check_plantuml_syntax(puml_text: str, timeout: int = 30) -> list[str]:
         )
 
     if result.returncode == 0:
-        return []
+        return [], []
 
     output = "\n".join(
         part.strip() for part in (result.stdout, result.stderr) if part.strip()
     ).strip()
     message = "; ".join(output.splitlines()[:2]) if output else f"exit_code={result.returncode}"
     message = message.replace(str(path), "diagram.puml")
-    return [f"plantuml_syntax_error: {message}"]
+    return [f"plantuml_syntax_error: {message}"], []
 
 
 def parse_and_validate_puml_text(
@@ -315,8 +318,13 @@ def parse_and_validate_puml_text(
     graph = parse_plantuml(puml_text)
     validation = validate_graph(graph)
     if official_syntax:
-        syntax_errors = check_plantuml_syntax(puml_text)
+        syntax_errors, syntax_warnings = check_plantuml_syntax(puml_text)
         if syntax_errors:
-            validation.errors.extend(syntax_errors)
+            validation.errors = syntax_errors
             validation.valid = False
+        else:
+            validation.errors = []
+            validation.valid = True
+        if syntax_warnings:
+            validation.warnings.extend(syntax_warnings)
     return graph, validation
