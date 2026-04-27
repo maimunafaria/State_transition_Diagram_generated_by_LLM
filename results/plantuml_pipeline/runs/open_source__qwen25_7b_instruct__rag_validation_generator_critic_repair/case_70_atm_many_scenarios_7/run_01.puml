@@ -1,0 +1,44 @@
+@startuml
+title ATM Control - User Interaction
+
+[*] --> Idle
+
+state Idle
+state "Waiting for PIN" as WaitingForPIN
+state ValidatingPIN
+state "Waiting for Customer Choice" as WaitingForChoice
+state Confiscating
+state Ejecting
+state Terminating
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+ValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+WaitingForChoice --> Ejecting : Cancel / Eject
+
+ValidatingPIN --> Confiscating : Third Invalid PIN, Card Stolen, Card Expired / Confiscate, Update Status
+
+Confiscating --> Terminating : Card Confiscated / Display Confiscated
+
+Terminating --> [*] : After (Elapsed Time) [Closedown Not Requested]
+
+WaitingForChoice --> ProcessingWithdrawal : Withdrawal Selected / Request Withdrawal, Display Wait
+WaitingForChoice --> ProcessingTransfer : Transfer Selected / Request Transfer, Display Wait
+WaitingForChoice --> ProcessingQuery : Query Selected / Request Query, Display Wait
+
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved / Dispense Cash, Update Status
+ProcessingWithdrawal --> Ejecting : Rejected / Eject
+
+Dispensing --> Printing : Cash Dispensed / Print Receipt, Display Cash Dispensed, Confirm Cash Dispensed
+Dispensing --> Ejecting : Insufficient Cash / Eject
+
+Printing --> Ejecting : Receipt Printed / Eject
+
+Ejecting --> Terminating : Card Ejected / Display Ejected
+
+@enduml

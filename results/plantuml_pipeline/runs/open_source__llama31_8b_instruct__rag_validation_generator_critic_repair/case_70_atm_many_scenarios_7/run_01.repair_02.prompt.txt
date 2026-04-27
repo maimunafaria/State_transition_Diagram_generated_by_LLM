@@ -1,0 +1,83 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Atm Many Scenarios Scenario 7 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall greet the user when they arrive.
+2. The system shall check the PIN after the card is inserted.
+3. The system shall allow the user to try again if the entered PIN is incorrect.
+4. The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times.
+5. The system shall return the card if the user cancels the operation.
+6. The system shall display available options (withdrawing money, checking information, or making a transfer) for the user to choose from if the PIN is correct.
+7. The system shall process the selected request after the user makes a choice.
+
+Candidate PlantUML:
+@startuml
+title ATM Control - Validate PIN and Display Options
+
+[*] --> Idle
+
+state Idle
+state "Waiting for PIN" as WaitingForPIN
+state "Validating PIN" as ValidatingPIN
+state "Waiting for Customer Choice" as WaitingForChoice
+state "Processing Transaction" as ProcessingTransaction {
+  state "Processing Transfer" as ProcessingTransfer
+  state "Processing Query" as ProcessingQuery
+  state "Processing Withdrawal" as ProcessingWithdrawal
+}
+state Ejecting
+state Printing
+state Dispensing
+state Confiscating
+state Terminating
+state ClosedDown
+
+Idle : entry / Display Welcome
+ClosedDown : entry / Display System Down
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+ValidatingPIN --> Confiscating : Third Invalid PIN, Card Stolen, Card Expired / Confiscate
+ValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu
+WaitingForPIN --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+WaitingForChoice --> Ejecting : Cancel / Eject
+WaitingForChoice --> ProcessingTransaction : Select Option / Process
+ProcessingTransaction --> Ejecting : Rejected / Eject
+ProcessingTransfer --> Printing : Transfer Approved / Print Receipt, Update Status
+ProcessingQuery --> Printing : Query Approved / Print Receipt, Update Status
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved / Dispense Cash, Update Status
+ProcessingTransaction --> Dispensing : Withdrawal Approved / Dispense Cash, Update Status
+Dispensing --> Printing : Cash Dispensed / Print Receipt, Display Cash Dispensed, Confirm Cash Dispensed
+Dispensing --> ClosedDown : Insufficient Cash / Eject
+Printing --> Ejecting : Receipt Printed / Eject
+Ejecting --> Terminating : Card Ejected / Display Ejected
+Confiscating --> Terminating : Card Confiscated / Display Confiscated
+Terminating --> Idle : After (Elapsed Time) / Closedown Not Requested
+ProcessingQuery --> WaitingForChoice : Select Option / Process
+ProcessingTransfer --> WaitingForChoice : Select Option / Process
+ProcessingWithdrawal --> WaitingForChoice : Select Option / Process
+WaitingForChoice --> ProcessingQuery : Select Option / Process
+WaitingForChoice --> ProcessingTransfer : Select Option / Process
+WaitingForChoice --> ProcessingWithdrawal : Select Option / Process
+
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+- plantuml_command_not_found_for_official_syntax_check
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].

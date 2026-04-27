@@ -1,0 +1,47 @@
+@startuml
+[*] --> Idle
+
+state Idle {
+  [*] --> ConfigMode
+  ConfigMode --> Idle : configComplete
+  ConfigMode --> Shutdown : shutdownCmd
+}
+
+state ConfigMode {
+  [*] --> Configuring
+  Configuring --> ConfigMode : configComplete
+}
+
+state Configuring {
+  [*] --> Idle
+}
+
+state Running {
+  [*] --> Collecting
+  Collecting --> Running : activityComplete
+  Running --> Running : clockTrigger
+  Running --> SummaryPreparation : requestSummary
+  Running --> StatusChecking : requestStatus
+  SummaryPreparation --> Running : activityComplete
+  StatusChecking --> Running : activityComplete
+}
+
+state SummaryPreparation {
+  [*] --> Idle
+}
+
+state StatusChecking {
+  [*] --> Idle
+}
+
+state Shutdown {
+  [*] --> Idle
+}
+
+state Controlled {
+  [*] --> Running
+  Running --> Controlled : remoteControl
+}
+
+Running --> Shutdown : shutdownCmd
+@enduml

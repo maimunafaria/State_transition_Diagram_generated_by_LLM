@@ -1,0 +1,116 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
+
+Candidate PlantUML:
+@startuml
+[*] --> Registration
+
+state Registration
+Registration : entry / Get the Registration Details
+Registration : do / Validate the Details
+Registration : exit / Valid or Invalid Registration
+
+
+Registration --> [*] : [Invalid Registration]
+
+
+Registration --> Login : [Valid Registration]
+
+
+state Login
+Login : entry / Get the Login Details
+Login : do / Validate the Login Details
+Login : exit / Valid or Invalid Login
+
+
+Login --> Login : [Invalid Login]
+
+
+Login --> Choice1 : [Valid Login]
+
+
+state Choice1 <<choice>>
+
+Choice1 --> CancelCert : [Cancel the Certificate]
+Choice1 --> RequestCert : [Applying for Certificates]
+Choice1 --> ViewProfile : [Profile Viewing]
+Choice1 --> UpdateProfile : [Profile Updation]
+
+
+state "Cancellation of Certificates" as CancelCert
+CancelCert : entry / Certificate is asked for Cancellation
+CancelCert : do / Certificate is Canceled
+CancelCert : exit / Move to End
+
+CancelCert --> EndMerge
+
+state "Request for Certificates" as RequestCert
+RequestCert : entry / Fill the Form and Upload the Details
+RequestCert : do / Request for Certificates
+RequestCert : exit / Apply for another Certificate or Move to End
+
+RequestCert --> RequestCert : [Apply for another Certificate if needed]
+
+RequestCert --> IssueCert : [Certificates requested]
+
+state "Issuing the Certificates" as IssueCert
+IssueCert : entry / Validating Details
+IssueCert : do / Issuing the Certificates
+IssueCert : exit / Updating the Database
+
+IssueCert --> RequestCert : [Certificate is issued]
+RequestCert --> EndMerge : [End]
+
+state "View Profile" as ViewProfile
+ViewProfile : entry / View the Profile
+ViewProfile : do / Display the Profile
+ViewProfile : exit / Exit from Profile Viewing
+
+ViewProfile --> EndMerge : [End]
+
+
+state "Update the Profile" as UpdateProfile
+UpdateProfile : entry / Update the User's Profile
+UpdateProfile : do / Citizen Profile is updated
+UpdateProfile : exit / Move to End
+
+UpdateProfile --> EndMerge : [End]
+
+
+state EndMerge <<choice>>
+
+EndMerge --> [*]
+
+@enduml
+
+
+Validation issues to fix:
+- unreachable_states_detected
+- unreachable: Cancellation of Certificates, EndMerge, IssueCert, Issuing the Certificates, Request for Certificates, Update the Profile, View Profile
+- choice_node_without_outgoing_transitions (EndMerge)
+- plantuml_command_not_found_for_official_syntax_check
+
+Repair guidance for these issues:
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+- Give each choice node at least two outgoing alternatives when possible.

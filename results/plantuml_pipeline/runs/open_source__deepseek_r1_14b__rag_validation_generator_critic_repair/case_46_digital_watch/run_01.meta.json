@@ -1,0 +1,316 @@
+{
+  "run_id": "open_source__deepseek_r1_14b__rag_validation_generator_critic_repair",
+  "case_id": "case_46_digital_watch",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nDigital Watch — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to view and adjust the time.\n2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.\n3. The system shall allow the user to increase values while adjusting time settings.\n4. The system shall provide an alarm feature that can be turned on or off by the user.\n5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.\n6. The system shall allow the user to stop the alarm by pressing a specific button.\n7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Diagram Core Syntax\n\nUse this document when generating a basic UML state transition diagram in PlantUML.\n\n## Diagram wrapper\n\nPlantUML code should be enclosed between `@startuml` and `@enduml`.\n\n```plantuml\n@startuml\n[*] --> Idle\nIdle --> [*]\n@enduml\n```\n\n## Initial and final state\n\nThe initial and final pseudostate is written as `[*]`.\n\nInitial transition:\n\n```plantuml\n[*] --> State1\n```\n\nFinal transition:\n\n```plantuml\nState1 --> [*]\n```\n\n## Transitions\n\nUse arrows between states.\n\n```plantuml\nState1 --> State2\nState1 -> State2\n```\n\nTransitions can include labels after a colon.\n\n```plantuml\nIdle --> LoggedIn : login successful\nLoggedIn --> LoggedOut : logout\n```\n\nLabels may include event, guard, and action information.\n\n```plantuml\n\n# PlantUML Optional State Diagram Rendering and Style\n\nUse this document only when visual styling is requested. For normal generation, prioritize correct state and transition syntax over styling.\n\n## Hide empty descriptions\n\nUse `hide empty description` to render states as simple boxes when they have no internal text.\n\n```plantuml\n@startuml\nhide empty description\n[*] --> Idle\nIdle --> Processing\nProcessing --> [*]\n@enduml\n```\n\n## Inline color\n\nIndividual states may include inline color.\n\n```plantuml\nstate CurrentSite #pink {\n  [*] --> Loading\n  Loading --> Ready\n}\n```\n\n## Skin parameters\n\n`skinparam` can control drawing style, colors, and fonts.\n\n```plantuml\nskinparam state {\n  BackgroundColor LightYellow\n  BorderColor Black\n}\n```\n\n## Practical rule for this project\n\n# Event Types for State Transitions\n\nUse this document to choose better transition labels from requirements.\n\n## Event role\n\nAn event is a noteworthy occurrence that may trigger a transition. In generated PlantUML, events usually appear as transition labels.\n\n```plantuml\nIdle --> Authenticating : login submitted\nAuthenticating --> LoggedIn : credentials valid\nAuthenticating --> LoginFailed : credentials invalid\n```\n\n## Call events\n\nA call event represents a request for an operation or service.\n\nRequirement phrases that often indicate call events:\n\n```text\nuser submits\nadmin approves\nsystem validates\ncustomer requests\ndoctor confirms\n```\n\nExample:\n\n```plantuml\nWaiting --> Processing : submit request\n```\n\n## Signal events\n\nA signal event represents an asynchronous notification or message.\n\n# UML State Diagram Usage Guidelines\n\nUse this document to decide whether a requirement should be modeled as a state machine and how much detail to include.\n\n## When state diagrams are useful\n\nState diagrams are most useful when the same system or object behaves differently depending on its current state.\n\nGood candidates:\n\n```text\nATM sessions\nlogin/authentication flows\norder/payment lifecycles\ndevice controllers\napproval workflows\nbooking or registration workflows\nalarm/notification systems\n```\n\n## Scope\n\nA state diagram should focus on the lifecycle of one system, object, session, controller, or business process.\n\nAvoid mixing unrelated lifecycles into one diagram unless the requirement clearly describes them as one process.\n\n## Observability\n\nExample requirement:\nMicrowave Oven Operation — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check for proper functioning before starting.\n2. The system shall alert the user and stop operation if an issue is detected.\n3. The system shall start cooking and run for the set time if no issues are detected.\n4. The system shall emit a sound to notify the user upon completion of cooking.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Microwave Oven Operation\n\nstate Operation {\n\n  state Checking\n  Checking : do / Check Status\n\n  state Cook\n  Cook : do / Run Generator\n\n  state Alarm\n  Alarm : do / Display Event\n\n  state Done\n  Done : do / Buzzer On for 5 Secs.\n\n  [*] --> Checking\n\n  Checking --> Cook : OK\n  Checking --> Alarm : Turntable Fault\n  Checking --> Alarm : Emitter Fault\n\n  Cook --> Done : Timeout\n  Cook --> Cook : Time\n}\n\nstate Disabled\nstate Waiting\n\nOperation --> Disabled : Door Open\nOperation --> Waiting : Cancel\n\nAlarm --> Disabled\nDone --> Waiting\n\n@enduml\n```\n\nExample requirement:\nOven — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to open the door whenever it is closed.\n2. The system shall allow the user to place food inside or remove it from the microwave when the door is open.\n3. The system shall require the user to close the door after placing food inside.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Microwave Oven Control - State Diagram\n\n[*] --> DoorShut\n\nstate \"Door Shut\" as DoorShut\nstate \"Door Open\" as DoorOpen\nstate \"Door Open With Item\" as DoorOpenItem\nstate \"Door Shut With Item\" as DoorShutItem\nstate \"Ready To Cook\" as ReadyToCook\nstate Cooking\n\nDoorShut --> DoorOpen : Door Opened\nDoorOpen --> DoorShut : Door Closed\n\nDoorOpen --> DoorOpenItem : Item Placed\nDoorOpenItem --> DoorOpen : Item Removed\n\nDoorOpenItem --> DoorShutItem : Door Closed\nDoorShutItem --> DoorOpenItem : Door Opened\n\nDoorShutItem --> ReadyToCook : Cooking Time Entered\nReadyToCook --> ReadyToCook : Cooking Time Entered\n\nReadyToCook --> Cooking : Start\n\nCooking --> DoorOpenItem : Door Opened\nCooking --> DoorShutItem : Timer Expired\n\n@enduml\n```\n\nExample requirement:\nSmart Traffic Management System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall monitor traffic conditions whenever vehicles are on the road or pedestrians are waiting to cross.\n2. The system shall control street lights according to traffic conditions.\n3. The system shall manage traffic signals in response to detected situations.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML state chart diagram\n\nstate \"idle\" as Idle\nIdle : entry/road empty\nIdle : do/remain same\nIdle : exit/encounter a vehicle\nIdle : exit/people waiting to cross road\n\nstate \"Analyse traffic flow\" as AnalyseTrafficFlow\nAnalyseTrafficFlow : entry/encounter a vehicle\nAnalyseTrafficFlow : entry/people waiting to cross road\nAnalyseTrafficFlow : do/analyse traffic density\nAnalyseTrafficFlow : exit/set signal\nAnalyseTrafficFlow : exit/emergency situation\n\nstate \"smart lights\" as SmartLights\nSmartLights : entry/population density\nSmartLights : do/turn on/off street lights\nSmartLights : exit/population density is zero\n\nstate \"Pedestrians detection\" as PedestriansDetection\nPedestriansDetection : entry/pedestrians waiting to cross\nPedestriansDetection : do/change signal to red\nPedestriansDetection : exit/pedestrians crossed\n\nstate \"Traffic signal\" as TrafficSignal\nTrafficSignal : entry/vehicles at signal\nTrafficSignal : do/read number plate\nTrafficSignal : exit/signal empty\nTrafficSignal : exit/vehicle crossed the signal\nTrafficSignal : exit/number plate captured\n\nstate \"Medical Emergency\" as MedicalEmergency\nMedicalEmergency : entry/emergency situation\nMedicalEmergency : do/call medical assistance\nMedicalEmergency : exit/number plate captured\n\nstate \"Number plate recognition\" as NumberPlateRecognition\nNumberPlateRecognition : entry/number plate captured\nNumberPlateRecognition : do/get details about driver\nNumberPlateRecognition : exit/penalty check\n\nstate \"penalty check\" as PenaltyCheck\nPenaltyCheck : entry/law violation\nPenaltyCheck : do/check violation count\nPenaltyCheck : exit/no violation committed\nPenaltyCheck : exit/exceeding speed limit\nPenaltyCheck : exit/seat belt violation\nPenaltyCheck : exit/helmet violation\n\nstate \"speeding\" as Speeding\nSpeeding : entry/exceeding speed limit\nSpeeding : do/violation count+1\nSpeeding : exit/impose penalty\n\nstate \"seat belt violation\" as SeatBeltViolation\nSeatBeltViolation : entry/not wearing seat belt\nSeatBeltViolation : do/violation count +1\nSeatBeltViolation : exit/impose penalty\n\nstate \"helmet violation\" as HelmetViolation\nHelmetViolation : entry/not wearing a helmet\nHelmetViolation : do/violation count +1\nHelmetViolation : exit/impose penalty\n\nstate \"fine payment\" as FinePayment\nFinePayment : entry/impose penalty\nFinePayment : exit/paid\nFinePayment : exit/not paid\nFinePayment : exit/violation count>3\n\nstate \"warning\" as Warning\nWarning : entry/not paid\nWarning : do/send court notice to driver\nWarning : exit/abnormal termination\n\nstate \"Hold license\" as HoldLicense\nHoldLicense : entry/violation count>3\nHoldLicense : do/temporary license cancellation\nHoldLicense : exit/repayment of fine\nHoldLicense : exit/after the probation period\n\nstate J0 <<choice>>\nstate J1 <<choice>>\nstate J2 <<choice>>\nstate Merge1 <<choice>>\nstate Merge2 <<choice>>\n\n[*] --> J0\n\nJ0 --> Idle\nSmartLights --> J0 \nPedestriansDetection --> J0 \nTrafficSignal --> J0 \n\nIdle --> AnalyseTrafficFlow\nAnalyseTrafficFlow --> J1 : [possible activities]\n\nJ1 --> SmartLights\nJ1 --> PedestriansDetection\nAnalyseTrafficFlow --> TrafficSignal : [signal empty]\nAnalyseTrafficFlow --> MedicalEmergency : [emergency situation]\n\nTrafficSignal --> NumberPlateRecognition\nMedicalEmergency --> NumberPlateRecognition\nNumberPlateRecognition --> PenaltyCheck\n\nPenaltyCheck --> J2 : [possibilities]\nJ2 --> Speeding\nJ2 --> SeatBeltViolation\nJ2 --> HelmetViolation\nPenaltyCheck --> Merge2 : [no violations]\n\nSpeeding --> Merge1\nSeatBeltViolation --> Merge1\nHelmetViolation --> Merge1\n\nMerge1 --> FinePayment : [total fine amount calculation]\n\nFinePayment --> Warning : [fine not paid]\nFinePayment --> HoldLicense : [violation count>3]\nFinePayment --> Merge2 : [paid]\n\nHoldLicense --> Merge2 : [repayment of fine]\n\nMerge2 --> [*] : [any one of the three possibilities]\n\nWarning --> [*]\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Digital Watch — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to view and adjust the time.\n2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.\n3. The system shall allow the user to increase values while adjusting time settings.\n4. The system shall provide an alarm feature that can be turned on or off by the user.\n5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.\n6. The system shall allow the user to stop the alarm by pressing a specific button.\n7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag_validation_generator_critic_repair\\case_46_digital_watch\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "initial_state": "Idle",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 11,
+    "transition_count": 15
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "vector",
+      "top_k": 3,
+      "query_domains": [],
+      "retrieved_docs": [
+        {
+          "name": "plantuml_rules/plantuml_state_core_syntax.md",
+          "source_type": "plantuml_rule",
+          "vector_distance": 1.7187261581420898,
+          "clipped_chars": 759
+        },
+        {
+          "name": "plantuml_rules/plantuml_state_optional_rendering_style.md",
+          "source_type": "plantuml_rule",
+          "vector_distance": 1.7227528095245361,
+          "clipped_chars": 776
+        },
+        {
+          "name": "state_diagram_theory/arlow_event_types_for_transitions.md",
+          "source_type": "state_diagram_theory",
+          "vector_distance": 1.3942973613739014,
+          "clipped_chars": 797
+        },
+        {
+          "name": "state_diagram_theory/uml_state_diagram_usage_guidelines.md",
+          "source_type": "state_diagram_theory",
+          "vector_distance": 1.4209058284759521,
+          "clipped_chars": 755
+        },
+        {
+          "name": "dataset_examples/case_53_microwave_oven_operation.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.1772072315216064,
+          "clipped_chars": 1017
+        },
+        {
+          "name": "dataset_examples/case_73_oven.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.2363260984420776,
+          "clipped_chars": 1136
+        },
+        {
+          "name": "dataset_examples/case_23_smart_traffic_management_system.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.2506452798843384,
+          "clipped_chars": 4262
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (Idle, AdjustingHour, AlarmOff, LightOff)",
+        "missing_final_state_transition (state --> [*])",
+        "orphan_states_detected",
+        "orphan: Light",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (Idle, AdjustingHour, AlarmOff, LightOff)",
+        "missing_final_state_transition (state --> [*])",
+        "orphan_states_detected",
+        "orphan: Light",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": true,
+      "previous_score": 5,
+      "repair_score": 2,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (Idle, AlarmOff)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (Idle, AlarmOff)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "accepted": true,
+      "previous_score": 2,
+      "repair_score": 1,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 3,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_initial_state_transition ([*] --> state)",
+        "missing_final_state_transition (state --> [*])",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "missing_initial_state_transition ([*] --> state)",
+        "missing_final_state_transition (state --> [*])",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 3,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 3,
+      "strict_state_diagram_valid": false,
+      "remaining_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (Idle, AdjustingHour, AlarmOff, LightOff)",
+          "missing_final_state_transition (state --> [*])",
+          "orphan_states_detected",
+          "orphan: Light",
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 13,
+        "transition_count": 13
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag_validation_generator_critic_repair\\case_46_digital_watch\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (Idle, AlarmOff)",
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 11,
+        "transition_count": 13
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": true,
+      "previous_score": 5,
+      "repair_score": 2,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_01.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": "Idle",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 11,
+        "transition_count": 15
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": true,
+      "previous_score": 2,
+      "repair_score": 1,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_02.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_02.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_initial_state_transition ([*] --> state)",
+          "missing_final_state_transition (state --> [*])",
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 0,
+        "transition_count": 0
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 3,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_03.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_03.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 11,
+    "state_fn": 11,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 15,
+    "transition_fn": 15,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 11,
+    "state_fn_relaxed": 11,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 15,
+    "transition_fn_relaxed": 15,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 15,
+    "transition_fn_semantic": 15,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  }
+}

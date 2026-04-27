@@ -1,0 +1,21 @@
+@startuml
+title State machine for Campaign
+
+state Commissioned
+state Active
+state Completed
+state Paid
+
+[*] --> Commissioned : /assignManager; assignStaff
+
+Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+
+Active --> Completed : campaignCancelled;\ncalculateCosts;\nprepareFinalStatement
+
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > 0]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
+
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+
+@enduml

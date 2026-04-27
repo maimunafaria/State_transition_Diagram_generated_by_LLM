@@ -1,0 +1,70 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Atm Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose or enter a withdrawal amount.
+2. The system shall support predefined amounts for selection by the user.
+3. The system shall allow users to input their own custom withdrawal amount.
+4. The system shall provide an option for the user to cancel the transaction at any point.
+5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.
+
+Candidate PlantUML:
+@startuml
+title ATM Control - Withdrawal Transaction
+
+state "Waiting for Customer Choice" as WaitingForChoice
+
+state "Processing Transaction" as ProcessingTransaction {
+  state "Processing Withdrawal" as ProcessingWithdrawal
+}
+
+state [*] as Idle
+
+state Ejecting
+state Printing
+state Dispensing
+
+[*] --> WaitingForChoice : Card Inserted / Get PIN
+
+WaitingForChoice --> ProcessingWithdrawal : Withdrawal Selected /\nRequest Withdrawal, Display Wait
+
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash, Update Status
+ProcessingWithdrawal --> Ejecting : Rejected / Eject, Display Apology
+
+Dispensing --> Printing : Cash Dispensed /\nPrint Receipt, Display Cash Dispensed, Confirm Cash Dispensed
+Dispensing --> ClosedDown : Insufficient Cash / Eject, Abort Cash Dispensed
+
+Printing --> Ejecting : Receipt Printed / Eject
+
+Ejecting --> Terminating : Card Ejected / Display Ejected
+Terminating --> Idle : After (Elapsed Time) [Closedown Not Requested]
+
+Terminating --> ClosedDown : After (Elapsed Time) [Closedown Was Requested]
+
+ProcessingTransaction --> Idle : Cancel Transaction
+
+[*] --> Idle : Card Removed / Cancel
+
+@enduml
+
+
+Validation issues to fix:
+- multiple_initial_state_transitions (Waiting for Customer Choice, Idle)
+- missing_final_state_transition (state --> [*])
+- plantuml_command_not_found_for_official_syntax_check
+
+Repair guidance for these issues:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].

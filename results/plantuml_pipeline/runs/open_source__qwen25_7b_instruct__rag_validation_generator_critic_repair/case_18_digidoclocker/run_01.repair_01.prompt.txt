@@ -1,0 +1,130 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram (Digidoclocker)
+
+[*] --> Registration
+
+state Registration {
+  [*] --> CitizenLogin
+  CitizenLogin : entry / Get Citizen Login Details
+  CitizenLogin : do / Validate Login Details
+  CitizenLogin : exit / Citizen Logged In
+}
+
+state CitizenLogin {
+  [*] --> DocumentUpload
+  DocumentUpload : entry / Upload Documents
+  DocumentUpload : do / Validate Documents
+  DocumentUpload : exit / Document Upload Complete
+}
+
+state DocumentUpload {
+  [*] --> ProfileView
+  ProfileView : entry / View Profile
+  ProfileView : do / Display Profile
+  ProfileView : exit / Profile View Complete
+}
+
+state ProfileView {
+  [*] --> CertificateApply
+  CertificateApply : entry / Apply for Certificate
+  CertificateApply : do / Validate Application
+  CertificateApply : exit / Certificate Application Complete
+}
+
+state CertificateApply {
+  [*] --> MultipleCertificates
+  MultipleCertificates : entry / Apply for Multiple Certificates
+  MultipleCertificates : do / Validate Multiple Applications
+  MultipleCertificates : exit / Multiple Certificates Applied
+}
+
+state MultipleCertificates {
+  [*] --> ContinueUpload
+  ContinueUpload : entry / Continue Document Upload
+  ContinueUpload : do / Validate Upload
+  ContinueUpload : exit / Upload Complete
+}
+
+state ContinueUpload {
+  [*] --> [*]
+}
+
+state RegistrarRequest {
+  [*] --> CertificateVerification
+  CertificateVerification : entry / Request Certificate Verification
+  CertificateVerification : do / Validate Request
+  CertificateVerification : exit / Verification Requested
+}
+
+state CertificateVerification {
+  [*] --> MultipleVerificationRequests
+  MultipleVerificationRequests : entry / Request Multiple Certificates
+  MultipleVerificationRequests : do / Validate Requests
+  MultipleVerificationRequests : exit / Multiple Requests Sent
+}
+
+state MultipleVerificationRequests {
+  [*] --> ContinueVerification
+  ContinueVerification : entry / Continue Verification Requests
+  ContinueVerification : do / Validate Requests
+  ContinueVerification : exit / Requests Sent
+}
+
+state ContinueVerification {
+  [*] --> [*]
+}
+
+state Logout {
+  [*] --> [*]
+}
+
+state [*] {
+  [*] --> [*]
+}
+
+@enduml
+
+
+Validation issues to fix:
+- candidate_line_49: invalid [*] -> [*] transition
+- candidate_line_74: invalid [*] -> [*] transition
+- candidate_line_78: invalid [*] -> [*] transition
+- candidate_line_82: invalid [*] -> [*] transition
+- multiple_initial_state_transitions (Registration, CitizenLogin, DocumentUpload, ProfileView, CertificateApply, MultipleCertificates, ContinueUpload, CertificateVerification, MultipleVerificationRequests, ContinueVerification)
+- missing_final_state_transition (state --> [*])
+- orphan_states_detected
+- orphan: Logout, RegistrarRequest
+- plantuml_command_not_found_for_official_syntax_check
+
+Repair guidance for these issues:
+- For invalid [*] --> [*], replace it with a real final transition, for example Logout --> [*] : session ended.
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.

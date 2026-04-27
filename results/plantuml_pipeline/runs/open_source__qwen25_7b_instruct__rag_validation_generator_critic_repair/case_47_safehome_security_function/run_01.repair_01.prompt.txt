@@ -1,0 +1,87 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.
+
+Candidate PlantUML:
+@startuml
+[*] --> PowerOnCheck
+
+state PowerOnCheck {
+  [*] --> StartupProblem
+  [*] --> StartupReady
+}
+
+state StartupProblem {
+  StartupProblem --> [*] : system stops
+}
+
+state StartupReady {
+  [*] --> ReadyToUse
+}
+
+state ReadyToUse {
+  ReadyToUse --> ReadyToUse : reset
+  ReadyToUse --> ReadyToUse : activate
+  ReadyToUse --> ReadyToUse : turnOff
+  ReadyToUse --> Monitoring : activate
+}
+
+state Monitoring {
+  Monitoring --> Monitoring : sensorTriggered
+  Monitoring --> Monitoring : falseAlarm
+  Monitoring --> Monitoring : timeEnds
+}
+
+state FalseAlarm {
+  FalseAlarm --> Monitoring
+}
+
+state TimeEnds {
+  TimeEnds --> Monitoring
+}
+
+state SensorTriggered {
+  SensorTriggered --> AlarmAndAlert
+}
+
+state AlarmAndAlert {
+  AlarmAndAlert --> Monitoring : alarm stops
+}
+
+state TurnedOff {
+  ReadyToUse --> TurnedOff : turnOff
+}
+
+state AlarmAndAlert --> TurnedOff : passwordEntry
+@enduml
+
+
+Validation issues to fix:
+- multiple_initial_state_transitions (PowerOnCheck, StartupProblem, StartupReady, ReadyToUse)
+- plantuml_command_not_found_for_official_syntax_check
+
+Repair guidance for these issues:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
