@@ -20,33 +20,29 @@ Candidate PlantUML:
 @startuml
 title UML State Machine Diagram (Search Users)
 
-[*] --> SearchByCategory
+[*] --> SearchCategory
 
-state SearchByCategory <<choice>>
-SearchByCategory --> SearchByPrice : [Search by price]
-SearchByCategory --> DisplayMatchingUsers : [Search by category]
+state SearchCategory <<choice>>
+SearchCategory --> PriceRange : [price range]
+SearchCategory --> FilterCategory : [filter category]
 
-state "Search by price" as SearchByPrice
-state "Search by category" as SearchByCategory
+state "Search by price range" as PriceRange
+state "Search by filter category" as FilterCategory
 
-SearchByPrice --> DisplayMatchingUsers : [Search by price]
-SearchByCategory --> DisplayMatchingUsers : [Search by category]
+PriceRange --> DisplayResults : [matching users]
+FilterCategory --> DisplayResults : [matching users]
 
-state "Display matching users" as DisplayMatchingUsers
+state "Display matching users" as DisplayResults
 
-[*] --> SearchByPrice
-[*] --> SearchByCategory
-
-DisplayMatchingUsers --> [*]
+DisplayResults --> [*]
 
 @enduml
 
 
 Validation issues to fix:
-- multiple_initial_state_transitions (SearchByCategory, Search by price, Search by category)
+- unreachable_states_detected
+- unreachable: Display matching users, DisplayResults, Search by filter category, Search by price range
 - plantuml_command_not_found_for_official_syntax_check
 
 Repair guidance for these issues:
-- For multiple initial transitions, keep only the one top-level [*] --> State transition.
-- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
-- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.

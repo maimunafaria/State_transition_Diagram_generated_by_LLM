@@ -20,33 +20,50 @@ Functional Requirements
 
 Candidate PlantUML:
 @startuml
-title ATM Control - Withdrawal Transaction
+title ATM Control - Withdrawal Process
 
-state "Waiting for Customer Choice" as WaitingForChoice
+[*] --> Idle
 
-state "Processing Transaction" as ProcessingTransaction {
-  state "Processing Withdrawal" as ProcessingWithdrawal
-}
-
-state Ejecting
-state Printing
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForAmount
+state ProcessingWithdrawal
 state Dispensing
+state Printing
+state Ejecting
+state Confiscating
+state Terminating
+state ClosedDown
 
-[*] --> WaitingForChoice : Card Inserted / Get PIN
+Idle : entry / Display Welcome
+ClosedDown : entry / Display System Down
 
-WaitingForChoice --> ProcessingWithdrawal : Withdrawal Selected /\nRequest Withdrawal, Display Wait
+Idle --> WaitingForPIN : Card Inserted / Get PIN
 
-ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash, Update Status
-ProcessingWithdrawal --> Ejecting : Rejected / Eject, Display Apology
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+WaitingForPIN --> Confiscating : Card Confiscated / display Confiscated
 
-Dispensing --> Printing : Cash Dispensed /\nPrint Receipt, Display Cash Dispensed, Confirm Cash Dispensed
-Dispensing --> ClosedDown : Insufficient Cash / Eject, Abort Cash Dispensed
+ValidatingPIN --> WaitingForAmount : Valid PIN / Display Menu
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+WaitingForAmount --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+
+WaitingForAmount --> ProcessingWithdrawal : Withdrawal Selected / Request Withdrawal, Display Wait
+
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved / Dispense Cash, Update Status
+ProcessingWithdrawal --> Ejecting : Rejected / Eject
+
+Dispensing --> Printing : Cash Dispensed / Print Receipt, Display Cash Dispensed, Confirm Cash Dispensed
+Dispensing --> ClosedDown : Insufficient Cash / Eject
 
 Printing --> Ejecting : Receipt Printed / Eject
 
 Ejecting --> Terminating : Card Ejected / Display Ejected
-Terminating --> Idle : After (Elapsed Time) [Closedown Not Requested]
+Confiscating --> Terminating : Card Confiscated / Display Confiscated
 
+Terminating --> Idle : After (Elapsed Time) [Closedown Not Requested]
 Terminating --> ClosedDown : After (Elapsed Time) [Closedown Was Requested]
 
 @enduml
@@ -54,13 +71,7 @@ Terminating --> ClosedDown : After (Elapsed Time) [Closedown Was Requested]
 
 Validation issues to fix:
 - missing_final_state_transition (state --> [*])
-- unreachable_states_detected
-- unreachable: Processing Transaction
-- orphan_states_detected
-- orphan: Processing Transaction
 - plantuml_command_not_found_for_official_syntax_check
 
 Repair guidance for these issues:
 - Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
-- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
-- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.

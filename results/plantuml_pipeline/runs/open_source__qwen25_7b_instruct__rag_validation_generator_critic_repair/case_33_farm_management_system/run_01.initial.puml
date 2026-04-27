@@ -1,83 +1,74 @@
 @startuml
-title UML State Chart Diagram
-
 [*] --> Login
 
 state Login
-Login : entry / getInfo
-Login : do / verifyData
-Login : exit / verified
+Login : entry / verify credentials
+Login : do / validate credentials
+Login : exit / login successful
 
 state LoginDecision <<choice>>
 Login --> LoginDecision
 
 state "Valid Login" as ValidLogin
-ValidLogin : entry / contain Info
-ValidLogin : do / allow Access to system
-ValidLogin : exit / mainArea
+ValidLogin : entry / user logged in
+ValidLogin : do / display main area
+ValidLogin : exit / user can choose options
 
 state "Invalid Login" as InvalidLogin
-InvalidLogin : entry / wrong Info
-InvalidLogin : do / display Error message
-InvalidLogin : exit / return To Start
+InvalidLogin : entry / credentials incorrect
+InvalidLogin : do / display error message
+InvalidLogin : exit / return to login
 
 LoginDecision --> ValidLogin
 LoginDecision --> InvalidLogin
 
+ValidLogin --> MainArea
+
 state MainArea
-MainArea : entry / show Main Area
-MainArea : do / allow user to choose options
-MainArea : exit / continue using service
-
-state MarketConditions
-MarketConditions : entry / show Market Conditions
-MarketConditions : do / allow user to view conditions
-MarketConditions : exit / continue using service
-
-state MarketReport
-MarketReport : entry / show Market Report
-MarketReport : do / allow user to view report
-MarketReport : exit / continue using service
-
-state PestControlHelp
-PestControlHelp : entry / require photo
-PestControlHelp : do / show Pest Control Techniques
-PestControlHelp : exit / continue using service
-
-state SoilSuggestions
-SoilSuggestions : entry / receive soil info
-SoilSuggestions : do / provide suggestions
-SoilSuggestions : exit / continue using service
-
-state WeatherInsights
-WeatherInsights : entry / receive location
-WeatherInsights : do / provide weather insights
-WeatherInsights : exit / continue using service
-
-state LabourAvailability
-LabourAvailability : entry / receive location
-LabourAvailability : do / provide labour availability details
-LabourAvailability : exit / continue using service
+MainArea : entry / display main area
+MainArea : do / user selects option
+MainArea : exit / user can choose options
 
 MainArea --> MarketConditions
-MainArea --> MarketReport
 MainArea --> PestControlHelp
 MainArea --> SoilSuggestions
 MainArea --> WeatherInsights
 MainArea --> LabourAvailability
+MainArea --> [*] : logout
 
-MarketConditions --> [*]
-MarketReport --> [*]
-PestControlHelp --> [*]
-SoilSuggestions --> [*]
-WeatherInsights --> [*]
-LabourAvailability --> [*]
+state MarketConditions
+MarketConditions : entry / display market conditions
+MarketConditions : do / user can view conditions
+MarketConditions : exit / user can choose options
 
-state Logout
-Logout : entry / end session
-Logout : do / end session
-Logout : exit / [*]
+MarketConditions --> MainArea
 
-MainArea --> Logout
+state PestControlHelp
+PestControlHelp : entry / display pest control help
+PestControlHelp : do / user provides photo
+PestControlHelp : exit / display pest control techniques
+
+PestControlHelp --> MainArea
+
+state SoilSuggestions
+SoilSuggestions : entry / user provides soil information
+SoilSuggestions : do / display soil-related suggestions
+SoilSuggestions : exit / user can choose options
+
+SoilSuggestions --> MainArea
+
+state WeatherInsights
+WeatherInsights : entry / user provides location
+WeatherInsights : do / display weather insights
+WeatherInsights : exit / user can choose options
+
+WeatherInsights --> MainArea
+
+state LabourAvailability
+LabourAvailability : entry / user provides location
+LabourAvailability : do / display labour availability details
+LabourAvailability : exit / user can choose options
+
+LabourAvailability --> MainArea
 
 @enduml

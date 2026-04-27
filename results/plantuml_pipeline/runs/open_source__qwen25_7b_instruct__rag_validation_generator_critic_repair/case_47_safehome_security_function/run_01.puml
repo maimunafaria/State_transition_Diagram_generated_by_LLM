@@ -1,51 +1,12 @@
 @startuml
 [*] --> PowerOnCheck
-
-state PowerOnCheck {
-  [*] --> StartupProblem
-  [*] --> StartupReady
-}
-
-state StartupProblem {
-  StartupProblem --> [*] : system stops
-}
-
-state StartupReady {
-  [*] --> ReadyToUse
-}
-
-state ReadyToUse {
-  ReadyToUse --> ReadyToUse : reset
-  ReadyToUse --> ReadyToUse : activate
-  ReadyToUse --> ReadyToUse : turnOff
-  ReadyToUse --> Monitoring : activate
-}
-
-state Monitoring {
-  Monitoring --> Monitoring : sensorTriggered
-  Monitoring --> Monitoring : falseAlarm
-  Monitoring --> Monitoring : timeEnds
-}
-
-state FalseAlarm {
-  FalseAlarm --> Monitoring
-}
-
-state TimeEnds {
-  TimeEnds --> Monitoring
-}
-
-state SensorTriggered {
-  SensorTriggered --> AlarmAndAlert
-}
-
-state AlarmAndAlert {
-  AlarmAndAlert --> Monitoring : alarm stops
-}
-
-state TurnedOff {
-  ReadyToUse --> TurnedOff : turnOff
-}
-
-state AlarmAndAlert --> TurnedOff : passwordEntry
+PowerOnCheck --> [*] : problem detected
+PowerOnCheck --> ReadyToUse : everything fine
+ReadyToUse --> Reset : reset
+ReadyToUse --> Activate : activate
+ReadyToUse --> TurnOff : turn off
+ReadyToUse --> Monitoring : activated
+Monitoring --> Alarm : sensor triggered
+Monitoring --> Monitoring : false alarm or time ends
+Monitoring --> [*] : password entered
 @enduml

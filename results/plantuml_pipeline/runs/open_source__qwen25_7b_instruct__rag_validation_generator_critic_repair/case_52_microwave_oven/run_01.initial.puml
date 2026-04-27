@@ -6,48 +6,36 @@ title Microwave Oven - State Diagram
 state "Idle" as Idle {
   [*] --> WaitingForInput
   WaitingForInput --> Idle : Door Opened
+  WaitingForInput --> FullPower : Full Power Selected
+  WaitingForInput --> HalfPower : Half Power Selected
+  WaitingForInput --> SetTime : Time Entered
 }
 
 state "WaitingForInput" as WaitingForInput {
-  [*] --> DoorOpen
-  DoorOpen --> DoorClosed : Door Closed
-  DoorOpen --> Idle : Door Opened
+  [*] --> Idle
 }
 
-state "DoorOpen" as DoorOpen {
-  [*] --> DoorClosed
-  DoorClosed --> DoorOpen : Door Opened
-  DoorClosed --> Idle : Door Opened
+state "Full Power" as FullPower {
+  [*] --> Cooking
+  Cooking --> FullPower : Door Opened
+  Cooking --> Idle : Door Closed
 }
 
-state "DoorClosed" as DoorClosed {
-  [*] --> DoorOpen : Door Opened
-  DoorOpen --> DoorClosed : Door Closed
-  DoorClosed --> SettingCookingTime : Cooking Time Entered
+state "Half Power" as HalfPower {
+  [*] --> Cooking
+  Cooking --> HalfPower : Door Opened
+  Cooking --> Idle : Door Closed
 }
 
-state "SettingCookingTime" as SettingCookingTime {
-  [*] --> DoorOpen : Door Opened
-  DoorOpen --> SettingCookingTime : Cooking Time Entered
-  SettingCookingTime --> DoorOpen : Door Opened
-  SettingCookingTime --> Cooking : Full Power or Half Power Chosen
+state "Set Time" as SetTime {
+  [*] --> Cooking
+  Cooking --> SetTime : Door Opened
+  Cooking --> Idle : Door Closed
 }
 
 state "Cooking" as Cooking {
-  [*] --> DoorOpen : Door Opened
-  DoorOpen --> DoorClosed : Door Closed
-  DoorClosed --> DoorOpen : Door Opened
-  DoorClosed --> CancelCooking : Cancel Button Pressed
-  Cooking --> DoorOpen : Door Opened
-  Cooking --> DoorClosed : Timer Expired
+  [*] --> Idle : Door Opened
+  Cooking --> Idle : Timer Expired
 }
-
-state "CancelCooking" as CancelCooking {
-  [*] --> Idle
-  Idle --> CancelCooking : Cancel Button Pressed
-}
-
-Cooking --> DoorOpen : Door Opened
-Cooking --> DoorClosed : Timer Expired
 
 @enduml

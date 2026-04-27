@@ -1,133 +1,154 @@
 @startuml
-[*] --> PortalChoice1
+[*] --> J1 : [check user]
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state "Register" as Register
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/ successful registration
+Register : exit/ invalid registration
 
-state PortalChoice1 <<choice>>
-state PortalChoice2 <<choice>>
-state PortalChoice3 <<choice>>
-state ServiceJoin <<choice>>
-state OwnerJoin <<choice>>
+state "Login" as Login {
 
+  state "Patient dashboard" as PatientDashboard
+  PatientDashboard : entry/if the user is logged in as patient
+  PatientDashboard : do/dashboard is displayed
+  PatientDashboard : exit/when user logout
 
+  state "Health worker Dashboard" as HealthWorkerDashboard
+  HealthWorkerDashboard : entry/if the user is logged in as health worker
+  HealthWorkerDashboard : do/display the health worker dashboard
+  HealthWorkerDashboard : exit/if health worker logout
 
-PortalChoice1 --> PortalChoice2 : [Service Center Portal]
-PortalChoice1 --> PortalChoice3 : [Car Owner Portal]
+  state "Government dashboard" as GovernmentDashboard
+  GovernmentDashboard : entry/if the user is government official
+  GovernmentDashboard : do/display government dashboard
+  GovernmentDashboard : exit/after his activity is finished
 
-PortalChoice2 --> ServiceCenterRegistration : [New Service Center]
-PortalChoice2 --> ServiceJoin : [Registered Service center]
-PortalChoice3 --> CarOwnerRegistration : [New Car Owner]
-PortalChoice3 --> OwnerJoin : [Registered Car Owner]
+  state "Data Entry" as DataEntry
+  DataEntry : entry/if the data entry is logged in as patient
+  DataEntry : do/data entry is processed
+  DataEntry : exit/after data entry is completed
+  DataEntry : exit/send the data for validation
 
-state "Service Center Registration" as ServiceCenterRegistration
-ServiceCenterRegistration : entry / Unregistered service center
-ServiceCenterRegistration : do / Enter Valid Credentials
-ServiceCenterRegistration : exit / Account registered
+  state "Validation of medical data" as ValidationMedicalData
+  ValidationMedicalData : entry/if the data entry by the patient is completed
+  ValidationMedicalData : do/validate the data by healthworker
+  ValidationMedicalData : exit/after validation of medical data is completed
 
-state "Service Center Verification" as ServiceCenterVerification
-ServiceCenterVerification : entry / Service Center account registered
-ServiceCenterVerification : do / Verify Service center
-ServiceCenterVerification : exit / Login Service center
+  state "Health Financing" as HealthPlanning
+  HealthPlanning : entry/analysis of data should be done
+  HealthPlanning : do/the basis of analysed data the best health schemes are drafted
+  HealthPlanning : exit/ the health schemes are sent to the government dashboard
 
-state "Service Center Login" as ServiceCenterLogin
-ServiceCenterLogin : entry / Verified Service Center
-ServiceCenterLogin : entry / Service Center not logged in
-ServiceCenterLogin : do / Authenticate Service Center
-ServiceCenterLogin : exit / Logged In Successfully
+  state "Analysis" as Analysis
+  Analysis : entry/if the data entered is validated
+  Analysis : do/analysis of data
+  Analysis : exit/after analysis of data
+  Analysis : exit/send data to health monitoring
+  Analysis : exit/send data to activity scheduling module
 
-state "Service center Home" as ServiceCenterHome
-ServiceCenterHome : entry / Logged in Service Center
-ServiceCenterHome : do / Display home page
-ServiceCenterHome : exit / Enter Damaged parts list
-ServiceCenterHome : exit / Expiry Notification page
-ServiceCenterHome : exit / Updating Information list
+  state "Activity Scheduling" as ActivityScheduling
+  ActivityScheduling : entry/analysis of data should be done
+  ActivityScheduling : do/activity is scheduled for the healthworkers
+  ActivityScheduling : exit/the activity scheduling is complete
+  ActivityScheduling : exit/send data to alert module
+  ActivityScheduling : exit/send the schedule to health worker dashboard
 
-state "Expiry Notification page" as ExpiryNotification
-ExpiryNotification : entry / To view expiry notification
-ExpiryNotification : do / Send service request to Car owner
-ExpiryNotification : exit / Return to Service center home page
+  state "Alerts" as Alerts
+  Alerts : entry/when data from analysis is received
+  Alerts : do/prepare alerts
+  Alerts : exit/after sending alerts patient dashboard and health worker dashboard
 
-state "Entering Damaged parts list" as DamagedParts
-DamagedParts : entry / To enter Damaged parts list
-DamagedParts : do / Preparing and entering damaged parts list
-DamagedParts : exit / Return to service center home page
+  [*] --> LJ
+  state LJ <<choice>>
 
-state "Updating parts Information" as UpdatingParts
-UpdatingParts : entry / To update changed parts information
-UpdatingParts : do / Update Information
-UpdatingParts : exit / Return to Service center home page
+  LJ --> PatientDashboard
+  LJ --> HealthWorkerDashboard
+  LJ --> GovernmentDashboard
 
-state "Logout" as Logout
-Logout : entry / To Logout
-Logout : do / Logout
-Logout : exit / Logged out Successfully
+  PatientDashboard --> DataEntry
+  DataEntry --> ValidationMedicalData
+  DataEntry --> Analysis
 
-state "Car Owner Registration" as CarOwnerRegistration
-CarOwnerRegistration : entry / Unregistered Car Owner
-CarOwnerRegistration : do / Enter valid Credentials
-CarOwnerRegistration : exit / Account registered
-
-state "Car owner Verification" as CarOwnerVerification
-CarOwnerVerification : entry / Car owner account registered
-CarOwnerVerification : do / Verify Car owner
-CarOwnerVerification : exit / Login Car Owner
-
-state "Car Owner Login" as CarOwnerLogin
-CarOwnerLogin : entry / Verified Car Owner
-CarOwnerLogin : entry / Car owner not logged in
-CarOwnerLogin : do / Authenticate Car Owner
-CarOwnerLogin : exit / Logged In Successfully
-
-state "Car Owner Home" as CarOwnerHome
-CarOwnerHome : entry / Logged in Car Owner
-CarOwnerHome : do / Display home page
-CarOwnerHome : exit / View parts information
-CarOwnerHome : exit / Service
-CarOwnerHome : exit / Report
-
-state "Report" as Report
-Report : entry / To Report Service center
-Report : do / Enter the report
-Report : exit / Return to car owner home page
-
-state "View Parts Information" as ViewPartsInformation
-ViewPartsInformation : entry / To view parts information
-ViewPartsInformation : do / View car parts Information
-ViewPartsInformation : exit / Return to Car owner home page
-
-state "Service" as Service
-Service : entry / Service request from service center
-Service : do / Accept or deny request
-Service : exit / Return to Car Owner home page
-
-state "Choose parts" as ChooseParts
-ChooseParts : entry / To choose selected parts
-ChooseParts : do / Choose the part to be serviced
-ChooseParts : exit / Return to service page
-
-state "Make Payment" as MakePayment
-MakePayment : entry / To make payments
-MakePayment : do / Make payments
-MakePayment : exit / Return to Service page
-
-
-state ServiceHomeChoice <<choice>>
-state ServiceLoginChoice <<choice>>
-state OwnerHomeChoice <<choice>>
-state OwnerLoginChoice <<choice>>
-state FinalJoin <<choice>>
-
-
-ServiceCenterRegistration --> ServiceCenterVerification
-ServiceCenterVerification --> ServiceJoin
-ServiceJoin --> ServiceCenterLogin
-ServiceCenterLogin --> ServiceLoginChoice
-ServiceLoginChoice --> ServiceCenterHome
-ExpiryNotification --> ServiceLoginChoice
-UpdatingParts --> ServiceLoginChoice
-DamagedParts --> ServiceLoginChoice
-
-ServiceCenterHome --> ServiceHomeChoice : [Possible Activities]
-ServiceHomeChoice --> ExpiryNotification
-ServiceHomeChoice --> DamagedParts
-ServiceHomeChoice --> UpdatingParts
-ServiceHomeChoice --> FinalJoin
+  Analysis --> ActivityScheduling
+  Analysis --> Alerts
+  Analysis --> HealthPlanning
+  HealthPlanning --> GovernmentDashboard
+  GovernmentDashboard --> LJ
+  HealthWorkerDashboard --> LJ
+  PatientDashboard --> LJ
+  LJ --> Register
+  Register --> LJ
+  LJ --> Login
+  Login --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ --> LJ
+  LJ
 @enduml

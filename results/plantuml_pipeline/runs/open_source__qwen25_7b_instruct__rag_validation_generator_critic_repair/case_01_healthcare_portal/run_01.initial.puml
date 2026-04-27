@@ -4,52 +4,51 @@ title UML State Machine Diagram for Healthcare Portal
 [*] --> Register
 
 state Register {
-  [*] --> Login : [registration completed]
-  Login : entry / check registration
-  Login : do / validate registration
-  Login : exit / valid registration
-  Login : exit / invalid registration
+  [*] --> Registered : [registration successful]
+  Registered --> Login : [user signed in]
+  Registered --> Login : [registration failed]
 }
 
 state Login {
   [*] --> Dashboard : [user signed in]
-  Dashboard : entry / display dashboard
-  Dashboard : do / provide access to facilities
-  Dashboard : exit / user action
-  Dashboard : exit / user logout
+  Dashboard --> Dashboard : [continue using system]
+  Dashboard --> Logout : [finish session]
 }
 
-state "Patient Dashboard" as PatientDashboard
-PatientDashboard : entry / user is patient
-PatientDashboard : do / display patient dashboard
-PatientDashboard : exit / user logout
+state Dashboard {
+  [*] --> News : [read news and expert content]
+  News --> Dashboard : [continue using system]
+  News --> Dashboard : [finish session]
+  [*] --> Facilities : [access available facilities]
+  Facilities --> Dashboard : [continue using system]
+  Facilities --> Dashboard : [finish session]
+  [*] --> SymptomCheck : [check symptoms or use fitness checking options]
+  SymptomCheck --> Dashboard : [continue using system]
+  SymptomCheck --> Dashboard : [finish session]
+  [*] --> Insurance : [process and validate insurance for finance-related services]
+  Insurance --> Payment : [complete payment process]
+  Insurance --> Dashboard : [continue using system]
+  Insurance --> Dashboard : [finish session]
+}
 
-state "Health Worker Dashboard" as HealthWorkerDashboard
-HealthWorkerDashboard : entry / user is health worker
-HealthWorkerDashboard : do / display health worker dashboard
-HealthWorkerDashboard : exit / user logout
+state Payment {
+  [*] --> Cash : [choose cash payment method]
+  Cash --> PaymentComplete : [complete payment]
+  Cash --> Dashboard : [continue using system]
+  Cash --> Dashboard : [finish session]
+  [*] --> Insurance : [choose insurance payment method]
+  Insurance --> PaymentComplete : [complete payment]
+  Insurance --> Dashboard : [continue using system]
+  Insurance --> Dashboard : [finish session]
+}
 
-state "Government Dashboard" as GovernmentDashboard
-GovernmentDashboard : entry / user is government official
-GovernmentDashboard : do / display government dashboard
-GovernmentDashboard : exit / user logout
-
-state Feedback {
-  [*] --> [*] : [user feedback]
+state PaymentComplete {
+  [*] --> Feedback : [collect user feedback]
+  Feedback --> Logout : [finish session]
 }
 
 state Logout {
-  [*] --> [*] : [user logout]
+  [*] --> [*] : [logout successfully]
 }
-
-Register --> Login
-Login --> PatientDashboard
-Login --> HealthWorkerDashboard
-Login --> GovernmentDashboard
-PatientDashboard --> Feedback
-HealthWorkerDashboard --> Feedback
-GovernmentDashboard --> Feedback
-Feedback --> Logout
-Logout --> [*]
 
 @enduml

@@ -24,61 +24,31 @@ Functional Requirements
 
 Candidate PlantUML:
 @startuml
-[*] --> Idle
-
-state Idle {
-  [*] --> ConfigMode
-  ConfigMode --> Idle : configComplete
-  ConfigMode --> Shutdown : shutdownCmd
-}
-
-state ConfigMode {
-  [*] --> Configuring
-  Configuring --> ConfigMode : configComplete
-}
-
-state Configuring {
-  [*] --> Idle
-}
+[*] --> Running
 
 state Running {
-  [*] --> Collecting
-  Collecting --> Running : activityComplete
-  Running --> Running : clockTrigger
-  Running --> SummaryPreparation : requestSummary
-  Running --> StatusChecking : requestStatus
-  SummaryPreparation --> Running : activityComplete
-  StatusChecking --> Running : activityComplete
+  [*] --> Configuring : configuration required
+  Configuring --> Running : configuration completed
+  [*] --> DataCollection : clock triggered
+  DataCollection --> Running : activity completed
+  [*] --> SummaryPreparation : request received
+  SummaryPreparation --> Running : summary prepared
+  [*] --> StatusChecking : request received
+  StatusChecking --> Running : status checked
+  [*] --> ControlledMode : remote control received
+  ControlledMode --> Running : mode changed
+  [*] --> Shutdown : shutdown command received
+  Shutdown --> [*] : system shut down
 }
 
-state SummaryPreparation {
-  [*] --> Idle
-}
-
-state StatusChecking {
-  [*] --> Idle
-}
-
-state Shutdown {
-  [*] --> Idle
-}
-
-state Controlled {
-  [*] --> Running
-  Running --> Controlled : remoteControl
-}
-
-Running --> Shutdown : shutdownCmd
 @enduml
 
 
 Validation issues to fix:
-- multiple_initial_state_transitions (Idle, ConfigMode, Configuring, Idle, Collecting, Idle, Idle, Idle, Running)
-- missing_final_state_transition (state --> [*])
+- multiple_initial_state_transitions (Running, Configuring, DataCollection, SummaryPreparation, StatusChecking, ControlledMode, Shutdown)
 - plantuml_command_not_found_for_official_syntax_check
 
 Repair guidance for these issues:
 - For multiple initial transitions, keep only the one top-level [*] --> State transition.
 - If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
 - Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
-- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].

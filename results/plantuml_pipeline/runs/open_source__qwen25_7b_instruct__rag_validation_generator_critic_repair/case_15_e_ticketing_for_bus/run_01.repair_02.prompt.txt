@@ -24,74 +24,42 @@ Candidate PlantUML:
 @startuml
 title UML State Chart Diagram for E Ticketing For Bus
 
-state "User Registration" as Registration {
-  [*] --> EnterDetails
+state "Initial" as Initial
+state "Logged In" as LoggedIn
+state "Dashboard" as Dashboard
+state "Settings" as Settings
+state "Ticket Status" as TicketStatus
+state "Ticket Booking" as TicketBooking
+state "Payment Confirmation" as PaymentConfirmation
+state "Account Management" as AccountManagement
+state "Logout" as Logout
 
-  state EnterDetails
-  state "Validation Success" as ValidationSuccess
-  state "Validation Failure" as ValidationFailure
+[*] --> Initial
 
-  EnterDetails --> ValidationSuccess : [Valid]
-  EnterDetails --> ValidationFailure : [Invalid]
+Initial --> LoggedIn : [New User Registration]
+
+state LoggedIn {
+  [*] --> Dashboard
+  Dashboard --> Settings : [Open Settings]
+  Settings --> Dashboard : [Back to Dashboard]
+  Dashboard --> TicketStatus : [Check Ticket Status]
+  Dashboard --> TicketBooking : [Book Ticket]
+  TicketBooking --> PaymentConfirmation : [Confirm and Pay]
+  PaymentConfirmation --> Dashboard : [Payment Confirmed]
+  Dashboard --> AccountManagement : [Manage Account]
+  AccountManagement --> Dashboard : [Back to Dashboard]
 }
 
-Registration --> Login
+LoggedIn --> Logout : [Logout]
 
-state "User Login" as Login {
-  [*] --> EnterCredentials
-
-  state EnterCredentials
-  state "Login Success" as LoginSuccess
-  state "Login Failure" as LoginFailure
-
-  EnterCredentials --> LoginSuccess : [Valid]
-  EnterCredentials --> LoginFailure : [Invalid]
-}
-
-LoginSuccess --> Dashboard
-
-state Dashboard {
-  [*] --> CheckTicketStatus
-  CheckTicketStatus --> Dashboard
-  [*] --> BookTicket
-  BookTicket --> ConfirmBooking
-  ConfirmBooking --> MakePayment
-  MakePayment --> BookingComplete
-  BookingComplete --> Dashboard
-}
-
-Dashboard --> ManageAccount
-ManageAccount --> EditAccount
-EditAccount --> Dashboard
-ManageAccount --> DeleteAccount
-DeleteAccount --> Dashboard
-
-LoginFailure --> Registration
-ValidationFailure --> Registration
-
-BookingComplete --> Logout
-CheckTicketStatus --> Logout
-EditAccount --> Logout
-DeleteAccount --> Logout
-
-state Logout {
-  Logout --> [*] : session ended
-}
-
-state "User Login" {
-  [*] --> Login
-}
-
-state Registration {
-  [*] --> Registration
-}
+Logout --> [*]
 @enduml
 
 
 Validation issues to fix:
-- multiple_initial_state_transitions (EnterDetails, EnterCredentials, CheckTicketStatus, BookTicket, User Login, User Registration)
+- multiple_initial_state_transitions (Initial, Dashboard)
 - orphan_states_detected
-- orphan: Registration
+- orphan: LoggedIn
 - plantuml_command_not_found_for_official_syntax_check
 
 Repair guidance for these issues:

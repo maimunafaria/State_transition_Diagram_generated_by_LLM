@@ -4,83 +4,55 @@ title UML State Machine Diagram (Digidoclocker)
 [*] --> Registration
 
 state Registration {
-  Registration --> CitizenLogin
+  [*] --> CitizenLogin
   CitizenLogin : entry / Get Citizen Login Details
   CitizenLogin : do / Validate Login Details
-  CitizenLogin : exit / Citizen Logged In
+  CitizenLogin : exit / Login Successful or Failed
 }
 
-state CitizenLogin {
-  CitizenLogin --> DocumentUpload
+Registration --> [*] : [Login Failed]
+
+Registration --> CitizenDashboard : [Login Successful]
+
+state CitizenDashboard {
+  [*] --> DocumentUpload
   DocumentUpload : entry / Upload Documents
-  DocumentUpload : do / Validate Documents
-  DocumentUpload : exit / Document Upload Complete
+  DocumentUpload : do / Validate Upload
+  DocumentUpload : exit / Upload Successful or Failed
 }
 
-state DocumentUpload {
-  DocumentUpload --> ProfileView
-  ProfileView : entry / View Profile
-  ProfileView : do / Display Profile
-  ProfileView : exit / Profile View Complete
+DocumentUpload --> CitizenDashboard : [Upload Successful]
+
+CitizenDashboard --> ProfileView : [View Profile]
+CitizenDashboard --> CertificateApply : [Apply for Certificate]
+CertificateApply --> [*] : [Certificate Applied]
+
+state CertificateApply {
+  Registration --> CertificateApply : [Registration Successful]
+  [*] --> CertificateRequest
+  CertificateRequest : entry / Request for Certificate
+  CertificateRequest : do / Validate Request
+  CertificateRequest : exit / Request Successful or Failed
 }
+
+CertificateRequest --> CertificateApply : [Request Successful]
 
 state ProfileView {
-  ProfileView --> CertificateApply
-  CertificateApply : entry / Apply for Certificate
-  CertificateApply : do / Validate Application
-  CertificateApply : exit / Certificate Application Complete
+  [*] --> [*] : [Exit Profile View]
 }
 
 state CertificateApply {
-  CertificateApply --> MultipleCertificates
-  MultipleCertificates : entry / Apply for Multiple Certificates
-  MultipleCertificates : do / Validate Multiple Applications
-  MultipleCertificates : exit / Multiple Certificates Applied
+  CertificateApply --> CertificateRequest : [Request More Certificates]
 }
 
-state MultipleCertificates {
-  MultipleCertificates --> ContinueUpload
-  ContinueUpload : entry / Continue Document Upload
-  ContinueUpload : do / Validate Upload
-  ContinueUpload : exit / Upload Complete
-  ContinueUpload --> Logout : session ended
+state CitizenLogin {
+  Registration --> CitizenLogin : [Registration Successful]
 }
 
-state RegistrarRequest {
-  Registration --> RegistrarRequest
-  RegistrarRequest : entry / Request Certificate Verification
-  RegistrarRequest : do / Validate Request
-  RegistrarRequest : exit / Verification Requested
+state CitizenDashboard {
+  Registration --> CitizenDashboard : [Registration Successful]
 }
 
-state CertificateVerification {
-  RegistrarRequest --> CertificateVerification
-  CertificateVerification : entry / Request Certificate Verification
-  CertificateVerification : do / Validate Request
-  CertificateVerification : exit / Verification Requested
-}
-
-state MultipleVerificationRequests {
-  CertificateVerification --> MultipleVerificationRequests
-  MultipleVerificationRequests : entry / Request Multiple Certificates
-  MultipleVerificationRequests : do / Validate Requests
-  MultipleVerificationRequests : exit / Multiple Requests Sent
-}
-
-state ContinueVerification {
-  MultipleVerificationRequests --> ContinueVerification
-  ContinueVerification : entry / Continue Verification Requests
-  ContinueVerification : do / Validate Requests
-  ContinueVerification : exit / Requests Sent
-}
-
-state Logout {
-  ContinueUpload --> Logout : session ended
-  ContinueVerification --> Logout : session ended
-}
-
-state [*] {
-  Logout --> [*] : session ended
-}
+[*] --> Logout : session ended
 
 @enduml

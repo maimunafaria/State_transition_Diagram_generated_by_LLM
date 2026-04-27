@@ -1,45 +1,19 @@
 @startuml
-[*] --> Idle
-
-state Idle {
-  ConfigMode --> Idle : configComplete
-  ConfigMode --> Shutdown : shutdownCmd
-}
-
-state ConfigMode {
-  Configuring --> ConfigMode : configComplete
-}
-
-state Configuring {
-  Configuring --> Idle
-}
+[*] --> Running
 
 state Running {
-  Collecting --> Running : activityComplete
-  Running --> Running : clockTrigger
-  Running --> SummaryPreparation : requestSummary
-  Running --> StatusChecking : requestStatus
-  SummaryPreparation --> Running : activityComplete
-  StatusChecking --> Running : activityComplete
+  Running --> Configuring : configuration required
+  Configuring --> Running : configuration completed
+  Running --> DataCollection : clock triggered
+  DataCollection --> Running : activity completed
+  Running --> SummaryPreparation : request received
+  SummaryPreparation --> Running : summary prepared
+  Running --> StatusChecking : request received
+  StatusChecking --> Running : status checked
+  Running --> ControlledMode : remote control received
+  ControlledMode --> Running : mode changed
+  Running --> Shutdown : shutdown command received
+  Shutdown --> [*] : system shut down
 }
-
-state SummaryPreparation {
-  SummaryPreparation --> Idle
-}
-
-state StatusChecking {
-  StatusChecking --> Idle
-}
-
-state Shutdown {
-  Shutdown --> Idle
-}
-
-state Controlled {
-  Running --> Controlled : remoteControl
-}
-
-Running --> Shutdown : shutdownCmd
-[*] --> Idle
 
 @enduml

@@ -24,58 +24,78 @@ Candidate PlantUML:
 title UML State Machine Diagram
 
 state "Create Account" as CreateAccount
-CreateAccount : entry / User starts creating account
+CreateAccount : entry / User starts
 CreateAccount : do / Fill details
 CreateAccount : exit / Account created
 
 state "Watch Videos" as WatchVideos
-WatchVideos : entry / User starts watching videos
+WatchVideos : entry / User logged in
 WatchVideos : do / Watch videos
-WatchVideos : exit / User stops watching
+WatchVideos : exit / Video watched
 
 state "Upload Videos" as UploadVideos
-UploadVideos : entry / User starts uploading videos
-UploadVideos : do / Upload videos
-UploadVideos : exit / Videos uploaded
+UploadVideos : entry / User logged in
+UploadVideos : do / Upload video
+UploadVideos : exit / Video uploaded
 
 state "Save Videos" as SaveVideos
-SaveVideos : entry / User saves videos
-SaveVideos : do / Add to likes list
-SaveVideos : exit / Videos saved
+SaveVideos : entry / User logged in
+SaveVideos : do / Save video in likes list
+SaveVideos : exit / Video saved
 
 state "View Likes List" as ViewLikesList
-ViewLikesList : entry / User views saved videos
+ViewLikesList : entry / User logged in
 ViewLikesList : do / View saved videos
-ViewLikesList : exit / User finishes viewing
+ViewLikesList : exit / Videos viewed
 
 state "Enter Discussion" as EnterDiscussion
-EnterDiscussion : entry / User enters discussion
-EnterDiscussion : do / Participate in discussion
-EnterDiscussion : exit / User exits discussion
+EnterDiscussion : entry / User logged in
+EnterDiscussion : do / Enter discussion
+EnterDiscussion : exit / Discussion entered
+
+state "Idle" <<choice>>
+state "Invalid User" <<choice>>
 
 [*] --> CreateAccount
 
-CreateAccount --> WatchVideos : [After creating account]
-CreateAccount --> UploadVideos : [After creating account]
-CreateAccount --> SaveVideos : [After creating account]
-CreateAccount --> ViewLikesList : [After creating account]
-CreateAccount --> EnterDiscussion : [After creating account]
+CreateAccount --> WatchVideos : [Logged in]
+CreateAccount --> InvalidUser : [Not logged in]
 
-WatchVideos --> [*] : [User stops watching]
+WatchVideos --> [*] : [Logged out]
 
-UploadVideos --> [*] : [User stops uploading]
+InvalidUser --> CreateAccount : [Create Account]
 
-SaveVideos --> ViewLikesList : [User wants to view saved videos]
+InvalidUser --> WatchVideos : [Login]
 
-ViewLikesList --> [*] : [User finishes viewing]
+UploadVideos --> [*] : [Logged out]
 
-EnterDiscussion --> [*] : [User exits discussion]
+InvalidUser --> UploadVideos : [Login]
+
+SaveVideos --> [*] : [Logged out]
+
+InvalidUser --> SaveVideos : [Login]
+
+ViewLikesList --> [*] : [Logged out]
+
+InvalidUser --> ViewLikesList : [Login]
+
+EnterDiscussion --> [*] : [Logged out]
+
+InvalidUser --> EnterDiscussion : [Login]
 
 @enduml
 
 
 Validation issues to fix:
+- unreachable_states_detected
+- unreachable: Idle, Invalid User
+- orphan_states_detected
+- orphan: Idle, Invalid User
+- choice_node_without_outgoing_transitions (Idle)
+- choice_node_without_outgoing_transitions (Invalid User)
 - plantuml_command_not_found_for_official_syntax_check
 
 Repair guidance for these issues:
-- Fix each listed issue while preserving the requirement meaning.
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
+- Give each choice node at least two outgoing alternatives when possible.

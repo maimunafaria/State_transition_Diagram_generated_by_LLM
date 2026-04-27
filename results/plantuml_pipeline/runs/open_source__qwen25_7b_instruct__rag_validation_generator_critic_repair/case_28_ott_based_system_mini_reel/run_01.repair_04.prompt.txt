@@ -1,0 +1,118 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Ott Based System Mini Reel — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall enable a user to watch videos after they have created an account.
+3. The system shall permit a user to upload videos.
+4. The system shall allow a user to save videos in their likes list during video viewing.
+5. The system shall enable a user to view their saved videos from the likes list.
+6. The system shall allow a user to enter the discussion option.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram
+
+state "Create Account" as CreateAccount
+CreateAccount : entry / User starts
+CreateAccount : do / Fill details
+CreateAccount : exit / Account created
+
+state "Watch Videos" as WatchVideos
+WatchVideos : entry / User logged in
+WatchVideos : do / Watch videos
+WatchVideos : exit / Video watched
+
+state "Upload Videos" as UploadVideos
+UploadVideos : entry / User logged in
+UploadVideos : do / Upload video
+UploadVideos : exit / Video uploaded
+
+state "Save Videos" as SaveVideos
+SaveVideos : entry / User logged in
+SaveVideos : do / Save video in likes list
+SaveVideos : exit / Video saved
+
+state "View Likes List" as ViewLikesList
+ViewLikesList : entry / User logged in
+ViewLikesList : do / View saved videos
+ViewLikesList : exit / Videos viewed
+
+state "Enter Discussion" as EnterDiscussion
+EnterDiscussion : entry / User logged in
+EnterDiscussion : do / Enter discussion
+EnterDiscussion : exit / Discussion entered
+
+state "Idle" <<choice>>
+state "Invalid User" <<choice>>
+
+[*] --> CreateAccount
+
+CreateAccount --> WatchVideos : [Logged in]
+CreateAccount --> InvalidUser : [Not logged in]
+
+WatchVideos --> [*] : [Logged out]
+
+InvalidUser --> CreateAccount : [Create Account]
+InvalidUser --> WatchVideos : [Login]
+
+UploadVideos --> [*] : [Logged out]
+
+InvalidUser --> UploadVideos : [Login]
+
+SaveVideos --> [*] : [Logged out]
+
+InvalidUser --> SaveVideos : [Login]
+
+ViewLikesList --> [*] : [Logged out]
+
+InvalidUser --> ViewLikesList : [Login]
+
+EnterDiscussion --> [*] : [Logged out]
+
+InvalidUser --> EnterDiscussion : [Login]
+
+Idle --> CreateAccount : [Create Account]
+Idle --> WatchVideos : [Watch Videos]
+Idle --> UploadVideos : [Upload Videos]
+Idle --> SaveVideos : [Save Videos]
+Idle --> ViewLikesList : [View Likes List]
+Idle --> EnterDiscussion : [Enter Discussion]
+
+InvalidUser --> Idle : [Logged in]
+
+CreateAccount --> InvalidUser : [Invalid operation]
+
+[*] --> InvalidUser : [Invalid operation]
+
+InvalidUser <<choice>>
+InvalidUser : entry / User not logged in
+InvalidUser : do / Handle invalid user
+InvalidUser : exit / User handled
+
+@enduml
+
+
+Validation issues to fix:
+- multiple_initial_state_transitions (Create Account, InvalidUser)
+- orphan_states_detected
+- orphan: Invalid User
+- choice_node_without_outgoing_transitions (Invalid User)
+- plantuml_command_not_found_for_official_syntax_check
+
+Repair guidance for these issues:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
+- Give each choice node at least two outgoing alternatives when possible.

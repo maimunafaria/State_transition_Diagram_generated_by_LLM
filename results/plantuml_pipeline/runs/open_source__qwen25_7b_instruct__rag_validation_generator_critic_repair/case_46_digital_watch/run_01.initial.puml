@@ -4,22 +4,40 @@ title Digital Watch State Diagram
 [*] --> Idle
 
 state "Idle" as Idle
-state "Adjusting Time" as AdjustingTime
-state "Alarm Settings" as AlarmSettings
-state "Alarm Triggered" as AlarmTriggered
-state "Alarm Stopped" as AlarmStopped
-state "Light On" as LightOn
+Idle --> SettingTime : Time Button Pressed
+Idle --> SettingAlarm : Alarm Button Pressed
 
-Idle --> AdjustingTime : Press Button
-Idle --> AlarmSettings : Press Button
-AdjustingTime --> Idle : Press Button
-AlarmSettings --> Idle : Press Button
-AdjustingTime --> AdjustingTime : Increase Value
-AdjustingTime --> AlarmSettings : Press Button
-AlarmSettings --> AlarmSettings : Press Button
-AlarmSettings --> AlarmTriggered : Set Alarm Time Matches Current Time
-AlarmTriggered --> AlarmStopped : Press Button
-AlarmStopped --> Idle : Press Button
-LightOn --> Idle : Press Button
+state "SettingTime" as SettingTime
+SettingTime --> IncreasingHour : Increase Hour Button Pressed
+SettingTime --> IncreasingMinute : Increase Minute Button Pressed
+IncreasingHour --> Idle : Time Button Pressed
+IncreasingMinute --> Idle : Time Button Pressed
+
+state "SettingAlarm" as SettingAlarm
+SettingAlarm --> IncreasingAlarmHour : Increase Alarm Hour Button Pressed
+SettingAlarm --> IncreasingAlarmMinute : Increase Alarm Minute Button Pressed
+IncreasingAlarmHour --> Idle : Alarm Button Pressed
+IncreasingAlarmMinute --> Idle : Alarm Button Pressed
+
+state "Alarm Triggered" as AlarmTriggered
+AlarmTriggered : do/Alarm Ringing
+AlarmTriggered --> Idle : Stop Alarm Button Pressed
+
+state "Alarm Stopped" as AlarmStopped
+AlarmStopped : do/Alarm Stopped
+AlarmStopped --> Idle : Any Button Pressed
+
+state "Light On" as LightOn
+LightOn : do/Light On
+LightOn --> Idle : Any Button Pressed
+
+state "Light Off" as LightOff
+LightOff : do/Light Off
+LightOff --> Idle : Any Button Pressed
+
+Idle --> AlarmTriggered : Current Time Matches Alarm Time
+AlarmTriggered --> AlarmStopped : Stop Alarm Button Pressed
+AlarmStopped --> LightOn : Light Button Pressed
+LightOn --> LightOff : Light Button Released
 
 @enduml
