@@ -2,58 +2,68 @@
 [*] --> Idle
 
 state "Idle" as Idle {
-  [*] --> Idle
+  Idle --> HourMode : press hour button
+  Idle --> MinuteMode : press minute button
+  Idle --> AlarmHourMode : press alarm hour button
+  Idle --> AlarmMinuteMode : press alarm minute button
+  Idle --> AlarmOn : press alarm on button
+  Idle --> LightOn : press light on button
 }
 
-state "Adjusting Time" as AdjustingTime {
-  Idle --> AdjustingTime : Press time adjustment button
-  AdjustingTime --> Idle : Press time adjustment button again
+state "Hour Mode" as HourMode {
+  HourMode --> MinuteMode : press minute button
+  HourMode --> IncreaseValue : press increase button
+  HourMode --> Idle : press hour button
 }
 
-state "Increasing Value" as IncreasingValue {
-  AdjustingTime --> IncreasingValue : Press increase value button
-  IncreasingValue --> AdjustingTime : Press decrease value button or press time adjustment button again
+state "Minute Mode" as MinuteMode {
+  MinuteMode --> AlarmHourMode : press alarm hour button
+  MinuteMode --> IncreaseValue : press increase button
+  MinuteMode --> HourMode : press hour button
 }
 
-state "Setting Alarm Hour" as SettingAlarmHour {
-  AdjustingTime --> SettingAlarmHour : Press alarm hour button
-  SettingAlarmHour --> AdjustingTime : Press time adjustment button again
+state "Alarm Hour Mode" as AlarmHourMode {
+  AlarmHourMode --> AlarmMinuteMode : press alarm minute button
+  AlarmHourMode --> IncreaseValue : press increase button
+  AlarmHourMode --> HourMode : press hour button
 }
 
-state "Setting Alarm Minute" as SettingAlarmMinute {
-  SettingAlarmHour --> SettingAlarmMinute : Press alarm minute button
-  SettingAlarmMinute --> SettingAlarmHour : Press alarm hour button or press time adjustment button again
+state "Alarm Minute Mode" as AlarmMinuteMode {
+  AlarmMinuteMode --> Idle : press hour button
+  AlarmMinuteMode --> HourMode : press minute button
+  AlarmMinuteMode --> AlarmHourMode : press alarm hour button
+  AlarmMinuteMode --> AlarmMinuteMode : press increase button
+}
+
+state "Increase Value" as IncreaseValue {
+  IncreaseValue --> HourMode : increase value
+  IncreaseValue --> MinuteMode : increase value
+  IncreaseValue --> AlarmHourMode : increase value
+  IncreaseValue --> AlarmMinuteMode : increase value
 }
 
 state "Alarm On" as AlarmOn {
-  SettingAlarmMinute --> AlarmOn : Set alarm to current time and press alarm on button
-  AlarmOn --> SettingAlarmMinute : Press alarm off button
-}
-
-state "Alarm Ringing" as AlarmRinging {
-  AlarmOn --> AlarmRinging : Alarm matches current time
-  AlarmRinging --> AlarmOff : Press stop alarm button
+  AlarmOn --> AlarmOff : press alarm off button
+  AlarmOn --> AlarmRinging : current time matches alarm time
 }
 
 state "Alarm Off" as AlarmOff {
-  AlarmRinging --> AlarmOff : Press stop alarm button
-  AlarmOff --> Idle : Dismiss
+  AlarmOff --> Idle : press alarm on button
+}
+
+state "Alarm Ringing" as AlarmRinging {
+  AlarmRinging --> AlarmOff : press stop alarm button
 }
 
 state "Light On" as LightOn {
-  Idle --> LightOn : Press light on button
-  LightOn --> LightOff : Button released
+  LightOn --> LightOff : light button released
 }
 
 state "Light Off" as LightOff {
-  LightOn --> LightOff : Button released
-  LightOff --> Idle : Button pressed
+  LightOff --> Idle : light button pressed
 }
 
-Idle --> AdjustingTime : Press time adjustment button
-AdjustingTime --> IncreasingValue : Press increase value button
-SettingAlarmHour --> SettingAlarmMinute : Press alarm minute button
-AlarmOn --> AlarmRinging : Alarm matches current time
-LightOn --> LightOff : Button released
+Idle --> [*]
+AlarmRinging --> [*]
 
 @enduml

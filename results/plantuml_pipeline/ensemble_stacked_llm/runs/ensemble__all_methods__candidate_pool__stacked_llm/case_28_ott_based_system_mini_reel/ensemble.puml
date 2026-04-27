@@ -1,29 +1,44 @@
 @startuml
-title Ott Based System Mini Reel State Machine
+title Ott Based System Mini Reel — Polished Requirement Specification
 
-state "Initial" as Initial
-state "Account Created" as AccountCreated
-state "Watching Videos" as WatchingVideos
-state "Uploading Videos" as UploadingVideos
-state "Saving to Likes" as SavingToLikes
-state "Viewing Saved Videos" as ViewingSavedVideos
-state "Discussion" as Discussion
+state "Create Account" as CreateAccount
+CreateAccount : entry / User wants to create account
+CreateAccount : do / Fill registration details
+CreateAccount : exit / Account created
 
-[*] --> Initial : Start
+state "Watch Videos" as WatchVideos
+WatchVideos : entry / User logged in
+WatchVideos : do / Watch videos
+WatchVideos : exit / Video watched
 
-Initial --> AccountCreated : Create Account
+state "Upload Videos" as UploadVideos
+UploadVideos : entry / User logged in
+UploadVideos : do / Upload videos
+UploadVideos : exit / Video uploaded
 
-AccountCreated --> WatchingVideos : Watch Videos
-WatchingVideos --> UploadingVideos : Upload Video
-UploadingVideos --> WatchingVideos : Back to Watching
-WatchingVideos --> SavingToLikes : Save to Likes
-SavingToLikes --> ViewingSavedVideos : View Saved
-ViewingSavedVideos --> WatchingVideos : Continue Watching
-ViewingSavedVideos --> Discussion : Enter Discussion
+state "Save Videos" as SaveVideos
+SaveVideos : entry / User watching video
+SaveVideos : do / Save video to likes list
+SaveVideos : exit / Video saved
 
-Discussion --> AccountCreated : Finish Discussion
+state "View Saved Videos" as ViewSavedVideos
+ViewSavedVideos : entry / User logged in
+ViewSavedVideos : do / View saved videos
+ViewSavedVideos : exit / Video viewed
 
-AccountCreated --> ViewingSavedVideos : View Saved Videos
-ViewingSavedVideos --> AccountCreated : Back to Account
+state "Enter Discussion" as EnterDiscussion
+EnterDiscussion : entry / User logged in
+EnterDiscussion : do / Enter discussion option
+EnterDiscussion : exit / Discussion entered
+
+[*] --> CreateAccount
+
+CreateAccount --> WatchVideos
+WatchVideos --> UploadVideos
+UploadVideos --> SaveVideos
+SaveVideos --> ViewSavedVideos
+ViewSavedVideos --> EnterDiscussion
+
+EnterDiscussion --> [*]
 
 @enduml

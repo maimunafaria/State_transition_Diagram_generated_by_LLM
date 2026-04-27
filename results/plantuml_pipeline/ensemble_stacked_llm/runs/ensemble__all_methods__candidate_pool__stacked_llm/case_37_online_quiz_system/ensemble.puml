@@ -1,13 +1,13 @@
 @startuml
-title Online Quiz System State Diagram
+title Online Quiz System
 
 state "Register/Login" as RegisterLogin
-state "Choose Role" as ChooseRole
-state "Teacher Mode" as TeacherMode
-state "Create/Edit Quiz" as CreateEditQuiz
-state "Save/Post Quiz" as SavePostQuiz
+state "Teacher" as Teacher
+state "Student" as Student
+state "Create Quiz" as CreateQuiz
+state "Edit Quiz" as EditQuiz
+state "Save Draft/Post Quiz" as SaveDraftPostQuiz
 state "View Results" as ViewResults
-state "Student Mode" as StudentMode
 state "Select Quiz" as SelectQuiz
 state "Answer Quiz" as AnswerQuiz
 state "Submit Quiz" as SubmitQuiz
@@ -15,24 +15,20 @@ state "View Result" as ViewResult
 
 [*] --> RegisterLogin
 
-RegisterLogin --> ChooseRole : [Valid Credentials]
+RegisterLogin --> Teacher : [Teacher]
+RegisterLogin --> Student : [Student]
 
-ChooseRole --> TeacherMode : [Teacher]
-ChooseRole --> StudentMode : [Student]
+Teacher --> CreateQuiz
+CreateQuiz --> EditQuiz
+EditQuiz --> SaveDraftPostQuiz
+SaveDraftPostQuiz --> ViewResults
 
-TeacherMode --> CreateEditQuiz : [Create/Edit Quiz]
-TeacherMode --> SavePostQuiz : [Save/Post Quiz]
-TeacherMode --> ViewResults : [View Results]
-TeacherMode --> RegisterLogin : [Logout]
+Student --> SelectQuiz
+SelectQuiz --> AnswerQuiz
+AnswerQuiz --> SubmitQuiz
+SubmitQuiz --> ViewResult
 
-CreateEditQuiz --> SavePostQuiz
-SavePostQuiz --> ViewResults
+ViewResult --> [*]
+ViewResults --> Teacher
 
-StudentMode --> SelectQuiz : [Select Quiz]
-SelectQuiz --> AnswerQuiz : [Answer Quiz]
-AnswerQuiz --> SubmitQuiz : [Submit Quiz]
-SubmitQuiz --> ViewResult : [View Result]
-ViewResult --> StudentMode : [Return to Home]
-
-[*] <-- RegisterLogin : [Logout]
 @enduml

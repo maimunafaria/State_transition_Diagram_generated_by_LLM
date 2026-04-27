@@ -1,90 +1,51 @@
 @startuml
-title ATM Control - Final State Transition Diagram
+title ATM Control
 
-[*] --> Greeting
+[*] --> Idle
 
-state Greeting {
-  entry / Display Welcome /
+state Idle {
+  entry / Display Welcome
 }
 
-state "Card Inserted" as CardInserted {
-  do / Check card validity /
-}
-Greeting --> CardInserted : User Arrives / Card Inserted /
+Idle --> WaitingForPIN : Card Inserted / Get PIN
 
 state WaitingForPIN
-CardInserted --> WaitingForPIN : Card Valid / Get PIN /
-
 WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
 WaitingForPIN --> Ejecting : Cancel / Eject
 
-state ValidatingPIN {
-  do / Validate PIN /
-}
+state ValidatingPIN
 ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
 ValidatingPIN --> Confiscating : Third Invalid PIN, Card Stolen, Card Expired / Confiscate, Update Status
-ValidatingPIN --> OptionsDisplayed : Correct PIN / Display Menu
+ValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu
 
-state "Card Kept" as CardKept {
-  do / Keep card for security /
-}
-Confiscating --> CardKept : Card Confiscated / Card Held For Security /
+WaitingForChoice --> ProcessingTransaction : Select Transaction
+ProcessingTransaction --> Ejecting : Rejected /\nEject,\nDisplay Apology
+ProcessingTransaction --> ProcessingTransfer : Transfer / Process Transfer
+ProcessingTransaction --> ProcessingQuery : Query / Process Query
+ProcessingTransaction --> ProcessingWithdrawal : Withdrawal / Process Withdrawal
 
-state "Card Returned" as CardReturned {
-  do / Return card to user /
-}
-WaitingForPIN --> CardReturned : Cancel / Eject
-ValidatingPIN --> CardReturned : Cancel / Eject
-
-state OptionsDisplayed {
-  entry / Display available options /
-}
-OptionsDisplayed --> TransactionProcessing : User Chooses Option / Process Request /
-
-state "Transaction Processing" as TransactionProcessing {
-  state Withdrawal
-  state Query
-  state Transfer
+state WaitingForChoice {
+  WaitingForPIN --> WaitingForChoice : Cancel / Eject
+  ValidatingPIN --> WaitingForChoice : Cancel / Eject
 }
 
-TransactionProcessing --> Withdrawal : Withdrawal Selected / Process Withdrawal, Display Wait
-TransactionProcessing --> Query : Check Information Selected / Process Query, Display Wait
-TransactionProcessing --> Transfer : Make Transfer Selected / Process Transfer, Display Wait
+state Confiscating
+Confiscating --> [*] : Card Confiscated
 
-state Dispensing {
-  do / Dispense cash /
-}
-Withdrawal --> Dispensing : Withdrawal Approved / Dispense Cash, Update Status /
+state Ejecting
+Ejecting --> [*] : Card Ejected / Display Ejected
 
-state Printing {
-  do / Print receipt /
-}
-Dispensing --> Printing : Cash Dispensed / Print Receipt, Confirm Cash Dispensed /
-
-state Ejecting {
-  entry / Eject card and display message /
+state ProcessingTransaction {
+  state ProcessingTransfer
+  state ProcessingQuery
+  state ProcessingWithdrawal
 }
 
-Printing --> Ejecting : Receipt Printed / Eject
-Dispensing --> Ejecting : Insufficient Cash / Eject
+ProcessingTransfer --> Printing : Transfer Approved /\nPrint Receipt,\nUpdate Status
+ProcessingQuery --> Printing : Query Approved /\nPrint Receipt,\nUpdate Status
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash,\nUpdate Status
 
-TransactionProcessing --> Ejecting : Rejected / Eject, Display Apology
-Withdrawal --> Ejecting : Rejected / Eject, Display Apology
-Query --> Ejecting : Rejected / Eject, Display Apology
-Transfer --> Ejecting : Rejected / Eject, Display Apology
-
-TransactionProcessing --> TransactionComplete : Processing Complete / Continue /
-Withdrawal --> TransactionComplete : Withdrawal Completed / Continue /
-Query --> TransactionComplete : Query Completed / Continue /
-Transfer --> TransactionComplete : Transfer Completed / Continue /
-
-state "Transaction Complete" as TransactionComplete {
-  entry / End transaction and display message /
-}
-TransactionComplete --> Ejecting : Card Ejected / Display Ejected /
-
-CardKept --> [*] : Card Kept For Security / Display Confiscated /
-CardReturned --> [*] : Card Returned To User / Display Ejected /
-Ejecting --> [*] : Operation Ended / Display Ejected /
+Printing --> Ejecting : Printing Complete /\nEject
+Dispensing --> Ejecting : Dispensing Complete /\nEject
 
 @enduml

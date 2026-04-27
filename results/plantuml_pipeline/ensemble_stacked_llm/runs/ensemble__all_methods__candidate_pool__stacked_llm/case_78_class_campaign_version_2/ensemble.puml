@@ -1,69 +1,48 @@
 @startuml
 title UML State Chart Diagram for Campaign Version 2
 
+state "Initial" as Initial
+state "Assign Staff and Manager" as AssignStaffManager
+state "Approve and Sign Contract" as ApproveSignContract
+state "Prepare Adverts" as PrepareAdverts
+state "Approve and Schedule Adverts" as ApproveScheduleAdverts
+state "Run Adverts" as RunAdverts
+state "Extend or Adjust Campaign" as ExtendAdjustCampaign
+state "Complete Campaign" as CompleteCampaign
+state "Final Statement" as FinalStatement
+state "Payment Handling" as PaymentHandling
+state "Payment Completed" as PaymentCompleted
+state "Campaign Archiving" as CampaignArchiving
+state "Final" as Final
+
 [*] --> Initial
 
-state Initial {
-    Initial --> AssignStaffManager : Start Campaign
-}
+Initial --> AssignStaffManager
 
-state AssignStaffManager {
-    AssignStaffManager --> ApproveSignContract : Manager and Staff Assigned
-}
+AssignStaffManager --> ApproveSignContract
 
-state ApproveSignContract {
-    ApproveSignContract --> PrepareAdverts : Everything Approved and Contract Signed
-}
+ApproveSignContract --> PrepareAdverts
 
-state PrepareAdverts {
-    PrepareAdverts --> ApproveScheduleAdverts : Adverts Prepared
-}
+PrepareAdverts --> ApproveScheduleAdverts
 
-state ApproveScheduleAdverts {
-    ApproveScheduleAdverts --> RunAdverts : Adverts Approved and Scheduled
-}
+ApproveScheduleAdverts --> RunAdverts
 
-state RunAdverts {
-    RunAdverts --> ExtendAdjustCampaign : Campaign Extension or Adjustment Requested
-    RunAdverts --> CompleteCampaign : All Adverts Finished
-}
+RunAdverts --> ExtendAdjustCampaign : [Extension or Adjustment Needed]
 
-state ExtendAdjustCampaign {
-    ExtendAdjustCampaign --> RunAdverts : [Extension or Adjustment Needed]
-}
+ExtendAdjustCampaign --> RunAdverts : [Continue Running]
 
-state CompleteCampaign {
-    CompleteCampaign --> FinalStatement : Campaign Completed
-}
+RunAdverts --> CompleteCampaign : [All Adverts Finished]
 
-state FinalStatement {
-    FinalStatement --> PaymentHandling : Prepare Final Statement
-}
+CompleteCampaign --> FinalStatement
 
-state PaymentHandling {
-    PaymentHandling --> RefundGenerated : Amount Paid Less Than Required
-    PaymentHandling --> AwaitingBalance : Amount Paid More Than Required
-    PaymentHandling --> PaymentCompleted : Full Amount Paid
-}
+FinalStatement --> PaymentHandling
 
-state RefundGenerated {
-    RefundGenerated --> CampaignArchiving : Archive Campaign
-}
+PaymentHandling --> PaymentCompleted : [Full Amount Paid]
+PaymentHandling --> CampaignArchiving : [Amount Paid Exceeds Required]
 
-state AwaitingBalance {
-    AwaitingBalance --> PaymentCompleted : Correct Balance Settled
-}
+PaymentCompleted --> Final
+CampaignArchiving --> Final
 
-state PaymentCompleted {
-    PaymentCompleted --> CampaignArchiving : Mark Campaign as Paid
-}
-
-state CampaignArchiving {
-    CampaignArchiving --> Final : Staff and Managers Released
-}
-
-state Final {
-    Final --> [*]
-}
+Final --> [*]
 
 @enduml

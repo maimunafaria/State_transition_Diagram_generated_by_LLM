@@ -1,24 +1,20 @@
 @startuml
-title Process Sale State Machine
+title State diagram of the system operations of "Process Sale"
 
 [*] --> WaitingForSale
 
 state "Waiting for sale" as WaitingForSale
-state "Enter items one by one" as EnterItems
-state "Move to payment" as Payment
-state "Complete sale with cash" as CompleteCash
-state "Verify payment with card or check" as VerifyPayment
-state "Complete sale" as CompleteSale
-state "Return to waiting" as ReturnWait
+state "Enter items" as EnterItems
+state "Waiting for payment" as WaitingPayment
+state "Payment approved" as PaymentApproved
+state "Sale completed" as SaleCompleted
 
+[*] --> WaitingForSale : new sale
 WaitingForSale --> EnterItems : new sale
 EnterItems --> EnterItems : add item
-EnterItems --> Payment : end of sale
-Payment --> CompleteCash : cash
-Payment --> VerifyPayment : card or check
-VerifyPayment --> CompleteSale : payment approved
-CompleteSale --> ReturnWait : payment finished
-CompleteCash --> ReturnWait : payment finished
-ReturnWait --> WaitingForSale : next customer
+EnterItems --> WaitingPayment : end of sale
+WaitingPayment --> PaymentApproved : payment confirmed
+PaymentApproved --> SaleCompleted : payment approved
+SaleCompleted --> WaitingForSale : next customer
 
 @enduml

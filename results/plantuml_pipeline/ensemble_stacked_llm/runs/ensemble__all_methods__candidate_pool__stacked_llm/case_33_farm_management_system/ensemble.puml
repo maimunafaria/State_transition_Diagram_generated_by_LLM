@@ -4,74 +4,40 @@ title Farm Management System
 [*] --> Login
 
 state Login {
-  Login : entry / user provide Login Details
-  Login : do / verify Login Details
-  Login : exit / login Successful
+  Login --> LoggedIn : User Signs In
 }
-
-Login --> LoggedIn : [valid]
-Login --> InvalidLogin : [invalid]
-
-state "Invalid Login" as InvalidLogin
-InvalidLogin : entry / wrong Info
-InvalidLogin : do / display Error message
-InvalidLogin : exit / return To Start
-
-InvalidLogin --> Login
 
 state LoggedIn <<choice>> {
-  LoggedIn --> MainArea : User Signs In
+  LoggedIn --> MarketConditions : Select Market Conditions
+  LoggedIn --> PestControlHelp : Select Pest Control Help
+  LoggedIn --> SoilSuggestions : Provide Soil Information
+  LoggedIn --> WeatherInsights : Provide Location
+  LoggedIn --> LabourAvailability : Provide Location
+  LoggedIn --> Logout : Logout
 }
 
-state MainArea <<choice>> {
-  MainArea --> MarketConditions : Select Market Conditions
-  MainArea --> PestControlHelp : Select Pest Control Help
-  MainArea --> SoilSuggestions : Provide Soil Information
-  MainArea --> WeatherInsights : Provide Location
-  MainArea --> LabourAvailability : Provide Location
-  MainArea --> ContinueService : Continue Using Service
-  MainArea --> Logout : User Logs Out
-}
-
-state MarketConditions <<choice>> {
+state MarketConditions {
   MarketConditions --> MarketReport : View Market Report
-  MarketConditions --> MainArea : Back to MainMenu
+  MarketReport --> LoggedIn : Back to Main Area
 }
 
-state MarketReport {
-  MarketReport --> MainArea
+state PestControlHelp {
+  PestControlHelp --> PestControlTechniques : User Provides Photo
+  PestControlTechniques --> LoggedIn : Back to Main Area
 }
 
-state PestControlHelp <<choice>> {
-  PestControlHelp --> PestControlTechniques : Provide Photo
-  PestControlHelp --> MainArea : Back to MainMenu
+state SoilSuggestions {
+  SoilSuggestions --> LoggedIn : Back to Main Area
 }
 
-state PestControlTechniques {
-  PestControlTechniques --> MainArea
+state WeatherInsights {
+  WeatherInsights --> LoggedIn : Back to Main Area
 }
 
-state SoilSuggestions <<choice>> {
-  SoilSuggestions --> SoilSuggestionsResult : Receive Soil-Related Suggestions
-  SoilSuggestions --> MainArea : Back to MainMenu
+state LabourAvailability {
+  LabourAvailability --> LoggedIn : Back to Main Area
 }
 
-state WeatherInsights <<choice>> {
-  WeatherInsights --> WeatherDetails : Receive Weather Insights
-  WeatherInsights --> MainArea : Back to MainMenu
-}
-
-state LabourAvailability <<choice>> {
-  LabourAvailability --> LabourDetails : Receive Labour Availability Details
-  LabourAvailability --> MainArea : Back to MainMenu
-}
-
-state ContinueService <<choice>> {
-  ContinueService --> MainArea : User Can Choose Options Again
-}
-
-state Logout {
-  Logout --> [*]
-}
+LoggedIn --> [*] : Logout
 
 @enduml

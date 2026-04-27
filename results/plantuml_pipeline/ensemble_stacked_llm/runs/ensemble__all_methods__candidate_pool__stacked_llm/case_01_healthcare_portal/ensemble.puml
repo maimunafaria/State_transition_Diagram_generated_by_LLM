@@ -1,81 +1,57 @@
 @startuml
 title UML State Machine Diagram - Healthcare Portal
 
-[*] --> InitialState : Start
+state "Initial State" as Initial
+state "Registration" as Registration
+state "Registration Failed" as RegistrationFailed
+state "Login" as Login
+state "Access Facilities" as AccessFacilities
+state "Read News/Content" as ReadNewsContent
+state "Check Symptoms/Fitness" as CheckSymptomsFitness
+state "Continue Session" as ContinueSession
+state "Finish Session" as FinishSession
+state "Process Insurance" as ProcessInsurance
+state "Validate Insurance" as ValidateInsurance
+state "Payment Process" as PaymentProcess
+state "Cash Payment" as CashPayment
+state "Insurance Payment" as InsurancePayment
+state "Feedback Collection" as FeedbackCollection
+state "Logout" as Logout
 
-state InitialState {
-  InitialState --> Registration : Register
-}
+[*] --> Initial
 
-state Registration {
-  Registration --> LoginSuccess : Successful Registration
-  Registration --> RegistrationFailed : Failed Registration
-}
+Initial --> Registration : Register
+Registration --> Login : Login
+Login --> AccessFacilities : Access Facilities
+AccessFacilities --> ReadNewsContent : Read News/Content
+ReadNewsContent --> CheckSymptomsFitness : Check Symptoms/Fitness
+CheckSymptomsFitness --> ContinueSession : Continue Session
+ContinueSession --> AccessFacilities : Continue Session
+ContinueSession --> FinishSession : Finish Session
 
-state RegistrationFailed {
-  RegistrationFailed --> [*] : End Access
-}
+FinishSession --> Logout : Logout
 
-state LoginSuccess {
-  LoginSuccess --> SignedIn : Sign In Success
-}
+AccessFacilities --> ProcessInsurance : Process Insurance
+ProcessInsurance --> ValidateInsurance : Validate Insurance
+ValidateInsurance --> PaymentProcess : Payment Process
 
-state SignedIn {
-  SignedIn --> FacilitiesAccess : Access Facilities
-  SignedIn --> ReadNewsContent : Read News/Expert Content
-  SignedIn --> CheckSymptomsFitness : Check Symptoms/Fitness
-  SignedIn --> PaymentProcess : Process Insurance
-  SignedIn --> FeedbackCollection : Provide Feedback
-  SignedIn --> Logout : Log Out
-}
+PaymentProcess --> CashPayment : Cash Payment
+CashPayment --> FinishSession : Finish Session
 
-state FacilitiesAccess {
-  FacilitiesAccess --> ContinueSession : Continue Session
-  FacilitiesAccess --> FinishSession : Finish Session
-}
+PaymentProcess --> InsurancePayment : Insurance Payment
+InsurancePayment --> FinishSession : Finish Session
 
-state ReadNewsContent {
-  ReadNewsContent --> ContinueSession : Continue Session
-  ReadNewsContent --> FinishSession : Finish Session
-}
+ReadNewsContent --> ContinueSession : Continue Session
+ReadNewsContent --> FinishSession : Finish Session
 
-state CheckSymptomsFitness {
-  CheckSymptomsFitness --> ContinueSession : Continue Session
-  CheckSymptomsFitness --> FinishSession : Finish Session
-}
+CheckSymptomsFitness --> ContinueSession : Continue Session
+CheckSymptomsFitness --> FinishSession : Finish Session
 
-state PaymentProcess {
-  PaymentProcess --> SelectPaymentMethod : Choose Payment Method
-}
+FeedbackCollection : Collect Feedback
+FeedbackCollection --> FinishSession : Finish Session
 
-state SelectPaymentMethod {
-  SelectPaymentMethod --> CashPaymentDetails : Cash Payment Selected
-  SelectPaymentMethod --> InsurancePaymentProcess : Insurance Payment Selected
-}
+Logout --> [*]
 
-state CashPaymentDetails {
-  CashPaymentDetails --> PaymentProcess : Process Payment
-}
-
-state InsurancePaymentProcess {
-  InsurancePaymentProcess --> FinishSession : Complete Payment
-}
-
-state ContinueSession {
-  ContinueSession --> SignedIn : Continue Session
-}
-
-state FinishSession {
-  FinishSession --> FeedbackCollection : Collect Feedback
-  FinishSession --> Logout : Log Out
-}
-
-state FeedbackCollection {
-  FeedbackCollection --> Logout : Provide Feedback
-}
-
-state Logout {
-  Logout --> [*] : End of Session
-}
+Initial --> RegistrationFailed : Registration Failed
 
 @enduml

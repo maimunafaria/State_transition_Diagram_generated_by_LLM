@@ -1,101 +1,55 @@
 @startuml
-title UML State Chart Diagram for Weather Monitoring System
+title Weather Monitoring System State Diagram
 
-[*] --> CreateUser
+[*] --> Register
 
-state CreateUser {
-  CreateUser --> SuccessReg : registration successful
-  CreateUser --> FailReg : registration unsuccessful
-}
+state Register <<choice>>
+Register --> Success : registration successful
+Register --> [*] : registration unsuccessful
 
-state "Successful Registration" as SuccessReg
-SuccessReg : entry / registration completed
-SuccessReg : do / proceed to login
-SuccessReg : exit / move to login
+state Login
+Login : entry / user enters credentials
+Login : do / validate credentials
+Login : exit / login successful
 
-state "Failed Registration" as FailReg
-FailReg : entry / registration failed
-FailReg : do / end process
-FailReg : exit / return
+Login --> [*] : login unsuccessful
 
-SuccessReg --> Login
+state CheckWeather
+CheckWeather : entry / user selects location
+CheckWeather : do / validate location
+CheckWeather : exit / location valid
 
-state Login {
-  Login --> SuccessLogin : login successful
-  Login --> FailLogin : login failed
-}
+CheckWeather --> [*] : location invalid
 
-state "Successful Login" as SuccessLogin
-SuccessLogin : entry / login completed
-SuccessLogin : do / proceed to weather check
-SuccessLogin : exit / move to weather check
+state SelectInfo
+SelectInfo : entry / user selects info type
+SelectInfo : do / select info type
+SelectInfo : exit / info type selected
 
-state "Failed Login" as FailLogin
-FailLogin : entry / login failed
-FailLogin : do / end process
-FailLogin : exit / return
+state ShowInfo
+ShowInfo : entry / show selected weather info
+ShowInfo : do / update and show info
+ShowInfo : exit / info shown
 
-Login --> SuccessLogin
-Login --> FailLogin
+state ViewDetails
+ViewDetails : entry / user selects additional details
+ViewDetails : do / show additional details
+ViewDetails : exit / details shown
 
-SuccessLogin --> WeatherCheck
+state Logout
+Logout : entry / user logs out
+Logout : do / end session
+Logout : exit / session ended
 
-state WeatherCheck {
-  WeatherCheck --> LocationValid : location valid
-  WeatherCheck --> LocationInvalid : location invalid
-}
+CheckWeather --> SelectInfo : [Select info ?]
+SelectInfo --> ShowInfo : [Show info ?]
+ShowInfo --> ViewDetails : [View details ?]
 
-state "Location Valid" as LocationValid
-LocationValid : entry / location validated
-LocationValid : do / proceed to weather selection
-LocationValid : exit / move to weather selection
+SelectInfo --> [*] : [No select info]
+ViewDetails --> [*] : [No view details]
 
-state LocationInvalid {
-  LocationInvalid --> [*] : end process
-}
-
-WeatherCheck --> LocationValid
-WeatherCheck --> LocationInvalid
-
-state WeatherSelection <<choice>>
-LocationValid --> WeatherSelection
-
-state SelectTemperature as Temperature
-state SelectHumidity as Humidity
-state SelectRainfall as Rainfall
-state SelectPressure as Pressure
-state SelectDewPoint as DewPoint
-
-WeatherSelection --> Temperature : select temperature
-WeatherSelection --> Humidity : select humidity
-WeatherSelection --> Rainfall : select rainfall
-WeatherSelection --> Pressure : select pressure
-WeatherSelection --> DewPoint : select dew point
-
-Temperature --> ShowInfo : show selected info
-Humidity --> ShowInfo : show selected info
-Rainfall --> ShowInfo : show selected info
-Pressure --> ShowInfo : show selected info
-DewPoint --> ShowInfo : show selected info
-
-state "Show Weather Info" as ShowInfo {
-  ShowInfo --> ViewDetails : view additional details
-}
-
-Temperature --> ShowInfo
-Humidity --> ShowInfo
-Rainfall --> ShowInfo
-Pressure --> ShowInfo
-DewPoint --> ShowInfo
-
-ViewDetails --> [*] : end session
-ViewDetails --> ShowInfo : no view details
-
-ShowInfo --> ViewDetails : view additional details
-ShowInfo --> [*] : no view details
-
-Logout {
-  Logout --> [*] : logout
-}
+Login --> CheckWeather
+CheckWeather --> Logout
+Register --> Login
 
 @enduml

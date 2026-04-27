@@ -1,74 +1,34 @@
 @startuml
 [*] --> CreateUser
 
-state "Create User" as CreateUser {
-  CreateUser --> Login : Create Account
+state CreateUser {
+  CreateUser --> Login : login
 }
 
-state "Login" as Login {
-  Login --> CreateUser : Invalid Credentials
-  Login --> LoggedIn : Valid Credentials
+state Login {
+  Login --> LoggedIn : valid
+  Login --> CreateUser : invalid
 }
 
-state "Logged In" as LoggedIn {
-  LoggedIn --> Dashboard : Open Dashboard
-  Dashboard --> ApplyForVisa : Apply For Visa
-  Dashboard --> ViewStatus : View Status
-  Dashboard --> ModifyDetails : Modify Details
-  Dashboard --> ViewDetails : View Details
-  Dashboard --> GiveFeedback : Give Feedback
+state LoggedIn {
+  [*] --> Dashboard
+  Dashboard --> ApplyForVisa : apply for visa
+  ApplyForVisa --> PaymentConfirmed : payment confirmed
+  PaymentConfirmed --> ApplicationAccepted : application accepted
+  ApplicationAccepted --> ViewStatus : view status
+  ViewStatus --> CheckStatus : check status
+  CheckStatus --> CancelApplication : cancel application
+  CheckStatus --> ModifyDetails : modify details
+  CheckStatus --> ViewPurpose : view purpose
+  CancelApplication --> LoggedOut : log out
+  ModifyDetails --> ViewDetails : view details
+  ViewDetails --> GiveFeedback : give feedback
+  ViewPurpose --> GiveFeedback : give feedback
+  ViewPurpose --> ViewStatus : view status
+  GiveFeedback --> LoggedOut : log out
 }
 
-state "Apply for Visa" as ApplyForVisa {
-  ApplyForVisa --> PaymentConfirmed : Make Payment
-  PaymentConfirmed --> ApplicationAccepted : Payment Successful
-  PaymentConfirmed --> LoggedIn : Payment Failed
+state LoggedOut {
+  LoggedOut --> [*]
 }
-
-state "Application Accepted" as ApplicationAccepted {
-  ApplicationAccepted --> ViewStatus : View Status
-}
-
-state "View Status" as ViewStatus {
-  ViewStatus --> CheckStatus : Check Status
-  ViewStatus --> CancelApplication : Cancel Application
-  ViewStatus --> ModifyDetails : Modify Details
-  ViewStatus --> ViewDetails : View Details
-}
-
-state "Check Status" as CheckStatus {
-  CheckStatus --> ViewStatus : Back to View Status
-  CheckStatus --> GiveFeedback : Give Feedback
-}
-
-state "Cancel Application" as CancelApplication {
-  CancelApplication --> LoggedIn : Log Out
-}
-
-state "Modify Details" as ModifyDetails {
-  ModifyDetails --> ViewDetails : View Details
-  ModifyDetails --> ViewStatus : View Status
-}
-
-state "View Details" as ViewDetails {
-  ViewDetails --> ViewPurpose : View Purpose of Application
-  ViewDetails --> GiveFeedback : Give Feedback
-  ViewDetails --> ViewStatus : View Status
-}
-
-state "View Purpose" as ViewPurpose {
-  ViewPurpose --> GiveFeedback : Give Feedback
-  ViewPurpose --> ViewStatus : View Status
-}
-
-state "Give Feedback" as GiveFeedback {
-  GiveFeedback --> LoggedIn : Log Out
-}
-
-LoggedIn --> Logout : Log Out
-
-state "Logout" as Logout {
-  Logout --> [*] : End
-}
-
 @enduml

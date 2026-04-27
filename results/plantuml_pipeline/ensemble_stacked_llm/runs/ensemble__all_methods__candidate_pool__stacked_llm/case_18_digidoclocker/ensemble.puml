@@ -1,133 +1,67 @@
 @startuml
-title Digidoclocker State Machine Diagram
-
 [*] --> Registration
 
-state Registration {
-    entry / Get User Details
-    do / Validate Details
-    exit / Valid or Invalid
-}
+state Registration
+Registration : entry / Get User Details
+Registration : do / Validate Details
+Registration : exit / Valid or Invalid
 
 Registration --> Login : [Valid Registration]
 Registration --> [*] : [Invalid Registration]
 
-state Login {
-    entry / Get Login Details
-    do / Validate Login
-    exit / Valid or Invalid
-}
+state Login
+Login : entry / Get Login Details
+Login : do / Validate Login Details
+Login : exit / Valid or Invalid
 
 Login --> Choice1 : [Valid Login]
 
-state Choice1 <<choice>> {
-    UploadDocuments : [Upload Documents]
-    ViewProfile : [View Profile]
-    ApplyCert : [Apply for Certificate]
-    ContinueUpload : [Continue Uploading]
-    ChoiceRegistrar : [Registrar]
-}
+state Choice1 <<choice>>
+Choice1 --> UploadDocuments : [Upload Documents]
+Choice1 --> ViewProfile : [View Profile]
+Choice1 --> ApplyCert : [Apply for Certificate]
+Choice1 --> ContinueUpload : [Continue Uploading]
+Choice1 --> ChoiceRegistrar : [Registrar]
 
-state UploadDocuments {
-    entry / Upload Document
-    do / Process Upload
-    exit / Proceed or Continue
+state UploadDocuments
+UploadDocuments : entry / Upload Document
+UploadDocuments : do / Process Upload
+UploadDocuments : exit / Proceed or Continue
 
-    UploadDocuments --> Choice1 : [Proceed]
-    UploadDocuments --> ContinueUpload : [Continue]
-}
+UploadDocuments --> Choice1 : [Proceed]
+UploadDocuments --> ContinueUpload : [Continue]
 
-state ContinueUpload {
-    entry / Continue Upload
-    do / Process Upload
-    exit / Proceed
+state ContinueUpload
+ContinueUpload : entry / Continue Upload
+ContinueUpload : do / Process Upload
+ContinueUpload : exit / Proceed
 
-    ContinueUpload --> Choice1 : [Done]
-}
+ContinueUpload --> Choice1 : [Done]
 
-state ViewProfile {
-    entry / View Profile
-    do / Display Profile
-    exit / Proceed
+state ViewProfile
+ViewProfile : entry / View Profile
+ViewProfile : do / Display Profile
+ViewProfile : exit / Exit from Profile Viewing
 
-    ViewProfile --> Choice1 : [Back]
-}
+ViewProfile --> EndMerge : [End]
 
-state ApplyCert {
-    entry / Apply for Certificate
-    do / Process Application
-    exit / Issue or Reapply
+state ApplyCert
+ApplyCert : entry / Apply for Certificate
+ApplyCert : do / Process Application
+ApplyCert : exit / Issue or Reapply
 
-    ApplyCert --> IssueCertificate : [Certificate Issued]
-    ApplyCert --> Choice1 : [Reapply]
-}
+ApplyCert --> IssueCertificate : [Certificate Issued]
+ApplyCert --> Choice1 : [Reapply]
 
-state IssueCertificate {
-    entry / Issue Certificate
-    do / Process Issue
-    exit / Done
+state IssueCertificate
+IssueCertificate : entry / Issue Certificate
+IssueCertificate : do / Process Issue
+IssueCertificate : exit / Done
 
-    IssueCertificate --> Choice1 : [Done]
-}
+IssueCertificate --> Choice1 : [Done]
 
-state ChoiceRegistrar <<choice>> {
-    RequestCertificate : [Request Certificate]
-}
+state ChoiceRegistrar <<choice>>
+ChoiceRegistrar --> RequestCertificate : [Request Certificate]
 
-state RequestCertificate {
-    entry / Registrar enters details
-    do / Validate request
-    exit / Request successful or failed
-
-    RequestCertificate --> ChoiceRegistrar : [Continue Requesting]
-    RequestCertificate --> Choice1 : [Back to Menu]
-}
-
-Choice1 --> EndMerge : [End Session]
-
-state EndMerge <<choice>> {
-    CancelCert : [Cancel Certificate]
-    IssueCert : [Issue Certificate]
-    ViewProfile : [View Profile]
-    UpdateProfile : [Update Profile]
-    End : [End]
-}
-
-state "Cancellation of Certificates" as CancelCert {
-    entry / Certificate is asked for Cancellation
-    do / Certificate is Canceled
-    exit / Move to End
-
-    CancelCert --> EndMerge
-}
-
-state "Issuing the Certificates" as IssueCert {
-    entry / Validating Details
-    do / Issuing the Certificates
-    exit / Updating the Database
-
-    IssueCert --> RequestCert : [Certificate is issued]
-    RequestCert --> EndMerge : [End]
-}
-
-state "View Profile" as ViewProfile {
-    entry / View the Profile
-    do / Display the Profile
-    exit / Exit from Profile Viewing
-
-    ViewProfile --> EndMerge : [End]
-}
-
-state "Update the Profile" as UpdateProfile {
-    entry / Update the User's Profile
-    do / Citizen Profile is updated
-    exit / Move to End
-
-    UpdateProfile --> EndMerge : [End]
-}
-
-state "End" as End {
-    End --> [*]
-}
-
+state RequestCertificate
 @enduml

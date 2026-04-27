@@ -1,70 +1,31 @@
 @startuml
-title Green Rides System States
+title State diagram for the Green Rides system
 
 [*] --> Login
 
-state "Login" as Login {
-  entry / To Action
-  do / Log in to the system
-  exit / Username and password entered
-}
+state "Login" as Login
+state "View Journey Details" as ViewJourneyDetails
+state "Driving Mode" as DrivingMode
+state "Select Place to Eat" as SelectPlaceToEat
+state "Order Food" as OrderFood
+state "Accident" as Accident
+state "Feedback" as Feedback
+state "Final" as Final
 
-state "Journey Details" as JourneyDetails {
-  entry / Display journey details
-  do / Show route and estimated time
-  exit / User has viewed details
-}
+Login --> ViewJourneyDetails : Select Destination
+ViewJourneyDetails --> ViewJourneyDetails : View Details
+ViewJourneyDetails --> DrivingMode : Activate Driving Mode
+ViewJourneyDetails --> SelectPlaceToEat : Select Place to Eat
 
-state "Driving Mode" as DrivingMode {
-  entry / Activate driving mode
-  do / Start navigation
-  exit / User has chosen driving mode
-}
+DrivingMode --> DrivingMode : Drive
+DrivingMode --> Accident : Accident Occurs
+Accident --> Accident : Inform Authorities
+Accident --> Feedback : Provide Feedback
 
-state "Other Options" as OtherOptions {
-  entry / Choose other options
-  do / Show available options
-  exit / User has chosen other options
-}
+SelectPlaceToEat --> OrderFood : Place Order
+OrderFood --> ViewJourneyDetails : Cancel Order
 
-state "Select Place to Eat" as SelectPlaceToEat {
-  entry / Select place to eat
-  do / Show menu and allow order
-  exit / User has placed order
-}
-
-state "Accident Report" as AccidentReport {
-  entry / Inform authorities
-  do / Send notification
-  exit / Authorities notified
-}
-
-state "Notifications" as Notifications {
-  entry / Send notifications
-  exit / Notifications sent
-}
-
-state "Feedback" as Feedback {
-  entry / Provide feedback
-  do / Collect user feedback
-  exit / Feedback submitted
-}
-
-Login --> JourneyDetails : [login success]
-
-JourneyDetails --> DrivingMode : [user chooses driving mode]
-JourneyDetails --> OtherOptions : [user chooses other options]
-JourneyDetails --> SelectPlaceToEat : [user is hungry]
-
-DrivingMode --> JourneyDetails : [user needs to view details again]
-OtherOptions --> JourneyDetails : [user needs to view details again]
-SelectPlaceToEat --> JourneyDetails : [user has finished eating]
-
-JourneyDetails --> AccidentReport : [accident occurs]
-
-AccidentReport --> Notifications : Report accident
-Notifications --> Feedback : Provide feedback
-
-Feedback --> [*] : Submit
+Feedback --> Final : Complete Feedback
+Final --> [*]
 
 @enduml

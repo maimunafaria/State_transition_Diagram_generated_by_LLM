@@ -1,41 +1,30 @@
 @startuml
-title Weather Station System State Diagram
+[*] --> ShutDown
 
-[*] --> Shutdown : Power Failure / Shutdown Command
-
-state Shutdown {
-  Shutdown --> Running : Restart / Start
-}
-
-state Running {
-  Running --> ConfigurationMode : Changes or Power-Saving Settings Required
-  Running --> ControlledMode : Remote Control Command
-  Running --> Shutdown : Shutdown Command
-  Running --> DataCollection : Clock Triggered (Data Collection)
-  Running --> SummaryPreparation : Request for Weather Summary
-  Running --> StatusChecking : Request for Status Check
+state ShutDown {
+  ShutDown --> Running : Restart / Start
 }
 
 state ConfigurationMode {
+  Running --> ConfigurationMode : Changes or Power-Saving Settings Required
   ConfigurationMode --> Running : Configuration Completed
 }
 
 state ControlledMode {
-  ControlledMode --> Running : Exit Controlled Mode
+  Running --> ControlledMode : Remote Control / Move to Controlled Mode
+  ControlledMode --> Running : Return to Running State
 }
 
-state DataCollection {
+state Running {
+  Running --> DataCollection : Clock Triggered / Data Collection
+  Running --> SummaryPreparation : Request for Weather Summary / Prepare and Send
+  Running --> StatusChecking : Request for Status / Check and Transmit
+  Running --> Shutdown : Shutdown Command / Shut Down
   DataCollection --> Running : Activity Completed
+  SummaryPreparation --> Running : Summary Prepared
+  StatusChecking --> Running : Status Checked
 }
 
-state SummaryPreparation {
-  SummaryPreparation --> Running : Summary Prepared and Sent
-}
-
-state StatusChecking {
-  StatusChecking --> Running : Status Checked and Transmitted
-}
-
-Shutdown --> [*] : System Shut Down
+Shutdown --> [*] : System shut down
 
 @enduml

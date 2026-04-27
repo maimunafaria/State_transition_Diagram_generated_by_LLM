@@ -2,40 +2,16 @@
 title Graderate State Machine
 
 [*] --> Waiting
+state Waiting
+Waiting --> Active : start_date_arrived
 
-state Waiting {
-    entry / waiting for start date
-    do / check current date
-    exit / start date arrived
-}
+state Active
+Active --> Expired : finish_date_reached
 
-Waiting : [Start Date <= Current Date]
-Waiting --> Active : Start Date <= Current Date
+state Expired
+Expired --> Archived : one_year_expired
 
-state Active {
-    entry / rate is active
-    do / check current date
-    exit / end of validity period reached
-}
-
-Active : [Finish Date >= Current Date]
-Active --> Expired : Finish Date <= Current Date
-
-state Expired {
-    entry / rate is expired
-    do / check expiration date
-    exit / one year from expiration date
-}
-
-Expired : [One Year After Expiration]
-Expired --> Archived : One Year After Expiration
-
-state Archived {
-    entry / rate is archived
-    do / remove or archive rate
-    exit / final state
-}
-
+state Archived
 Archived --> [*]
 
 @enduml
