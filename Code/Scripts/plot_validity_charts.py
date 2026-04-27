@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import csv
 import html
+import sys
 from collections import defaultdict
 from pathlib import Path
 
@@ -11,19 +12,28 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_METRICS_DIR = PROJECT_ROOT / "results" / "plantuml_pipeline" / "metrics"
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "results" / "plantuml_pipeline" / "charts"
+DEFAULT_ENSEMBLE_RUNS_DIR = (
+    PROJECT_ROOT
+    / "results"
+    / "plantuml_pipeline"
+    / "ensemble_stacked_llm"
+    / "runs"
+)
 
 MODEL_ORDER = [
     "DeepSeek R1 14B",
     "Llama 3.1 8B Instruct",
     "Qwen 2.5 7B Instruct",
+    "Ensemble",
 ]
-METHOD_ORDER = ["Zero-shot", "One-shot", "Few-shot", "RAG", "RAG + Repair"]
+METHOD_ORDER = ["Zero-shot", "One-shot", "Few-shot", "RAG", "RAG + Repair", "Stacked Ensemble"]
 METHOD_COLORS = {
     "Zero-shot": "#4E79A7",
     "One-shot": "#59A14F",
     "Few-shot": "#F28E2B",
     "RAG": "#76B7B2",
     "RAG + Repair": "#E15759",
+    "Stacked Ensemble": "#7B61FF",
 }
 
 
@@ -43,6 +53,39 @@ def read_summary(path: Path) -> list[dict[str, object]]:
                 }
             )
     return rows
+
+
+def read_ensemble_summary(ensemble_runs_dir: Path) -> tuple[dict[str, object], dict[str, object]] | None:
+    puml_files = sorted(ensemble_runs_dir.glob("*/*/ensemble.puml"))
+    if not puml_files:
+        return None
+
+    sys.path.insert(0, str((PROJECT_ROOT / "Code" / "Scripts").resolve()))
+    from plantuml_pipeline.parser import parse_and_validate_puml_text
+
+    total = 0
+    plantuml_valid = 0
+    state_rules_valid = 0
+    for puml_file in puml_files:
+        _, validation = parse_and_validate_puml_text(puml_file.read_text(encoding="utf-8"))
+        state_issues = list(validation.errors) + list(validation.warnings)
+        total += 1
+        if validation.valid:
+            plantuml_valid += 1
+        if validation.valid and not state_issues:
+            state_rules_valid += 1
+
+    def row(valid: int) -> dict[str, object]:
+        return {
+            "model": "Ensemble",
+            "method": "Stacked Ensemble",
+            "total": total,
+            "valid": valid,
+            "invalid": total - valid,
+            "validity_percent": round((valid / total * 100.0), 2) if total else 0.0,
+        }
+
+    return row(plantuml_valid), row(state_rules_valid)
 
 
 def _ordered_models(rows: list[dict[str, object]]) -> list[str]:
@@ -256,6 +299,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Create SVG validity charts from metrics CSV files.")
     parser.add_argument("--metrics-dir", type=Path, default=DEFAULT_METRICS_DIR)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--ensemble-runs-dir", type=Path, default=DEFAULT_ENSEMBLE_RUNS_DIR)
+    parser.add_argument(
+        "--no-ensemble",
+        action="store_true",
+        help="Do not add the current stacked ensemble results to the charts.",
+    )
     args = parser.parse_args()
 
     metrics_dir = args.metrics_dir.resolve()
@@ -264,6 +313,12 @@ def main() -> int:
 
     plantuml_rows = read_summary(metrics_dir / "validity_by_model_method.csv")
     state_rows = read_summary(metrics_dir / "state_rules_validity_by_model_method.csv")
+    if not args.no_ensemble:
+        ensemble_summary = read_ensemble_summary(args.ensemble_runs_dir.resolve())
+        if ensemble_summary:
+            ensemble_plantuml_row, ensemble_state_row = ensemble_summary
+            plantuml_rows.append(ensemble_plantuml_row)
+            state_rows.append(ensemble_state_row)
 
     chart_specs = [
         (
