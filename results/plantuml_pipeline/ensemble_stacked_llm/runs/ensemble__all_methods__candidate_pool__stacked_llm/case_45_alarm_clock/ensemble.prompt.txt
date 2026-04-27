@@ -1,0 +1,145 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+Output ONLY valid PlantUML code. Do not include explanations or markdown fences.
+
+Requirement:
+Alarm Clock — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall be in an off state initially.
+2. The system shall support when the user sets an alarm time, the system shall activate the alarm.
+3. The system shall ensure that the user shall be able to turn off the activated alarm.
+4. The system shall support when the current time matches the set alarm time, the system shall start ringing the alarm.
+5. The system shall ensure that once the alarm is ringing, the user shall be able to stop it.
+6. The system shall support after stopping the alarm, the system shall remain active for the next scheduled alarm time.
+
+Candidate Diagram 1:
+@startuml
+[*] --> Off
+Off --> [*]
+Off --> Active : set alarm
+Active --> Ringing : time matches
+Ringing --> Active : stop alarm
+@enduml
+
+Candidate Diagram 2:
+@startuml
+[*] --> Off
+
+state Off {
+  Off --> Idle
+  Idle --> [*]
+}
+
+state Idle {
+  Idle --> SetAlarm : set alarm
+  SetAlarm --> AlarmActive : alarm time set
+}
+
+state AlarmActive {
+  AlarmActive --> StopAlarm : stop alarm
+  StopAlarm --> Idle : alarm stopped
+}
+
+state Idle {
+  Idle --> AlarmActive : current time matches alarm time
+}
+
+@enduml
+
+Candidate Diagram 3:
+@startuml
+title Alarm Clock State Machine
+
+[*] --> Off
+
+state "Off" as Off
+state "Alarm Set" as AlarmSet
+state "Alarm Ringing" as AlarmRinging
+
+Off : entry/Initial state
+Off : do/Wait for alarm set
+
+AlarmSet : entry/Alarm set
+AlarmSet : do/Wait for alarm time
+AlarmSet : exit/Alarm activated
+
+AlarmRinging : entry/Alarm ringing
+AlarmRinging : do/Ring the alarm
+AlarmRinging : exit/Alarm stopped
+
+Off --> AlarmSet : set alarm
+AlarmSet --> AlarmRinging : alarm time reached
+AlarmRinging --> AlarmSet : stop alarm
+AlarmRinging --> Off : alarm stopped
+
+Off --> [*] : exit
+
+@enduml
+
+Candidate Diagram 4:
+@startuml
+title Alarm Clock State Machine
+
+[*] --> Off
+
+state Activated
+Activated : entry / Alarm activated
+Activated : do / Alarm ringing
+Activated : exit / Alarm stopped
+
+state Stopped
+Stopped : entry / Alarm stopped
+Stopped : do / Alarm remains active for next scheduled alarm time
+Stopped : exit / Alarm activated
+
+Off --> Activated : set alarm time
+
+Activated --> Stopped : stop alarm
+
+Stopped --> Activated : next scheduled alarm time
+
+@enduml
+
+Candidate Diagram 5:
+@startuml
+title Alarm Clock Control
+
+[*] --> Off
+
+state Off
+state AlarmActivated
+state AlarmRinging
+state AlarmStopped
+state Idle
+
+Off : entry / Display Welcome
+
+Off --> AlarmActivated : Set Alarm Time / Activate Alarm
+
+AlarmActivated --> AlarmRinging : Current Time Matches Alarm Time / Start Alarm
+
+AlarmRinging --> AlarmStopped : Stop Alarm / Stop Alarm
+
+AlarmActivated --> AlarmStopped : Turn Off Alarm / Turn Off Alarm
+
+AlarmStopped --> AlarmActivated : Next Scheduled Alarm Time / Activate Next Alarm
+
+AlarmRinging --> Idle : Alarm Stopped / Display Idle
+
+AlarmStopped --> Idle : Alarm Stopped / Display Idle
+
+Idle --> Off : Power Off / Display Off
+
+@enduml
+
+Candidate Diagram 6:
+@startuml
+[*] --> Off
+Off --> [*]
+Off --> Idle : user sets alarm time
+Idle --> AlarmActive : current time matches set alarm time
+AlarmActive --> Off : user stops alarm
+AlarmActive --> Idle : next scheduled alarm time
+@enduml
+
+Now create the best final PlantUML diagram.

@@ -1,0 +1,156 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+Output ONLY valid PlantUML code. Do not include explanations or markdown fences.
+
+Requirement:
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.
+
+Candidate Diagram 1:
+@startuml
+title State diagram for the Safehome Security Function
+
+[*] --> Startup : Power-on
+
+state "Startup" as Startup
+state "Problem" as Problem
+state "Ready" as Ready
+state "Monitoring" as Monitoring
+state "Alarm" as Alarm
+state "Normal" as Normal
+
+Startup --> Problem : Problem during startup
+Startup --> Ready : Everything fine during startup
+
+Problem --> [*] : Stop
+
+Ready --> Reset : Reset
+Ready --> Activate : Activate
+Ready --> TurnOff : Turn off
+Ready --> Monitoring : Activate monitoring
+
+Monitoring --> Alarm : Sensor triggered
+Monitoring --> Normal : False alarm or time ends
+
+Alarm --> Normal : User enters password
+
+Reset --> Ready : Reset
+Activate --> Monitoring : Activate
+TurnOff --> Ready : Turn off
+
+@enduml
+
+Candidate Diagram 2:
+@startuml
+[*] --> PowerOnCheck
+
+state PowerOnCheck {
+  PowerOnCheck --> Ready : everything fine
+  PowerOnCheck --> Stopped : problem during startup
+}
+
+state Ready {
+  Ready --> Ready : reset
+  Ready --> Monitoring : activate
+  Ready --> Stopped : turn off
+}
+
+state Monitoring {
+  Monitoring --> Alarm : sensor triggered
+  Monitoring --> Monitoring : continue monitoring
+}
+
+state Alarm {
+  Alarm --> Monitoring : false alarm or time ends
+  Alarm --> Stopped : password entered
+}
+
+state Stopped {
+  Stopped --> [*]
+}
+
+Monitoring --> Stopped : password entered
+@enduml
+
+Candidate Diagram 3:
+@startuml
+[*] --> PowerOnCheck
+PowerOnCheck --> [*] : problem detected
+PowerOnCheck --> ReadyToUse : everything fine
+ReadyToUse --> Reset : reset
+ReadyToUse --> Activate : activate
+ReadyToUse --> TurnOff : turn off
+ReadyToUse --> Monitoring : activated
+Monitoring --> Alarm : sensor triggered
+Monitoring --> Monitoring : false alarm or time ends
+Monitoring --> [*] : password entered
+@enduml
+
+Candidate Diagram 4:
+@startuml
+[*] --> PowerOn
+PowerOn --> [*]
+PowerOn --> Startup
+Startup --> Ready : everything is fine
+Ready --> [*]
+Ready --> Reset : reset pressed
+Reset --> Ready
+Ready --> Activate : activate pressed
+Activate --> Monitoring : activated
+Monitoring --> Alarm : sensor triggered
+Alarm --> Monitoring : false alarm or time ends
+Monitoring --> Ready : deactivated
+Ready --> PowerOff : power off pressed
+PowerOff --> Ready : power on pressed
+@enduml
+
+Candidate Diagram 5:
+@startuml
+[*] --> PowerOnCheck
+PowerOnCheck --> Problem : startup failure
+PowerOnCheck --> Ready : startup successful
+
+Ready --> Reset : reset
+Ready --> Activate : activate
+Ready --> Off : turn off
+
+Activate --> Monitoring : activation successful
+
+Monitoring --> Alarm : sensor triggered
+Alarm --> Monitoring : false alarm or time ends
+Alarm --> Ready : password entered
+
+Monitoring --> Ready : password entered
+
+Reset --> Ready : reset successful
+Off --> Ready : power off
+@enduml
+
+Candidate Diagram 6:
+@startuml
+[*] --> PowerOn
+PowerOn --> [*]
+PowerOn --> Startup
+Startup --> Ready : everything is fine
+Ready --> Reset : reset button pressed
+Ready --> Activate : activate button pressed
+Ready --> Deactivate : deactivate button pressed
+Ready --> Monitoring : activate button pressed
+Monitoring --> Alarm : sensor triggered
+Alarm --> Monitoring : false alarm or time ended
+Monitoring --> Deactivate : deactivate button pressed
+Ready --> PowerOff : power off button pressed
+PowerOff --> [*]
+@enduml
+
+Now create the best final PlantUML diagram.

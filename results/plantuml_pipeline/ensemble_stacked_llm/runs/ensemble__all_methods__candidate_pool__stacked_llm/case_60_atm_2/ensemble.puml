@@ -1,0 +1,41 @@
+@startuml
+title ATM Withdrawal State Machine
+
+[*] --> Idle : power on / initialize
+
+state Idle {
+    Idle --> Menu : display welcome screen
+}
+
+state Menu {
+    Menu --> WaitingForAmountSelection : select amount option
+    Menu --> CustomEntry : enter custom amount
+}
+
+state WaitingForAmountSelection
+WaitingForAmountSelection --> AmountSelected : amount selected from list
+WaitingForAmountSelection --> CustomEntry : enter custom amount
+
+state CustomEntry
+CustomEntry --> TransactionVerification : verify transaction
+
+state AmountSelected {
+    AmountSelected --> TransactionVerification : verify transaction
+}
+
+state TransactionVerification {
+    TransactionVerification --> TransactionComplete : transaction approved
+    TransactionVerification --> WaitingForReentry : transaction rejected
+}
+
+state TransactionComplete {
+    TransactionComplete --> Idle : transaction completed / dispense cash
+}
+
+state WaitingForReentry {
+    WaitingForReentry --> Menu : re-enter amount
+}
+
+Idle --> [*] : power off / terminate
+
+@enduml

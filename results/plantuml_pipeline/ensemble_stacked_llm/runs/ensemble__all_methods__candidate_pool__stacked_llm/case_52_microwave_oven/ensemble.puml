@@ -1,0 +1,45 @@
+@startuml
+title Microwave Oven Control - State Diagram
+
+[*] --> Idle
+
+state "Idle" as Idle {
+  entry / Display current time
+  do / Wait for user input
+}
+
+state "WaitingForInput" as WaitingForInput {
+  entry / Display power level options and cooking time prompt
+  do / Get user input
+  exit / Start cooking or cancel
+}
+
+state "Cooking" as Cooking {
+  entry / Start cooking process at selected power level
+  do / Monitor cooking time
+  exit / Stop cooking if door is opened or timer expires
+}
+
+state "DoorOpen" as DoorOpen {
+  entry / Stop cooking process
+  do / Return to idle state
+}
+
+state "Stopped" as Stopped {
+  entry / Display current time
+  do / Wait for next use
+}
+
+Idle --> WaitingForInput : User selects power level or enters cooking time
+
+WaitingForInput --> Cooking : Power selected and cooking time entered
+WaitingForInput --> Idle : Cancelled
+
+Cooking --> DoorOpen : Door opened during cooking process
+Cooking --> Stopped : Timer expired or user cancels
+
+DoorOpen --> Idle : Door closed
+
+Stopped --> Idle : Next use
+
+@enduml

@@ -1,0 +1,265 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+Output ONLY valid PlantUML code. Do not include explanations or markdown fences.
+
+Requirement:
+Green Rides — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display journey details upon user login and destination selection.
+2. The system shall allow users to activate driving mode or choose other options after viewing journey details.
+3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.
+4. The system shall inform relevant authorities in the event of an accident.
+5. The system shall send notifications during driving or in case of an accident.
+6. The system shall allow users to provide feedback upon completion of their journey.
+
+Candidate Diagram 1:
+@startuml
+title State diagram for the Green Rides system
+
+[*] --> Login
+
+state "Login" as Login
+state "View Journey Details" as ViewJourneyDetails
+state "Driving Mode" as DrivingMode
+state "Select Place to Eat" as SelectPlaceToEat
+state "Order Food" as OrderFood
+state "Accident" as Accident
+state "Feedback" as Feedback
+state "Final" as Final
+
+Login --> ViewJourneyDetails : Select Destination
+ViewJourneyDetails --> ViewJourneyDetails : View Details
+ViewJourneyDetails --> DrivingMode : Activate Driving Mode
+ViewJourneyDetails --> SelectPlaceToEat : Select Place to Eat
+
+DrivingMode --> DrivingMode : Drive
+DrivingMode --> Accident : Accident Occurs
+DrivingMode --> Feedback : Feedback
+
+SelectPlaceToEat --> OrderFood : Place Order
+OrderFood --> OrderFood : View Menu
+OrderFood --> ViewJourneyDetails : Cancel Order
+
+Accident --> Accident : Inform Authorities
+Accident --> Feedback : Provide Feedback
+
+Feedback --> Final : Complete Feedback
+Final --> [*]
+
+@enduml
+
+Candidate Diagram 2:
+@startuml
+[*] --> LoggedIn
+LoggedIn --> ViewingJourneyDetails : View Journey Details
+ViewingJourneyDetails --> DrivingModeActivated : Activate Driving Mode
+ViewingJourneyDetails --> OtherOptionsSelected : Choose Other Options
+OtherOptionsSelected --> EatingSelected : Select Place to Eat
+EatingSelected --> MenuViewing : View Menu
+MenuViewing --> OrderPlaced : Place Order
+DrivingModeActivated --> AccidentOccurred : Accident
+AccidentOccurred --> NotificationsSent : Inform Authorities
+NotificationsSent --> FeedbackProvided : Send Notifications
+FeedbackProvided --> [*] : Provide Feedback
+@enduml
+
+Candidate Diagram 3:
+@startuml
+title Green Rides System States
+
+[*] --> Login
+
+state Login
+Login : entry / To Action
+Login : do / Log in to the system
+Login : exit / Username and password entered
+
+state JourneyDetails
+JourneyDetails : entry / Display journey details
+JourneyDetails : do / Show route and estimated time
+JourneyDetails : exit / User has viewed details
+
+state DrivingMode
+DrivingMode : entry / Activate driving mode
+DrivingMode : do / Start navigation
+DrivingMode : exit / User has chosen driving mode
+
+state OtherOptions
+OtherOptions : entry / Choose other options
+OtherOptions : do / Show available options
+OtherOptions : exit / User has chosen other options
+
+state EatPlace
+EatPlace : entry / Select place to eat
+EatPlace : do / Show menu and allow order
+EatPlace : exit / User has placed order
+
+state Accident
+Accident : entry / Inform authorities
+Accident : do / Send notification
+Accident : exit / Authorities notified
+
+state Feedback
+Feedback : entry / Provide feedback
+Feedback : do / Collect user feedback
+Feedback : exit / Feedback submitted
+
+Login --> JourneyDetails : [login success]
+
+JourneyDetails --> DrivingMode : [user chooses driving mode]
+JourneyDetails --> OtherOptions : [user chooses other options]
+
+JourneyDetails --> EatPlace : [user is hungry]
+
+DrivingMode --> JourneyDetails : [user needs to view details again]
+
+OtherOptions --> JourneyDetails : [user needs to view details again]
+
+EatPlace --> JourneyDetails : [user has finished eating]
+
+JourneyDetails --> Accident : [accident occurs]
+
+Accident --> JourneyDetails : [user needs to view details again]
+
+JourneyDetails --> Feedback : [journey completed]
+
+Feedback --> [*]
+
+@enduml
+
+Candidate Diagram 4:
+@startuml
+title UML State Machine Diagram
+
+state Initial
+state LoggedIn
+state JourneyDetails
+state DrivingMode
+state Hungry
+state RestaurantSelection
+state Ordering
+state AccidentReport
+state Notifications
+state Feedback
+state Logout
+
+Initial --> LoggedIn : Login
+
+LoggedIn --> JourneyDetails : Select destination
+
+JourneyDetails : entry / Display journey details
+JourneyDetails : do / Show options
+JourneyDetails --> DrivingMode : Activate driving mode
+JourneyDetails --> JourneyDetails : Choose other options
+JourneyDetails --> Hungry : Select eat
+
+DrivingMode : entry / Activate
+DrivingMode : do / Monitor
+DrivingMode --> JourneyDetails : Deactivate
+DrivingMode --> AccidentReport : Accident detected
+
+Hungry --> RestaurantSelection : Select place
+
+RestaurantSelection : entry / Display menu
+RestaurantSelection --> Ordering : Order
+
+Ordering : entry / Place order
+Ordering --> JourneyDetails : Continue journey
+Ordering --> Notifications : Order confirmed
+
+AccidentReport --> Notifications : Report accident
+
+Notifications : entry / Send notifications
+Notifications --> JourneyDetails : Continue
+Notifications --> DrivingMode : Continue driving
+Notifications --> Feedback : Provide feedback
+
+Feedback --> Logout : Submit
+
+Logout --> [*] : Logout complete
+
+@enduml
+
+Candidate Diagram 5:
+@startuml
+[*] --> J0
+
+state J0 <<choice>>
+
+state "Journey Details" as JourneyDetails
+JourneyDetails : entry/upon user login and destination selection
+JourneyDetails : do/display journey details
+JourneyDetails : exit/after viewing journey details
+
+state "Driving Mode" as DrivingMode
+DrivingMode : entry/after viewing journey details
+DrivingMode : do/activate driving mode or choose other options
+DrivingMode : exit/after selection
+
+state "Place to Eat" as PlaceToEat
+PlaceToEat : entry/after viewing journey details
+PlaceToEat : do/select place to eat, view menu, and place order
+PlaceToEat : exit/after order placed
+
+state "Accident Notification" as AccidentNotification
+AccidentNotification : entry/after viewing journey details
+AccidentNotification : do/inform relevant authorities in case of an accident
+AccidentNotification : exit/after notification sent
+
+state "Driving Notifications" as DrivingNotifications
+DrivingNotifications : entry/after viewing journey details
+DrivingNotifications : do/send notifications during driving
+DrivingNotifications : exit/after notifications sent
+
+state "Order Confirmation" as OrderConfirmation
+OrderConfirmation : entry/after viewing journey details
+OrderConfirmation : do/confirm order placement
+OrderConfirmation : exit/after order confirmed
+
+J0 --> JourneyDetails
+JourneyDetails --> DrivingMode
+DrivingMode --> PlaceToEat
+PlaceToEat --> AccidentNotification
+AccidentNotification --> DrivingNotifications
+DrivingNotifications --> OrderConfirmation
+OrderConfirmation --> [*]
+@enduml
+
+Candidate Diagram 6:
+@startuml
+title Green Rides Control - Processing Journey
+
+state "Waiting for User Login" as WaitingForLogin
+
+state "Displaying Journey Details" as DisplayingJourneyDetails {
+  state "Displaying Destination" as DisplayingDestination
+  state "Displaying Options" as DisplayingOptions
+}
+
+state "Processing User Choice" as ProcessingUserChoice {
+  state "Activating Driving Mode" as ActivatingDrivingMode
+  state "Selecting Place to Eat" as SelectingPlaceToEat
+  state "Placing Order" as PlacingOrder
+}
+
+state "Sending Notifications" as SendingNotifications
+state "Informing Authorities" as InformingAuthorities
+state "Providing Feedback" as ProvidingFeedback
+
+WaitingForLogin --> DisplayingJourneyDetails : Login Successful /\nDisplay Journey Details
+DisplayingJourneyDetails --> DisplayingDestination : Destination Selected /\nDisplay Destination
+DisplayingJourneyDetails --> DisplayingOptions : Options Selected /\nDisplay Options
+
+DisplayingOptions --> ProcessingUserChoice : Driving Mode Selected /\nActivate Driving Mode
+DisplayingOptions --> ProcessingUserChoice : Place to Eat Selected /\nSelect Place to Eat
+ProcessingUserChoice --> ActivatingDrivingMode : Driving Mode Activated /\nStart Driving
+ProcessingUserChoice --> SelectingPlaceToEat : Place to Eat Selected /\nView Menu
+SelectingPlaceToEat --> PlacingOrder : Order Placed /\nSend Order
+
+DisplayingJourneyDetails --> SendingNotifications : Journey Started /\nSend Notifications
+SendingNotifications --> InformingAuthorities : Accident Detected /\nInform Authorities
+InformingAuthorities --> ProvidingFeedback : Journey Completed /\nProvide Feedback
+
+@enduml
+
+Now create the best final PlantUML diagram.

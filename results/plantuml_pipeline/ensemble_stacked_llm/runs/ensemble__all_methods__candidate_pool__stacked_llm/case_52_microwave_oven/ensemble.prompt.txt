@@ -1,0 +1,215 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+Output ONLY valid PlantUML code. Do not include explanations or markdown fences.
+
+Requirement:
+Microwave Oven — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display the current time when it is waiting for user input.
+2. The system shall allow the user to choose between full power and half power levels.
+3. The system shall enable the user to set cooking time by entering a number.
+4. The system shall remain inactive if the door is open during operation.
+5. The system shall stop immediately when the door is opened during the cooking process.
+6. The system shall allow the user to cancel the cooking process.
+7. The system shall return to displaying the current time after stopping or cancelling and wait for the next use.
+
+Candidate Diagram 1:
+@startuml
+title State diagram for the Microwave Oven class
+
+[*] --> Idle : Power On
+
+state "Idle" as Idle
+state "Display Time" as DisplayTime
+state "Cooking" as Cooking
+state "Stopped" as Stopped
+
+Idle --> DisplayTime : Door Closed
+
+DisplayTime --> DisplayTime : Time
+DisplayTime --> Cooking : Power Selected
+DisplayTime --> Idle : Door Open
+
+Cooking --> DisplayTime : Door Open
+Cooking --> Stopped : Cancel
+Cooking --> DisplayTime : Time Up
+
+Stopped --> Idle : Next Use
+
+@enduml
+
+Candidate Diagram 2:
+@startuml
+title Microwave Oven Control - State Diagram
+
+[*] --> Idle
+
+state "Idle" as Idle
+state "Full Power" as FullPower
+state "Half Power" as HalfPower
+state "Set Time" as SetTime
+state "Cooking" as Cooking
+state "Door Open" as DoorOpen
+
+Idle --> FullPower : Select Full Power
+Idle --> HalfPower : Select Half Power
+
+FullPower --> SetTime : Set Time
+HalfPower --> SetTime : Set Time
+
+SetTime --> Cooking : Start Cooking
+
+Cooking --> DoorOpen : Door Opened
+Cooking --> Idle : Cancel
+
+DoorOpen --> Idle : Door Closed
+
+@enduml
+
+Candidate Diagram 3:
+@startuml
+title UML State Machine Diagram - Microwave Oven
+
+[*] --> DisplayTime
+
+state "Display Time" as DisplayTime
+state "Choose Power Level" as ChoosePowerLevel
+state "Set Cooking Time" as SetCookingTime
+state "Cooking" as Cooking
+state "Door Open" as DoorOpen
+state "Stopped" as Stopped
+state "Cancelled" as Cancelled
+
+DisplayTime --> ChoosePowerLevel
+
+ChoosePowerLevel --> SetCookingTime
+SetCookingTime --> Cooking
+
+Cooking --> DoorOpen : Door Open
+Cooking --> Stopped : User Cancels
+DoorOpen --> Stopped : Door Closed
+
+Stopped --> DisplayTime
+Cancelled --> DisplayTime
+
+DisplayTime --> [*]
+
+@enduml
+
+Candidate Diagram 4:
+@startuml
+title UML State Machine Diagram - Microwave Oven
+
+[*] --> Idle
+
+state "Idle" as Idle
+Idle : entry / Display current time
+Idle : do / Wait for user input
+
+Idle --> WaitingForInput : [User selects power level or enters cooking time]
+
+state "Waiting for input" as WaitingForInput
+WaitingForInput : entry / Display power level options
+WaitingForInput : do / Get user input
+WaitingForInput : exit / Start cooking or cancel
+
+WaitingForInput --> Cooking : [User selects power level and enters cooking time]
+WaitingForInput --> Cancel : [User cancels cooking process]
+
+state "Cooking" as Cooking
+Cooking : entry / Start cooking process
+Cooking : do / Monitor cooking time
+Cooking : exit / Cooking complete or door opened
+
+Cooking --> Stopped : [Cooking complete]
+Cooking --> DoorOpened : [Door opened during cooking]
+
+state "Stopped" as Stopped
+Stopped : entry / Display current time
+Stopped : do / Wait for next use
+
+Stopped --> Idle : [User stops or cancels cooking process]
+
+state "Door opened" as DoorOpened
+DoorOpened : entry / Stop cooking process
+DoorOpened : do / Return to idle state
+
+DoorOpened --> Idle : [Door opened during cooking process]
+
+state "Cancel" as Cancel
+Cancel : entry / Cancel cooking process
+Cancel : do / Return to idle state
+
+Cancel --> Idle : [User cancels cooking process]
+
+state End <<choice>>
+End --> [*]
+
+Idle --> End : [System is idle]
+WaitingForInput --> End : [User input is received]
+Cooking --> End : [Cooking process is complete or interrupted]
+Stopped --> End : [Cooking process is stopped]
+DoorOpened --> End : [Door is opened during cooking process]
+Cancel --> End : [Cooking process is cancelled]
+
+@enduml
+
+Candidate Diagram 5:
+@startuml
+[*] --> Idle
+Idle --> DoorOpen : Door Opened
+DoorOpen --> Idle : Door Closed
+
+Idle --> DoorClosed : Door Closed
+DoorClosed --> Cooking : Start Cooking
+Cooking --> Stopped : Door Opened or Cancelled
+Stopped --> Idle : After stopping or cancelling
+Stopped --> [*]
+@enduml
+
+Candidate Diagram 6:
+@startuml
+title Microwave Oven - State Diagram
+
+[*] --> Idle
+
+state "Idle" as Idle {
+  [*] --> WaitingForInput
+  WaitingForInput --> Idle : Door Opened
+  WaitingForInput --> FullPower : Full Power Selected
+  WaitingForInput --> HalfPower : Half Power Selected
+  WaitingForInput --> SetTime : Time Entered
+}
+
+state "WaitingForInput" as WaitingForInput {
+  [*] --> Idle
+}
+
+state "Full Power" as FullPower {
+  [*] --> Cooking
+  Cooking --> FullPower : Door Opened
+  Cooking --> Idle : Door Closed
+}
+
+state "Half Power" as HalfPower {
+  [*] --> Cooking
+  Cooking --> HalfPower : Door Opened
+  Cooking --> Idle : Door Closed
+}
+
+state "Set Time" as SetTime {
+  [*] --> Cooking
+  Cooking --> SetTime : Door Opened
+  Cooking --> Idle : Door Closed
+}
+
+state "Cooking" as Cooking {
+  [*] --> Idle : Door Opened
+  Cooking --> Idle : Timer Expired
+}
+
+Cooking --> [*] : Door Opened
+
+@enduml
+
+Now create the best final PlantUML diagram.

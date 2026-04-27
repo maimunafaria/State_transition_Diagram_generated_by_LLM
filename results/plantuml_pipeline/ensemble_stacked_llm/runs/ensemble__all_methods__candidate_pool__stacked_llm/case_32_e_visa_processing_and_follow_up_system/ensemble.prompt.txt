@@ -1,0 +1,317 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+Output ONLY valid PlantUML code. Do not include explanations or markdown fences.
+
+Requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Candidate Diagram 1:
+@startuml
+[*] --> LoggedIn
+
+state LoggedIn {
+  LoggedIn --> Dashboard
+  Dashboard --> ApplyForVisa : apply for visa
+  ApplyForVisa --> PaymentConfirmed : payment confirmed
+  PaymentConfirmed --> ApplicationAccepted : application accepted
+  ApplicationAccepted --> ViewStatus : view status
+  ViewStatus --> CheckStatus : check status
+  CheckStatus --> CancelApplication : cancel application
+  CancelApplication --> ModifyDetails : modify details
+  ModifyDetails --> ViewDetails : view details
+  ViewDetails --> ViewPurpose : view purpose
+  ViewPurpose --> GiveFeedback : give feedback
+  GiveFeedback --> Logout : logout
+}
+
+Logout --> [*]
+@enduml
+
+Candidate Diagram 2:
+@startuml
+[*] --> CreateUser
+
+state CreateUser
+CreateUser --> Login
+
+state Login
+Login --> CreateUser : [Invalid]
+Login --> LoggedIn : [Valid]
+
+state LoggedIn {
+  LoggedIn --> Dashboard
+  Dashboard --> Settings : modify details
+  Settings --> Dashboard : back
+}
+
+LoggedIn --> ApplicationAccepted : apply for visa
+LoggedIn --> CheckStatus : check status
+LoggedIn --> GiveFeedback : give feedback
+LoggedIn --> Logout : log out
+
+state ApplicationAccepted {
+  ApplicationAccepted --> PaymentProcessing
+  PaymentProcessing --> ApplicationAccepted : payment failed
+  PaymentProcessing --> StatusUpdate : payment successful
+}
+
+state StatusUpdate
+StatusUpdate --> GiveFeedback : feedback
+StatusUpdate --> Logout : log out
+
+state GiveFeedback
+GiveFeedback --> Logout : log out
+
+state Logout
+Logout --> [*] : end
+@enduml
+
+Candidate Diagram 3:
+@startuml
+title UML State Machine Diagram
+
+[*] --> C1
+
+state C1 <<choice>>
+C1 --> Login : [possibilities to start]
+
+state "Login" as Login
+Login : entry / user credentials
+Login : do / authentication
+Login : exit / login completed
+
+Login --> C2
+
+state C2 <<choice>>
+C2 --> CreateAccount : [possibilities to create account]
+C2 --> ApplyVisa : [possibilities to apply visa]
+
+state "Create Account" as CreateAccount
+CreateAccount : entry / user credentials
+CreateAccount : do / account creation
+CreateAccount : exit / account created
+
+CreateAccount --> Login
+
+state "Apply Visa" as ApplyVisa
+ApplyVisa : entry / user credentials
+ApplyVisa : do / payment
+ApplyVisa : do / application accepted
+ApplyVisa : exit / visa application submitted
+
+ApplyVisa --> ViewStatus
+
+state "View Status" as ViewStatus
+ViewStatus : entry / visa application
+ViewStatus : do / status shown
+ViewStatus : exit / status viewed
+
+ViewStatus --> CheckStatus
+
+state "Check Status" as CheckStatus
+CheckStatus : entry / status viewed
+CheckStatus : do / status checked
+CheckStatus : exit / status checked
+
+CheckStatus --> CancelApplication
+
+state "Cancel Application" as CancelApplication
+CancelApplication : entry / status checked
+CancelApplication : do / application cancelled
+CancelApplication : exit / application cancelled
+
+CancelApplication --> ModifyDetails
+
+state "Modify Details" as ModifyDetails
+ModifyDetails : entry / user credentials
+ModifyDetails : do / details modified
+ModifyDetails : exit / details modified
+
+ModifyDetails --> ViewDetails
+
+state "View Details" as ViewDetails
+ViewDetails : entry / user credentials
+ViewDetails : do / details shown
+ViewDetails : exit / details viewed
+
+ViewDetails --> GiveFeedback
+
+state "Give Feedback" as GiveFeedback
+GiveFeedback : entry / status checked
+GiveFeedback : do / feedback given
+GiveFeedback : exit / feedback given
+
+GiveFeedback --> UpdateStatus
+
+state "Update Status" as UpdateStatus
+UpdateStatus : entry / status checked
+UpdateStatus : do / status updated
+UpdateStatus : exit / status updated
+
+UpdateStatus --> Logout
+
+state "Logout" as Logout
+Logout : entry / user credentials
+Logout : do / logout completed
+Logout : exit / logout completed
+
+Logout --> [*]
+
+@enduml
+
+Candidate Diagram 4:
+@startuml
+title E Visa Processing And Follow Up System - State Diagram
+
+[*] --> AccountCreated
+
+state "Account Created" as AccountCreated
+state "Logged In" as LoggedIn
+state "Application Applied" as ApplicationApplied
+state "View Status" as ViewStatus
+state "Check Status" as CheckStatus
+state "Cancelled Application" as CancelledApplication
+state "Modified Details" as ModifiedDetails
+state "Viewed Details" as ViewedDetails
+state "Viewed Purpose" as ViewedPurpose
+state "Feedback Given" as FeedbackGiven
+state "Logged Out" as LoggedOut
+
+AccountCreated --> LoggedIn : Create Account
+
+LoggedIn --> ApplicationApplied : Apply For Visa
+LoggedIn --> ViewStatus : View Status
+ViewStatus --> CheckStatus : Check Status
+CheckStatus --> ViewStatus : View Status
+ApplicationApplied --> ViewStatus : View Status
+LoggedIn --> CancelledApplication : Cancel Application
+LoggedIn --> ModifiedDetails : Modify Details
+ModifiedDetails --> ViewedDetails : View Details
+ViewedDetails --> ViewedPurpose : View Purpose
+ViewedPurpose --> ViewStatus : View Status
+ViewedPurpose --> FeedbackGiven : Give Feedback
+FeedbackGiven --> LoggedOut : Log Out
+CancelledApplication --> LoggedOut : Log Out
+ApplicationApplied --> ViewStatus : View Status
+
+@enduml
+
+Candidate Diagram 5:
+@startuml
+[*] --> LoggedIn
+
+state LoggedIn {
+  [*] --> Dashboard
+  Dashboard --> Settings : open settings
+  Settings --> Dashboard : back
+  Dashboard --> ViewStatus : view status
+  ViewStatus --> ViewStatus : check status
+  ViewStatus --> CancelApp : cancel application
+  ViewStatus --> ModifyDetails : modify details
+  ViewStatus --> ViewDetails : view details
+  ViewDetails --> ViewDetails : view purpose of application
+  ViewDetails --> ViewStatus : view status
+  ViewDetails --> Feedback : give feedback
+  ModifyDetails --> ViewDetails : view details
+  ModifyDetails --> ViewStatus : view status
+  CancelApp --> ViewStatus : view status
+  CancelApp --> ViewDetails : view details
+  CancelApp --> Feedback : give feedback
+  ViewStatus --> ViewDetails : view details
+  ViewStatus --> Feedback : give feedback
+  Feedback --> ViewDetails : view details
+  Feedback --> ViewStatus : view status
+  ViewDetails --> ViewStatus : view status
+}
+
+LoggedIn --> [*] : logout
+@enduml
+
+Candidate Diagram 6:
+@startuml
+[*] --> Login
+
+state Login
+Login : entry / Get the Login Details
+Login : do / Validate the Login Details
+Login : exit / Valid or Invalid Login
+
+Login --> Login : [Invalid Login]
+Login --> Choice1 : [Valid Login]
+
+state Choice1 <<choice>>
+Choice1 --> CancelCert : [Cancel the Certificate]
+Choice1 --> RequestCert : [Applying for Certificates]
+Choice1 --> ViewProfile : [Profile Viewing]
+Choice1 --> UpdateProfile : [Profile Updation]
+
+state "Cancellation of Certificates" as CancelCert
+CancelCert : entry / Certificate is asked for Cancellation
+CancelCert : do / Certificate is Canceled
+CancelCert : exit / Move to End
+
+CancelCert --> EndMerge
+
+state "Request for Certificates" as RequestCert
+RequestCert : entry / Fill the Form and Upload the Details
+RequestCert : do / Request for Certificates
+RequestCert : exit / Apply for another Certificate or Move to End
+
+RequestCert --> RequestCert : [Apply for another Certificate if needed]
+RequestCert --> IssueCert : [Certificates requested]
+
+state "Issuing the Certificates" as IssueCert
+IssueCert : entry / Validating Details
+IssueCert : do / Issuing the Certificates
+IssueCert : exit / Updating the Database
+
+IssueCert --> RequestCert : [Certificate is issued]
+RequestCert --> EndMerge : [End]
+
+state "View Profile" as ViewProfile
+ViewProfile : entry / View the Profile
+ViewProfile : do / Display the Profile
+ViewProfile : exit / Exit from Profile Viewing
+
+ViewProfile --> EndMerge : [End]
+
+state "Update the Profile" as UpdateProfile
+UpdateProfile : entry / Update the User's Profile
+UpdateProfile : do / Citizen Profile is updated
+UpdateProfile : exit / Move to End
+
+UpdateProfile --> EndMerge : [End]
+
+state EndMerge <<choice>>
+EndMerge --> [*]
+EndMerge --> Logout : [Log out]
+
+state Logout
+Logout : entry / Log out
+Logout : do / Log out
+Logout : exit / End
+
+Logout --> [*]
+
+[*] --> Choice1
+
+Choice1 --> CancelCert : [Cancel the Certificate]
+Choice1 --> RequestCert : [Applying for Certificates]
+Choice1 --> ViewProfile : [Profile Viewing]
+Choice1 --> UpdateProfile : [Profile Updation]
+
+@enduml
+
+Now create the best final PlantUML diagram.

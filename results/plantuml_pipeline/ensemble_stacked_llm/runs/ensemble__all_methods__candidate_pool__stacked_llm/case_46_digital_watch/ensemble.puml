@@ -1,0 +1,59 @@
+@startuml
+[*] --> Idle
+
+state "Idle" as Idle {
+  [*] --> Idle
+}
+
+state "Adjusting Time" as AdjustingTime {
+  Idle --> AdjustingTime : Press time adjustment button
+  AdjustingTime --> Idle : Press time adjustment button again
+}
+
+state "Increasing Value" as IncreasingValue {
+  AdjustingTime --> IncreasingValue : Press increase value button
+  IncreasingValue --> AdjustingTime : Press decrease value button or press time adjustment button again
+}
+
+state "Setting Alarm Hour" as SettingAlarmHour {
+  AdjustingTime --> SettingAlarmHour : Press alarm hour button
+  SettingAlarmHour --> AdjustingTime : Press time adjustment button again
+}
+
+state "Setting Alarm Minute" as SettingAlarmMinute {
+  SettingAlarmHour --> SettingAlarmMinute : Press alarm minute button
+  SettingAlarmMinute --> SettingAlarmHour : Press alarm hour button or press time adjustment button again
+}
+
+state "Alarm On" as AlarmOn {
+  SettingAlarmMinute --> AlarmOn : Set alarm to current time and press alarm on button
+  AlarmOn --> SettingAlarmMinute : Press alarm off button
+}
+
+state "Alarm Ringing" as AlarmRinging {
+  AlarmOn --> AlarmRinging : Alarm matches current time
+  AlarmRinging --> AlarmOff : Press stop alarm button
+}
+
+state "Alarm Off" as AlarmOff {
+  AlarmRinging --> AlarmOff : Press stop alarm button
+  AlarmOff --> Idle : Dismiss
+}
+
+state "Light On" as LightOn {
+  Idle --> LightOn : Press light on button
+  LightOn --> LightOff : Button released
+}
+
+state "Light Off" as LightOff {
+  LightOn --> LightOff : Button released
+  LightOff --> Idle : Button pressed
+}
+
+Idle --> AdjustingTime : Press time adjustment button
+AdjustingTime --> IncreasingValue : Press increase value button
+SettingAlarmHour --> SettingAlarmMinute : Press alarm minute button
+AlarmOn --> AlarmRinging : Alarm matches current time
+LightOn --> LightOff : Button released
+
+@enduml

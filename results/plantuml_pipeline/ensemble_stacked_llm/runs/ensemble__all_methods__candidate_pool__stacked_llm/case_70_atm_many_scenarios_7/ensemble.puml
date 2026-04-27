@@ -1,0 +1,90 @@
+@startuml
+title ATM Control - Final State Transition Diagram
+
+[*] --> Greeting
+
+state Greeting {
+  entry / Display Welcome /
+}
+
+state "Card Inserted" as CardInserted {
+  do / Check card validity /
+}
+Greeting --> CardInserted : User Arrives / Card Inserted /
+
+state WaitingForPIN
+CardInserted --> WaitingForPIN : Card Valid / Get PIN /
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+WaitingForPIN --> Ejecting : Cancel / Eject
+
+state ValidatingPIN {
+  do / Validate PIN /
+}
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+ValidatingPIN --> Confiscating : Third Invalid PIN, Card Stolen, Card Expired / Confiscate, Update Status
+ValidatingPIN --> OptionsDisplayed : Correct PIN / Display Menu
+
+state "Card Kept" as CardKept {
+  do / Keep card for security /
+}
+Confiscating --> CardKept : Card Confiscated / Card Held For Security /
+
+state "Card Returned" as CardReturned {
+  do / Return card to user /
+}
+WaitingForPIN --> CardReturned : Cancel / Eject
+ValidatingPIN --> CardReturned : Cancel / Eject
+
+state OptionsDisplayed {
+  entry / Display available options /
+}
+OptionsDisplayed --> TransactionProcessing : User Chooses Option / Process Request /
+
+state "Transaction Processing" as TransactionProcessing {
+  state Withdrawal
+  state Query
+  state Transfer
+}
+
+TransactionProcessing --> Withdrawal : Withdrawal Selected / Process Withdrawal, Display Wait
+TransactionProcessing --> Query : Check Information Selected / Process Query, Display Wait
+TransactionProcessing --> Transfer : Make Transfer Selected / Process Transfer, Display Wait
+
+state Dispensing {
+  do / Dispense cash /
+}
+Withdrawal --> Dispensing : Withdrawal Approved / Dispense Cash, Update Status /
+
+state Printing {
+  do / Print receipt /
+}
+Dispensing --> Printing : Cash Dispensed / Print Receipt, Confirm Cash Dispensed /
+
+state Ejecting {
+  entry / Eject card and display message /
+}
+
+Printing --> Ejecting : Receipt Printed / Eject
+Dispensing --> Ejecting : Insufficient Cash / Eject
+
+TransactionProcessing --> Ejecting : Rejected / Eject, Display Apology
+Withdrawal --> Ejecting : Rejected / Eject, Display Apology
+Query --> Ejecting : Rejected / Eject, Display Apology
+Transfer --> Ejecting : Rejected / Eject, Display Apology
+
+TransactionProcessing --> TransactionComplete : Processing Complete / Continue /
+Withdrawal --> TransactionComplete : Withdrawal Completed / Continue /
+Query --> TransactionComplete : Query Completed / Continue /
+Transfer --> TransactionComplete : Transfer Completed / Continue /
+
+state "Transaction Complete" as TransactionComplete {
+  entry / End transaction and display message /
+}
+TransactionComplete --> Ejecting : Card Ejected / Display Ejected /
+
+CardKept --> [*] : Card Kept For Security / Display Confiscated /
+CardReturned --> [*] : Card Returned To User / Display Ejected /
+Ejecting --> [*] : Operation Ended / Display Ejected /
+
+@enduml

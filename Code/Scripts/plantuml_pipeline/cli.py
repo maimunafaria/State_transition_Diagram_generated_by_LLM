@@ -227,8 +227,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--strategy",
         action="append",
         help=(
-            "Strategy to ensemble (repeatable). "
-            "Default: all five strategies from methodology."
+            "Strategy to ensemble separately (repeatable). "
+            "Default: one pooled ensemble from all five methods across Qwen, LLaMA, and DeepSeek."
         ),
     )
     p_ensemble.add_argument(
@@ -236,7 +236,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         help=(
             "Explicit source run_id to include in one cross-run candidate pool "
-            "(repeatable). When set, --strategy and Qwen/LLaMA prefixes are ignored."
+            "(repeatable). When set, --strategy and model-prefix defaults are ignored."
         ),
     )
     p_ensemble.add_argument(

@@ -1,0 +1,377 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+Output ONLY valid PlantUML code. Do not include explanations or markdown fences.
+
+Requirement:
+Farm Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to log in.
+2. The system shall display the main area after a user signs in, allowing them to choose what to check.
+3. The system shall show market conditions when the user selects this option.
+4. The system shall show the market report if the customer selects market condition.
+4. The system shall require users to provide a photo when they choose pest control help.
+4. The system shall show the pest control techniques if the customer selects pest control help.
+5. The system shall provide soil-related suggestions ( which crops are suitable ) after receiving soil information from the user.
+6. The system shall offer weather insights based on the provided location.
+7. The system shall display labour availability details after receiving a location from the user.
+8. The system shall allow users to continue using the service after viewing any of these results.
+9. The system shall end the session when a user logs out.
+
+Candidate Diagram 1:
+@startuml
+title UML State Machine Diagram - Farm Management System
+
+state "Idle" as Idle
+state "LoggedIn MainMenu" as MainMenu
+state "MarketConditions" as Market
+state "PestControl" as Pest
+state "SoilSuggestions" as Soil
+state "WeatherInsights" as Weather
+state "LabourAvailability" as Labour
+state "Logout" as Logout
+
+[*] --> Idle
+
+Idle --> MainMenu : Login
+
+MainMenu --> Market : Select Market Conditions
+MainMenu --> Pest : Select Pest Control
+MainMenu --> Soil : Select Soil Suggestions
+MainMenu --> Weather : Select Weather Insights
+MainMenu --> Labour : Select Labour Availability
+
+Market --> MainMenu : Back to MainMenu
+Market --> Logout : Logout
+
+Pest --> MainMenu : Back to MainMenu
+Pest --> Logout : Logout
+
+Soil --> MainMenu : Back to MainMenu
+Soil --> Logout : Logout
+
+Weather --> MainMenu : Back to MainMenu
+Weather --> Logout : Logout
+
+Labour --> MainMenu : Back to MainMenu
+Labour --> Logout : Logout
+
+MainMenu --> Logout : Logout
+
+Logout --> [*]
+
+@enduml
+
+Candidate Diagram 2:
+@startuml
+title Farm Management System
+
+state "Logged Out" as LoggedOut
+state "Logged In" as LoggedIn
+state "Main Area" as MainArea
+state "Market Conditions" as MarketConditions
+state "Market Report" as MarketReport
+state "Pest Control Help" as PestControlHelp
+state "Pest Control Techniques" as PestControlTechniques
+state "Soil Suggestions" as SoilSuggestions
+state "Weather Insights" as WeatherInsights
+state "Labour Availability" as LabourAvailability
+state "Session Ended" as SessionEnded
+
+[*] --> LoggedOut
+
+LoggedIn --> MainArea : User Signs In
+MainArea --> MarketConditions : User Selects Market Conditions
+MarketConditions --> MarketReport : User Selects Market Report
+MarketReport --> LoggedIn : User Returns to Main Area
+
+MainArea --> PestControlHelp : User Selects Pest Control Help
+PestControlHelp --> PestControlTechniques : User Provides Photo
+PestControlTechniques --> LoggedIn : User Returns to Main Area
+
+MainArea --> SoilSuggestions : User Provides Soil Information
+SoilSuggestions --> LoggedIn : User Returns to Main Area
+
+MainArea --> WeatherInsights : User Provides Location
+WeatherInsights --> LoggedIn : User Returns to Main Area
+
+MainArea --> LabourAvailability : User Provides Location
+LabourAvailability --> LoggedIn : User Returns to Main Area
+
+LoggedIn --> SessionEnded : User Logs Out
+
+@enduml
+
+Candidate Diagram 3:
+@startuml
+hide empty description
+[*] --> LoggedIn
+
+state LoggedIn {
+  [*] --> Dashboard
+  Dashboard --> MarketConditions : select market condition
+  MarketConditions --> MarketReport : view market report
+  MarketConditions --> [*] : back
+}
+
+state LoggedIn {
+  [*] --> PestControlHelp : select pest control help
+  PestControlHelp --> PestControlTechniques : view pest control techniques
+  PestControlHelp --> [*] : back
+}
+
+state LoggedIn {
+  [*] --> SoilSuggestions : provide soil information
+  SoilSuggestions --> SoilSuggestionsResult : receive soil-related suggestions
+  SoilSuggestions --> [*] : back
+}
+
+state LoggedIn {
+  [*] --> WeatherInsights : provide location
+  WeatherInsights --> WeatherDetails : receive weather insights
+  WeatherInsights --> [*] : back
+}
+
+state LoggedIn {
+  [*] --> LabourAvailability : provide location
+  LabourAvailability --> LabourDetails : receive labour availability details
+  LabourAvailability --> [*] : back
+}
+
+LoggedIn --> [*] : logout
+@enduml
+
+Candidate Diagram 4:
+@startuml
+[*] --> Login
+
+state Login {
+  Login --> LoggedIn
+}
+
+state LoggedIn <<choice>> {
+  LoggedIn --> MarketConditions : [valid]
+  LoggedIn --> PestControl : [valid]
+  LoggedIn --> SoilInfo : [valid]
+  LoggedIn --> Weather : [valid]
+  LoggedIn --> Labour : [valid]
+  LoggedIn --> Continue : [valid]
+  LoggedIn --> Logout : [valid]
+}
+
+state MarketConditions {
+  MarketConditions --> MarketReport
+}
+
+state MarketReport {
+  MarketReport --> LoggedIn
+  MarketReport --> Logout
+}
+
+state PestControl {
+  PestControl --> PestControlTechniques
+}
+
+state PestControlTechniques {
+  PestControlTechniques --> LoggedIn
+}
+
+state SoilInfo {
+  SoilInfo --> SoilSuggestions
+}
+
+state SoilSuggestions {
+  SoilSuggestions --> LoggedIn
+}
+
+state Weather {
+  Weather --> WeatherReport
+}
+
+state WeatherReport {
+  WeatherReport --> LoggedIn
+}
+
+state Labour {
+  Labour --> LabourReport
+}
+
+state LabourReport {
+  LabourReport --> LoggedIn
+}
+
+state Continue {
+  Continue --> [*]
+}
+
+state Logout {
+  Logout --> [*]
+}
+
+@enduml
+
+Candidate Diagram 5:
+@startuml
+[*] --> Login
+
+state Login
+Login : entry / verify credentials
+Login : do / validate credentials
+Login : exit / login successful
+
+state LoginDecision <<choice>>
+Login --> LoginDecision : [valid]
+
+state "Valid Login" as ValidLogin
+ValidLogin : entry / user logged in
+ValidLogin : do / display main area
+ValidLogin : exit / user can choose options
+
+state "Invalid Login" as InvalidLogin
+InvalidLogin : entry / credentials incorrect
+InvalidLogin : do / display error message
+InvalidLogin : exit / return to login
+
+LoginDecision --> ValidLogin : [valid]
+LoginDecision --> InvalidLogin : [invalid]
+
+ValidLogin --> MainArea
+
+state MainArea
+MainArea : entry / display main area
+MainArea : do / user selects option
+MainArea : exit / user can choose options
+
+MainArea --> MarketConditions
+MainArea --> PestControlHelp
+MainArea --> SoilSuggestions
+MainArea --> WeatherInsights
+MainArea --> LabourAvailability
+MainArea --> [*] : logout
+
+state MarketConditions
+MarketConditions : entry / display market conditions
+MarketConditions : do / user can view conditions
+MarketConditions : exit / user can choose options
+
+MarketConditions --> MainArea
+
+state PestControlHelp
+PestControlHelp : entry / display pest control help
+PestControlHelp : do / user provides photo
+PestControlHelp : exit / display pest control techniques
+
+PestControlHelp --> MainArea
+
+state SoilSuggestions
+SoilSuggestions : entry / user provides soil information
+SoilSuggestions : do / display soil-related suggestions
+SoilSuggestions : exit / user can choose options
+
+SoilSuggestions --> MainArea
+
+state WeatherInsights
+WeatherInsights : entry / user provides location
+WeatherInsights : do / display weather insights
+WeatherInsights : exit / user can choose options
+
+WeatherInsights --> MainArea
+
+state LabourAvailability
+LabourAvailability : entry / user provides location
+LabourAvailability : do / display labour availability details
+LabourAvailability : exit / user can choose options
+
+LabourAvailability --> MainArea
+
+@enduml
+
+Candidate Diagram 6:
+@startuml
+title Farm Management System
+
+[*] --> Login
+
+state Login
+Login : entry / user provide Login Details
+Login : do / verify Login Details
+Login : exit / login Successful
+
+state LoginDecision <<choice>>
+Login --> LoginDecision
+
+state "Valid Login" as ValidLogin
+ValidLogin : entry / contain Info
+ValidLogin : do / allow Access to system
+ValidLogin : exit / farm Entry
+
+state "Invalid Login" as InvalidLogin
+InvalidLogin : entry / wrong Info
+InvalidLogin : do / display Error message
+InvalidLogin : exit / return To Start
+
+LoginDecision --> ValidLogin
+LoginDecision --> InvalidLogin
+
+state NavChoice <<choice>>
+ValidLogin --> NavChoice
+
+state MarketConditions
+MarketConditions : entry / show Market Conditions
+MarketConditions : do / allow to select Market Conditions
+MarketConditions : exit / save Market Conditions
+
+state MarketReport
+MarketReport : entry / show Market Report
+MarketReport : do / allow to select Market Report
+MarketReport : exit / save Market Report
+
+NavChoice --> MarketConditions
+NavChoice --> MarketReport
+
+state PestControl
+PestControl : entry / show Pest Control Techniques
+PestControl : do / allow to select Pest Control Techniques
+PestControl : exit / save Pest Control Techniques
+
+state SoilSuggestions
+SoilSuggestions : entry / show Soil Suggestions
+SoilSuggestions : do / allow to select Soil Suggestions
+SoilSuggestions : exit / save Soil Suggestions
+
+MarketConditions --> PestControl
+MarketReport --> PestControl
+PestControl --> SoilSuggestions
+
+state WeatherInsights
+WeatherInsights : entry / show Weather Insights
+WeatherInsights : do / allow to select Weather Insights
+WeatherInsights : exit / save Weather Insights
+
+state LabourAvailability
+LabourAvailability : entry / show Labour Availability
+LabourAvailability : do / allow to select Labour Availability
+LabourAvailability : exit / save Labour Availability
+
+SoilSuggestions --> WeatherInsights
+SoilSuggestions --> LabourAvailability
+
+state ContinueService
+ContinueService : entry / allow users to continue using the service
+ContinueService : do / allow users to continue using the service
+ContinueService : exit / end
+
+WeatherInsights --> ContinueService
+LabourAvailability --> ContinueService
+
+state Logout
+Logout : entry / user logs out
+Logout : do / end session
+Logout : exit / end
+
+ContinueService --> Logout
+
+Logout --> [*]
+
+@enduml
+
+Now create the best final PlantUML diagram.

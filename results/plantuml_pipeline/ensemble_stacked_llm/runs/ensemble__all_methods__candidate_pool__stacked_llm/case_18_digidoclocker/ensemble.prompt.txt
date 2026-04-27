@@ -1,0 +1,370 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+Output ONLY valid PlantUML code. Do not include explanations or markdown fences.
+
+Requirement:
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
+
+Candidate Diagram 1:
+@startuml
+[*] --> Registration
+
+state Registration
+Registration : entry / Get the Registration Details
+Registration : do / Validate the Details
+Registration : exit / Valid or Invalid Registration
+
+
+Registration --> [*] : [Invalid Registration]
+
+
+Registration --> Login : [Valid Registration]
+
+
+state Login
+Login : entry / Get the Login Details
+Login : do / Validate the Login Details
+Login : exit / Valid or Invalid Login
+
+
+Login --> Login : [Invalid Login]
+
+
+Login --> Choice1 : [Valid Login]
+
+
+state Choice1 <<choice>>
+Choice1 --> CancelCert : [Cancel the Certificate]
+Choice1 --> RequestCert : [Applying for Certificates]
+Choice1 --> ViewProfile : [Profile Viewing]
+Choice1 --> UpdateProfile : [Profile Updation]
+
+
+state "Cancellation of Certificates" as CancelCert
+CancelCert : entry / Certificate is asked for Cancellation
+CancelCert : do / Certificate is Canceled
+CancelCert : exit / Move to End
+
+CancelCert --> EndMerge
+
+
+state "Request for Certificates" as RequestCert
+RequestCert : entry / Fill the Form and Upload the Details
+RequestCert : do / Request for Certificates
+RequestCert : exit / Apply for another Certificate or Move to End
+
+RequestCert --> RequestCert : [Apply for another Certificate if needed]
+
+RequestCert --> IssueCert : [Certificates requested]
+
+state "Issuing the Certificates" as IssueCert
+IssueCert : entry / Validating Details
+IssueCert : do / Issuing the Certificates
+IssueCert : exit / Updating the Database
+
+IssueCert --> RequestCert : [Certificate is issued]
+RequestCert --> EndMerge : [End]
+
+
+state "View Profile" as ViewProfile
+ViewProfile : entry / View the Profile
+ViewProfile : do / Display the Profile
+ViewProfile : exit / Exit from Profile Viewing
+
+ViewProfile --> EndMerge : [End]
+
+
+state "Update the Profile" as UpdateProfile
+UpdateProfile : entry / Update the User's Profile
+UpdateProfile : do / Citizen Profile is updated
+UpdateProfile : exit / Move to End
+
+UpdateProfile --> EndMerge : [End]
+
+
+state EndMerge <<choice>>
+EndMerge --> CancelCert : [Cancel Certificate]
+EndMerge --> IssueCert : [Issue Certificate]
+EndMerge --> ViewProfile : [View Profile]
+EndMerge --> UpdateProfile : [Update Profile]
+EndMerge --> End : [End]
+
+state "End" as End
+End --> [*]
+
+Choice1 --> EndMerge : [Continue to End]
+Login --> EndMerge : [Continue to End]
+Registration --> EndMerge : [Continue to End]
+@enduml
+
+Candidate Diagram 2:
+@startuml
+title Digidoclocker State Machine Diagram
+
+[*] --> Registration
+
+state Registration
+Registration : entry / Get User Details
+Registration : do / Validate Details
+Registration : exit / Valid or Invalid
+
+Registration --> Login : [Valid Registration]
+Registration --> [*] : [Invalid Registration]
+
+state Login
+Login : entry / Get Login Details
+Login : do / Validate Login
+Login : exit / Valid or Invalid
+
+Login --> Choice1 : [Valid Login]
+
+state Choice1 <<choice>>
+
+Choice1 --> UploadDocuments : [Upload Documents]
+Choice1 --> ViewProfile : [View Profile]
+Choice1 --> ApplyCert : [Apply for Certificate]
+Choice1 --> ContinueUpload : [Continue Uploading]
+Choice1 --> ChoiceRegistrar : [Registrar]
+
+state UploadDocuments
+UploadDocuments : entry / Upload Document
+UploadDocuments : do / Process Upload
+UploadDocuments : exit / Proceed or Continue
+
+UploadDocuments --> Choice1 : [Proceed]
+UploadDocuments --> ContinueUpload : [Continue]
+
+state ContinueUpload
+ContinueUpload : entry / Continue Upload
+ContinueUpload : do / Process Upload
+ContinueUpload : exit / Proceed
+
+ContinueUpload --> Choice1 : [Done]
+
+state ViewProfile
+ViewProfile : entry / View Profile
+ViewProfile : do / Display Profile
+ViewProfile : exit / Proceed
+
+ViewProfile --> Choice1 : [Back]
+
+state ApplyCert
+ApplyCert : entry / Apply for Certificate
+ApplyCert : do / Process Application
+ApplyCert : exit / Issue or Reapply
+
+ApplyCert --> IssueCertificate : [Certificate Issued]
+ApplyCert --> Choice1 : [Reapply]
+
+state IssueCertificate
+IssueCertificate : entry / Issue Certificate
+IssueCertificate : do / Process Issue
+IssueCertificate : exit / Done
+
+IssueCertificate --> Choice1 : [Done]
+
+state ChoiceRegistrar <<choice>>
+
+ChoiceRegistrar --> RequestCertificate : [Request Certificate]
+
+state RequestCertificate
+@enduml
+
+Candidate Diagram 3:
+@startuml
+title Digidoclocker State Diagram
+
+[*] --> CitizenRegistration
+
+state CitizenRegistration
+state CitizenLogin
+state DocumentUpload
+state ProfileView
+state CertificateApplication
+state CertificateReapply
+state RegistrarRequest
+state RegistrarReapply
+state SessionEnd
+
+CitizenRegistration --> CitizenLogin : register
+CitizenLogin --> DocumentUpload : login
+DocumentUpload --> ProfileView : view profile
+DocumentUpload --> CertificateApplication : apply for certificate
+DocumentUpload --> DocumentUpload : continue upload
+
+CertificateApplication --> CertificateReapply : reapply
+RegistrarRequest --> RegistrarReapply : continue request
+
+CitizenLogin --> ProfileView : view profile
+CitizenLogin --> CertificateApplication : apply for certificate
+CitizenLogin --> DocumentUpload : upload documents
+
+RegistrarRequest --> RegistrarReapply : continue request
+
+DocumentUpload --> CertificateApplication : apply for certificate
+DocumentUpload --> DocumentUpload : continue upload
+
+CertificateApplication --> CertificateReapply : reapply
+RegistrarRequest --> RegistrarReapply : continue request
+
+ProfileView --> CitizenLogin : logout
+CertificateApplication --> CitizenLogin : logout
+CertificateReapply --> CitizenLogin : logout
+RegistrarRequest --> CitizenLogin : logout
+RegistrarReapply --> CitizenLogin : logout
+
+SessionEnd --> [*]
+
+@enduml
+
+Candidate Diagram 4:
+@startuml
+title UML State Machine Diagram (Digidoclocker)
+
+[*] --> Registration
+
+state Registration
+Registration : entry / User enters details
+Registration : do / Validate registration details
+Registration : exit / Registration successful or failed
+
+Registration --> Login : [Valid Registration]
+Registration --> Registration : [Invalid Registration]
+
+state Login
+Login : entry / User enters login details
+Login : do / Validate login credentials
+Login : exit / Login successful or failed
+
+Login --> Choice1 : [Valid Login]
+
+state Choice1 <<choice>>
+Choice1 --> UploadDocuments : [Upload Documents]
+Choice1 --> ViewProfile : [View Profile]
+Choice1 --> ApplyCertificate : [Apply for Certificate]
+Choice1 --> UpdateProfile : [Update Profile]
+
+state UploadDocuments
+UploadDocuments --> Choice1 : [Continue Upload]
+UploadDocuments --> End : [Finish Upload]
+
+state ViewProfile
+ViewProfile --> Choice1 : [Back to Menu]
+ViewProfile --> End : [End Session]
+
+state ApplyCertificate
+ApplyCertificate --> Choice1 : [Reapply]
+ApplyCertificate --> End : [Finish Application]
+
+state UpdateProfile
+UpdateProfile --> Choice1 : [Back to Menu]
+UpdateProfile --> End : [End Session]
+
+state End
+End --> [*]
+
+state RegistrarRequest <<choice>>
+RegistrarRequest --> RegistrarRequest : [Request More]
+RegistrarRequest --> Choice1 : [Back to Menu]
+
+Choice1 --> RegistrarRequest : [Request Certificate]
+
+@enduml
+
+Candidate Diagram 5:
+@startuml
+title State diagram for the Digidoclocker class
+
+[*] --> Unregistered : Open
+
+state "Unregistered" as Unregistered
+state "Registered" as Registered
+state "LoggedIn" as LoggedIn
+state "SessionEnded" as SessionEnded
+
+Unregistered --> Registered : Register
+Registered --> LoggedIn : Login
+LoggedIn --> LoggedIn : Upload documents
+LoggedIn --> LoggedIn : View profile
+LoggedIn --> LoggedIn : Apply for certificate
+LoggedIn --> SessionEnded : End session
+
+LoggedIn --> LoggedIn : Continue uploading documents
+LoggedIn --> LoggedIn : Reapply for certificate
+
+LoggedIn --> SessionEnded : End session
+
+SessionEnded --> [*]
+
+@enduml
+
+Candidate Diagram 6:
+@startuml
+title Digidoclocker System States
+
+[*] --> Registration
+
+state "Registration" as Registration
+state "Login" as Login
+state "Document Upload" as DocumentUpload
+state "Profile View" as ProfileView
+state "Certificate Application" as CertificateApplication
+state "Reapply for Certificate" as ReapplyCertificate
+state "Request Certificate" as RequestCertificate
+state "End Session" as EndSession
+
+Registration : entry / citizen registration
+Registration : do / validate citizen details
+Registration : exit / citizen registered
+
+Registration --> Login : [registration successful]
+
+Login : entry / citizen login
+Login : do / validate login details
+Login : exit / login successful
+
+Login --> DocumentUpload : [login successful]
+Login --> ProfileView : [login successful]
+Login --> CertificateApplication : [login successful]
+
+DocumentUpload : entry / citizen upload documents
+DocumentUpload : do / upload documents
+DocumentUpload : exit / documents uploaded
+
+DocumentUpload --> CertificateApplication : [documents uploaded]
+
+CertificateApplication : entry / citizen apply for certificate
+CertificateApplication : do / apply for certificate
+CertificateApplication : exit / certificate applied
+
+CertificateApplication --> ReapplyCertificate : [certificate applied]
+
+ReapplyCertificate : entry / citizen reapply for certificate
+ReapplyCertificate : do / reapply for certificate
+ReapplyCertificate : exit / certificate reapplied
+
+ReapplyCertificate --> CertificateApplication : [reapply successful]
+
+RequestCertificate : entry / registrar request certificate
+RequestCertificate : do / request certificate
+RequestCertificate : exit / certificate requested
+
+RequestCertificate --> CertificateApplication : [certificate requested]
+
+CertificateApplication --> EndSession : [certificate applied]
+
+EndSession --> [*]
+
+@enduml
+
+Now create the best final PlantUML diagram.

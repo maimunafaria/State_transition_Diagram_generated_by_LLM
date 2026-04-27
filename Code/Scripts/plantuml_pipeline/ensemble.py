@@ -700,53 +700,19 @@ def build_stacked_ensemble_prompt(
     rag_context: str = "",
 ) -> str:
     parts: list[str] = [
-        "You are an LLM meta-ensemble for UML state machine generation.",
-        "Goal: produce ONE final PlantUML state machine from multiple candidate diagrams.",
-        "Hard rules:",
-        "- Output ONLY PlantUML code.",
-        "- Start with @startuml and end with @enduml.",
-        "- Include exactly one initial transition [*] --> state.",
-        "- Keep transitions semantically grounded in the requirement.",
-        "- Avoid unsupported hallucinated states/transitions.",
-        "- Prefer structurally valid candidates when conflicts exist.",
+        "Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.",
+        "Output ONLY valid PlantUML code. Do not include explanations or markdown fences.",
         "",
         "Requirement:",
         requirement.strip(),
         "",
-        "Candidate diagrams:",
     ]
 
     for idx, cand in enumerate(candidates, start=1):
-        graph: DiagramGraph = cand["graph"]
-        validation: ValidationResult = cand["validation"]
-        puml_text = _clip_candidate_puml(str(cand.get("puml_text", "")), max_chars=2200)
-        score_details = cand.get("gold_free_scores") or {}
-        score_suffix = ""
-        if score_details:
-            score_suffix = (
-                f" | gold_free_score={float(score_details.get('final_score', 0.0)):.3f}"
-                f" | coverage={float(score_details.get('requirement_coverage_score', 0.0)):.3f}"
-                f" | consensus={float(score_details.get('consensus_score', 0.0)):.3f}"
-                f" | quality={float(score_details.get('diagram_quality_score', 0.0)):.3f}"
-            )
-        details = (
-            f"Candidate {idx} | model={cand.get('model')} | run_id={cand.get('run_id')} | "
-            f"valid={validation.valid} | errors={len(validation.errors)} | "
-            f"states={len(graph.states)} | transitions={len(set(graph.transitions))}"
-            f"{score_suffix}"
-        )
-        parts.extend([details, puml_text, ""])
+        puml_text = _clip_candidate_puml(str(cand.get("puml_text", "")), max_chars=2600)
+        parts.extend([f"Candidate Diagram {idx}:", puml_text, ""])
 
-    if rag_context.strip():
-        parts.extend(
-            [
-                "Domain/reference context (support evidence):",
-                rag_context.strip(),
-                "",
-            ]
-        )
-
-    parts.append("Return only the final PlantUML.")
+    parts.append("Now create the best final PlantUML diagram.")
     return "\n".join(parts).strip() + "\n"
 
 

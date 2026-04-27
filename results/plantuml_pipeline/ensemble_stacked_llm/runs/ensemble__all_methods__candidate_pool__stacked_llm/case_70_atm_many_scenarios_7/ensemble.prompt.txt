@@ -1,0 +1,300 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+Output ONLY valid PlantUML code. Do not include explanations or markdown fences.
+
+Requirement:
+Atm Many Scenarios Scenario 7 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall greet the user when they arrive.
+2. The system shall check the PIN after the card is inserted.
+3. The system shall allow the user to try again if the entered PIN is incorrect.
+4. The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times.
+5. The system shall return the card if the user cancels the operation.
+6. The system shall display available options (withdrawing money, checking information, or making a transfer) for the user to choose from if the PIN is correct.
+7. The system shall process the selected request after the user makes a choice.
+
+Candidate Diagram 1:
+@startuml
+title ATM Control
+
+[*] --> Idle
+
+state Idle
+state "Waiting for PIN" as WaitingForPIN
+state "Validating PIN" as ValidatingPIN
+state "Waiting for Customer Choice" as WaitingForChoice
+state "Processing Transaction" as ProcessingTransaction {
+  state "Processing Transfer" as ProcessingTransfer
+  state "Processing Query" as ProcessingQuery
+  state "Processing Withdrawal" as ProcessingWithdrawal
+}
+state Ejecting
+state Printing
+state Dispensing
+state Confiscating
+
+Idle : entry / Display Welcome
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+ValidatingPIN --> Confiscating : Third Invalid PIN,\nCard Stolen, Card Expired /\nConfiscate
+ValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+WaitingForChoice --> Ejecting : Cancel / Eject
+
+WaitingForChoice --> ProcessingTransaction : Select Transaction
+ProcessingTransaction --> Ejecting : Rejected /\nEject,\nDisplay Apology
+ProcessingTransfer --> Printing : Transfer Approved /\nPrint Receipt,\nUpdate Status
+ProcessingQuery --> Printing : Query Approved /\nPrint Receipt,\nUpdate Status
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash,\nUpdate Status
+
+ProcessingTransaction --> ProcessingTransfer : Transfer / Process Transfer
+ProcessingTransaction --> ProcessingQuery : Query / Process Query
+ProcessingTransaction --> ProcessingWithdrawal : Withdrawal / Process Withdrawal
+
+ProcessingTransfer --> Ejecting : Rejected /\nEject,\nDisplay Apology
+ProcessingQuery --> Ejecting : Rejected /\nEject,\nDisplay Apology
+ProcessingWithdrawal --> Ejecting : Rejected /\nEject,\nDisplay Apology
+
+Dispensing --> Ejecting : Dispensing Complete /\nEject
+Printing --> Ejecting : Printing Complete /\nEject
+ProcessingQuery --> Ejecting : Query Complete /\nEject
+ProcessingTransfer --> Ejecting : Transfer Complete /\nEject
+ProcessingWithdrawal --> Ejecting : Withdrawal Complete /\nEject
+
+Confiscating --> [*] : Card Confiscated
+
+@enduml
+
+Candidate Diagram 2:
+@startuml
+title ATM - PIN Validation and Transaction Processing
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForCustomerChoice
+state ProcessingRequest
+state Ejecting
+state Confiscating
+
+Idle : entry / Display Welcome
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+ValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu
+ValidatingPIN --> Confiscating : Third Invalid PIN / Confiscate
+
+WaitingForCustomerChoice --> ProcessingRequest : Request Selected / Process Request
+WaitingForCustomerChoice --> Ejecting : Cancel / Eject
+
+ProcessingRequest --> Ejecting : Rejected / Eject
+ProcessingRequest --> ProcessingRequest : Processing Complete / Continue
+
+Ejecting --> [*] : Card Ejected / Display Ejected
+Confiscating --> [*] : Card Confiscated / Display Confiscated
+@enduml
+
+Candidate Diagram 3:
+@startuml
+title ATM State Transition Diagram
+
+[*] --> Greeting
+state Greeting
+state "Card Inserted" as CardInserted
+state "Invalid Card" as InvalidCard
+state "PIN Incorrect" as PINIncorrect
+state "Card Kept" as CardKept
+state "Card Returned" as CardReturned
+state "Options Displayed" as OptionsDisplayed
+state "Transaction Processing" as TransactionProcessing
+state "Transaction Complete" as TransactionComplete
+
+Greeting : «M» User Arrives/
+Greeting --> CardInserted : «M» Card Inserted/
+CardInserted --> CardReturned : «M» User Cancels/
+CardInserted --> PINIncorrect : «M» Incorrect PIN/
+PINIncorrect --> CardReturned : «M» Try Again/
+PINIncorrect --> CardKept : «M» Too Many Incorrect PIN Attempts/
+CardKept --> [*] : «M» Card Kept For Security/
+CardInserted --> OptionsDisplayed : «M» Correct PIN/
+OptionsDisplayed --> TransactionProcessing : «M» User Chooses Option/
+TransactionProcessing --> TransactionComplete : «M» Transaction Completed/
+TransactionComplete --> [*] : «M» Transaction Complete/
+
+@enduml
+
+Candidate Diagram 4:
+@startuml
+title ATM Control - User Interaction
+
+[*] --> Idle
+
+state Idle
+state "Waiting for PIN" as WaitingForPIN
+state ValidatingPIN
+state "Waiting for Customer Choice" as WaitingForChoice
+state Confiscating
+state Ejecting
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+ValidatingPIN --> Confiscating : Third Invalid PIN, Card Stolen, Card Expired / Confiscate, Update Status
+
+ValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+WaitingForChoice --> Ejecting : Cancel / Eject
+
+Confiscating --> [*] : Card Confiscated
+WaitingForChoice --> [*] : Operation Ended
+
+@enduml
+
+Candidate Diagram 5:
+@startuml
+title UML State Machine Diagram
+
+state "Arrival" as Arrival
+state "PIN Verification" as PINVerification
+state "Invalid PIN" as InvalidPIN
+state "Card Held" as CardHeld
+state "Return Card" as ReturnCard
+state "Options Displayed" as OptionsDisplayed
+state "Request Processing" as RequestProcessing
+
+state "Greeting" as Greeting
+Greeting : entry / User arrives
+Greeting : do / Display greeting
+Greeting : exit / User proceeds
+
+state "Card Insertion" as CardInsertion
+CardInsertion : entry / User inserts card
+CardInsertion : do / Check card validity
+CardInsertion : exit / Proceed to PIN verification
+
+state "PIN Entry" as PINEntry
+PINEntry : entry / User enters PIN
+PINEntry : do / Verify PIN
+PINEntry : exit / Proceed to next state
+
+state "Cancel Operation" as CancelOperation
+CancelOperation : entry / User cancels operation
+CancelOperation : do / Return card
+CancelOperation : exit / Operation cancelled
+
+state "Too Many Incorrect PINs" as TooManyIncorrectPINs
+TooManyIncorrectPINs : entry / User enters incorrect PIN too many times
+TooManyIncorrectPINs : do / Hold card for security
+TooManyIncorrectPINs : exit / Card held
+
+state "Correct PIN" as CorrectPIN
+CorrectPIN : entry / User enters correct PIN
+CorrectPIN : do / Display options
+CorrectPIN : exit / Options displayed
+
+state "Withdraw Money" as WithdrawMoney
+WithdrawMoney : entry / User selects withdraw money
+WithdrawMoney : do / Process withdraw money request
+WithdrawMoney : exit / Request processed
+
+state "Check Information" as CheckInformation
+CheckInformation : entry / User selects check information
+CheckInformation : do / Process check information request
+CheckInformation : exit / Request processed
+
+state "Make Transfer" as MakeTransfer
+MakeTransfer : entry / User selects make transfer
+MakeTransfer : do / Process make transfer request
+MakeTransfer : exit / Request processed
+
+state "Invalid Request" as InvalidRequest
+InvalidRequest : entry / User selects invalid request
+InvalidRequest : do / Display error message
+InvalidRequest : exit / Request not processed
+
+Arrival --> Greeting
+Greeting --> CardInsertion
+
+CardInsertion --> PINVerification
+PINVerification --> PINEntry
+
+PINEntry --> PINVerification : Incorrect PIN
+PINVerification --> CorrectPIN : Correct PIN
+PINVerification --> InvalidPIN : Invalid PIN
+PINVerification --> CancelOperation : Cancel operation
+
+CorrectPIN --> OptionsDisplayed
+OptionsDisplayed --> WithdrawMoney
+OptionsDisplayed --> CheckInformation
+OptionsDisplayed --> MakeTransfer
+OptionsDisplayed --> InvalidRequest
+
+WithdrawMoney --> RequestProcessing
+Check
+@enduml
+
+Candidate Diagram 6:
+@startuml
+title ATM Control - Validate PIN and Display Options
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForCustomerChoice
+state ProcessingWithdrawal
+state Dispensing
+state Printing
+state Ejecting
+state Confiscating
+state Terminating
+state ClosedDown
+
+Idle : entry / Display Welcome
+ClosedDown : entry / Display System Down
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+WaitingForPIN --> Confiscating : Card Confiscated / display Confiscated
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> Confiscating : Card Stolen, Card Expired /\nConfiscate, Update Status
+ValidatingPIN --> Confiscating : Third Invalid PIN /\nConfiscate
+
+ValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+WaitingForCustomerChoice --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+
+WaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected /\nRequest Withdrawal, Display Wait
+
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash, Update Status
+ProcessingWithdrawal --> Ejecting : Rejected / Eject
+
+Dispensing --> Printing : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+Dispensing --> ClosedDown : Insufficient Cash / Eject
+
+Printing --> Ejecting : Receipt Printed / Eject
+
+Ejecting --> Terminating : Card Ejected / Display Ejected
+Confiscating --> Terminating : Card Confiscated / Display Confiscated
+
+Terminating --> Idle : After (Elapsed Time)\n[Closedown Not Requested]
+
+@enduml
+
+Now create the best final PlantUML diagram.

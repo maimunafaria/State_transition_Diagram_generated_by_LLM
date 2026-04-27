@@ -1,0 +1,260 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+Output ONLY valid PlantUML code. Do not include explanations or markdown fences.
+
+Requirement:
+Class Campaign Version 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start a campaign after a manager and staff are assigned.
+2. The system shall activate the campaign once everything is approved and the contract is signed.
+3. The system shall prepare adverts during the campaign.
+4. The system shall approve and schedule the adverts.
+5. The system shall run the adverts.
+6. The system shall allow extension or adjustment of the campaign while it is running.
+7. The system shall complete the campaign and prepare a final statement after all adverts have finished.
+8. The system shall handle payment after the campaign completion and generate a refund if the amount paid is less than required.
+9. The system shall wait for the correct balance to be settled if the amount paid exceeds the required amount.
+10. The system shall mark the campaign as paid once the full amount is properly paid.
+11. The system shall archive the campaign and release all assigned staff and managers.
+
+Candidate Diagram 1:
+@startuml
+title UML State Chart Diagram for Campaign Version 2
+
+state "Initial" as Initial
+state "Assign Staff and Manager" as AssignStaffManager
+state "Approve and Sign Contract" as ApproveSignContract
+state "Prepare Adverts" as PrepareAdverts
+state "Approve and Schedule Adverts" as ApproveScheduleAdverts
+state "Run Adverts" as RunAdverts
+state "Extend or Adjust Campaign" as ExtendAdjustCampaign
+state "Complete Campaign" as CompleteCampaign
+state "Final Statement" as FinalStatement
+state "Payment Handling" as PaymentHandling
+state "Payment Completed" as PaymentCompleted
+state "Campaign Archiving" as CampaignArchiving
+state "Final" as Final
+
+[*] --> Initial
+
+Initial --> AssignStaffManager
+
+AssignStaffManager --> ApproveSignContract
+
+ApproveSignContract --> PrepareAdverts
+
+PrepareAdverts --> ApproveScheduleAdverts
+
+ApproveScheduleAdverts --> RunAdverts
+
+RunAdverts --> ExtendAdjustCampaign
+
+ExtendAdjustCampaign --> RunAdverts : [Extension or Adjustment Needed]
+
+RunAdverts --> CompleteCampaign : [All Adverts Finished]
+
+CompleteCampaign --> FinalStatement
+
+FinalStatement --> PaymentHandling
+
+PaymentHandling --> PaymentCompleted : [Full Amount Paid]
+
+PaymentHandling --> CampaignArchiving : [Amount Paid Exceeds Required]
+
+PaymentCompleted --> Final
+
+CampaignArchiving --> Final
+
+Final --> [*]
+
+@enduml
+
+Candidate Diagram 2:
+@startuml
+title Campaign State Transition Diagram
+
+[*] --> StartCampaign
+
+state StartCampaign
+state Running
+state PrepareAdverts
+state ApprovedAdverts
+state CompleteCampaign
+state PaymentHandling
+state RefundGenerated
+state AwaitingBalance
+state Paid
+state Archived
+
+StartCampaign --> Running : Campaign started
+
+Running --> PrepareAdverts : Prepare adverts
+PrepareAdverts --> ApprovedAdverts : Approve adverts
+ApprovedAdverts --> Running : Schedule adverts
+
+Running --> CompleteCampaign : All adverts finished
+CompleteCampaign --> PaymentHandling : Process payment
+
+PaymentHandling --> RefundGenerated : Amount paid less than required
+PaymentHandling --> AwaitingBalance : Amount paid more than required
+PaymentHandling --> Paid : Full amount paid
+
+Paid --> Archived : Archive campaign
+RefundGenerated --> Archived : Archive campaign
+AwaitingBalance --> Paid : Correct balance settled
+
+Archived --> [*]
+
+@enduml
+
+Candidate Diagram 3:
+@startuml
+[*] --> Campaign_Created
+Campaign_Created --> Prepare_Adverts
+Prepare_Adverts --> Activate_Campaign
+Activate_Campaign --> Run_Adverts
+Run_Adverts --> Archive_Campaign
+Archive_Campaign --> [*]
+@enduml
+
+Candidate Diagram 4:
+@startuml
+state "Campaign Not Started" as CS1 {
+  [*] --> CS2 : Manager and Staff Assigned
+}
+state "Campaign Started" as CS2 {
+  CS2 --> CS3 : Everything Approved and Contract Signed
+}
+state "Adverts Prepared" as CS3 {
+  CS3 --> CS4 : Adverts Approved and Scheduled
+}
+state "Adverts Running" as CS4 {
+  CS4 --> CS5 : Campaign Extension or Adjustment Requested
+  CS4 --> CS6 : All Adverts Finished
+}
+state "Campaign Completed" as CS5 {
+  CS5 --> CS7 : Payment Handled and Refund Generated if Necessary
+}
+state "Payment Settled" as CS6 {
+  CS6 --> CS8 : Full Amount Paid
+}
+state "Campaign Archived" as CS7 {
+  CS7 --> CS9 : Staff and Managers Released
+}
+
+CS2 --> CS3 : Campaign Activated
+CS4 --> CS5 : Adverts Finished Running
+CS5 --> CS7 : Campaign Completed
+CS6 --> CS8 : Payment Settled
+CS7 --> CS9 : Campaign Archived
+
+@enduml
+
+Candidate Diagram 5:
+@startuml
+title UML State Chart Diagram
+
+[*] --> StartCampaign
+
+state StartCampaign <<choice>>
+
+StartCampaign --> AssignManager
+StartCampaign --> AssignStaff
+
+state "Campaign Assigned" as Assigned
+Assigned : entry / manager and staff are assigned
+Assigned : do / assign manager and staff
+Assigned : exit / assignment complete
+
+state "Campaign Approved" as Approved
+Approved : entry / campaign is approved and contract is signed
+Approved : do / sign contract and approve campaign
+Approved : exit / campaign approved
+
+state "Prepare Adverts" as PrepareAdverts
+PrepareAdverts : entry / campaign is approved
+PrepareAdverts : do / prepare adverts
+PrepareAdverts : exit / adverts prepared
+
+state "Adverts Approved" as AdvertsApproved
+AdvertsApproved : entry / adverts are approved and scheduled
+AdvertsApproved : do / approve and schedule adverts
+AdvertsApproved : exit / adverts approved and scheduled
+
+state "Run Adverts" as RunAdverts
+RunAdverts : entry / adverts are running
+RunAdverts : do / run adverts
+RunAdverts : exit / adverts are running
+
+state "Extend/Adjust Campaign" as ExtendAdjust
+ExtendAdjust : entry / campaign is running
+ExtendAdjust : do / extend or adjust campaign
+ExtendAdjust : exit / campaign extended or adjusted
+
+state "Campaign Completed" as Completed
+Completed : entry / all adverts have finished
+Completed : do / complete campaign
+Completed : exit / campaign completed
+
+state "Final Statement" as FinalStatement
+FinalStatement : entry / final statement is prepared
+FinalStatement : do / prepare final statement
+FinalStatement : exit / final statement prepared
+
+state "Handle Payment" as HandlePayment
+HandlePayment : entry / handle payment after campaign completion
+HandlePayment : do / handle payment and generate refund if needed
+HandlePayment : exit / payment handled
+
+state "Wait for Balance" as WaitForBalance
+WaitForBalance : entry / wait for correct balance to be settled
+WaitForBalance : do / wait for balance to be settled
+WaitForBalance : exit / balance settled
+
+state "Campaign Paid" as Paid
+Paid : entry / full amount is properly paid
+Paid : do / mark campaign as paid
+Paid : exit / campaign marked as paid
+
+state "Campaign Archived" as Archived
+Archived : entry / campaign is archived
+Archived : do / archive campaign and release staff and managers
+Archived : exit / campaign archived
+
+Completed --> FinalStatement
+FinalStatement --> HandlePayment
+HandlePayment --> WaitForBalance
+WaitForBalance --> Paid
+Paid --> Archived
+Archived --> [*]
+
+Assigned --> Approved
+Approved --> PrepareAdverts
+PrepareAdverts --> AdvertsApproved
+Advert
+@enduml
+
+Candidate Diagram 6:
+@startuml
+title State machine for Campaign
+
+state Commissioned
+state Active
+state Completed
+state Paid
+
+[*] --> Commissioned : /assignManager;\nassignStaff
+
+Commissioned --> Active : Authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+
+Active --> Completed : campaignCompleted\n/prepareFinalStatement
+
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = zero]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > zero]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < zero]\n/generateRefund
+
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+
+@enduml
+
+Now create the best final PlantUML diagram.

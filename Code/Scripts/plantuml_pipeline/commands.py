@@ -87,20 +87,31 @@ def command_ensemble(args: argparse.Namespace) -> int:
 
     cases = load_cases(dataset_root)
     case_by_id = {c.case_id: c for c in cases}
+    default_pool_strategies = [
+        "zero_shot",
+        "one_shot",
+        "few_shot",
+        "rag",
+        "rag_validation_generator_critic_repair",
+    ]
     candidate_run_ids = [s.strip() for s in (args.candidate_run_id or []) if s.strip()]
+    if not candidate_run_ids and not args.strategy:
+        candidate_run_ids = [
+            f"{prefix}__{strategy}"
+            for prefix in [
+                args.qwen_run_prefix,
+                args.llama_run_prefix,
+                args.deepseek_run_prefix,
+            ]
+            for strategy in default_pool_strategies
+        ]
     strategies = (
         ["candidate_pool"]
         if candidate_run_ids
         else (
             args.strategy
             if args.strategy
-            else [
-                "zero_shot",
-                "one_shot",
-                "few_shot",
-                "rag",
-                "rag_validation_generator_critic_repair",
-            ]
+            else default_pool_strategies
         )
     )
     strategies = [safe_strategy_tag(s) for s in strategies]
@@ -113,7 +124,7 @@ def command_ensemble(args: argparse.Namespace) -> int:
         method_tag = ensemble_method
         if ensemble_method == "stacked_llm" and args.stack_use_rag:
             method_tag = "stacked_llm_rag"
-        source_tag = "selected_runs" if candidate_run_ids else "qwen_llama"
+        source_tag = "all_methods" if candidate_run_ids else "by_strategy"
         run_id = f"ensemble__{source_tag}__{strategy}__{method_tag}"
         for case_id in sorted(case_by_id.keys()):
             case = case_by_id[case_id]

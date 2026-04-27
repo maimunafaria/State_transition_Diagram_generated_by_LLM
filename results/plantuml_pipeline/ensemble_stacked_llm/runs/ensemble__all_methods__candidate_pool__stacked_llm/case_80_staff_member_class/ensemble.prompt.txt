@@ -1,0 +1,182 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+Output ONLY valid PlantUML code. Do not include explanations or markdown fences.
+
+Requirement:
+Staff Member Class — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow assigning a staff member to a client or adding them to a campaign.
+2. The system shall allow removing assignments from staff members, returning them to an unassigned state.
+3. The system shall enable staff members to switch between different assignments during their work period.
+4. The system shall mark a staff member as unemployed when they leave the job.
+5. The system shall archive the record of a former employee after some time has passed.
+
+Candidate Diagram 1:
+@startuml
+title Staff Member Class State Machine
+
+[*] --> Unassigned
+
+state Unassigned
+state Assigned
+state "In Campaign" as InCampaign
+state Unemployed
+state Archived
+
+Unassigned --> Assigned : Assign Staff Member
+Unassigned --> InCampaign : Add to Campaign
+Assigned --> Unassigned : Remove Assignment
+Assigned --> InCampaign : Switch to Campaign
+InCampaign --> Unassigned : End Campaign
+InCampaign --> Unassigned : Remove Assignment
+Unassigned --> Unemployed : Mark as Unemployed
+Unemployed --> Archived : Archive Record
+
+@enduml
+
+Candidate Diagram 2:
+@startuml
+[*] --> Unassigned
+
+state Unassigned {
+  Unassigned --> AssignedToClient
+  Unassigned --> AssignedToCampaign
+}
+
+state AssignedToClient {
+  AssignedToClient --> AssignedToCampaign : switch to campaign
+  AssignedToClient --> Unassigned : remove assignment
+}
+
+state AssignedToCampaign {
+  AssignedToCampaign --> AssignedToClient : switch to client
+  AssignedToCampaign --> Unassigned : remove assignment
+}
+
+Unassigned --> Unemployed : leave job
+
+state Unemployed {
+  Unemployed --> Archived : after some time
+}
+
+Archived --> [*]
+@enduml
+
+Candidate Diagram 3:
+@startuml
+title State machine for Staff Member
+
+state Unassigned
+state Assigned
+state Switched
+state Unemployed
+state Archived
+
+[*] --> Unassigned : /assignStaffMember
+
+Unassigned --> Assigned : assignedToClient\nor\nassignedToCampaign
+
+Assigned --> Switched : switchedAssignment\n[during work period]
+
+Switched --> Assigned : switchedBack\n[to previous assignment]
+
+Assigned --> Unemployed : staffMemberLeftJob\n[mark as unemployed]
+
+Unemployed --> Archived : archiveRecord\n[after some time has passed]
+
+Archived --> [*] : /unarchiveRecord
+
+@enduml
+
+Candidate Diagram 4:
+@startuml
+[*] --> Assigned
+state Assigned {
+  Assigned --> AssignedToClient : assign to client
+  AssignedToClient --> AssignedToCampaign : assign to campaign
+  AssignedToCampaign --> Unassigned : remove from campaign
+  Unassigned --> Assigned : reassign
+}
+
+state Unemployed {
+  Unemployed --> Unemployed : mark as unemployed
+}
+
+state Archived {
+  Archived --> Archived : archive record
+}
+
+AssignedToClient --> Unemployed : leave job
+AssignedToCampaign --> Unemployed : leave job
+Unemployed --> Archived : archive record
+Archived --> [*] : record archived
+
+@enduml
+
+Candidate Diagram 5:
+@startuml
+title Staff Member State Machine
+
+state "Unassigned" as Unassigned {
+  [*] --> AssignToClient : [assign to client]
+  AssignToClient --> AssignedToClient : [assigned to client]
+  AssignToClient --> AddToCampaign : [add to campaign]
+  AddToCampaign --> AssignedToCampaign : [assigned to campaign]
+}
+
+state "Assigned to client" as AssignedToClient {
+  AssignedToClient --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AssignedToCampaign : [switch to campaign]
+  AssignedToClient --> LeaveJob : [leave job]
+}
+
+state "Assigned to campaign" as AssignedToCampaign {
+  AssignedToCampaign --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AssignedToClient : [switch to client]
+  AssignedToCampaign --> LeaveJob : [leave job]
+}
+
+state "Unemployed" as Unemployed {
+  LeaveJob --> Unemployed : [leave job]
+  Unemployed --> ArchiveRecord : [archive record]
+}
+
+state "Archived" as Archived {
+  ArchiveRecord --> Archived : [archive record]
+}
+
+Unassigned : entry / staff member is unassigned
+AssignedToClient : entry / staff member is assigned to client
+AssignedToCampaign : entry / staff member is assigned to campaign
+Unemployed : entry / staff member is unemployed
+Archived : entry / staff member record is archived
+
+state Choice <<choice>>
+Choice --> AssignToClient : [assign to client]
+Choice --> AddToCampaign : [add to campaign]
+Choice --> SwitchAssignments : [switch assignments]
+Choice --> LeaveJob : [leave job]
+Choice --> ArchiveRecord : [archive record]
+
+@enduml
+
+Candidate Diagram 6:
+@startuml
+title UML State Machine Diagram - Staff Member Assignment
+
+[*] --> Unassigned
+
+state Unassigned
+state Assigned
+state Unemployed
+state Archived <<final>>
+
+Unassigned --> Assigned : Assign
+Assigned --> Unassigned : Remove Assignment
+Assigned --> Unemployed : Leave Job
+Unemployed --> Archived : Archive Record after some time
+@enduml
+
+Now create the best final PlantUML diagram.

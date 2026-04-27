@@ -1,0 +1,41 @@
+@startuml
+title Graderate State Machine
+
+[*] --> Waiting
+
+state Waiting {
+    entry / waiting for start date
+    do / check current date
+    exit / start date arrived
+}
+
+Waiting : [Start Date <= Current Date]
+Waiting --> Active : Start Date <= Current Date
+
+state Active {
+    entry / rate is active
+    do / check current date
+    exit / end of validity period reached
+}
+
+Active : [Finish Date >= Current Date]
+Active --> Expired : Finish Date <= Current Date
+
+state Expired {
+    entry / rate is expired
+    do / check expiration date
+    exit / one year from expiration date
+}
+
+Expired : [One Year After Expiration]
+Expired --> Archived : One Year After Expiration
+
+state Archived {
+    entry / rate is archived
+    do / remove or archive rate
+    exit / final state
+}
+
+Archived --> [*]
+
+@enduml

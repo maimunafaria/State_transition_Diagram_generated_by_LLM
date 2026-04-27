@@ -1,0 +1,255 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+Output ONLY valid PlantUML code. Do not include explanations or markdown fences.
+
+Requirement:
+Atm Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose or enter a withdrawal amount.
+2. The system shall support predefined amounts for selection by the user.
+3. The system shall allow users to input their own custom withdrawal amount.
+4. The system shall provide an option for the user to cancel the transaction at any point.
+5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.
+
+Candidate Diagram 1:
+@startuml
+state "Waiting for Customer Choice" as WaitingForChoice
+state ProcessingWithdrawal
+state ProcessingCustomWithdrawal
+state Ejecting
+
+[*] --> WaitingForChoice
+
+WaitingForChoice --> ProcessingWithdrawal : Withdrawal Selected / Request Withdrawal
+WaitingForChoice --> ProcessingCustomWithdrawal : Custom Amount Entered / Enter Custom Amount
+WaitingForChoice --> Ejecting : Cancel / Eject
+
+ProcessingWithdrawal --> Ejecting : Rejected / Eject
+ProcessingCustomWithdrawal --> Ejecting : Rejected / Eject
+
+Ejecting --> ProcessingWithdrawal : Continue / Continue Transaction
+Ejecting --> ProcessingCustomWithdrawal : Continue / Continue Transaction
+Ejecting --> [*] : End Transaction
+
+@enduml
+
+Candidate Diagram 2:
+@startuml
+title ATM Withdrawal State Machine
+
+state "Initial" as Initial
+state "SelectAmount" as SelectAmount
+state "CustomAmount" as CustomAmount
+state "CancelTransaction" as CancelTransaction
+state "TransactionComplete" as TransactionComplete
+state "CardReturned" as CardReturned
+
+[*] --> Initial
+
+Initial --> SelectAmount : Choose predefined amount
+Initial --> CustomAmount : Enter custom amount
+
+SelectAmount --> TransactionComplete : Confirm
+SelectAmount --> CancelTransaction : Cancel
+
+CustomAmount --> TransactionComplete : Confirm
+CustomAmount --> CancelTransaction : Cancel
+
+TransactionComplete --> CardReturned : End transaction
+
+CancelTransaction --> CardReturned : Stop transaction
+
+@enduml
+
+Candidate Diagram 3:
+@startuml
+title UML State Chart Diagram
+
+state "Insert Card" as InsertCard
+InsertCard : entry / Insert the card
+InsertCard : do / Verify card
+InsertCard : exit / Card verified
+
+state "Select Amount" as SelectAmount
+SelectAmount : entry / Select amount options
+SelectAmount : do / Display predefined amounts and custom option
+SelectAmount : exit / User selects an option
+
+state "Select Predefined Amount" as SelectPredefined
+SelectPredefined : entry / Predefined amount selected
+SelectPredefined : do / Verify amount
+SelectPredefined : exit / Amount selected
+
+state "Enter Custom Amount" as EnterCustomAmount
+EnterCustomAmount : entry / Custom amount selected
+EnterCustomAmount : do / Validate custom amount
+EnterCustomAmount : exit / Amount entered
+
+state "Check Balance" as CheckBalance
+CheckBalance : entry / Amount selected
+CheckBalance : do / Check available balance
+CheckBalance : exit / Balance sufficient or not
+
+state "Dispense Cash" as DispenseCash
+DispenseCash : entry / Sufficient balance
+DispenseCash : do / Dispense the cash
+DispenseCash : exit / Transaction complete
+
+state "Cancel Transaction" as CancelTransaction
+CancelTransaction : entry / Cancel option selected
+CancelTransaction : do / Stop transaction
+CancelTransaction : exit / Transaction aborted
+
+state "Return Card" as ReturnCard
+ReturnCard : entry / Transaction completed or aborted
+ReturnCard : do / Return the card
+ReturnCard : exit / Card returned
+
+InsertCard --> SelectAmount : proceed to select amount
+InsertCard --> CancelTransaction : cancel immediately
+
+SelectAmount --> SelectPredefined : select predefined amount
+SelectAmount --> EnterCustomAmount : enter custom amount
+SelectAmount --> CancelTransaction : cancel transaction
+
+SelectPredefined --> CheckBalance : check balance for predefined amount
+EnterCustomAmount --> CheckBalance : check balance for custom amount
+
+CheckBalance --> DispenseCash : balance sufficient
+CheckBalance --> CheckBalance : balance insufficient (loop)
+
+DispenseCash --> ReturnCard : transaction complete
+CancelTransaction --> ReturnCard : transaction aborted
+
+ReturnCard --> [*] : process complete
+@enduml
+
+Candidate Diagram 4:
+@startuml
+title ATM Control - Validate PIN and Withdraw Funds
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForCustomerChoice
+state ProcessingWithdrawal
+state Dispensing
+state Printing
+state Ejecting
+state Confiscating
+state Terminating
+state ClosedDown
+
+Idle : entry / Display Welcome
+ClosedDown : entry / Display System Down
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+WaitingForPIN --> Confiscating : Card Confiscated / display Confiscated
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> Confiscating : Card Stolen, Card Expired /\nConfiscate, Update Status
+ValidatingPIN --> Confiscating : Third Invalid PIN /\nConfiscate
+
+ValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+WaitingForCustomerChoice --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+
+WaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected /\nRequest Withdrawal, Display Wait
+
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash, Update Status
+ProcessingWithdrawal --> Ejecting : Rejected / Eject
+
+Dispensing --> Printing : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+Dispensing --> ClosedDown : Insufficient Cash / Eject
+
+Printing --> Ejecting : Receipt Printed / Eject
+
+Ejecting --> Terminating : Card Ejected / Display Ejected
+Confiscating --> Terminating : Card Confiscated / Display Confiscated
+
+Terminating --> Idle : After (Elapsed Time)\n[Closedown Not Requested]
+Terminating --> [*] : After (Elapsed Time)\n[Closedown Not Requested]
+
+ClosedDown --> [*] : After (Elapsed Time)\n[Closedown Not Requested]
+
+@enduml
+
+Candidate Diagram 5:
+@startuml
+title ATM Withdrawal State Diagram
+
+[*] --> start
+
+state start
+state selectamount
+state predefinedamountselected
+state customamountentered
+state canceltransaction
+state final
+
+start --> selectamount : select amount
+
+selectamount --> predefinedamountselected : select predefined
+selectamount --> customamountentered : enter custom
+selectamount --> canceltransaction : cancel
+
+predefinedamountselected --> final : confirm
+predefinedamountselected --> canceltransaction : cancel
+
+customamountentered --> final : confirm
+customamountentered --> canceltransaction : cancel
+
+canceltransaction --> start : cancel
+
+final --> [*]
+
+@enduml
+
+Candidate Diagram 6:
+@startuml
+title UML State Chart Diagram
+
+state "Initial State" as IS
+IS : entry / User starts the transaction
+
+state "Choose Predefined Amount" as CPA
+CPA : entry / User selects a predefined amount
+CPA : do / System displays the selected amount
+CPA : exit / Proceeds to confirm withdrawal
+
+state "Enter Custom Amount" as EA
+EA : entry / User inputs a custom amount
+EA : do / System verifies the custom amount
+EA : exit / Proceeds to confirm withdrawal
+
+state "Confirm Withdrawal" as CW
+CW : entry / User confirms the withdrawal
+CW : do / System processes the withdrawal
+CW : exit / Dispenses cash
+
+state "Cancel Transaction" as CT
+CT : entry / User cancels the transaction
+CT : do / System stops the transaction
+CT : exit / Returns the card
+
+state Choice <<choice>>
+IS --> Choice : User starts the transaction
+Choice --> CPA : Selects a predefined amount
+Choice --> EA : Inputs a custom amount
+
+CPA --> CW : Proceeds to confirm withdrawal
+EA --> CW : Proceeds to confirm withdrawal
+
+CW --> [*]
+CT --> [*]
+
+@enduml
+
+Now create the best final PlantUML diagram.
