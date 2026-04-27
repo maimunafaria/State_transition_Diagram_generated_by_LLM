@@ -1,0 +1,348 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+First silently choose the single best candidate diagram as the base.
+Then make only the minimum edits needed to fix PlantUML syntax, obvious UML state-diagram rule issues, or clear missing requirement coverage.
+Do not merge multiple diagrams. Do not redesign the diagram. Do not add extra states or transitions unless they are necessary to fix a listed kind of problem.
+Output ONLY valid PlantUML code. Do not include explanations, candidate numbers, comments about your choice, or markdown fences.
+
+Requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Candidate Diagram 1:
+@startuml
+title UML State Machine Diagram - Healthcare Portal
+
+state "Initial State" as Initial
+state "Registration" as Registration
+state "Registration Failed" as RegistrationFailed
+state "Login" as Login
+state "Access Facilities" as AccessFacilities
+state "Read News/Content" as ReadNewsContent
+state "Check Symptoms/Fitness" as CheckSymptomsFitness
+state "Continue Session" as ContinueSession
+state "Finish Session" as FinishSession
+state "Process Insurance" as ProcessInsurance
+state "Validate Insurance" as ValidateInsurance
+state "Payment Process" as PaymentProcess
+state "Cash Payment" as CashPayment
+state "Insurance Payment" as InsurancePayment
+state "Feedback Collection" as FeedbackCollection
+state "Logout" as Logout
+
+[*] --> Initial
+
+Initial --> Registration : Register
+Initial --> RegistrationFailed : Registration Failed
+
+Registration --> Login : Login
+Login --> AccessFacilities : Access Facilities
+
+AccessFacilities --> ReadNewsContent : Read News/Content
+ReadNewsContent --> CheckSymptomsFitness : Check Symptoms/Fitness
+CheckSymptomsFitness --> ContinueSession : Continue Session
+ContinueSession --> AccessFacilities : Continue Session
+ContinueSession --> FinishSession : Finish Session
+
+FinishSession --> Logout : Logout
+
+AccessFacilities --> ProcessInsurance : Process Insurance
+ProcessInsurance --> ValidateInsurance : Validate Insurance
+ValidateInsurance --> PaymentProcess : Payment Process
+
+PaymentProcess --> CashPayment : Cash Payment
+CashPayment --> FinishSession : Finish Session
+
+PaymentProcess --> InsurancePayment : Insurance Payment
+InsurancePayment --> FinishSession : Finish Session
+
+ReadNewsContent --> ContinueSession : Continue Session
+ReadNewsContent --> FinishSession : Finish Session
+
+CheckSymptomsFitness --> ContinueSession : Continue Session
+CheckSymptomsFitness --> FinishSession : Finish Session
+
+ProcessInsurance --> ValidateInsurance : Validate Insurance
+
+ValidateInsurance --> PaymentProcess : Payment Process
+
+FeedbackCollection : Collect Feedback
+FeedbackCollection --> FinishSession : Finish Session
+
+Logout --> [*]
+
+@enduml
+
+Candidate Diagram 2:
+@startuml
+title UML State Machine Diagram - Healthcare Portal
+
+[*] --> Registration
+
+state "Registration" as Registration
+state "Failed Registration" as FailedRegistration
+state "Signed In" as SignedIn
+state "Access Denied" as AccessDenied
+state "View Facilities" as ViewFacilities
+state "Read News" as ReadNews
+state "Check Symptoms" as CheckSymptoms
+state "Fitness Checking" as FitnessChecking
+state "View Result" as ViewResult
+state "Payment Process" as PaymentProcess
+state "Select Payment Method" as SelectPaymentMethod
+state "Cash Payment Details" as CashPaymentDetails
+state "Insurance Payment Process" as InsurancePaymentProcess
+state "User Feedback" as UserFeedback
+state "Logged Out" as LoggedOut
+
+Registration --> FailedRegistration : registration fails
+Registration --> SignedIn : registration successful
+
+SignedIn --> ViewFacilities : access granted
+ViewFacilities --> ReadNews : access granted
+ReadNews --> CheckSymptoms : access granted
+CheckSymptoms --> FitnessChecking : access granted
+FitnessChecking --> ViewResult : access granted
+ViewResult --> PaymentProcess : access granted
+PaymentProcess --> SelectPaymentMethod : payment method selection
+SelectPaymentMethod --> CashPaymentDetails : cash payment selected
+CashPaymentDetails --> PaymentProcess : payment process
+PaymentProcess --> InsurancePaymentProcess : insurance payment selected
+InsurancePaymentProcess --> PaymentProcess : payment process
+PaymentProcess --> UserFeedback : payment completed
+UserFeedback --> LoggedOut : user logged out
+
+AccessDenied --> [*]
+FailedRegistration --> AccessDenied
+LoggedOut --> [*]
+
+@enduml
+
+Candidate Diagram 3:
+@startuml
+[*] --> Registration
+
+state Registration {
+  Registration --> RegistrationSuccess
+  Registration --> RegistrationFailure
+}
+
+state RegistrationSuccess {
+  RegistrationSuccess --> Login : successful registration
+}
+
+state RegistrationFailure {
+  RegistrationFailure --> [*] : access ended
+}
+
+state Login {
+  Login --> LoginSuccess
+  Login --> LoginFailure
+}
+
+state LoginSuccess {
+  LoginSuccess --> LoggedIn
+}
+
+state LoginFailure {
+  LoginFailure --> [*] : access denied
+}
+
+state LoggedIn {
+  LoggedIn --> MainMenu
+}
+
+state MainMenu {
+  MainMenu --> News : view news
+  MainMenu --> SymptomCheck : check symptoms
+  MainMenu --> FitnessOptions : use fitness options
+  MainMenu --> InsuranceProcessing : process insurance
+  MainMenu --> PaymentSelection : select payment
+  MainMenu --> Logout : end session
+}
+
+state News {
+  News --> MainMenu : back to main menu
+}
+
+state SymptomCheck {
+  SymptomCheck --> SymptomResult : check result
+}
+
+state SymptomResult {
+  SymptomResult --> MainMenu : continue
+  SymptomResult --> Logout : finish session
+}
+
+state FitnessOptions {
+  FitnessOptions --> MainMenu : back to
+@enduml
+
+Candidate Diagram 4:
+@startuml
+title Healthcare Portal - User Interaction States
+
+[*] --> Idle
+
+state Idle
+state Registration
+state Login
+state FacilitiesAccess
+state NewsAccess
+state SymptomCheck
+state FitnessCheck
+state ServiceCompletion
+state InsuranceValidation
+state PaymentProcess
+state CashPayment
+state InsurancePayment
+state FeedbackCollection
+state Logout
+
+Idle : entry / Display Welcome
+
+Idle --> Registration : New User / Start Registration
+Registration --> Login : Registration Completed / Login
+Login --> FacilitiesAccess : User Signed In / Access Facilities
+Login --> NewsAccess : User Signed In / Read News
+Login --> SymptomCheck : User Signed In / Check Symptoms
+Login --> FitnessCheck : User Signed In / Use Fitness Check
+FacilitiesAccess --> Login : Sign In / Access Facilities
+NewsAccess --> Login : Sign In / Read News
+SymptomCheck --> Login : Sign In / Check Symptoms
+FitnessCheck --> Login : Sign In / Use Fitness Check
+ServiceCompletion --> Login : Sign In / Continue Using
+ServiceCompletion --> FeedbackCollection : Service Completed / Collect Feedback
+FeedbackCollection --> Logout : Finish Session / Log Out
+InsuranceValidation --> PaymentProcess : Validate Insurance / Process Payment
+PaymentProcess --> InsurancePayment : Insurance Payment Chosen / Complete Payment
+PaymentProcess --> CashPayment : Cash Payment Chosen / Collect Details
+CashPayment --> InsurancePayment : Insurance Payment Chosen / Complete Payment
+InsurancePayment --> FeedbackCollection : Payment Completed / Collect Feedback
+Logout --> Idle : Log Out / End Session
+
+@enduml
+
+Candidate Diagram 5:
+@startuml
+[*] --> RegistrationFailed : Initial State
+State "Registration Failed" as RegistrationFailed {
+  [*] --> RegistrationFailed : Registration fails
+  RegistrationFailed --> Registered : User registration successful
+}
+
+State "Registered" as Registered {
+  Registered --> SignedIn : User signs in successfully
+  Registered --> RegistrationFailed : Registration fails (loop back)
+}
+
+State "Signed In" as SignedIn {
+  SignedIn --> FacilitiesAccessed : User accesses available facilities
+  SignedIn --> NewsAndExpertContentRead : User reads news and expert content
+  SignedIn --> HealthInfoAccessed : User accesses health-related information
+  SignedIn --> SessionFinished : User finishes session
+}
+
+State "Session Finished" as SessionFinished {
+  SessionFinished --> LoggedOut : User logs out
+}
+
+State "Health Info Accessed" as HealthInfoAccessed {
+  HealthInfoAccessed --> ResultViewed : User views result
+  HealthInfoAccessed --> SessionFinished : User continues using system (loop back)
+}
+
+State "Result Viewed" as ResultViewed {
+  ResultViewed --> SessionFinished : User finishes session
+}
+
+State "Facilities Accessed" as FacilitiesAccessed {
+  FacilitiesAccessed --> PaymentProcessed : User completes payment process for doctor consultations
+  FacilitiesAccessed --> PaymentProcessed : User selects insurance-based payment method (loop back)
+}
+
+State "Payment Processed" as PaymentProcessed {
+  PaymentProcessed --> SessionFinished : User finishes session
+}
+
+State "News And Expert Content Read" as NewsAndExpertContentRead {
+  NewsAndExpertContentRead --> SessionFinished : User continues using system (loop back)
+}
+
+State "Logged Out" as LoggedOut {
+  [*] --> LoggedOut : Initial State
+}
+
+@enduml
+
+Candidate Diagram 6:
+@startuml
+state Start {
+}
+state RegistrationAttempting {
+}
+state Registered {
+}
+state SignInAttempting {
+}
+state LoggedIn {
+}
+state FacilityAccess {
+}
+state ContentAccess {
+}
+state SymptomCheck {
+}
+state FitnessCheck {
+}
+state ResultViewed {
+}
+state PaymentProcessing {
+}
+state FeedbackProvided {
+}
+state Logout {
+}
+
+Start --> RegistrationAttempting : "Attempt Register"
+RegistrationAttempting --> Registered : "Success"
+RegistrationAttempting --> AccessEnded : "Failure"
+
+Start --> SignInAttempting : "Attempt Sign In"
+SignInAttempting --> LoggedIn : "Success"
+
+LoggedIn --> FacilityAccess : "Access Facilities"
+LoggedIn --> ContentAccess : "Read News/Expert Content"
+LoggedIn --> SymptomCheck : "Check Symptoms"
+LoggedIn --> FitnessCheck : "Use Fitness Options"
+
+FacilityAccess --> LoggedIn
+ContentAccess --> LoggedIn
+SymptomCheck --> ResultViewed : "View Result"
+FitnessCheck --> ResultViewed : "View Result"
+
+ResultViewed --> LoggedIn : "Continue"
+ResultViewed --> Logout : "Finish Session"
+
+LoggedIn --> PaymentProcessing : "Process Insurance"
+PaymentProcessing --> FeedbackProvided : "Complete Payment"
+FeedbackProvided --> Logout : "Provide Feedback"
+
+LoggedIn --> Logout : "Logout"
+@enduml
+
+Now create the best final PlantUML diagram.

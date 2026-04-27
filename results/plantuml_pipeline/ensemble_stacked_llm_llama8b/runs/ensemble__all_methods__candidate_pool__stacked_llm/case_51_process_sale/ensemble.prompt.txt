@@ -1,0 +1,192 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+First silently choose the single best candidate diagram as the base.
+Then make only the minimum edits needed to fix PlantUML syntax, obvious UML state-diagram rule issues, or clear missing requirement coverage.
+Do not merge multiple diagrams. Do not redesign the diagram. Do not add extra states or transitions unless they are necessary to fix a listed kind of problem.
+Output ONLY valid PlantUML code. Do not include explanations, candidate numbers, comments about your choice, or markdown fences.
+
+Requirement:
+Process Sale — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a new sale.
+2. The system shall enter items one by one as they are selected by the customer.
+3. The system shall move to payment after all items have been added.
+4. The system shall complete the sale immediately if the customer pays with cash.
+5. The system shall verify the payment if the customer chooses to pay by card or check.
+6. The system shall complete the sale once the payment is approved.
+7. The system shall return to waiting for the next customer after the payment has been finished.
+
+Candidate Diagram 1:
+@startuml
+title State diagram of the system operations of "Process Sale"
+
+[*] --> WaitingForSale
+
+state "Waiting for sale" as WaitingForSale
+state "Enter items" as EnterItems
+state "Waiting for payment" as WaitingPayment
+state "Payment approved" as PaymentApproved
+state "Sale completed" as SaleCompleted
+
+[*] --> WaitingForSale : new sale
+WaitingForSale --> EnterItems : new sale
+EnterItems --> EnterItems : add item
+EnterItems --> WaitingPayment : end of sale
+WaitingPayment --> PaymentApproved : payment confirmed
+PaymentApproved --> SaleCompleted : payment approved
+SaleCompleted --> WaitingForSale : next customer
+SaleCompleted --> [*] : sale ended
+
+@enduml
+
+Candidate Diagram 2:
+@startuml
+title State diagram of the system operations of "Process Sale"
+
+[*] --> WaitingCustomer
+
+state "Waiting for customer" as WaitingCustomer
+state "Record items" as RecordItems
+state "Waiting for payment" as WaitingPayment
+state "Payment verified" as PaymentVerified
+state "Payment completed" as PaymentComplete
+state "Order completed" as OrderComplete
+
+WaitingCustomer --> RecordItems : enter item
+RecordItems --> RecordItems : enter item
+RecordItems --> WaitingPayment : end of sale
+WaitingPayment --> PaymentVerified : payment by card or check
+PaymentVerified --> PaymentComplete : payment approved
+PaymentComplete --> OrderComplete : payment finished
+OrderComplete --> WaitingCustomer : next customer
+OrderComplete --> [*] : next customer
+
+@enduml
+
+Candidate Diagram 3:
+@startuml
+title UML State Chart Diagram - Sale Process
+
+[*] --> WaitSale
+
+state WaitSale <<choice>>
+WaitSale --> EnterItems : [New Sale]
+
+state "Enter items one by one" as EnterItems
+EnterItems : entry / entered the app
+EnterItems : do / enter items one by one
+EnterItems : exit / all items added
+
+EnterItems --> Payment
+
+state "Move to payment" as Payment
+Payment : entry / entered the app
+Payment : do / move to payment
+Payment : exit / payment method selected
+
+state "Complete sale with cash" as CompleteCash
+CompleteCash : entry / entered the app
+CompleteCash : do / complete sale with cash
+CompleteCash : exit / sale completed
+
+state "Verify payment with card or check" as VerifyPayment
+VerifyPayment : entry / entered the app
+VerifyPayment : do / verify payment with card or check
+VerifyPayment : exit / payment verified
+
+state "Complete sale" as CompleteSale
+CompleteSale : entry / entered the app
+CompleteSale : do / complete sale
+CompleteSale : exit / sale completed
+
+state "Return to waiting" as ReturnWait
+ReturnWait : entry / entered the app
+ReturnWait : do / return to waiting
+ReturnWait : exit / waiting for next customer
+
+CompleteCash --> ReturnWait
+VerifyPayment --> CompleteSale
+CompleteSale --> ReturnWait
+
+Payment --> CompleteCash : [Cash]
+Payment --> VerifyPayment : [Card or Check]
+
+EnterItems --> Payment
+CompleteSale --> ReturnWait
+VerifyPayment --> CompleteSale
+ReturnWait --> [*]
+
+@enduml
+
+Candidate Diagram 4:
+@startuml
+[*] --> WaitingCustomer
+
+state "Waiting for customer" as WaitingCustomer
+state "Recording items" as RecordItems
+state "Waiting for payment" as WaitingPayment
+state "Verifying payment" as VerifyPayment
+state "Sale completed" as SaleComplete
+
+WaitingCustomer --> RecordItems : enter item
+RecordItems --> RecordItems : enter item
+RecordItems --> WaitingPayment : end of sale
+WaitingPayment --> SaleComplete : cash payment
+WaitingPayment --> VerifyPayment : card or check
+VerifyPayment --> SaleComplete : payment approved
+SaleComplete --> WaitingCustomer : next customer
+SaleComplete --> [*] : end process
+
+@enduml
+
+Candidate Diagram 5:
+@startuml
+title Process Sale State Machine
+
+[*] --> WaitingForSale
+
+state WaitingForSale
+state AddingItems
+state Payment
+state Completed
+state VerifyingPayment
+
+WaitingForSale --> AddingItems : new sale
+AddingItems --> Payment : all items added
+Payment --> Completed : cash payment
+Payment --> VerifyingPayment : card or check payment
+
+VerifyingPayment --> Completed : payment approved
+Completed --> WaitingForSale : payment finished
+
+@enduml
+
+Candidate Diagram 6:
+@startuml
+title Process Sale State Diagram
+
+state "Waiting for Sale" as WaitingSale
+state "Selecting Items" as SelectingItems
+state "Payment" as Payment
+state "Sale Completed" as SaleCompleted
+state "Payment Declined" as PaymentDeclined
+
+[*] --> WaitingSale
+
+WaitingSale --> SelectingItems : customerSelectsItems
+
+SelectingItems --> Payment : allItemsAdded
+
+Payment --> SaleCompleted : payWithCash
+Payment --> VerifyingPayment : payWithCardOrCheck
+
+VerifyingPayment --> SaleCompleted : paymentApproved
+VerifyingPayment --> PaymentDeclined : paymentDeclined
+
+SaleCompleted --> WaitingSale : nextCustomer
+
+PaymentDeclined --> [*]
+
+@enduml
+
+Now create the best final PlantUML diagram.

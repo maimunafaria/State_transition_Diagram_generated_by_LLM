@@ -1,0 +1,55 @@
+@startuml
+[*] --> CreateUser
+
+state CreateUser
+CreateUser --> Login
+
+state Login
+Login --> CreateUser : [Invalid]
+Login --> LoggedIn : [Valid]
+
+state LoggedIn {
+  LoggedIn --> Dashboard
+  Dashboard --> Settings : modify details
+  Settings --> Dashboard : back
+}
+
+LoggedIn --> ApplicationAccepted : apply for visa
+LoggedIn --> CheckStatus : check status
+LoggedIn --> GiveFeedback : give feedback
+LoggedIn --> Logout : log out
+
+state ApplicationAccepted {
+  ApplicationAccepted --> PaymentProcessing
+  PaymentProcessing --> StatusUpdate : payment successful
+  PaymentProcessing --> ApplicationAccepted : payment failed
+}
+
+state StatusUpdate
+StatusUpdate --> ViewStatus : view status
+StatusUpdate --> GiveFeedback : feedback
+StatusUpdate --> Logout : log out
+
+state ViewStatus
+ViewStatus --> CheckStatus : check status
+ViewStatus --> CancelApplication : cancel application
+ViewStatus --> ModifyDetails : modify details
+ViewStatus --> ViewPurpose : view purpose
+ViewPurpose --> GiveFeedback : give feedback
+GiveFeedback --> StatusUpdate : update status
+CancelApplication --> Logout : log out
+
+state CheckStatus
+CheckStatus --> ViewStatus : view status
+CheckStatus --> CancelApplication : cancel application
+CheckStatus --> ModifyDetails : modify details
+
+state ModifyDetails
+ModifyDetails --> ViewDetails : view details
+ViewDetails --> GiveFeedback : give feedback
+GiveFeedback --> StatusUpdate : update status
+CancelApplication --> Logout : log out
+
+state Logout
+Logout --> [*] : end
+@enduml

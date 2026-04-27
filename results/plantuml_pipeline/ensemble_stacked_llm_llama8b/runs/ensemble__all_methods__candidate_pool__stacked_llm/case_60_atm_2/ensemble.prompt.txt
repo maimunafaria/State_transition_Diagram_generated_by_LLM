@@ -1,0 +1,176 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+First silently choose the single best candidate diagram as the base.
+Then make only the minimum edits needed to fix PlantUML syntax, obvious UML state-diagram rule issues, or clear missing requirement coverage.
+Do not merge multiple diagrams. Do not redesign the diagram. Do not add extra states or transitions unless they are necessary to fix a listed kind of problem.
+Output ONLY valid PlantUML code. Do not include explanations, candidate numbers, comments about your choice, or markdown fences.
+
+Requirement:
+Atm Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select an amount to withdraw from a list of options.
+2. The system shall permit the user to enter a custom value if they want a different amount.
+3. The system shall verify the transaction after the user enters an amount.
+4. The system shall allow the user to re-enter the amount if the transaction is rejected.
+
+Candidate Diagram 1:
+@startuml
+title ATM State Diagram
+
+[*] --> Start
+
+state Start
+state SelectAmount
+state EnterAmount
+state VerifyTransaction
+state ReEnterAmount
+state End
+
+Start --> SelectAmount : select amount
+Start --> EnterAmount : enter custom amount
+
+SelectAmount --> VerifyTransaction : verify
+EnterAmount --> VerifyTransaction : verify
+
+VerifyTransaction --> End : accepted
+VerifyTransaction --> ReEnterAmount : rejected
+
+ReEnterAmount --> VerifyTransaction : re-enter amount
+
+End --> [*]
+
+@enduml
+
+Candidate Diagram 2:
+@startuml
+title ATM Withdrawal State Machine
+
+[*] --> Idle
+
+Idle --> Menu : power on / initialize
+
+state Menu {
+    Menu --> SelectAmount : select amount
+    Menu --> CustomEntry : enter custom amount
+}
+
+state SelectAmount {
+    SelectAmount : do / display withdrawal options
+    SelectAmount --> Verified : verify transaction
+    SelectAmount --> ReEnter : transaction rejected
+}
+
+state CustomEntry {
+    CustomEntry : do / accept custom amount
+    CustomEntry --> Verified : verify transaction
+    CustomEntry --> ReEnter : transaction rejected
+}
+
+state Verified {
+    Verified : do / process transaction
+    Verified --> Success : transaction successful
+    Verified --> ReEnter : transaction rejected
+}
+
+state Success {
+    Success : do / dispense cash
+    Success --> Idle : transaction completed
+}
+
+state ReEnter {
+    ReEnter : do / display error message
+    ReEnter --> SelectAmount : re-enter amount
+    ReEnter --> CustomEntry : re-enter amount
+}
+
+Idle --> [*] : power off / terminate
+
+@enduml
+
+Candidate Diagram 3:
+@startuml
+[*] --> WaitingForAmountSelection
+
+state WaitingForAmountSelection
+state AmountSelected
+state CustomAmountEntered
+state TransactionVerification
+state TransactionComplete
+state WaitingForAmountReentry
+
+WaitingForAmountSelection --> AmountSelected : amount selected
+WaitingForAmountSelection --> CustomAmountEntered : custom amount entered
+
+AmountSelected --> TransactionVerification
+CustomAmountEntered --> TransactionVerification
+
+TransactionVerification --> TransactionComplete : transaction approved
+TransactionVerification --> WaitingForAmountReentry : transaction rejected
+
+TransactionComplete --> [*]
+
+WaitingForAmountReentry --> WaitingForAmountSelection : re-enter amount
+@enduml
+
+Candidate Diagram 4:
+@startuml
+[*] --> SelectAmount
+
+state SelectAmount
+state VerifyTransaction
+state RejectTransaction
+state ApprovedTransaction
+
+SelectAmount --> VerifyTransaction : amount selected / verify transaction
+
+VerifyTransaction --> RejectTransaction : transaction rejected / re-enter amount
+RejectTransaction --> SelectAmount : re-enter amount
+
+VerifyTransaction --> ApprovedTransaction : transaction approved
+
+ApprovedTransaction --> [*] : transaction completed
+@enduml
+
+Candidate Diagram 5:
+@startuml
+title ATM Control - Withdraw Funds
+
+[*] --> Idle
+
+state Idle
+state WaitingForAmount
+state VerifyingTransaction
+state ReleasingCard
+
+Idle : entry / Display Welcome
+Idle --> WaitingForAmount : Card Inserted / Get Amount
+
+WaitingForAmount --> VerifyingTransaction : Amount Entered / Validate Amount
+VerifyingTransaction --> ReleasingCard : Transaction Approved / Release Card
+
+WaitingForAmount --> Idle : Cancel / Eject
+VerifyingTransaction --> Idle : Rejected / Eject
+ReleasingCard --> [*] : Transaction Completed / End
+
+@enduml
+
+Candidate Diagram 6:
+@startuml
+title UML State Machine Diagram - Atm
+
+[*] --> SelectAmount
+
+state "Select amount" as SelectAmount
+state "Enter custom value" as EnterCustomValue
+state "Verify transaction" as VerifyTransaction
+state "Re-enter amount" as ReEnterAmount
+
+SelectAmount --> EnterCustomValue
+EnterCustomValue --> VerifyTransaction
+VerifyTransaction --> SelectAmount
+VerifyTransaction --> ReEnterAmount
+ReEnterAmount --> SelectAmount
+
+@enduml
+
+Now create the best final PlantUML diagram.

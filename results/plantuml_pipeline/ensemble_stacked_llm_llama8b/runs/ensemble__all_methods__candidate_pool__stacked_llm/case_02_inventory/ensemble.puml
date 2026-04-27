@@ -1,0 +1,105 @@
+@startuml
+title Inventory Management System
+
+[*] --> Ready : entry / System initialization
+
+state "Ready" as Ready {
+  Ready : exit / System shutdown
+}
+
+state "Adding Goods" as AddGoods {
+  Ready --> AddGoods : [User adds new goods]
+  AddGoods --> UpdatedInventory : [Goods added successfully]
+}
+
+state "Updating Prices" as UpdatePrices {
+  Ready --> UpdatePrices : [User updates price]
+  UpdatePrices --> UpdatedInventory : [Price updated successfully]
+}
+
+state "Removing Goods" as RemoveGoods {
+  Ready --> RemoveGoods : [User removes goods]
+  RemoveGoods --> UpdatedInventory : [Goods removed successfully]
+}
+
+state "Handling Expiration" as HandleExpiration {
+  UpdatedInventory --> HandleExpiration : [Goods expired]
+  HandleExpiration --> UpdatedInventory : [Goods notified and removed]
+}
+
+state "Placing Order" as PlaceOrder {
+  Ready --> PlaceOrder : [User places order]
+  PlaceOrder --> OrderPlaced : [Order placed successfully]
+}
+
+state "Generating Invoice" as GenerateInvoice {
+  OrderPlaced --> GenerateInvoice : [Generate invoice]
+  GenerateInvoice --> UpdatedInventory : [Invoice generated]
+}
+
+state "Searching Inventory" as SearchInventory {
+  Ready --> SearchInventory : [User searches items]
+  SearchInventory --> SearchResults : [Search completed]
+}
+
+state "Selecting Items" as SelectItems {
+  SearchResults --> SelectItems : [User selects items]
+  SelectItems --> PurchaseRequested : [Items selected]
+}
+
+state "Calculating Discount" as CalculateDiscount {
+  PurchaseRequested --> CalculateDiscount : [Calculate discount]
+  CalculateDiscount --> DiscountApplied : [Discount calculated]
+}
+
+state "Calculating Tax" as CalculateTax {
+  DiscountApplied --> CalculateTax : [Calculate tax]
+  CalculateTax --> TaxApplied : [Tax calculated]
+}
+
+state "Generating Receipt" as GenerateReceipt {
+  TaxApplied --> GenerateReceipt : [Generate receipt for purchase]
+  GenerateReceipt --> UpdatedInventory : [Receipt generated]
+}
+
+state "Replacing Item or Canceling Receipt" as ReplaceCancelReceipt {
+  GenerateReceipt --> ReplaceCancelReceipt : [Replace/cancel receipt]
+  ReplaceCancelReceipt --> UpdatedInventory : [Action completed]
+}
+
+state "Recording Customer Requests" as RecordRequests {
+  Ready --> RecordRequests : [Record customer requests]
+  RecordRequests --> UpdatedInventory : [Request recorded]
+}
+
+state "Viewing Summary Report" as ViewSummaryReport {
+  Ready --> ViewSummaryReport : [Generate summary report]
+  ViewSummaryReport --> UpdatedInventory : [Report generated]
+}
+
+Ready --> AddGoods
+Ready --> UpdatePrices
+Ready --> RemoveGoods
+UpdatedInventory --> HandleExpiration
+HandleExpiration --> UpdatedInventory
+Ready --> PlaceOrder
+PlaceOrder --> OrderPlaced
+OrderPlaced --> GenerateInvoice
+GenerateInvoice --> UpdatedInventory
+Ready --> SearchInventory
+SearchInventory --> SearchResults
+SearchResults --> SelectItems
+SelectItems --> PurchaseRequested
+PurchaseRequested --> CalculateDiscount
+CalculateDiscount --> DiscountApplied
+DiscountApplied --> CalculateTax
+CalculateTax --> TaxApplied
+TaxApplied --> GenerateReceipt
+GenerateReceipt --> ReplaceCancelReceipt
+ReplaceCancelReceipt --> UpdatedInventory
+Ready --> RecordRequests
+RecordRequests --> UpdatedInventory
+Ready --> ViewSummaryReport
+
+UpdatedInventory --> [*] : exit / System shutdown
+@enduml

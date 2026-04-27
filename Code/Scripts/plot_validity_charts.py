@@ -19,12 +19,23 @@ DEFAULT_ENSEMBLE_RUNS_DIR = (
     / "ensemble_stacked_llm"
     / "runs"
 )
+DEFAULT_ENSEMBLE_RUN_SPECS = [
+    (
+        "Ensemble Qwen 14B",
+        PROJECT_ROOT / "results" / "plantuml_pipeline" / "ensemble_stacked_llm" / "runs",
+    ),
+    (
+        "Ensemble Llama 8B",
+        PROJECT_ROOT / "results" / "plantuml_pipeline" / "ensemble_stacked_llm_llama8b" / "runs",
+    ),
+]
 
 MODEL_ORDER = [
     "DeepSeek R1 14B",
     "Llama 3.1 8B Instruct",
     "Qwen 2.5 7B Instruct",
-    "Ensemble",
+    "Ensemble Qwen 14B",
+    "Ensemble Llama 8B",
 ]
 METHOD_ORDER = ["Zero-shot", "One-shot", "Few-shot", "RAG", "RAG + Repair", "Stacked Ensemble"]
 METHOD_COLORS = {
@@ -55,7 +66,10 @@ def read_summary(path: Path) -> list[dict[str, object]]:
     return rows
 
 
-def read_ensemble_summary(ensemble_runs_dir: Path) -> tuple[dict[str, object], dict[str, object]] | None:
+def read_ensemble_summary(
+    ensemble_runs_dir: Path,
+    model_label: str = "Ensemble",
+) -> tuple[dict[str, object], dict[str, object]] | None:
     puml_files = sorted(ensemble_runs_dir.glob("*/*/ensemble.puml"))
     if not puml_files:
         return None
@@ -77,7 +91,7 @@ def read_ensemble_summary(ensemble_runs_dir: Path) -> tuple[dict[str, object], d
 
     def row(valid: int) -> dict[str, object]:
         return {
-            "model": "Ensemble",
+            "model": model_label,
             "method": "Stacked Ensemble",
             "total": total,
             "valid": valid,
@@ -107,7 +121,7 @@ def grouped_bar_svg(rows: list[dict[str, object]], title: str, subtitle: str) ->
     methods = _ordered_methods(rows)
     by_key = {(str(row["model"]), str(row["method"])): row for row in rows}
 
-    width = 1180
+    width = max(1180, 250 * len(models) + 220)
     height = 620
     margin_left = 86
     margin_right = 34
@@ -301,6 +315,11 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--ensemble-runs-dir", type=Path, default=DEFAULT_ENSEMBLE_RUNS_DIR)
     parser.add_argument(
+        "--ensemble-label",
+        default="Ensemble",
+        help="Label used when --ensemble-runs-dir is supplied.",
+    )
+    parser.add_argument(
         "--no-ensemble",
         action="store_true",
         help="Do not add the current stacked ensemble results to the charts.",
@@ -314,11 +333,19 @@ def main() -> int:
     plantuml_rows = read_summary(metrics_dir / "validity_by_model_method.csv")
     state_rows = read_summary(metrics_dir / "state_rules_validity_by_model_method.csv")
     if not args.no_ensemble:
-        ensemble_summary = read_ensemble_summary(args.ensemble_runs_dir.resolve())
-        if ensemble_summary:
-            ensemble_plantuml_row, ensemble_state_row = ensemble_summary
-            plantuml_rows.append(ensemble_plantuml_row)
-            state_rows.append(ensemble_state_row)
+        if args.ensemble_runs_dir == DEFAULT_ENSEMBLE_RUNS_DIR and args.ensemble_label == "Ensemble":
+            ensemble_specs = DEFAULT_ENSEMBLE_RUN_SPECS
+        else:
+            ensemble_specs = [(args.ensemble_label, args.ensemble_runs_dir.resolve())]
+        for ensemble_label, ensemble_runs_dir in ensemble_specs:
+            ensemble_summary = read_ensemble_summary(
+                Path(ensemble_runs_dir).resolve(),
+                model_label=ensemble_label,
+            )
+            if ensemble_summary:
+                ensemble_plantuml_row, ensemble_state_row = ensemble_summary
+                plantuml_rows.append(ensemble_plantuml_row)
+                state_rows.append(ensemble_state_row)
 
     chart_specs = [
         (

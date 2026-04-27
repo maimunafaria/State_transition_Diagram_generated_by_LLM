@@ -1,0 +1,138 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+First silently choose the single best candidate diagram as the base.
+Then make only the minimum edits needed to fix PlantUML syntax, obvious UML state-diagram rule issues, or clear missing requirement coverage.
+Do not merge multiple diagrams. Do not redesign the diagram. Do not add extra states or transitions unless they are necessary to fix a listed kind of problem.
+Output ONLY valid PlantUML code. Do not include explanations, candidate numbers, comments about your choice, or markdown fences.
+
+Requirement:
+Graderate — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall keep the rate in a waiting state until the start date arrives.
+2. The system shall activate the rate once the current date equals or surpasses its start date.
+3. The system shall maintain the rate's active state until the end of its validity period.
+4. The system shall mark the rate as expired once the finish date is reached.
+5. The system shall remove or archive the rate after one year from its expiration date.
+
+Candidate Diagram 1:
+@startuml
+title Graderate State Machine
+
+[*] --> Waiting
+state Waiting
+state Active
+state Expired
+state Archived
+
+Waiting --> Active : start_date_arrived
+Active --> Active : validity_period_not_expired
+Active --> Expired : finish_date_reached
+Expired --> Archived : one_year_expired
+Expired --> [*] : one_year_expired
+
+@enduml
+
+Candidate Diagram 2:
+@startuml
+title UML State Machine Diagram - Graderate
+
+[*] --> Waiting
+
+state Waiting <<choice>>
+Waiting : entry / waiting for start date
+Waiting : do / check current date
+Waiting : exit / start date arrived
+
+Waiting --> Active : [Start date arrived]
+
+state Active
+Active : entry / rate is active
+Active : do / check current date
+Active : exit / end of validity period reached
+
+Active --> Expired : [End of validity period reached]
+
+state Expired
+Expired : entry / rate is expired
+Expired : do / check expiration date
+Expired : exit / one year from expiration date
+
+Expired --> Archived : [One year from expiration date]
+
+state Archived
+Archived : entry / rate is archived
+Archived : do / remove or archive rate
+Archived : exit / final state
+
+Active --> Expired
+Expired --> Archived
+Archived --> [*]
+
+@enduml
+
+Candidate Diagram 3:
+@startuml
+title Graderate State Transition Diagram
+
+state Waiting
+state Active
+state Expired
+state Archived
+
+[*] --> Waiting
+
+Waiting --> Active : start date reached
+
+Active --> Expired : end date reached
+
+Expired --> Archived : one year after expiration
+
+Archived --> [*]
+
+@enduml
+
+Candidate Diagram 4:
+@startuml
+[*] --> Waiting
+Waiting --> Active : start date reached
+Active --> [*] : end date reached
+Active --> Expired : finish date reached
+Expired --> [*] : one year after expiration
+@enduml
+
+Candidate Diagram 5:
+@startuml
+title Graderate State Machine
+
+[*] --> Waiting
+state Waiting
+state Active
+state Expired
+state Archived
+
+Waiting --> Active : start_date_arrived
+Active --> Active : valid_until
+Active --> Expired : finish_date_reached
+Expired --> Archived : one_year_expired
+
+@enduml
+
+Candidate Diagram 6:
+@startuml
+title Graderate State Diagram
+
+state "Waiting" as Waiting
+state "Active" as Active
+state "Expired" as Expired
+state "Archived" as Archived
+[*] --> Waiting
+
+Waiting --> Active : Start Date <= Current Date
+
+Active --> Expired : Finish Date <= Current Date
+
+Expired --> Archived : Expiration Date + 1 Year
+
+@enduml
+
+Now create the best final PlantUML diagram.

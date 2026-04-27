@@ -1,0 +1,73 @@
+@startuml
+[*] --> InsertedCard
+
+state InsertedCard
+InsertedCard : entry / card inserted
+InsertedCard : do / prompt for PIN
+InsertedCard : exit / PIN requested
+
+InsertedCard --> WaitingForPIN : Card Inserted / Get PIN
+
+state WaitingForPIN
+WaitingForPIN : entry / nil
+WaitingForPIN : do / wait for PIN entry
+WaitingForPIN : exit / PIN entered
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+
+state ValidatingPIN
+ValidatingPIN : entry / nil
+ValidatingPIN : do / verify PIN
+ValidatingPIN : exit / PIN verified or not
+
+ValidatingPIN --> Verified : [PIN verified]
+ValidatingPIN --> NotVerified : [PIN not verified]
+
+state Verified
+Verified : entry / PIN verified
+Verified : do / provide transaction options
+Verified : exit / user selects option
+
+Verified --> ProcessingWithdrawal : withdrawal selected
+ProcessingWithdrawal : entry / nil
+ProcessingWithdrawal : do / process withdrawal request
+ProcessingWithdrawal : exit / cash dispensed
+
+ProcessingWithdrawal --> DispensingCash : Withdrawal Approved / Dispense Cash
+
+state DispensingCash
+DispensingCash : entry / withdrawal request processed
+DispensingCash : do / dispense cash
+DispensingCash : exit / cash dispensed
+
+DispensingCash --> PrintingReceipt : Cash Dispensed / Print Receipt
+
+state PrintingReceipt
+PrintingReceipt : entry / cash dispensed
+PrintingReceipt : do / print receipt
+PrintingReceipt : exit / receipt printed
+
+PrintingReceipt --> ReturningCard : Receipt Printed / Return Card
+
+state ReturningCard
+ReturningCard : entry / nil
+ReturningCard : do / return card
+ReturningCard : exit / transaction completed
+
+ReturningCard --> Resetting : [Transaction Completed]
+
+state Resetting
+Resetting : entry / nil
+Resetting : do / reset system
+Resetting : exit / system ready for next user
+
+Resetting --> [*] : After (Elapsed Time) / Ready for Next User
+
+state NotVerified
+NotVerified : entry / PIN not verified
+NotVerified : do / prompt user to re-enter PIN
+NotVerified : exit / PIN re-entered
+
+NotVerified --> ValidatingPIN : [PIN re-entered]
+
+@enduml

@@ -1,0 +1,234 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+First silently choose the single best candidate diagram as the base.
+Then make only the minimum edits needed to fix PlantUML syntax, obvious UML state-diagram rule issues, or clear missing requirement coverage.
+Do not merge multiple diagrams. Do not redesign the diagram. Do not add extra states or transitions unless they are necessary to fix a listed kind of problem.
+Output ONLY valid PlantUML code. Do not include explanations, candidate numbers, comments about your choice, or markdown fences.
+
+Requirement:
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.
+
+Candidate Diagram 1:
+@startuml
+[*] --> Idle
+Idle --> [*]
+Idle --> HourMode : press hour button
+HourMode --> MinuteMode : press minute button
+MinuteMode --> AlarmHourMode : press alarm hour button
+AlarmHourMode --> AlarmMinuteMode : press alarm minute button
+AlarmMinuteMode --> HourMode : press hour button
+HourMode --> IncreaseValue : press increase button
+MinuteMode --> IncreaseValue : press increase button
+AlarmHourMode --> IncreaseValue : press increase button
+AlarmMinuteMode --> IncreaseValue : press increase button
+IncreaseValue --> HourMode : increase value
+IncreaseValue --> MinuteMode : increase value
+IncreaseValue --> AlarmHourMode : increase value
+IncreaseValue --> AlarmMinuteMode : increase value
+Idle --> AlarmOn : press alarm on button
+AlarmOn --> AlarmOff : press alarm off button
+AlarmOff --> Idle : press alarm off button
+Idle --> LightOn : press light on button
+LightOn --> LightOff : press light off button
+LightOff --> Idle : press light off button
+AlarmOn --> Alarm : alarm time matches current time
+Alarm --> AlarmOff : press stop alarm button
+@enduml
+
+Candidate Diagram 2:
+@startuml
+title State diagram of the system operations of "Digital Watch"
+
+state "Normal State" as NormalState
+state "Adjusting Time State" as AdjustingTime
+state "Alarm State" as AlarmState
+state "Light On State" as LightOn
+state "Alarm Off State" as AlarmOff
+
+[*] --> NormalState
+
+NormalState : entry / Initial state
+NormalState : do / Display current time
+NormalState : exit / Button pressed to adjust time
+
+NormalState --> AdjustingTime : button pressed (adjust time)
+
+AdjustingTime : entry / Adjusting time/settings
+AdjustingTime : do / Change hour, minutes, alarm hour, or alarm minutes
+AdjustingTime : exit / Button released or next adjustment
+
+AdjustingTime --> AdjustingTime : increase value
+AdjustingTime --> NormalState : button released
+
+AdjustingTime --> AlarmState : alarm time reached
+
+AlarmState : entry / Alarm triggered
+AlarmState : do / Ring alarm
+AlarmState : exit / Button pressed to stop alarm
+
+AlarmState --> AlarmOff : button pressed (stop alarm)
+
+AlarmOff : entry / Alarm stopped
+AlarmOff : do / No alarm active
+AlarmOff : exit / Return to normal state
+
+AlarmOff --> NormalState : button released
+
+NormalState --> LightOn : button pressed (light on)
+
+LightOn : entry / Light activated
+LightOn : do / Light is on
+LightOn : exit / Button released
+
+LightOn --> NormalState : button released
+
+@enduml
+
+Candidate Diagram 3:
+@startuml
+title Digital Watch State Diagram
+
+[*] --> Idle
+
+state "Idle" as Idle
+Idle --> SettingTime : Time Button Pressed
+Idle --> SettingAlarm : Alarm Button Pressed
+
+state "SettingTime" as SettingTime
+SettingTime --> IncreasingHour : Increase Hour Button Pressed
+SettingTime --> IncreasingMinute : Increase Minute Button Pressed
+IncreasingHour --> Idle : Time Button Pressed
+IncreasingMinute --> Idle : Time Button Pressed
+
+state "SettingAlarm" as SettingAlarm
+SettingAlarm --> IncreasingAlarmHour : Increase Alarm Hour Button Pressed
+SettingAlarm --> IncreasingAlarmMinute : Increase Alarm Minute Button Pressed
+IncreasingAlarmHour --> Idle : Alarm Button Pressed
+IncreasingAlarmMinute --> Idle : Alarm Button Pressed
+
+state "Alarm Triggered" as AlarmTriggered
+AlarmTriggered : do/Alarm Ringing
+AlarmTriggered --> Idle : Stop Alarm Button Pressed
+
+state "Alarm Stopped" as AlarmStopped
+AlarmStopped : do/Alarm Stopped
+AlarmStopped --> Idle : Any Button Pressed
+
+state "Light On" as LightOn
+LightOn : do/Light On
+LightOn --> Idle : Any Button Pressed
+
+state "Light Off" as LightOff
+LightOff : do/Light Off
+LightOff --> Idle : Any Button Pressed
+
+Idle --> AlarmTriggered : Current Time Matches Alarm Time
+AlarmTriggered --> AlarmStopped : Stop Alarm Button Pressed
+AlarmStopped --> LightOn : Light Button Pressed
+LightOn --> LightOff : Light Button Released
+
+@enduml
+
+Candidate Diagram 4:
+@startuml
+state "Idle" as idle {
+  [*] --> idle
+}
+
+state "Adjusting Time" as adjusting_time {
+  idle --> adjusting_time : Press time adjustment button
+  adjusting_time --> idle : Press time adjustment button again
+}
+
+state "Increasing Value" as increasing_value {
+  adjusting_time --> increasing_value : Press increase value button
+  increasing_value --> adjusting_time : Press decrease value button or press time adjustment button again
+}
+
+state "Setting Alarm Hour" as setting_alarm_hour {
+  adjusting_time --> setting_alarm_hour : Press alarm hour button
+  setting_alarm_hour --> adjusting_time : Press time adjustment button again
+}
+
+state "Setting Alarm Minute" as setting_alarm_minute {
+  setting_alarm_hour --> setting_alarm_minute : Press alarm minute button
+  setting_alarm_minute --> setting_alarm_hour : Press alarm hour button or press time adjustment button again
+}
+
+state "Alarm On" as alarm_on {
+  setting_alarm_minute --> alarm_on : Set alarm to current time and press alarm on button
+  alarm_on --> setting_alarm_minute : Press alarm off button
+}
+
+state "Alarm Ringing" as alarm_ringing {
+  alarm_on --> alarm_ringing : Alarm matches current time
+  alarm_ringing --> alarm_on : Press stop alarm button
+}
+
+state "Light On" as light_on {
+  idle --> light_on : Press light on button
+  light_on --> idle : Release light on button
+}
+
+idle --> light_on : Press light on button
+
+@enduml
+
+Candidate Diagram 5:
+@startuml
+[*] --> Idle
+
+Idle --> AdjustTime : Adjust Time
+Idle --> AdjustAlarm : Adjust Alarm
+Idle --> ToggleAlarm : Toggle Alarm
+Idle --> ToggleLight : Toggle Light
+
+AdjustTime --> Idle : Done
+AdjustTime --> AdjustTime : Increase Value
+
+AdjustAlarm --> Idle : Done
+AdjustAlarm --> AdjustAlarm : Increase Value
+
+ToggleAlarm --> AlarmOn
+AlarmOn --> AlarmRinging : Alarm Time Reached
+AlarmRinging --> AlarmOff : Stop Alarm
+
+ToggleLight --> LightOn
+LightOn --> LightOff : Light Released
+LightOff --> LightOn : Light Pressed Again
+
+AlarmOff --> Idle : Dismiss
+AlarmOff --> [*] : Dismiss
+@enduml
+
+Candidate Diagram 6:
+@startuml
+[*] --> Idle
+Idle --> [*]
+Idle --> HourMode : press hour button
+HourMode --> MinuteMode : press minute button
+MinuteMode --> AlarmHourMode : press alarm hour button
+AlarmHourMode --> AlarmMinuteMode : press alarm minute button
+AlarmMinuteMode --> Idle : press hour button
+AlarmMinuteMode --> HourMode : press minute button
+AlarmMinuteMode --> MinuteMode : press alarm hour button
+AlarmMinuteMode --> AlarmHourMode : press alarm minute button
+Idle --> AlarmOnMode : press alarm on button
+AlarmOnMode --> AlarmOffMode : press alarm off button
+AlarmOffMode --> Idle : press alarm on button
+AlarmOnMode --> AlarmOffMode : press alarm off button
+AlarmOffMode --> AlarmOnMode : press alarm off button
+Idle --> LightOnMode : press light button
+LightOnMode --> LightOffMode : button released
+LightOffMode --> Idle : button pressed
+@enduml
+
+Now create the best final PlantUML diagram.

@@ -1,0 +1,72 @@
+@startuml
+title UML State Machine Diagram - Healthcare Portal
+
+[*] --> RegistrationFailed : Initial State
+
+state "Registration Failed" as RegistrationFailed {
+  [*] --> RegistrationFailed : Registration fails
+  RegistrationFailed --> Registered : User registration successful
+}
+
+state "Registered" as Registered {
+  Registered --> SignedIn : User signs in successfully
+  Registered --> RegistrationFailed : Registration fails (loop back)
+}
+
+state "Signed In" as SignedIn {
+  SignedIn --> FacilitiesAccessed : User accesses available facilities
+  SignedIn --> NewsAndExpertContentRead : User reads news and expert content
+  SignedIn --> HealthInfoAccessed : User accesses health-related information
+  SignedIn --> SessionFinished : User finishes session
+}
+
+state "Session Finished" as SessionFinished {
+  SessionFinished --> LoggedOut : User logs out
+}
+
+state "Health Info Accessed" as HealthInfoAccessed {
+  HealthInfoAccessed --> ResultViewed : User views result
+  HealthInfoAccessed --> SessionFinished : User continues using system (loop back)
+}
+
+state "Result Viewed" as ResultViewed {
+  ResultViewed --> SessionFinished : User finishes session
+}
+
+state "Facilities Accessed" as FacilitiesAccessed {
+  FacilitiesAccessed --> PaymentProcessed : User completes payment process for doctor consultations
+  FacilitiesAccessed --> InsurancePaymentProcess : User selects insurance-based payment method (loop back)
+}
+
+state "Insurance Payment Process" as InsurancePaymentProcess {
+  InsurancePaymentProcess --> PaymentProcessed : Complete payment process
+}
+
+state "Payment Processed" as PaymentProcessed {
+  PaymentProcessed --> SessionFinished : User finishes session
+}
+
+state "News And Expert Content Read" as NewsAndExpertContentRead {
+  NewsAndExpertContentRead --> SessionFinished : User continues using system (loop back)
+}
+
+state "Logged Out" as LoggedOut {
+  [*] --> LoggedOut : Initial State
+}
+
+RegistrationFailed --> Registered : registration successful
+
+Registered --> FacilitiesAccessed : access granted
+FacilitiesAccessed --> PaymentProcessed : payment process
+PaymentProcessed --> SessionFinished : finish session
+
+NewsAndExpertContentRead --> SessionFinished : continue using system (loop back)
+
+HealthInfoAccessed --> ResultViewed : view result
+ResultViewed --> SessionFinished : finish session
+
+InsurancePaymentProcess --> PaymentProcessed : complete payment process
+
+SessionFinished --> LoggedOut : log out
+
+@enduml

@@ -1,0 +1,50 @@
+@startuml
+[*] --> NormalState
+
+state "Normal State" as NormalState
+NormalState : entry / Initial state
+NormalState : do / Display current time
+NormalState : exit / Button pressed to adjust time
+
+NormalState --> AdjustingTime : button pressed (adjust time)
+
+state "Adjusting Time" as AdjustingTime
+AdjustingTime : entry / Adjusting time/settings
+AdjustingTime : do / Change hour, minutes, alarm hour, or alarm minutes
+AdjustingTime : exit / Button released or next adjustment
+
+AdjustingTime --> IncreasingValue : increase value
+IncreasingValue : entry / Increase value
+IncreasingValue : do / Increase value
+IncreasingValue : exit / Decrease value button pressed or time adjustment button pressed again
+IncreasingValue --> AdjustingTime : decrease value button pressed
+IncreasingValue --> NormalState : time adjustment button pressed
+
+AdjustingTime --> AlarmState : alarm time reached
+
+state "Alarm State" as AlarmState
+AlarmState : entry / Alarm triggered
+AlarmState : do / Ring alarm
+AlarmState : exit / Button pressed to stop alarm
+
+AlarmState --> AlarmOff : button pressed (stop alarm)
+
+state "Alarm Off" as AlarmOff
+AlarmOff : entry / Alarm stopped
+AlarmOff : do / No alarm active
+AlarmOff : exit / Return to normal state
+
+AlarmOff --> NormalState : button released
+
+NormalState --> LightOn : button pressed (light on)
+
+state "Light On" as LightOn
+LightOn : entry / Light activated
+LightOn : do / Light is on
+LightOn : exit / Button released
+
+LightOn --> NormalState : button released
+
+Idle --> AlarmOff : current time matches alarm time
+AlarmOff --> Idle : stop alarm button pressed
+@enduml

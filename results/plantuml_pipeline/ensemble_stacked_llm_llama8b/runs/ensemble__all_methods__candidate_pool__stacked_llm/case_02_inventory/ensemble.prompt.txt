@@ -1,0 +1,390 @@
+Create one final UML state transition diagram in PlantUML from the requirement and candidate diagrams.
+First silently choose the single best candidate diagram as the base.
+Then make only the minimum edits needed to fix PlantUML syntax, obvious UML state-diagram rule issues, or clear missing requirement coverage.
+Do not merge multiple diagrams. Do not redesign the diagram. Do not add extra states or transitions unless they are necessary to fix a listed kind of problem.
+Output ONLY valid PlantUML code. Do not include explanations, candidate numbers, comments about your choice, or markdown fences.
+
+Requirement:
+Inventory — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to add new goods to the inventory.
+2. The system shall allow the user to update the price of existing items in the inventory.
+3. The system shall allow the user to remove goods from the inventory that are no longer required.
+4. The system shall identify expired goods and notify the user about their removal from the inventory.
+5. The system shall allow the user to place an order to a supplier for additional goods when required.
+6. The system shall generate an invoice for the order once it is placed.
+7. The system shall allow the user to search for items available in the inventory and select them for purchase.
+8. The system shall calculate the applicable discount and tax based on the selected items.
+9. The system shall generate a receipt for the customer after the purchase.
+10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.
+11. The system shall record customer requests for items that may not be currently available.
+12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.
+
+Candidate Diagram 1:
+@startuml
+
+[*] --> AddNewGoods
+
+state "Add New Goods" as AddNewGoods
+state "Update Price" as UpdatePrice
+state "Remove Goods" as RemoveGoods
+state "Identify Expired Goods" as IdentifyExpiredGoods
+state "Place Order" as PlaceOrder
+state "Generate Invoice" as GenerateInvoice
+state "Search Items" as SearchItems
+state "Calculate Discount and Tax" as CalculateDiscountTax
+state "Generate Receipt" as GenerateReceipt
+state "Replace Item or Cancel Receipt" as ReplaceItemCancelReceipt
+state "Record Customer Requests" as RecordCustomerRequests
+state "View Summary Report" as ViewSummaryReport
+
+AddNewGoods --> UpdatePrice
+UpdatePrice --> RemoveGoods
+RemoveGoods --> IdentifyExpiredGoods
+IdentifyExpiredGoods --> PlaceOrder
+PlaceOrder --> GenerateInvoice
+GenerateInvoice --> SearchItems
+SearchItems --> CalculateDiscountTax
+CalculateDiscountTax --> GenerateReceipt
+GenerateReceipt --> ReplaceItemCancelReceipt
+ReplaceItemCancelReceipt --> RecordCustomerRequests
+RecordCustomerRequests --> ViewSummaryReport
+
+ViewSummaryReport --> [*]
+
+@enduml
+
+Candidate Diagram 2:
+@startuml
+title Inventory State Machine
+
+[*] --> InventoryMenu
+
+state InventoryMenu {
+  [*] --> AddGoods : [Add Goods]
+  AddGoods : entry / start state
+  AddGoods : do / add new goods
+  AddGoods : exit / goods added
+  AddGoods --> InventoryMenu
+}
+
+state InventoryMenu {
+  AddGoods --> UpdatePrice : [Update Price]
+  UpdatePrice : entry / start state
+  UpdatePrice : do / update price of existing items
+  UpdatePrice : exit / price updated
+  UpdatePrice --> InventoryMenu
+}
+
+state InventoryMenu {
+  AddGoods --> RemoveGoods : [Remove Goods]
+  RemoveGoods : entry / start state
+  RemoveGoods : do / remove goods from inventory
+  RemoveGoods : exit / goods removed
+  RemoveGoods --> InventoryMenu
+}
+
+state InventoryMenu {
+  AddGoods --> ExpireCheck : [Check for Expired Goods]
+  ExpireCheck : entry / start state
+  ExpireCheck : do / check for expired goods
+  ExpireCheck : exit / expired goods identified
+  ExpireCheck --> RemoveGoods
+}
+
+state InventoryMenu {
+  AddGoods --> PlaceOrder : [Place Order]
+  PlaceOrder : entry / start state
+  PlaceOrder : do / place order with supplier
+  PlaceOrder : exit / order placed
+  PlaceOrder --> GenerateInvoice
+}
+
+state InventoryMenu {
+  AddGoods --> SearchItems : [Search Items]
+  SearchItems : entry / start state
+  SearchItems : do / search for items in inventory
+  SearchItems : exit / items selected
+  SearchItems --> PurchaseItems
+}
+
+state InventoryMenu {
+  AddGoods --> CalculateDiscount : [Calculate Discount]
+  CalculateDiscount : entry / start state
+  CalculateDiscount : do / calculate applicable discount
+  CalculateDiscount : exit / discount calculated
+  CalculateDiscount --> GenerateReceipt
+}
+
+state InventoryMenu {
+  AddGoods --> GenerateReceipt : [Generate Receipt]
+  GenerateReceipt : entry / start state
+  GenerateReceipt : do / generate receipt for purchase
+  GenerateReceipt : exit / receipt generated
+  GenerateReceipt --> InventoryMenu
+}
+
+state InventoryMenu {
+  AddGoods --> ReplaceItem : [Replace Item]
+  ReplaceItem : entry / start state
+  ReplaceItem : do / replace an item or cancel receipt
+  ReplaceItem : exit / item replaced or receipt cancelled
+  ReplaceItem --> InventoryMenu
+}
+
+state InventoryMenu {
+  AddGoods --> RecordRequest : [Record Request]
+  RecordRequest : entry / start state
+  RecordRequest : do / record customer requests
+  RecordRequest : exit / request recorded
+  RecordRequest --> InventoryMenu
+}
+
+state InventoryMenu {
+  AddGoods --> GenerateSummary : [Generate Summary Report]
+  GenerateSummary : entry / start state
+  GenerateSummary : do / generate summary report
+  GenerateSum
+@enduml
+
+Candidate Diagram 3:
+@startuml
+title UML State Machine Diagram (Inventory Management System)
+
+state "Ready" as Ready {
+    [*] --> Ready
+
+    Ready : entry / System initialization
+    Ready : exit / System shutdown
+}
+
+state "Adding Goods" as AddGoods {
+    Ready --> AddGoods : [User adds new goods]
+    AddGoods --> UpdatedInventory : [Goods added successfully]
+}
+
+state "Updating Prices" as UpdatePrices {
+    Ready --> UpdatePrices : [User updates price]
+    UpdatePrices --> UpdatedInventory : [Price updated successfully]
+}
+
+state "Removing Goods" as RemoveGoods {
+    Ready --> RemoveGoods : [User removes goods]
+    RemoveGoods --> UpdatedInventory : [Goods removed successfully]
+}
+
+state "Handling Expiration" as HandleExpiration {
+    UpdatedInventory --> HandleExpiration : [Goods expired]
+    HandleExpiration --> UpdatedInventory : [Goods notified and removed]
+}
+
+state "Placing Order" as PlaceOrder {
+    Ready --> PlaceOrder : [User places order]
+    PlaceOrder --> OrderPlaced : [Order placed successfully]
+}
+
+state "Generating Invoice" as GenerateInvoice {
+    OrderPlaced --> GenerateInvoice : [Generate invoice]
+    GenerateInvoice --> UpdatedInventory : [Invoice generated]
+}
+
+state "Searching Inventory" as SearchInventory {
+    Ready --> SearchInventory : [User searches items]
+    SearchInventory --> SearchResults : [Search completed]
+}
+
+state "Selecting Items" as SelectItems {
+    SearchResults --> SelectItems : [User selects items]
+    SelectItems --> PurchaseRequested : [Items selected]
+}
+
+state "Calculating Discount" as CalculateDiscount {
+    PurchaseRequested --> CalculateDiscount : [Calculate discount]
+    CalculateDiscount --> DiscountApplied : [Discount calculated]
+}
+
+state "Calculating Tax" as CalculateTax {
+    DiscountApplied --> CalculateTax : [Calculate tax]
+    CalculateTax --> TaxApplied : [Tax calculated]
+@enduml
+
+Candidate Diagram 4:
+@startuml
+title Inventory Management System
+
+[*] --> AddNewGoods
+
+state "Add new goods" as AddNewGoods
+state "Update price" as UpdatePrice
+state "Remove goods" as RemoveGoods
+state "Expired goods" as ExpiredGoods
+state "Place order" as PlaceOrder
+state "Generate invoice" as GenerateInvoice
+state "Search items" as SearchItems
+state "Calculate discount and tax" as CalculateDiscountTax
+state "Generate receipt" as GenerateReceipt
+state "Replace item" as ReplaceItem
+state "Cancel receipt" as CancelReceipt
+state "Record customer requests" as RecordCustomerRequests
+state "View transactions" as ViewTransactions
+
+AddNewGoods --> UpdatePrice
+UpdatePrice --> RemoveGoods
+RemoveGoods --> ExpiredGoods
+ExpiredGoods --> PlaceOrder
+PlaceOrder --> GenerateInvoice
+GenerateInvoice --> SearchItems
+SearchItems --> CalculateDiscountTax
+CalculateDiscountTax --> GenerateReceipt
+GenerateReceipt --> ReplaceItem
+ReplaceItem --> CancelReceipt
+CancelReceipt --> RecordCustomerRequests
+RecordCustomerRequests --> ViewTransactions
+ViewTransactions --> [*]
+
+@enduml
+
+Candidate Diagram 5:
+@startuml
+title Inventory Management State Transition Diagram
+
+[*] --> Start
+
+state Start
+state AddGoods
+state UpdatePrice
+state RemoveGoods
+state CheckExpiry
+state PlaceOrder
+state GenerateInvoice
+state SearchItems
+state CalculateDiscountTax
+state GenerateReceipt
+state ReplaceCancelReceipt
+state RecordRequest
+state GenerateReport
+
+Start --> AddGoods : Add new goods
+AddGoods --> Start
+
+Start --> UpdatePrice : Update price
+UpdatePrice --> Start
+
+Start --> RemoveGoods : Remove goods
+RemoveGoods --> Start
+
+Start --> CheckExpiry : Check expiry
+CheckExpiry --> Start
+
+Start --> PlaceOrder : Place order
+PlaceOrder --> GenerateInvoice
+GenerateInvoice --> Start
+
+Start --> SearchItems : Search items
+SearchItems --> CalculateDiscountTax
+CalculateDiscountTax --> GenerateReceipt
+GenerateReceipt --> Start
+
+GenerateReceipt --> ReplaceCancelReceipt : Replace/cancel
+ReplaceCancelReceipt --> Start
+
+Start --> RecordRequest : Record request
+RecordRequest --> Start
+
+Start --> GenerateReport : Generate report
+GenerateReport --> Start
+
+@enduml
+
+Candidate Diagram 6:
+@startuml
+title UML state machine diagram
+
+state "Initial State" as Initial
+Initial : entry/Start
+
+state "Add Goods" as AddGoods
+AddGoods : entry/Add new goods
+AddGoods : do/Add goods to inventory
+AddGoods : exit/Add goods
+
+state "Update Price" as UpdatePrice
+UpdatePrice : entry/Update price
+UpdatePrice : do/Update price of existing items
+UpdatePrice : exit/Price updated
+
+state "Remove Goods" as RemoveGoods
+RemoveGoods : entry/Remove goods
+RemoveGoods : do/Remove goods from inventory
+RemoveGoods : exit/Goods removed
+
+state "Identify Expired Goods" as IdentifyExpired
+IdentifyExpired : entry/Check expiration
+IdentifyExpired : do/Identify expired goods
+IdentifyExpired : exit/Notify user
+
+state "Place Order" as PlaceOrder
+PlaceOrder : entry/Place order
+PlaceOrder : do/Order additional goods
+PlaceOrder : exit/Order placed
+
+state "Generate Invoice" as GenerateInvoice
+GenerateInvoice : entry/Generate invoice
+GenerateInvoice : do/Generate invoice for order
+GenerateInvoice : exit/Invoice generated
+
+state "Search Items" as SearchItems
+SearchItems : entry/Search items
+SearchItems : do/Search and select items for purchase
+SearchItems : exit/Items selected
+
+state "Calculate Discount and Tax" as CalculateDiscountTax
+CalculateDiscountTax : entry/Calculate discount and tax
+CalculateDiscountTax : do/Calculate applicable discount and tax
+CalculateDiscountTax : exit/Discount and tax calculated
+
+state "Generate Receipt" as GenerateReceipt
+GenerateReceipt : entry/Generate receipt
+GenerateReceipt : do/Generate receipt for purchase
+GenerateReceipt : exit/Receipt generated
+
+state "Replace Item or Cancel Receipt" as ReplaceCancel
+ReplaceCancel : entry/Replace or cancel receipt
+ReplaceCancel : do/Replace item or cancel receipt
+ReplaceCancel : exit/Action completed
+
+state "Record Customer Requests" as RecordRequests
+RecordRequests : entry/Record requests
+RecordRequests : do/Record customer requests
+RecordRequests : exit/Requests recorded
+
+state "View Summary Report" as ViewSummary
+ViewSummary : entry/View report
+ViewSummary : do/Generate summary report
+ViewSummary : exit/Report generated
+
+state "Final State" as Final
+Final : entry/End
+
+Initial --> AddGoods
+Initial --> UpdatePrice
+Initial --> RemoveGoods
+Initial --> IdentifyExpired
+Initial --> PlaceOrder
+Initial --> GenerateInvoice
+Initial --> SearchItems
+Initial --> CalculateDiscountTax
+Initial --> GenerateReceipt
+Initial --> ReplaceCancel
+Initial --> RecordRequests
+Initial --> ViewSummary
+
+AddGoods --> Initial
+UpdatePrice --> Initial
+RemoveGoods --> Initial
+IdentifyExpired --> Initial
+PlaceOrder --
+@enduml
+
+Now create the best final PlantUML diagram.
