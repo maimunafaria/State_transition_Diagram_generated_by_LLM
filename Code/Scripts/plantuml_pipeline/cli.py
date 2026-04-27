@@ -226,6 +226,14 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     p_ensemble.add_argument(
+        "--candidate-run-id",
+        action="append",
+        help=(
+            "Explicit source run_id to include in one cross-run candidate pool "
+            "(repeatable). When set, --strategy and Qwen/LLaMA prefixes are ignored."
+        ),
+    )
+    p_ensemble.add_argument(
         "--qwen-run-prefix",
         default="open_source__qwen25_7b_instruct",
         help="Run-id prefix for Qwen configurations",

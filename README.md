@@ -70,9 +70,31 @@ python3 Code/Scripts/plantuml_experiment_pipeline.py metrics \
   --results-root results/plantuml_pipeline
 ```
 
+Run a gold-free stacked ensemble from an explicit candidate pool:
+
+```bash
+python3 Code/Scripts/plantuml_experiment_pipeline.py ensemble \
+  --ensemble-method stacked_llm \
+  --ensemble-root ensemble_gold_free_stacked \
+  --stack-max-candidates 3 \
+  --stack-fallback-majority \
+  --candidate-run-id open_source__llama31_8b_instruct__zero_shot \
+  --candidate-run-id open_source__llama31_8b_instruct__few_shot \
+  --candidate-run-id open_source__llama31_8b_instruct__rag \
+  --candidate-run-id open_source__llama31_8b_instruct__rag_validation_generator_critic_repair \
+  --candidate-run-id open_source__qwen25_7b_instruct__zero_shot \
+  --candidate-run-id open_source__qwen25_7b_instruct__few_shot \
+  --candidate-run-id open_source__qwen25_7b_instruct__rag \
+  --candidate-run-id open_source__deepseek_r1_14b__zero_shot \
+  --candidate-run-id open_source__deepseek_r1_14b__few_shot \
+  --candidate-run-id open_source__deepseek_r1_14b__rag
+```
+
 ## Notes
 
 - Requirements are loaded from each case's `structured_requirement.txt`.
 - Few-shot examples are selected from the train/RAG split, not from test cases.
 - Generated prompts are saved as `run_XX.prompt.txt` when `--save-prompts` is used.
 - Generated PlantUML is saved as `run_XX.puml`.
+- Stacked ensemble candidate selection is gold-free by default: it ranks candidates using
+  structural validity, requirement coverage, candidate consensus, and diagram quality.

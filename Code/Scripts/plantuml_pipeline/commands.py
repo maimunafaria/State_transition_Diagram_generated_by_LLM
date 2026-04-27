@@ -14,6 +14,7 @@ from .constants import PROJECT_ROOT
 from .dataset import balanced_subset, build_experiment_configs, load_cases, stratified_split_cases
 from .ensemble import (
     build_puml_from_graph,
+    collect_candidates_from_run_ids,
     collect_ensemble_candidates,
     majority_vote_graph,
     run_stacked_ensemble,
@@ -86,16 +87,21 @@ def command_ensemble(args: argparse.Namespace) -> int:
 
     cases = load_cases(dataset_root)
     case_by_id = {c.case_id: c for c in cases}
+    candidate_run_ids = [s.strip() for s in (args.candidate_run_id or []) if s.strip()]
     strategies = (
-        args.strategy
-        if args.strategy
-        else [
-            "zero_shot",
-            "few_shot",
-            "rag",
-            "rag_structural_validation",
-            "rag_validation_generator_critic_repair",
-        ]
+        ["candidate_pool"]
+        if candidate_run_ids
+        else (
+            args.strategy
+            if args.strategy
+            else [
+                "zero_shot",
+                "few_shot",
+                "rag",
+                "rag_structural_validation",
+                "rag_validation_generator_critic_repair",
+            ]
+        )
     )
     strategies = [safe_strategy_tag(s) for s in strategies]
 
@@ -107,22 +113,34 @@ def command_ensemble(args: argparse.Namespace) -> int:
         method_tag = ensemble_method
         if ensemble_method == "stacked_llm" and args.stack_use_rag:
             method_tag = "stacked_llm_rag"
-        run_id = f"ensemble__qwen_llama__{strategy}__{method_tag}"
+        source_tag = "selected_runs" if candidate_run_ids else "qwen_llama"
+        run_id = f"ensemble__{source_tag}__{strategy}__{method_tag}"
         for case_id in sorted(case_by_id.keys()):
             case = case_by_id[case_id]
-            candidates = collect_ensemble_candidates(
-                results_root=results_root,
-                case_id=case_id,
-                strategy=strategy,
-                qwen_prefix=args.qwen_run_prefix,
-                llama_prefix=args.llama_run_prefix,
-            )
+            if candidate_run_ids:
+                candidates = collect_candidates_from_run_ids(
+                    results_root=results_root,
+                    case_id=case_id,
+                    run_ids=candidate_run_ids,
+                )
+            else:
+                candidates = collect_ensemble_candidates(
+                    results_root=results_root,
+                    case_id=case_id,
+                    strategy=strategy,
+                    qwen_prefix=args.qwen_run_prefix,
+                    llama_prefix=args.llama_run_prefix,
+                )
             if len(candidates) < args.min_candidates:
                 skipped_cases += 1
                 continue
 
             model_set = {str(c["model"]) for c in candidates}
-            if args.require_both_models and not {"qwen", "llama"}.issubset(model_set):
+            if (
+                not candidate_run_ids
+                and args.require_both_models
+                and not {"qwen", "llama"}.issubset(model_set)
+            ):
                 skipped_cases += 1
                 continue
 
@@ -257,6 +275,7 @@ def command_ensemble(args: argparse.Namespace) -> int:
         "strategies": strategies,
         "qwen_run_prefix": args.qwen_run_prefix,
         "llama_run_prefix": args.llama_run_prefix,
+        "candidate_run_ids": candidate_run_ids,
         "ensemble_method": ensemble_method,
         "min_candidates": args.min_candidates,
         "min_votes": args.min_votes,
