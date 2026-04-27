@@ -285,7 +285,7 @@ def validate_graph(graph: DiagramGraph) -> ValidationResult:
     )
 
 
-def check_plantuml_syntax(puml_text: str, timeout: int = 30) -> tuple[list[str], list[str]]:
+def check_plantuml_syntax(puml_text: str, timeout: int = 8) -> tuple[list[str], list[str]]:
     plantuml = shutil.which("plantuml")
     if not plantuml:
         return [], ["plantuml_command_not_found_for_official_syntax_check"]
@@ -295,7 +295,7 @@ def check_plantuml_syntax(puml_text: str, timeout: int = 30) -> tuple[list[str],
         path = Path(temp_dir) / "diagram.puml"
         path.write_text(text, encoding="utf-8")
         result = subprocess.run(
-            [plantuml, "-tpng", "--no-error-image", str(path)],
+            [plantuml, "-checkonly", str(path)],
             text=True,
             capture_output=True,
             timeout=timeout,
