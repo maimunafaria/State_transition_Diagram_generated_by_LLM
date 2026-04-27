@@ -585,20 +585,68 @@ def build_generation_prompt(
     return "\n\n".join(parts).strip() + "\n", prompt_meta
 
 
-def build_critic_prompt(requirement: str, candidate_puml: str, validation: ValidationResult) -> str:
-    validation_issues = list(validation.errors) + list(validation.warnings)
-    return (
-        "You are a strict UML critic.\n"
-        "Review the candidate PlantUML against the requirement and the listed validation issues.\n"
-        "Line numbers, if present, refer only to the Candidate PlantUML block.\n"
-        "Do not rewrite the diagram. Return concise numbered problems only.\n\n"
-        "Requirement:\n"
-        f"{requirement}\n\n"
-        "Candidate PlantUML:\n"
-        f"{candidate_puml}\n\n"
-        "Validation issues:\n"
-        + ("\n".join(f"- {err}" for err in validation_issues) if validation_issues else "- none")
-    )
+def _repair_guidance_for_issues(issues: list[str]) -> list[str]:
+    guidance: list[str] = []
+    seen: set[str] = set()
+
+    def add(text: str) -> None:
+        if text not in seen:
+            guidance.append(text)
+            seen.add(text)
+
+    for issue in issues:
+        low = issue.lower()
+        if "invalid [*]" in low:
+            add(
+                "For invalid [*] --> [*], replace it with a real final transition, "
+                "for example Logout --> [*] : session ended."
+            )
+        if "multiple_initial_state_transitions" in low:
+            add(
+                "For multiple initial transitions, keep only one [*] --> Start state. "
+                "If there are several possible first paths, create a choice node: "
+                "[*] --> StartChoice; state StartChoice <<choice>>; "
+                "StartChoice --> StateA : [condition]; StartChoice --> StateB : [condition]."
+            )
+            add(
+                "Do not add extra [*] transitions inside composite states for this strict check; "
+                "use normal transitions or choice nodes instead."
+            )
+        if "missing_initial_state_transition" in low:
+            add("Add one clear initial transition from [*] to the first lifecycle state.")
+        if "missing_final_state_transition" in low:
+            add(
+                "Add at least one final transition from a natural terminal state to [*], "
+                "such as LoggedOut --> [*] or AccessEnded --> [*]."
+            )
+        if "orphan" in low:
+            add(
+                "For orphan states, either connect them with reasonable incoming/outgoing transitions "
+                "based on the requirement, or remove them if they are unsupported."
+            )
+        if "unreachable" in low:
+            add(
+                "For unreachable states, add a path from the initial lifecycle to those states, "
+                "usually through a decision/choice or a transition from the preceding activity."
+            )
+        if "duplicate_transitions" in low:
+            add("Remove duplicate transitions or merge their labels into one transition.")
+        if "choice_node_without_outgoing" in low:
+            add("Give each choice node at least two outgoing alternatives when possible.")
+        if "choice_node_without_guarded" in low:
+            add("Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].")
+        if "fork_without_multiple_outgoing" in low:
+            add("A fork node should split into multiple outgoing branches.")
+        if "join_without_multiple_incoming" in low:
+            add("A join node should merge multiple incoming branches.")
+        if "history_state_used_without_composite_state" in low:
+            add("Use [H] or [H*] only inside a composite state, or remove the history state.")
+        if "plantuml_syntax_error" in low or "empty src/dst" in low:
+            add("Fix PlantUML syntax first; return only valid PlantUML code with no markdown fences.")
+
+    if not guidance:
+        add("Fix each listed issue while preserving the requirement meaning.")
+    return guidance
 
 
 def build_repair_prompt(
@@ -607,11 +655,11 @@ def build_repair_prompt(
     validation: ValidationResult,
     critic_feedback: str = "",
 ) -> str:
-    feedback_block = critic_feedback.strip() or "No critic feedback provided."
     validation_issues = list(validation.errors) + list(validation.warnings)
+    repair_guidance = _repair_guidance_for_issues(validation_issues)
     return (
         "You are a UML repair assistant.\n"
-        "Fix the candidate PlantUML using the listed validation issues and critic feedback.\n"
+        "Fix the candidate PlantUML using only the validation issues and repair guidance below.\n"
         "Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.\n\n"
         "Requirement:\n"
         f"{requirement}\n\n"
@@ -619,6 +667,6 @@ def build_repair_prompt(
         f"{candidate_puml}\n\n"
         "Validation issues to fix:\n"
         + ("\n".join(f"- {err}" for err in validation_issues) if validation_issues else "- none")
-        + "\n\nCritic feedback:\n"
-        + feedback_block
+        + "\n\nRepair guidance for these issues:\n"
+        + "\n".join(f"- {hint}" for hint in repair_guidance)
     )

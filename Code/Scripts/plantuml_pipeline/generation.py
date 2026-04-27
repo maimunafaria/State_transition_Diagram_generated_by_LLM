@@ -6,7 +6,7 @@ from typing import Any
 from .model_client import call_model
 from .models import Case, ExperimentConfig, ValidationResult
 from .parser import normalize_puml_text, parse_and_validate_puml_text
-from .prompting import build_critic_prompt, build_generation_prompt, build_repair_prompt
+from .prompting import build_generation_prompt, build_repair_prompt
 
 MAX_REPAIR_ATTEMPTS = 3
 
@@ -121,28 +121,8 @@ def run_single_generation(
             if not current_issues:
                 break
 
-            if cfg.use_ensemble:
-                critic_prompt = build_critic_prompt(requirement, final_puml, final_validation)
-                critic_feedback = call_model(
-                    model_name=cfg.model_name,
-                    prompt=critic_prompt,
-                    ollama_host=ollama_host,
-                    temperature=temperature,
-                    top_p=top_p,
-                    max_tokens=max_tokens,
-                    timeout=timeout,
-                )
-                steps.append(
-                    {
-                        "stage": "critic",
-                        "attempt": attempt,
-                        "strict_issues": current_issues,
-                        "output": critic_feedback[:2000],
-                    }
-                )
-            else:
-                critic_prompt = ""
-                critic_feedback = ""
+            critic_prompt = ""
+            critic_feedback = ""
 
             repair_prompt = build_repair_prompt(
                 requirement,
@@ -168,9 +148,7 @@ def run_single_generation(
                 {
                     "stage": "repair",
                     "attempt": attempt,
-                    "critic_prompt": critic_prompt,
                     "repair_prompt": repair_prompt,
-                    "critic_feedback": critic_feedback,
                     "puml": repaired_puml,
                     "validation": repaired_validation.to_dict(),
                     "strict_state_diagram_valid": not repaired_issues,
