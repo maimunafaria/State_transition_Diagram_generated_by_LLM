@@ -27,64 +27,80 @@ Functional Requirements
 Candidate PlantUML:
 @startuml
 [*] --> Login
+
 state Login {
-  [*] --> Dashboard
+  [*] --> LoggedIn
 }
 
-state Dashboard {
-  --> Market : select market conditions
-  --> PestControl : select pest control
-  --> Soil : select soil info
-  --> Weather : select weather
-  --> Labor : select labor
-  --> Logout : log out
+state LoggedIn <<choice>> {
+  LoggedIn --> MarketConditions : select market condition
+  LoggedIn --> PestControl : select pest control help
+  LoggedIn --> SoilInfo : select soil info
+  LoggedIn --> Weather : select weather
+  LoggedIn --> Labour : select labour
+  LoggedIn --> Continue : continue using service
+  LoggedIn --> Logout : log out
 }
 
-state Market {
-  --> MarketReport : show report
-  MarketReport --> Dashboard
+state MarketConditions {
+  MarketConditions --> MarketReport
+}
+
+state MarketReport {
+  MarketReport --> LoggedIn
+  MarketReport --> Logout
 }
 
 state PestControl {
-  --> PestPhoto : provide photo
-  PestPhoto --> PestTechniques
-  PestTechniques --> Dashboard
+  PestControl --> PestControlTechniques
 }
 
-state Soil {
-  --> SoilInfo : provide info
+state PestControlTechniques {
+  PestControlTechniques --> LoggedIn
+}
+
+state SoilInfo {
   SoilInfo --> SoilSuggestions
-  SoilSuggestions --> Dashboard
+}
+
+state SoilSuggestions {
+  SoilSuggestions --> LoggedIn
 }
 
 state Weather {
-  --> WeatherLocation : provide location
-  WeatherLocation --> WeatherInsights
-  WeatherInsights --> Dashboard
+  Weather --> WeatherReport
 }
 
-state Labor {
-  --> LaborLocation : provide location
-  LaborLocation --> LaborAvailability
-  LaborAvailability --> Dashboard
+state WeatherReport {
+  WeatherReport --> LoggedIn
+}
+
+state Labour {
+  Labour --> LabourReport
+}
+
+state LabourReport {
+  LabourReport --> LoggedIn
+}
+
+state Continue {
+  Continue --> [*]
 }
 
 state Logout {
-  --> [*]
+  Logout --> [*]
 }
+
 @enduml
 
 
 Validation issues to fix:
-- multiple_initial_state_transitions (Login, Dashboard)
-- missing_final_state_transition (state --> [*])
-- orphan_states_detected
-- orphan: Labor, Logout, Market, PestControl, Soil, Weather
+- multiple_initial_state_transitions (Login, LoggedIn)
+- choice_node_without_guarded_outgoing_transitions (LoggedIn)
 - plantuml_command_not_found_for_official_syntax_check
 
 Repair guidance for these issues:
 - For multiple initial transitions, keep only the one top-level [*] --> State transition.
 - If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
 - Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
-- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
-- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
+- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].

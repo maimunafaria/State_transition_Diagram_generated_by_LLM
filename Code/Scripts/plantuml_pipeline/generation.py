@@ -43,6 +43,7 @@ def run_single_generation(
     rag_db_dir: Path | None = None,
     rag_collection_name: str = "uml_docs",
     few_shot_seed: int = 42,
+    few_shot_count: int = 3,
     run_index: int = 1,
     repair_attempts: int = DEFAULT_REPAIR_ATTEMPTS,
 ) -> tuple[str, ValidationResult, str, str, list[dict[str, Any]], list[dict[str, Any]]]:
@@ -64,6 +65,7 @@ def run_single_generation(
         rag_db_dir=rag_db_dir,
         rag_collection_name=rag_collection_name,
         few_shot_seed=few_shot_seed,
+        few_shot_count=few_shot_count,
         run_index=run_index,
     )
     if prompt_meta.get("few_shot_case_ids"):

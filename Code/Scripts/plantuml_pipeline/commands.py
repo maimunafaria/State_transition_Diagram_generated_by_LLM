@@ -401,8 +401,15 @@ def command_run(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
 
+    if args.few_shot_count == 1:
+        for cfg in configs:
+            if cfg.strategy == "few_shot":
+                cfg.run_id = cfg.run_id.replace("__few_shot", "__one_shot")
+
     if args.only_run_id:
         wanted = set(args.only_run_id)
+        if args.few_shot_count == 1:
+            wanted |= {run_id.replace("__few_shot", "__one_shot") for run_id in wanted}
         configs = [cfg for cfg in configs if cfg.run_id in wanted]
         if not configs:
             print("No configurations matched --only-run-id", file=sys.stderr)
@@ -439,6 +446,7 @@ def command_run(args: argparse.Namespace) -> int:
         "rag_max_chars_per_doc": args.rag_max_chars_per_doc,
         "rag_domain_hints": sorted(rag_domain_hints),
         "runs_per_case": args.runs,
+        "few_shot_count": args.few_shot_count,
         "repair_attempts": args.repair_attempts,
         "baseline_subset_size_target": args.baseline_subset_size,
         "baseline_subset_size_actual": len(baseline_cases),
@@ -497,6 +505,7 @@ def command_run(args: argparse.Namespace) -> int:
                             rag_db_dir=rag_db_dir,
                             rag_collection_name=args.rag_collection_name,
                             few_shot_seed=args.few_shot_seed,
+                            few_shot_count=args.few_shot_count,
                             run_index=run_index,
                             repair_attempts=args.repair_attempts,
                         )

@@ -1,116 +1,61 @@
 @startuml
 [*] --> Registration
 
-state Registration
-Registration : entry / start registration
-Registration : do / validate inputs
-Registration : exit / successful registration
-Registration : exit / registration failed
+state Registration {
+  [*] --> RegistrationSuccess
+  RegistrationSuccess --> Login : successful registration
+  Registration --> RegistrationFailure
+  RegistrationFailure --> [*] : access ended
+}
 
-state RegistrationDecision <<choice>>
-Registration --> RegistrationDecision
+state Login {
+  [*] --> LoginSuccess
+  LoginSuccess --> LoggedIn
+  Login --> LoginFailure
+  LoginFailure --> [*] : access denied
+}
 
-state "Successful Registration" as SuccessReg
-SuccessReg : entry / registration completed
-SuccessReg : do / allow access
-SuccessReg : exit / proceed to login
+state LoggedIn {
+  [*] --> MainMenu
+  MainMenu --> News : view news
+  MainMenu --> SymptomCheck : check symptoms
+  MainMenu --> FitnessOptions : use fitness options
+  MainMenu --> InsuranceProcessing : process insurance
+  MainMenu --> PaymentSelection : select payment
+  MainMenu --> Logout : end session
+}
 
-state "Registration Failed" as FailReg
-FailReg : entry / registration error
-FailReg : do / display error message
-FailReg : exit / return to start
+state News {
+  [*] --> MainMenu : back to main menu
+}
 
-RegistrationDecision --> SuccessReg
-RegistrationDecision --> FailReg
+state SymptomCheck {
+  [*] --> SymptomResult : check result
+  SymptomResult --> MainMenu : continue
+  SymptomResult --> Logout : finish session
+}
 
-SuccessReg --> Login
+state FitnessOptions {
+  [*] --> MainMenu : back to main menu
+}
 
-state Login
-Login : entry / start login
-Login : do / verify credentials
-Login : exit / login successful
-Login : exit / login failed
+state InsuranceProcessing {
+  [*] --> InsuranceValidation
+  InsuranceValidation --> InsuranceProcessed : valid
+  InsuranceValidation --> InsuranceRejected : invalid
+  InsuranceProcessed --> MainMenu
+  InsuranceRejected --> MainMenu
+}
 
-state LoginDecision <<choice>>
-Login --> LoginDecision
+state PaymentSelection {
+  [*] --> CashPayment : choose cash
+  CashPayment --> PaymentInfo : provide details
+  PaymentInfo --> MainMenu : confirm
+  PaymentSelection --> InsurancePayment : choose insurance
+  InsurancePayment --> InsuranceProcessing
+}
 
-state "Valid Login" as ValidLogin
-ValidLogin : entry / login completed
-ValidLogin : do / access granted
-ValidLogin : exit / proceed to dashboard
-
-state "Invalid Login" as InvalidLogin
-InvalidLogin : entry / login error
-InvalidLogin : do / display error message
-InvalidLogin : exit / return to login
-
-LoginDecision --> ValidLogin
-LoginDecision --> InvalidLogin
-
-ValidLogin --> Dashboard
-
-state Dashboard
-Dashboard : entry / show facilities
-Dashboard : do / access features
-Dashboard : exit / continue or logout
-
-state DashboardDecision <<choice>>
-Dashboard --> DashboardDecision
-
-state "Continue Session" as Continue
-Continue : entry / continue using
-Continue : do / access features
-Continue : exit / proceed
-
-state Logout
-Logout : entry / start logout
-Logout : do / terminate session
-Logout : exit / logged out
-
-DashboardDecision --> Continue
-DashboardDecision --> Logout
-
-Continue --> Dashboard
-
-Continue --> PaymentOptions
-
-state PaymentOptions
-PaymentOptions : entry / select payment
-PaymentOptions : do / choose method
-PaymentOptions : exit / proceed
-
-state PaymentMethod <<choice>>
-PaymentOptions --> PaymentMethod
-
-state InsurancePayment
-InsurancePayment : entry / process insurance
-InsurancePayment : do / validate insurance
-InsurancePayment : exit / payment completed
-
-state CashPayment
-CashPayment : entry / cash payment
-CashPayment : do / confirm details
-CashPayment : exit / payment completed
-
-PaymentMethod --> InsurancePayment
-PaymentMethod --> CashPayment
-
-InsurancePayment --> PaymentConfirmation
-
-state PaymentConfirmation
-PaymentConfirmation : entry / confirm payment
-PaymentConfirmation : do / finalize
-PaymentConfirmation : exit / proceed
-
-CashPayment --> PaymentConfirmation
-
-PaymentConfirmation --> Feedback
-
-state Feedback
-Feedback : entry / collect feedback
-Feedback : do / submit feedback
-Feedback : exit / proceed
-
-Feedback --> Logout
-
+state Logout {
+  [*] --> EndState : session ended
+}
 @enduml

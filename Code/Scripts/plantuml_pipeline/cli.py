@@ -142,6 +142,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=42,
         help="Seed for randomized few-shot example selection",
     )
+    p_run.add_argument(
+        "--few-shot-count",
+        type=int,
+        default=3,
+        help="Number of few-shot examples to include",
+    )
     p_run.add_argument("--temperature", type=float, default=0.2)
     p_run.add_argument("--top-p", type=float, default=0.9)
     p_run.add_argument("--max-tokens", type=int, default=1024)

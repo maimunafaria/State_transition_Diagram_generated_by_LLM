@@ -4,18 +4,16 @@
 state "Waiting for customer" as WaitingCustomer
 state "Recording items" as RecordItems
 state "Waiting for payment" as WaitingPayment
+state "Verifying payment" as VerifyPayment
 state "Sale completed" as SaleComplete
 
 WaitingCustomer --> RecordItems : enter item
 RecordItems --> RecordItems : enter item
 RecordItems --> WaitingPayment : end of sale
 WaitingPayment --> SaleComplete : cash payment
-WaitingPayment --> VerifyingPayment : card/check payment
-
-state "Verifying payment" as VerifyingPayment
-VerifyingPayment --> SaleComplete : payment approved
-
+WaitingPayment --> VerifyPayment : card or check
+VerifyPayment --> SaleComplete : payment approved
 SaleComplete --> WaitingCustomer : next customer
-SaleComplete --> [*] : end
+SaleComplete --> [*] : end process
 
 @enduml

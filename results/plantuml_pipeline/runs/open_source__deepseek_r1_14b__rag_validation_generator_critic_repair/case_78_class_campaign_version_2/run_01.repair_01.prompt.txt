@@ -26,44 +26,53 @@ Functional Requirements
 
 Candidate PlantUML:
 @startuml
-title Campaign State Machine
+title Campaign Version 2 State Machine
 
 [*] --> Commissioned : /assignManager; assignStaff
 
 state Commissioned
-state Active {
-  state AdvertPreparation
-  state Scheduling
-  state "Running Adverts" as RunningAdverts
-
-  Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
-
-  AdvertPreparation --> Scheduling : advertsApproved\n/authorize
-  Scheduling --> RunningAdverts : confirmSchedule
-  RunningAdverts --> AdvertPreparation : extendCampaign\n/modifyBudget
-  RunningAdverts --> Completed : campaignCompleted\n/prepareFinalStatement
-}
-
+state Active
 state Completed
-state WaitingForPayment
 state Paid
+state WaitingPayment
 
-Active --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
 
-Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
-Completed --> WaitingForPayment : paymentReceived(payment)\n[paymentDue - payment > 0]
-Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
+Active --> Completed : campaignCompleted\n/prepareFinalStatement
 
-WaitingForPayment --> Paid : balanceSettled
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = zero]
+Completed --> WaitingPayment : paymentReceived(payment)\n[paymentDue - payment > zero]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < zero]\n/generateRefund
 
 Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+
+Active {
+  state AdvertPreparation {
+    [*] --> Scheduling : advertsApproved\n/authorize
+    Scheduling --> RunningAdverts : confirmSchedule
+    RunningAdverts --> AdvertPreparation : extendCampaign\n/modifyBudget
+  }
+  state RunningAdverts
+  state Monitoring {
+    [*] --> Survey
+    state Survey
+    state Evaluation
+    Survey --> Evaluation : surveyComplete
+    Evaluation --> Survey : runSurvey
+  }
+}
+
 @enduml
 
 
 Validation issues to fix:
-- unreachable_states_detected
-- unreachable: AdvertPreparation, Running Adverts, Scheduling
+- multiple_initial_state_transitions (Commissioned, Scheduling, Survey)
+- orphan_states_detected
+- orphan: Monitoring
 - plantuml_command_not_found_for_official_syntax_check
 
 Repair guidance for these issues:
-- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.

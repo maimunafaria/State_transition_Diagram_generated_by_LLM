@@ -1,0 +1,161 @@
+@startuml
+title UML State Machine Diagram (Inventory System)
+
+[*] --> InitialState
+
+state InitialState <<choice>>
+InitialState --> AddGoods : [Add new goods]
+InitialState --> UpdatePrice : [Update price of existing items]
+InitialState --> RemoveGoods : [Remove goods from inventory]
+InitialState --> PlaceOrder : [Place order to supplier]
+InitialState --> SearchItems : [Search for items in inventory]
+
+state "Add Goods" as AddGoods {
+    [*] --> EnterDetails
+
+    state EnterDetails
+    state ChoiceAdd <<choice>>
+    state "Save to Database" as SaveDB
+    state EndInvalid <<choice>>
+
+    EnterDetails --> ChoiceAdd : [Add goods verification]
+    ChoiceAdd --> SaveDB : [valid]
+    ChoiceAdd --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+AddGoods : entry / Add new goods
+AddGoods : do / Add goods
+AddGoods : exit / After updation
+
+SaveDB --> InitialState : [verified]
+
+state "Update Price" as UpdatePrice {
+    [*] --> EnterNewPrice
+
+    state EnterNewPrice
+    state ChoiceUpdate <<choice>>
+    state "Update Database" as UpdateDB
+    state EndInvalid <<choice>>
+
+    EnterNewPrice --> ChoiceUpdate : [Update price verification]
+    ChoiceUpdate --> UpdateDB : [valid]
+    ChoiceUpdate --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+UpdatePrice : entry / Update price of existing items
+UpdatePrice : do / Update price
+UpdatePrice : exit / After updation
+
+UpdateDB --> InitialState : [verified]
+
+state "Remove Goods" as RemoveGoods {
+    [*] --> SelectGoods
+
+    state SelectGoods
+    state ChoiceRemove <<choice>>
+    state "Remove from Database" as RemoveDB
+    state EndInvalid <<choice>>
+
+    SelectGoods --> ChoiceRemove : [Remove goods verification]
+    ChoiceRemove --> RemoveDB : [valid]
+    ChoiceRemove --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+RemoveGoods : entry / Remove goods from inventory
+RemoveGoods : do / Remove goods
+RemoveGoods : exit / After updation
+
+RemoveDB --> InitialState : [verified]
+
+state "Place Order" as PlaceOrder {
+    [*] --> SelectSupplier
+
+    state SelectSupplier
+    state ChoiceOrder <<choice>>
+    state "Place Order" as PlaceOrderDB
+    state EndInvalid <<choice>>
+
+    SelectSupplier --> ChoiceOrder : [Place order verification]
+    ChoiceOrder --> PlaceOrderDB : [valid]
+    ChoiceOrder --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+PlaceOrder : entry / Place order to supplier
+PlaceOrder : do / Place order
+PlaceOrder : exit / After updation
+
+PlaceOrderDB --> InitialState : [verified]
+
+state "Search Items" as SearchItems {
+    [*] --> SelectItems
+
+    state SelectItems
+    state ChoiceSearch <<choice>>
+    state "Generate Invoice" as GenerateInvoice
+    state EndInvalid <<choice>>
+
+    SelectItems --> ChoiceSearch : [Search items verification]
+    ChoiceSearch --> GenerateInvoice : [valid]
+    ChoiceSearch --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+SearchItems : entry / Search for items in inventory
+SearchItems : do / Search items
+SearchItems : exit / After updation
+
+GenerateInvoice --> InitialState : [verified]
+
+state "Generate Invoice" as GenerateInvoice {
+    [*] --> SelectItemsForInvoice
+
+    state SelectItemsForInvoice
+    state ChoiceInvoice <<choice>>
+    state "Generate Invoice" as GenerateInvoiceDB
+    state EndInvalid <<choice>>
+
+    SelectItemsForInvoice --> ChoiceInvoice : [Generate invoice verification]
+    ChoiceInvoice --> GenerateInvoiceDB : [valid]
+    ChoiceInvoice --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+GenerateInvoice : entry / Generate invoice
+GenerateInvoice : do / Generate invoice
+GenerateInvoice : exit / After updation
+
+GenerateInvoiceDB --> InitialState : [verified]
+
+state "View Summary Report" as ViewReport {
+    [*] --> SelectReport
+
+    state SelectReport
+    state ChoiceReport <<choice>>
+    state "Generate Report" as GenerateReport
+    state EndInvalid <<choice>>
+
+    SelectReport --> ChoiceReport : [View report verification]
+    ChoiceReport --> GenerateReport : [valid]
+    ChoiceReport --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+ViewReport : entry / View summary report
+ViewReport : do / View report
+ViewReport : exit / After updation
+
+GenerateReport --> InitialState : [verified]
+
+InitialState --> [*] : [Logout]
+@enduml

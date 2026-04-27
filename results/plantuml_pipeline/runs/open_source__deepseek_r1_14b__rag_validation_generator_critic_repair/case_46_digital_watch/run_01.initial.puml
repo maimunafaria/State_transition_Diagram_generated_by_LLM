@@ -1,31 +1,25 @@
 @startuml
 [*] --> Idle
 
-Idle --> TimeAdjustment : button pressed
-Idle --> LightOn : light button pressed
-Idle --> AlarmSettings : alarm button pressed
+Idle --> AdjustTime : Adjust Time
+Idle --> AdjustAlarm : Adjust Alarm
+Idle --> ToggleAlarm : Toggle Alarm
+Idle --> ToggleLight : Toggle Light
 
-state TimeAdjustment {
-    [*] --> AdjustingHour
-    AdjustingHour --> AdjustingMinutes : button pressed
-    AdjustingMinutes --> AdjustingAlarmHour : button pressed
-    AdjustingAlarmHour --> AdjustingAlarmMinutes : button pressed
-    AdjustingAlarmMinutes --> TimeAdjustment : button pressed
-}
+AdjustTime --> Idle : Done
+AdjustTime --> AdjustTime : Increase Value
 
-state AlarmSettings {
-    [*] --> AlarmOff
-    AlarmOff --> AlarmOn : alarm enabled
-    AlarmOn --> AlarmOff : alarm disabled
-}
+AdjustAlarm --> Idle : Done
+AdjustAlarm --> AdjustAlarm : Increase Value
 
-state Light {
-    [*] --> LightOff
-    LightOff --> LightOn : light button pressed
-    LightOn --> LightOff : light button pressed
-}
+ToggleAlarm --> AlarmOn
+AlarmOn --> AlarmRinging : Alarm Time Reached
+AlarmRinging --> AlarmOff : Stop Alarm
 
-Idle --> AlarmRinging : alarm time matches current time
-AlarmRinging --> AlarmOff : button pressed
+ToggleLight --> LightOn
+LightOn --> LightOff : Light Released
+LightOff --> LightOn : Light Pressed Again
+
+AlarmOff --> Idle : Dismiss
 
 @enduml

@@ -2,19 +2,25 @@
 [*] --> Unassigned
 
 state Unassigned {
-  [*] --> Assigned : assign
+  Unassigned --> AssignedToClient
+  Unassigned --> AssignedToCampaign
 }
 
-state Assigned {
-  state ClientAssignment
-  state CampaignAssignment
-  ClientAssignment --> CampaignAssignment : switchAssignment
-  CampaignAssignment --> ClientAssignment : switchAssignment
+state AssignedToClient {
+  AssignedToClient --> AssignedToCampaign : switch to campaign
+  AssignedToClient --> Unassigned : remove assignment
 }
 
-Assigned --> Terminated : terminate
-Terminated --> Archived : archive
+state AssignedToCampaign {
+  AssignedToCampaign --> AssignedToClient : switch to client
+  AssignedToCampaign --> Unassigned : remove assignment
+}
+
+Unassigned --> Unemployed : leave job
+
+state Unemployed {
+  Unemployed --> Archived : after some time
+}
 
 Archived --> [*]
-
 @enduml

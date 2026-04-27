@@ -1,56 +1,26 @@
 @startuml
-title ATM - Withdrawal Process
-
-[*] --> Ready
-
-state Ready
+state InsertedCard
 state WaitingForPIN
 state ValidatingPIN
-state WaitingForCustomerChoice
+state MainMenu
 state ProcessingWithdrawal
-state Dispensing
-state Printing
-state Ejecting
-state Confiscating
-state Terminating
+state DispensingCash
+state PrintingReceipt
+state EjectingCard
+state Resetting
+state Idle
 
-Ready : entry / Display Welcome
+[*] --> InsertedCard
 
-WaitingForPIN : entry / Display Enter PIN
-
-ValidatingPIN : entry / Validate PIN
-
-WaitingForCustomerChoice : entry / Display Menu
-
-ProcessingWithdrawal : entry / Process Withdrawal
-
-Dispensing : entry / Dispense Cash
-
-Printing : entry / Print Receipt
-
-Ejecting : entry / Eject Card
-
-Confiscating : entry / Confiscate Card
-
-Terminating : entry / Reset System
-
-Ready --> WaitingForPIN : Card Inserted / Get PIN
+InsertedCard --> WaitingForPIN : Card Inserted / Get PIN
 
 WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
-ValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu
-ValidatingPIN --> Confiscating : Invalid PIN / Invalid PIN Prompt
-ValidatingPIN --> Confiscating : Third Invalid PIN / Confiscate
 
-WaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected / Request Withdrawal, Display Wait
+ValidatingPIN --> MainMenu : Valid PIN / Display Menu
 
-ProcessingWithdrawal --> Dispensing : Withdrawal Approved / Dispense Cash, Update Status
-ProcessingWithdrawal --> Ejecting : Rejected / Eject
+MainMenu --> ProcessingWithdrawal : (Withdrawal Selected\nRequest Withdrawal, Display Wait)
 
-Dispensing --> Printing : Cash Dispensed / Print Receipt
+ProcessingWithdrawal --> DispensingCash : (Withdrawal Approved\nDispense Cash, Update Status)
 
-Printing --> Ejecting : Receipt Printed / Eject
-
-Ejecting --> Terminating : Card Ejected / Display Ejected
-Confiscating --> Terminating : Card
-Terminating --> [*] : Ready for Next User
+DispensingCash --> PrintingReceipt : (Cash Disp
 @enduml

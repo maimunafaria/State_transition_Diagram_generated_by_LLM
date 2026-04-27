@@ -1,0 +1,116 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Loggedin Mechanism — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall prompt the user to enter their username.
+2. The system shall terminate the login process and exit if the user cancels at any point.
+3. The system shall check the entered username against its records.
+4. The system shall prompt for a password if the username is valid.
+5. The system shall verify both the username and password to allow login.
+6. The system shall allow the user to try again if the credentials are incorrect.
+7. The system shall increase the number of failed attempts with each incorrect entry.
+8. The system shall limit the number of login attempts for a user.
+9. The system shall block further login attempts if the maximum number of attempts is reached.
+10. The system shall prevent login if it cannot recognize the user during any step.
+
+Example 1 PlantUML:
+@startuml
+title LoggingOn State Machine
+
+state LoggingOn {
+  [*] --> AcceptingUserName
+
+  state AcceptingUserName
+  state AcceptingPassword
+  state VerifyingDetails
+
+  state BadDetails {
+    state BadUsername
+    state BadPassword
+  }
+
+  BadDetails : entry / ++tries
+
+  AcceptingUserName --> AcceptingPassword : ok
+
+  AcceptingUserName --> Canceling : cancel
+
+  AcceptingPassword --> VerifyingDetails : ok
+  AcceptingPassword --> Canceling : cancel
+
+  VerifyingDetails --> BadUsername : badUserName
+  VerifyingDetails --> BadPassword : badPassword
+  VerifyingDetails --> Authenticated : detailsVerified
+
+  BadDetails --> AcceptingUserName : [tries < 4]
+  BadDetails --> Fail : [tries = 4]
+}
+
+LoggingOn : entry / tries := 0
+
+state Canceling
+state Authenticated
+state Fail
+Fail : entry / logFailure
+userRecognized --> AcceptingPassword
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.

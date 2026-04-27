@@ -1,27 +1,17 @@
 @startuml
-title ATM - Withdrawal Process
+[*] --> SelectAmount
 
-[*] --> Start
+state SelectAmount
+state VerifyTransaction
+state RejectTransaction
+state ApprovedTransaction
 
-state Start
-state "Waiting for Amount Selection" as WaitingAmount
-state "Verifying Transaction" as Verifying
-state "Waiting for Amount Re-entry" as WaitingReentry
-state Success
-state "System Shutdown" as Shutdown
+SelectAmount --> VerifyTransaction : amount selected\nverify transaction
 
-Start --> WaitingAmount : start transaction
-WaitingAmount --> Verifying : amount selected / verify
-WaitingAmount --> Verifying : custom amount / verify
+VerifyTransaction --> RejectTransaction : transaction rejected\nre-enter amount
+RejectTransaction --> SelectAmount : re-enter amount
 
-Verifying --> Success : transaction approved
-Verifying --> WaitingReentry : transaction rejected
+VerifyTransaction --> ApprovedTransaction : transaction approved
 
-WaitingReentry --> Verifying : amount re-entered / verify
-
-Verifying --> Shutdown : system shutdown
-WaitingAmount --> Shutdown : system shutdown
-WaitingReentry --> Shutdown : system shutdown
-
-Success --> [*] : end
+ApprovedTransaction --> [*] : transaction completed
 @enduml

@@ -1,40 +1,71 @@
 @startuml
-start --> Registration
+title Digidoclocker State Machine Diagram
 
-state Registration {
-  Registration --> RegEnterDetails : [Enter Details]
-  RegEnterDetails --> RegSuccess : [Valid Details]
-  RegEnterDetails --> ReEnterDetails : [Invalid Details]
-  ReEnterDetails --> RegEnterDetails
-}
+[*] --> Registration
 
-state Login {
-  RegSuccess --> Login : [Valid Registration]
-  Login : entry / Get Login Details
-  Login : do / Validate Login Details
-  Login : exit / Valid or Invalid Login
+state Registration
+Registration : entry / Get User Details
+Registration : do / Validate Details
+Registration : exit / Valid or Invalid
 
-  Login --> Login : [Invalid Login]
-  Login --> Choice1 : [Valid Login]
-}
+Registration --> Login : [Valid Registration]
+Registration --> [*] : [Invalid Registration]
 
-state Choice1 <<choice>> {
-  Choice1 --> UploadDocs : [Upload Documents]
-  Choice1 --> ViewProfile : [View Profile]
-  Choice1 --> ApplyCert : [Apply for Certificate]
-  Choice1 --> UpdateProfile : [Update Profile]
-  Choice1 --> RegistrarLogin : [Registrar Login]
-}
+state Login
+Login : entry / Get Login Details
+Login : do / Validate Login
+Login : exit / Valid or Invalid
 
-state UploadDocs {
-  UploadDocs --> Choice1 : [Continue Uploading]
-  UploadDocs --> Choice1 : [Done Uploading]
-}
+Login --> Choice1 : [Valid Login]
 
-state ViewProfile {
-  ViewProfile --> Choice1 : [Back to Menu]
-}
+state Choice1 <<choice>>
 
-state ApplyCert {
-  ApplyCert --> IssueCert : [Certificate
+Choice1 --> UploadDocuments : [Upload Documents]
+Choice1 --> ViewProfile : [View Profile]
+Choice1 --> ApplyCert : [Apply for Certificate]
+Choice1 --> ContinueUpload : [Continue Uploading]
+Choice1 --> ChoiceRegistrar : [Registrar]
+
+state UploadDocuments
+UploadDocuments : entry / Upload Document
+UploadDocuments : do / Process Upload
+UploadDocuments : exit / Proceed or Continue
+
+UploadDocuments --> Choice1 : [Proceed]
+UploadDocuments --> ContinueUpload : [Continue]
+
+state ContinueUpload
+ContinueUpload : entry / Continue Upload
+ContinueUpload : do / Process Upload
+ContinueUpload : exit / Proceed
+
+ContinueUpload --> Choice1 : [Done]
+
+state ViewProfile
+ViewProfile : entry / View Profile
+ViewProfile : do / Display Profile
+ViewProfile : exit / Proceed
+
+ViewProfile --> Choice1 : [Back]
+
+state ApplyCert
+ApplyCert : entry / Apply for Certificate
+ApplyCert : do / Process Application
+ApplyCert : exit / Issue or Reapply
+
+ApplyCert --> IssueCertificate : [Certificate Issued]
+ApplyCert --> Choice1 : [Reapply]
+
+state IssueCertificate
+IssueCertificate : entry / Issue Certificate
+IssueCertificate : do / Process Issue
+IssueCertificate : exit / Done
+
+IssueCertificate --> Choice1 : [Done]
+
+state ChoiceRegistrar <<choice>>
+
+ChoiceRegistrar --> RequestCertificate : [Request Certificate]
+
+state RequestCertificate
 @enduml

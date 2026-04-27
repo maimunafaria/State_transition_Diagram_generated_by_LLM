@@ -1,0 +1,126 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Device Handout — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall collect personal details from a donor during registration.
+2. The system shall check the entered personal details after registration.
+3. The system shall collect contact information from a donor after verifying their personal details.
+4. The system shall allow donors to share details about the device they want to donate.
+5. The system shall review the shared device details.
+6. The system shall support if a device meets the requirements, the system shall accept it.
+7. The system shall assign an executive to handle the accepted device.
+8. The system shall confirm the status of the accepted device by the executive.
+9. The system shall support if a device does not meet the requirements, the system shall inform the donor that it cannot be accepted.
+
+Example 1 PlantUML:
+@startuml
+title UML State Machine Diagram
+
+[*] --> DonorRegistration
+
+state "donor registration" as DonorRegistration
+DonorRegistration : entry / enter personal details
+DonorRegistration : do / verify details
+DonorRegistration : exit / request contact details
+
+state "get contacts" as GetContacts
+GetContacts : entry / registered donor
+GetContacts : do / receive contact details
+GetContacts : exit / donate a device
+
+state "device details" as DeviceDetails
+DeviceDetails : entry / gave contacts
+DeviceDetails : do / receive details
+DeviceDetails : exit / request approval
+
+state "device verification" as DeviceVerification
+DeviceVerification : entry / provided device details
+DeviceVerification : do / check details
+DeviceVerification : exit / acknowledge donor
+
+state Decision <<choice>>
+
+state approved
+approved : entry / device verified
+approved : do / choose an executive
+approved : exit / send details to executive
+
+state rejected
+rejected : entry / fails verification
+rejected : do / notify donor
+rejected : exit / device not accepted
+
+state "picked up" as PickedUp
+PickedUp : entry / executive receives details
+PickedUp : do / executive picks product
+PickedUp : exit / acknowledges status of product
+
+DonorRegistration --> GetContacts
+GetContacts --> DeviceDetails
+DeviceDetails --> DeviceVerification
+DeviceVerification --> Decision
+
+Decision --> approved : [passes verification]
+Decision --> rejected : [fails verification]
+
+approved --> PickedUp
+
+PickedUp --> [*]
+rejected --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Video Suggestion System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall receive a video suggestion request from a user.
+2. The system shall identify the user who made the video suggestion request.
+3. The system shall gather different types of videos simultaneously based on the user's profile or preferences, trending videos from the user’s area, videos with similar tags, videos from similar genres, and promoted videos .
+4. The system shall add additional details such as thumbnails and view counts to the suggested videos.
+5. The system shall send the suggested videos to the user.

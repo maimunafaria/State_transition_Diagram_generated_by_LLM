@@ -1,8 +1,32 @@
 @startuml
-[*] --> Greeting
+title ATM - PIN Validation and Transaction Processing
 
-state Greeting
+[*] --> Idle
+
+state Idle
 state WaitingForPIN
 state ValidatingPIN
-state Waiting
+state WaitingForCustomerChoice
+state ProcessingRequest
+state Ejecting
+state Confiscating
+
+Idle : entry / Display Welcome
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+ValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu
+ValidatingPIN --> Confiscating : Third Invalid PIN / Confiscate
+
+WaitingForCustomerChoice --> ProcessingRequest : Request Selected / Process Request
+WaitingForCustomerChoice --> Ejecting : Cancel / Eject
+
+ProcessingRequest --> Ejecting : Rejected / Eject
+ProcessingRequest --> ProcessingRequest : Processing Complete / Continue
+
+Ejecting --> Idle : Card Ejected / Display Ejected
+Confiscating --> Idle : Card Confiscated / Display Confiscated
+
 @enduml

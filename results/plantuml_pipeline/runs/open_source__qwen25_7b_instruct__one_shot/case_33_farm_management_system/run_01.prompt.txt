@@ -1,0 +1,109 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Information System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start a training request upon creation.
+2. The system shall send the request for approval after its creation.
+3. The system shall end the process if the request is rejected.
+4. The system shall look for a suitable session if the request is accepted.
+5. The system shall perform enrolment once a session is chosen.
+6. The system shall satisfy the request if enrolment is confirmed.
+7. The system shall allow completion of the session after enrolment confirmation.
+8. The system shall allow cancellation of a selected session and selection of a new one.
+9. The system shall end the process if the request is cancelled at any point before completion.
+
+Example 1 PlantUML:
+@startuml
+title Complete state diagram of the training request
+
+[*] --> Creation
+
+state Creation
+state "WaitingForAcknowledgement" as WaitingAck
+state SearchForSession
+state "WaitingForEnrolment" as WaitingEnrolment
+state Satisfied
+
+state rejected <<final>>
+state cancelled <<final>>
+state completed <<final>>
+
+Creation --> WaitingAck : validate / send personincharge.self
+Creation --> cancelled : cancel
+
+WaitingAck --> rejected : reject / send employee.rejection
+WaitingAck --> SearchForSession : accept / send employee.agreement
+WaitingAck --> cancelled : cancel
+
+SearchForSession --> WaitingEnrolment : sessionChoice / send body.order
+SearchForSession --> cancelled : cancel
+
+WaitingEnrolment --> Satisfied : enrolment / send employee.confirmation
+WaitingEnrolment --> cancelled : cancel / send body.cancellation
+
+Satisfied --> WaitingEnrolment : cancelSession / send employee.cancellation
+Satisfied --> cancelled : cancel / send body.cancellation
+Satisfied --> completed : endSession
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Farm Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to log in.
+2. The system shall display the main area after a user signs in, allowing them to choose what to check.
+3. The system shall show market conditions when the user selects this option.
+4. The system shall show the market report if the customer selects market condition.
+4. The system shall require users to provide a photo when they choose pest control help.
+4. The system shall show the pest control techniques if the customer selects pest control help.
+5. The system shall provide soil-related suggestions ( which crops are suitable ) after receiving soil information from the user.
+6. The system shall offer weather insights based on the provided location.
+7. The system shall display labour availability details after receiving a location from the user.
+8. The system shall allow users to continue using the service after viewing any of these results.
+9. The system shall end the session when a user logs out.

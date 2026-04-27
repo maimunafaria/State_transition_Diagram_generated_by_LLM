@@ -1,18 +1,38 @@
 @startuml
-[*] --> Shutdown
-Shutdown --> Running
+[*] --> Running
 
-Running --> DataCollection : clock trigger
-Running --> ConfigurationMode : configuration needed
-Running --> SummaryPreparation : summary request
-Running --> StatusCheck : status request
-Running --> ControlledMode : remote control
-Running --> Shutdown : shutdown command
+state Running {
+  Running --> Configuration : configChange
+  Running --> DataCollection : collectData
+  Running --> SummaryPreparation : prepareSummary
+  Running --> StatusChecking : checkStatus
+  Running --> ControlledMode : remoteControl
+  Running --> Shutdown : shutdownCommand
+}
 
-DataCollection --> Running
-ConfigurationMode --> Running
-SummaryPreparation --> Running
-StatusCheck --> Running
-ControlledMode --> Running
-Shutdown --> [*]
+state Configuration {
+  Configuration --> Running
+}
+
+state DataCollection {
+  DataCollection --> Running
+}
+
+state SummaryPreparation {
+  SummaryPreparation --> Running
+}
+
+state StatusChecking {
+  StatusChecking --> Running
+}
+
+state ControlledMode {
+  ControlledMode --> Running
+}
+
+state Shutdown {
+  Shutdown --> [*]
+}
+
+Running --> Running : noEvent
 @enduml

@@ -1,54 +1,37 @@
 @startuml
-[*] --> LoggedOut
+[*] --> CreateUser
 
-state LoggedOut {
-  [*] --> AccountCreation : create account
-  [*] --> Login : login
-}
+state CreateUser
+CreateUser --> Login
 
-state AccountCreation {
-  [*] --> LoggedIn : account created
-}
-
-state Login {
-  [*] --> LoggedIn : logged in
-}
+state Login
+Login --> CreateUser : [Invalid]
+Login --> LoggedIn : [Valid]
 
 state LoggedIn {
-  [*] --> Applying : apply for visa
-  Applying --> PaymentProcessing : make payment
-  PaymentProcessing --> ApplicationAccepted : payment successful
-  ApplicationAccepted --> Approved : visa approved
-  ApplicationAccepted --> Rejected : visa rejected
-  ApplicationAccepted --> StatusCheck : check status
-  StatusCheck --> ApplicationAccepted : status updated
-  [*] --> ModifyDetails : modify details
-  [*] --> ViewDetails : view details
-  [*] --> GiveFeedback : give feedback
-  [*] --> Logout : log out
+  LoggedIn --> Dashboard
+  Dashboard --> Settings : modify details
+  Settings --> Dashboard : back
 }
 
-state Approved {
-  [*] --> LoggedIn : back to dashboard
+LoggedIn --> ApplicationAccepted : apply for visa
+LoggedIn --> CheckStatus : check status
+LoggedIn --> GiveFeedback : give feedback
+LoggedIn --> Logout : log out
+
+state ApplicationAccepted {
+  ApplicationAccepted --> PaymentProcessing
+  PaymentProcessing --> ApplicationAccepted : payment failed
+  PaymentProcessing --> StatusUpdate : payment successful
 }
 
-state Rejected {
-  [*] --> LoggedIn : back to dashboard
-}
+state StatusUpdate
+StatusUpdate --> GiveFeedback : feedback
+StatusUpdate --> Logout : log out
 
-state ModifyDetails {
-  [*] --> LoggedIn : details modified
-}
+state GiveFeedback
+GiveFeedback --> Logout : log out
 
-state ViewDetails {
-  [*] --> LoggedIn : details viewed
-}
-
-state GiveFeedback {
-  [*] --> LoggedIn : feedback given
-}
-
-state Logout {
-  [*] --> LoggedOut : logged out
-}
+state Logout
+Logout --> [*] : end
 @enduml

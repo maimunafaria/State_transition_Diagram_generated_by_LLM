@@ -24,71 +24,75 @@ Functional Requirements
 
 Candidate PlantUML:
 @startuml
+title Digidoclocker State Machine Diagram
+
 [*] --> Registration
 
-state Registration {
-  Registration --> RegEnterDetails : [Enter Details]
-  RegEnterDetails --> RegSuccess : [Valid Details]
-  RegEnterDetails --> ReEnterDetails : [Invalid Details]
-  ReEnterDetails --> RegEnterDetails
-}
+state Registration
+Registration : entry / Get User Details
+Registration : do / Validate Details
+Registration : exit / Valid or Invalid
 
-state Login {
-  RegSuccess --> Login : [Valid Registration]
-  Login : entry / Get Login Details
-  Login : do / Validate Login Details
-  Login : exit / Valid or Invalid Login
+Registration --> Login : [Valid Registration]
+Registration --> [*] : [Invalid Registration]
 
-  Login --> Login : [Invalid Login]
-  Login --> Choice1 : [Valid Login]
-}
+state Login
+Login : entry / Get Login Details
+Login : do / Validate Login
+Login : exit / Valid or Invalid
 
-state Choice1 <<choice>> {
-  Choice1 --> UploadDocs : [Upload Documents]
-  Choice1 --> ViewProfile : [View Profile]
-  Choice1 --> ApplyCert : [Apply for Certificate]
-  Choice1 --> UpdateProfile : [Update Profile]
-  Choice1 --> RegistrarLogin : [Registrar Login]
-}
+Login --> Choice1 : [Valid Login]
 
-state UploadDocs {
-  UploadDocs --> Choice1 : [Continue Uploading]
-  UploadDocs --> Choice1 : [Done Uploading]
-}
+state Choice1 <<choice>>
 
-state ViewProfile {
-  ViewProfile --> Choice1 : [Back to Menu]
-}
+Choice1 --> UploadDocuments : [Upload Documents]
+Choice1 --> ViewProfile : [View Profile]
+Choice1 --> ApplyCert : [Apply for Certificate]
+Choice1 --> ContinueUpload : [Continue Uploading]
+Choice1 --> ChoiceRegistrar : [Registrar]
 
-state ApplyCert {
-  ApplyCert --> IssueCert : [Certificate Requested]
-  ApplyCert --> Choice1 : [Reapply for Certificate]
-}
+state UploadDocuments
+UploadDocuments : entry / Upload Document
+UploadDocuments : do / Process Upload
+UploadDocuments : exit / Proceed or Continue
 
-state UpdateProfile {
-  UpdateProfile --> Choice1 : [Back to Menu]
-}
+UploadDocuments --> Choice1 : [Proceed]
+UploadDocuments --> ContinueUpload : [Continue]
 
-state RegistrarLogin {
-  RegistrarLogin --> RegistrarChoice : [Request Certificate]
-  RegistrarLogin --> Choice1 : [Back to Main Menu]
-}
+state ContinueUpload
+ContinueUpload : entry / Continue Upload
+ContinueUpload : do / Process Upload
+ContinueUpload : exit / Proceed
 
-state RegistrarChoice {
-  RegistrarChoice --> Choice1 : [Continue Requesting]
-  RegistrarChoice --> Choice1 : [Back to Menu]
-}
+ContinueUpload --> Choice1 : [Done]
 
-state IssueCert {
-  IssueCert --> Choice1 : [Back to Menu]
-  IssueCert --> ApplyCert : [Reapply Now]
-}
+state ViewProfile
+ViewProfile : entry / View Profile
+ViewProfile : do / Display Profile
+ViewProfile : exit / Proceed
 
-state Logout {
-  Logout --> [*]
-}
+ViewProfile --> Choice1 : [Back]
 
-Choice1 --> Logout : [Logout]
+state ApplyCert
+ApplyCert : entry / Apply for Certificate
+ApplyCert : do / Process Application
+ApplyCert : exit / Issue or Reapply
+
+ApplyCert --> IssueCertificate : [Certificate Issued]
+ApplyCert --> Choice1 : [Reapply]
+
+state IssueCertificate
+IssueCertificate : entry / Issue Certificate
+IssueCertificate : do / Process Issue
+IssueCertificate : exit / Done
+
+IssueCertificate --> Choice1 : [Done]
+
+state ChoiceRegistrar <<choice>>
+
+ChoiceRegistrar --> RequestCertificate : [Request Certificate]
+
+state RequestCertificate
 @enduml
 
 

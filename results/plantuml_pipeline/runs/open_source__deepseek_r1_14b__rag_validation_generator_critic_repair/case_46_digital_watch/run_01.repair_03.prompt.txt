@@ -24,33 +24,27 @@ Candidate PlantUML:
 @startuml
 [*] --> Idle
 
-Idle --> TimeAdjustment : button pressed
-Idle --> LightOn : light button pressed
-Idle --> AlarmSettings : alarm button pressed
-Idle --> AlarmRinging : alarm time matches current time
+Idle --> AdjustTime : Adjust Time
+Idle --> AdjustAlarm : Adjust Alarm
+Idle --> ToggleAlarm : Toggle Alarm
+Idle --> ToggleLight : Toggle Light
 
-state TimeAdjustment {
-    TimeAdjustment --> AdjustingHour
-    AdjustingHour --> AdjustingMinutes : button pressed
-    AdjustingMinutes --> AdjustingAlarmHour : button pressed
-    AdjustingAlarmHour --> AdjustingAlarmMinutes : button pressed
-    AdjustingAlarmMinutes --> TimeAdjustment : button pressed
-}
+AdjustTime --> Idle : Done
+AdjustTime --> AdjustTime : Increase Value
 
-state AlarmSettings {
-    AlarmSettings --> AlarmOff
-    AlarmOff --> AlarmOn : alarm enabled
-    AlarmOn --> AlarmOff : alarm disabled
-    AlarmOff --> AlarmSettings
-}
+AdjustAlarm --> Idle : Done
+AdjustAlarm --> AdjustAlarm : Increase Value
 
-state LightOn {
-    LightOn --> Idle : button released
-}
+ToggleAlarm --> AlarmOn
+AlarmOn --> AlarmRinging : Alarm Time Reached
+AlarmRinging --> AlarmOff : Stop Alarm
 
-AlarmRinging --> AlarmOff : button pressed
-AlarmOff --> [*]
+ToggleLight --> LightOn
+LightOn --> LightOff : Light Released
+LightOff --> LightOn : Light Pressed Again
 
+AlarmOff --> Idle : Dismiss
+AlarmOff --> [*] : Dismiss
 @enduml
 
 

@@ -1,22 +1,23 @@
 @startuml
-title UML State Machine Diagram - BPO Management System Search
+[*] --> ChoiceSearch
 
-[*] --> SearchProduct
+state ChoiceSearch <<choice>>
+ChoiceSearch --> FilterCategory : [select filter category]
+ChoiceSearch --> PriceRange : [select price range]
 
-state "Search product" as SearchProduct
-state "Select filter category" as SelectCategory
-state "Select price range" as SelectPrice
-state "Process request" as ProcessRequest
-state "Display results" as DisplayResults
+state "Process Criteria" as ProcessCriteria
+state "Display Results" as DisplayResults
 
-SearchProduct --> SelectCategory : [select category]
-SearchProduct --> SelectPrice : [select price range]
+FilterCategory --> ProcessCriteria
+PriceRange --> ProcessCriteria
 
-SelectCategory --> ProcessRequest : [apply category filter]
-SelectPrice --> ProcessRequest : [apply price filter]
+ProcessCriteria --> DisplayResults
 
-ProcessRequest --> DisplayResults : [show matching users]
+DisplayResults --> End : [satisfied]
+DisplayResults --> ChoiceSearch : [not satisfied]
 
-DisplayResults --> [*] : [back to search]
+state End <<choice>>
+End --> [*] : [satisfied]
+End --> ChoiceSearch : [not satisfied]
 
 @enduml

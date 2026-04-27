@@ -24,27 +24,52 @@ Functional Requirements
 
 Candidate PlantUML:
 @startuml
-[*] --> Shutdown
-Shutdown --> Running
+[*] --> Running
 
-Running --> DataCollection : clock trigger
-Running --> ConfigurationMode : configuration needed
-Running --> SummaryPreparation : summary request
-Running --> StatusCheck : status request
-Running --> ControlledMode : remote control
-Running --> Shutdown : shutdown command
+state Running {
+  [*] --> Configuration : configChange
+  Running --> DataCollection : collectData
+  Running --> SummaryPreparation : prepareSummary
+  Running --> StatusChecking : checkStatus
+  Running --> ControlledMode : remoteControl
+  Running --> Shutdown : shutdownCommand
+}
 
-DataCollection --> Running
-ConfigurationMode --> Running
-SummaryPreparation --> Running
-StatusCheck --> Running
-ControlledMode --> Running
+state Configuration {
+  Configuration --> Running
+}
+
+state DataCollection {
+  DataCollection --> Running
+}
+
+state SummaryPreparation {
+  SummaryPreparation --> Running
+}
+
+state StatusChecking {
+  StatusChecking --> Running
+}
+
+state ControlledMode {
+  ControlledMode --> Running
+}
+
+state Shutdown {
+  Shutdown --> Running : restartCommand
+}
+
+Running --> Running : noEvent
 @enduml
 
 
 Validation issues to fix:
+- multiple_initial_state_transitions (Running, Configuration)
 - missing_final_state_transition (state --> [*])
 - plantuml_command_not_found_for_official_syntax_check
 
 Repair guidance for these issues:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
 - Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].

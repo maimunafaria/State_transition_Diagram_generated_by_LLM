@@ -1,0 +1,52 @@
+@startuml
+title UML State Chart Diagram
+
+[*] --> Request
+
+state Request
+Request : entry / receive Video Suggestion Request
+Request : do / identify User
+Request : exit / identified
+
+state RequestDecision <<choice>>
+Request --> RequestDecision
+
+state "Valid Request" as ValidRequest
+ValidRequest : entry / gather Videos
+ValidRequest : do / gather Videos from User Profile or Preferences
+ValidRequest : do / gather Trending Videos from User's Area
+ValidRequest : do / gather Videos with Similar Tags
+ValidRequest : do / gather Videos from Similar Genres
+ValidRequest : do / gather Promoted Videos
+ValidRequest : exit / suggested Videos
+
+state "Invalid Request" as InvalidRequest
+InvalidRequest : entry / error Message
+InvalidRequest : do / display Error Message
+InvalidRequest : exit / return
+
+RequestDecision --> ValidRequest
+RequestDecision --> InvalidRequest
+
+state Suggest
+Suggest : entry / add Video Details
+Suggest : do / add Thumbnails
+Suggest : do / add View Counts
+Suggest : exit / suggested Videos
+
+ValidRequest --> Suggest
+
+state Send
+Send : entry / send Suggested Videos
+Send : do / send Videos to User
+Send : exit / completed
+
+Suggest --> Send
+
+state Complete
+Complete : entry / completed
+Complete : exit / end
+
+Send --> Complete
+
+@enduml

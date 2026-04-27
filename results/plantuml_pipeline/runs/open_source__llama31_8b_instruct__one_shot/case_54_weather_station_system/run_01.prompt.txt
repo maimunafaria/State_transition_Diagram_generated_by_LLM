@@ -1,0 +1,96 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Atm Many Scenarios Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if the entered PIN is correct.
+2. The system shall ask the user to try again if the entered PIN is incorrect.
+3. The system shall keep the card for security reasons if the PIN is entered incorrectly too many times or if the card is invalid.
+4. The system shall show available options and wait for the user's choice if the entered PIN is correct.
+5. The system shall allow the user to cancel the operation at any point during this process.
+6. The system shall return the card when the user cancels the operation.
+
+Example 1 PlantUML:
+@startuml
+title Same Event and Action on Different Transitions
+
+[*] --> Idle
+
+state Idle
+state "Waiting for PIN" as WaitingForPIN
+state "Validating PIN" as ValidatingPIN
+state "Waiting for Customer Choice" as WaitingForChoice
+state Confiscating
+state Ejecting
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu
+ValidatingPIN --> Confiscating : Third Invalid PIN,\nCard Stolen, Card Expired /\nConfiscate
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+WaitingForChoice --> Ejecting : Cancel / Eject
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.

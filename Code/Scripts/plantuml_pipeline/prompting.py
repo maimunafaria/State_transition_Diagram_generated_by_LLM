@@ -417,6 +417,16 @@ def select_fewshot_examples(
     rng: random.Random | None = None,
 ) -> list[Case]:
     rng = rng or random.Random(0)
+    if max_examples <= 0:
+        return []
+
+    available_cases = [case for case in cases if case.case_id != current_case_id]
+    if not available_cases:
+        return []
+
+    if max_examples == 1:
+        return [rng.choice(available_cases)]
+
     by_complexity: dict[str, list[Case]] = {"simple": [], "medium": [], "complex": []}
     for case in cases:
         if case.case_id == current_case_id:
@@ -476,6 +486,7 @@ def build_generation_prompt(
     rag_db_dir: Path | None = None,
     rag_collection_name: str = "uml_docs",
     few_shot_seed: int = 42,
+    few_shot_count: int = 3,
     run_index: int = 1,
 ) -> tuple[str, dict[str, Any]]:
     requirement = case.structured_requirement if requirement_source == "structured" else case.raw_requirement
@@ -502,9 +513,15 @@ def build_generation_prompt(
 
     if cfg.strategy == "few_shot":
         rng = random.Random(f"{few_shot_seed}:{cfg.run_id}:{case.case_id}:{run_index}")
-        examples = select_fewshot_examples(all_cases, case.case_id, max_examples=3, rng=rng)
+        examples = select_fewshot_examples(
+            all_cases,
+            case.case_id,
+            max_examples=few_shot_count,
+            rng=rng,
+        )
         prompt_meta["few_shot_case_ids"] = [ex.case_id for ex in examples]
         prompt_meta["few_shot_seed"] = few_shot_seed
+        prompt_meta["few_shot_count"] = few_shot_count
         prompt_meta["few_shot_run_index"] = run_index
         example_texts: list[str] = []
         if examples:

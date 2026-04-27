@@ -21,14 +21,39 @@ Functional Requirements
 
 Candidate PlantUML:
 @startuml
+[*] --> Homepage
+Homepage --> ProjectSelection
+Homepage --> CareerSelection
+
+state ProjectSelection {
+    [*] --> ViewProject
+    ViewProject --> Photos
+    ViewProject --> Videos
+}
+
+state CareerSelection {
+    [*] --> ViewCareer
+    ViewCareer --> Updates
+    ViewCareer --> ApplicationForm
+}
+
+state ApplicationCheck {
+    [*] --> Submitted
+    Submitted --> [*]
+}
+
+Photos --> Homepage
+Videos --> Homepage
+Updates --> Homepage
+ApplicationForm --> ApplicationCheck
 @enduml
 
 
 Validation issues to fix:
-- missing_initial_state_transition ([*] --> state)
-- missing_final_state_transition (state --> [*])
+- multiple_initial_state_transitions (Homepage, ViewProject, ViewCareer, Submitted)
 - plantuml_command_not_found_for_official_syntax_check
 
 Repair guidance for these issues:
-- Add one clear initial transition from [*] to the first lifecycle state.
-- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.

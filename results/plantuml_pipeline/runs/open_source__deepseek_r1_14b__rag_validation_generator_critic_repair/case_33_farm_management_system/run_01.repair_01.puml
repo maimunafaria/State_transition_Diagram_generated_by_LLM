@@ -1,52 +1,67 @@
 @startuml
 [*] --> Login
+
 state Login {
-  Login --> Dashboard
+  Login --> LoggedIn
 }
 
-state Dashboard {
-  --> Market : select market conditions
-  --> PestControl : select pest control
-  --> Soil : select soil info
-  --> Weather : select weather
-  --> Labor : select labor
-  --> Logout : log out
+state LoggedIn <<choice>> {
+  LoggedIn --> MarketConditions : [valid]
+  LoggedIn --> PestControl : [valid]
+  LoggedIn --> SoilInfo : [valid]
+  LoggedIn --> Weather : [valid]
+  LoggedIn --> Labour : [valid]
+  LoggedIn --> Continue : [valid]
+  LoggedIn --> Logout : [valid]
 }
 
-state Market {
-  --> MarketReport : show report
-  MarketReport --> Dashboard
+state MarketConditions {
+  MarketConditions --> MarketReport
+}
+
+state MarketReport {
+  MarketReport --> LoggedIn
+  MarketReport --> Logout
 }
 
 state PestControl {
-  --> PestPhoto : provide photo
-  PestPhoto --> PestTechniques
-  PestTechniques --> Dashboard
+  PestControl --> PestControlTechniques
 }
 
-state Soil {
-  --> SoilInfo : provide info
+state PestControlTechniques {
+  PestControlTechniques --> LoggedIn
+}
+
+state SoilInfo {
   SoilInfo --> SoilSuggestions
-  SoilSuggestions --> Dashboard
+}
+
+state SoilSuggestions {
+  SoilSuggestions --> LoggedIn
 }
 
 state Weather {
-  --> WeatherLocation : provide location
-  WeatherLocation --> WeatherInsights
-  WeatherInsights --> Dashboard
+  Weather --> WeatherReport
 }
 
-state Labor {
-  --> LaborLocation : provide location
-  LaborLocation --> LaborAvailability
-  LaborAvailability --> Dashboard
+state WeatherReport {
+  WeatherReport --> LoggedIn
+}
+
+state Labour {
+  Labour --> LabourReport
+}
+
+state LabourReport {
+  LabourReport --> LoggedIn
+}
+
+state Continue {
+  Continue --> [*]
 }
 
 state Logout {
-  --> [*]
+  Logout --> [*]
 }
 
-state Dashboard {
-  transition [*] --> Dashboard
-}
 @enduml
