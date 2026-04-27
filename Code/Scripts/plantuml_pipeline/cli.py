@@ -87,6 +87,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_run.add_argument("--runs", type=int, default=3, help="Runs per case/config")
     p_run.add_argument(
+        "--repair-attempts",
+        type=int,
+        default=3,
+        help="Maximum repair attempts per generated diagram for repair-enabled configs",
+    )
+    p_run.add_argument(
         "--test-size",
         type=float,
         default=0.35,

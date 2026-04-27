@@ -8,7 +8,7 @@ from .models import Case, ExperimentConfig, ValidationResult
 from .parser import normalize_puml_text, parse_and_validate_puml_text
 from .prompting import build_generation_prompt, build_repair_prompt
 
-MAX_REPAIR_ATTEMPTS = 3
+DEFAULT_REPAIR_ATTEMPTS = 3
 
 
 def strict_state_diagram_issues(validation: ValidationResult) -> list[str]:
@@ -44,6 +44,7 @@ def run_single_generation(
     rag_collection_name: str = "uml_docs",
     few_shot_seed: int = 42,
     run_index: int = 1,
+    repair_attempts: int = DEFAULT_REPAIR_ATTEMPTS,
 ) -> tuple[str, ValidationResult, str, str, list[dict[str, Any]], list[dict[str, Any]]]:
     requirement = case.structured_requirement if requirement_source == "structured" else case.raw_requirement
     if not requirement.strip():
@@ -122,7 +123,7 @@ def run_single_generation(
     ]
 
     if cfg.use_structural_validation:
-        for attempt in range(1, MAX_REPAIR_ATTEMPTS + 1):
+        for attempt in range(1, max(0, repair_attempts) + 1):
             current_issues = strict_state_diagram_issues(final_validation)
             if not current_issues:
                 break

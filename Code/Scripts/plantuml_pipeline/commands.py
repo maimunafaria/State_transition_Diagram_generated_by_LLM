@@ -420,6 +420,7 @@ def command_run(args: argparse.Namespace) -> int:
         "rag_max_chars_per_doc": args.rag_max_chars_per_doc,
         "rag_domain_hints": sorted(rag_domain_hints),
         "runs_per_case": args.runs,
+        "repair_attempts": args.repair_attempts,
         "baseline_subset_size_target": args.baseline_subset_size,
         "baseline_subset_size_actual": len(baseline_cases),
         "baseline_subset_case_ids": [c.case_id for c in baseline_cases],
@@ -478,6 +479,7 @@ def command_run(args: argparse.Namespace) -> int:
                             rag_collection_name=args.rag_collection_name,
                             few_shot_seed=args.few_shot_seed,
                             run_index=run_index,
+                            repair_attempts=args.repair_attempts,
                         )
                     )
                 except Exception as exc:  # noqa: BLE001 - preserve all run errors
