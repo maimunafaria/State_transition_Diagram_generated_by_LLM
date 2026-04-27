@@ -816,6 +816,7 @@ def run_stacked_ensemble(
     final_puml = normalize_puml_text(generated)
     stack_meta = {
         "stack_model": model_name,
+        "prompt": prompt,
         "candidate_count_total": len(candidates),
         "candidate_count_used": len(selected),
         "rag_enabled": bool(top_k_rag > 0 and (rag_mode == "vector" or rag_docs)),

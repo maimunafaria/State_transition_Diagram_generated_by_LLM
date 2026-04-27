@@ -215,8 +215,14 @@ def command_ensemble(args: argparse.Namespace) -> int:
             out_dir = ensemble_root / "runs" / run_id / case_id
             out_puml = out_dir / "ensemble.puml"
             out_meta = out_dir / "ensemble.meta.json"
+            out_prompt = out_dir / "ensemble.prompt.txt"
             out_dir.mkdir(parents=True, exist_ok=True)
             write_text(out_puml, ensemble_puml)
+            stack_prompt = str(stack_meta.get("prompt", "")) if stack_meta else ""
+            if stack_prompt:
+                write_text(out_prompt, stack_prompt)
+                stack_meta["prompt_path"] = str(out_prompt)
+                stack_meta.pop("prompt", None)
 
             metrics_row = {
                 "run_id": run_id,
