@@ -24,10 +24,11 @@ MODEL_LABELS = {
 
 METHOD_LABELS = {
     "zero_shot": "Zero-shot",
+    "one_shot": "One-shot",
     "few_shot": "Few-shot",
     "rag": "RAG",
     "rag_structural_validation": "RAG + Validation",
-    "rag_validation_generator_critic_repair": "RAG + Critic + Repair",
+    "rag_validation_generator_critic_repair": "RAG + Repair",
 }
 
 

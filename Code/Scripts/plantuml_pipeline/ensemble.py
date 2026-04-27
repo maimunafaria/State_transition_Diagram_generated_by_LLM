@@ -512,9 +512,12 @@ def collect_ensemble_candidates(
     strategy: str,
     qwen_prefix: str,
     llama_prefix: str,
+    deepseek_prefix: str = "",
 ) -> list[dict[str, Any]]:
     candidates: list[dict[str, Any]] = []
     source_models = [("qwen", qwen_prefix), ("llama", llama_prefix)]
+    if deepseek_prefix:
+        source_models.append(("deepseek", deepseek_prefix))
     for model_key, prefix in source_models:
         run_id = f"{prefix}__{strategy}"
         case_dir = results_root / "runs" / run_id / case_id

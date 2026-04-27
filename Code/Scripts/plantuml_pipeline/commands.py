@@ -96,9 +96,9 @@ def command_ensemble(args: argparse.Namespace) -> int:
             if args.strategy
             else [
                 "zero_shot",
+                "one_shot",
                 "few_shot",
                 "rag",
-                "rag_structural_validation",
                 "rag_validation_generator_critic_repair",
             ]
         )
@@ -130,6 +130,7 @@ def command_ensemble(args: argparse.Namespace) -> int:
                     strategy=strategy,
                     qwen_prefix=args.qwen_run_prefix,
                     llama_prefix=args.llama_run_prefix,
+                    deepseek_prefix=args.deepseek_run_prefix,
                 )
             if len(candidates) < args.min_candidates:
                 skipped_cases += 1
@@ -221,9 +222,9 @@ def command_ensemble(args: argparse.Namespace) -> int:
                 "run_id": run_id,
                 "model_group": "ensemble",
                 "model_label": (
-                    f"Qwen+LLaMA Stacked LLM ({args.stack_model})"
+                    f"Qwen+LLaMA+DeepSeek Stacked LLM ({args.stack_model})"
                     if ensemble_method == "stacked_llm"
-                    else "Qwen+LLaMA Majority Vote"
+                    else "Qwen+LLaMA+DeepSeek Majority Vote"
                 ),
                 "model_name": args.stack_model if ensemble_method == "stacked_llm" else "majority_vote",
                 "strategy": strategy,
@@ -275,6 +276,7 @@ def command_ensemble(args: argparse.Namespace) -> int:
         "strategies": strategies,
         "qwen_run_prefix": args.qwen_run_prefix,
         "llama_run_prefix": args.llama_run_prefix,
+        "deepseek_run_prefix": args.deepseek_run_prefix,
         "candidate_run_ids": candidate_run_ids,
         "ensemble_method": ensemble_method,
         "min_candidates": args.min_candidates,

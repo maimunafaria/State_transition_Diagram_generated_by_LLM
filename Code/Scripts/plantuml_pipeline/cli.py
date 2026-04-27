@@ -250,6 +250,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Run-id prefix for LLaMA configurations",
     )
     p_ensemble.add_argument(
+        "--deepseek-run-prefix",
+        default="open_source__deepseek_r1_14b",
+        help="Run-id prefix for DeepSeek configurations",
+    )
+    p_ensemble.add_argument(
         "--min-candidates",
         type=int,
         default=2,
