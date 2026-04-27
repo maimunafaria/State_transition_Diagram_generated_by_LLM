@@ -195,9 +195,9 @@ def run_single_generation(
                         "attempt": attempt,
                         "reason": "repair_did_not_improve_validation_score",
                         "kept_previous_issues": current_issues,
+                        "action": "kept_best_diagram_and_continued",
                     }
                 )
-                break
 
         final_issues = strict_state_diagram_issues(final_validation)
         steps.append(
