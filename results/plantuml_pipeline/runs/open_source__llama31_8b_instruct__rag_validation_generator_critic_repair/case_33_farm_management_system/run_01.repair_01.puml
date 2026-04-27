@@ -1,0 +1,90 @@
+@startuml
+[*] --> Login
+
+state Login
+Login : entry / getInfo
+Login : do / verifyData
+Login : exit / verified
+
+state LoginDecision <<choice>>
+Login --> LoginDecision [valid]
+
+state "Valid Login" as ValidLogin
+ValidLogin : entry / contain Info
+ValidLogin : do / allow Access to system
+ValidLogin : exit / gallery Entry
+
+state "Invalid Login" as InvalidLogin
+InvalidLogin : entry / wrong Info
+InvalidLogin : do / display Error message
+InvalidLogin : exit / return To Start
+
+LoginDecision --> ValidLogin [invalid]
+LoginDecision --> InvalidLogin [invalid]
+
+state NavChoice <<choice>>
+ValidLogin --> NavChoice [valid]
+
+state Gallery
+Gallery : entry / show Products
+Gallery : do / allow to select Products
+Gallery : exit / save Products
+
+state Update
+Update : entry / contain Info
+Update : do / take New Info
+Update : exit / save new Info
+
+NavChoice --> Gallery
+NavChoice --> Update
+
+Update --> [*]
+
+state Order
+Order : entry / select Items
+Order : do / allowto order If products In Stock
+Order : exit / verification
+
+state Cart
+Cart : entry / contain Selected Items
+Cart : do / all billing Info
+Cart : exit / payment Method
+
+Gallery --> Order
+Order --> Cart
+
+state Payment
+Payment : entry / get Payment Method
+Payment : do / confirm Payment
+Payment : exit / verify
+
+Cart --> Payment
+
+state PayDecision <<choice>>
+Payment --> PayDecision [valid]
+
+state "Valid Payment" as ValidPayment
+ValidPayment : entry / payment Method
+ValidPayment : do / get Cash
+ValidPayment : exit / confirmation of product
+
+state "Invalid Payment" as InvalidPayment
+InvalidPayment : entry / wrong Entry
+InvalidPayment : do / error Message
+InvalidPayment : exit / return
+
+PayDecision --> ValidPayment [invalid]
+PayDecision --> InvalidPayment [invalid]
+
+
+state Delivery
+Delivery : entry / take out Order
+Delivery : do / deliver Product
+Delivery : exit / exit System
+
+ValidPayment --> Delivery
+Delivery --> [*]
+
+InvalidPayment --> [*]
+
+@enduml

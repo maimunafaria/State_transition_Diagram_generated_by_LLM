@@ -1,0 +1,39 @@
+@startuml
+title ATM Control - Withdrawal Transaction
+
+state "Waiting for Customer Choice" as WaitingForChoice
+
+state "Processing Transaction" as ProcessingTransaction {
+  state "Processing Withdrawal" as ProcessingWithdrawal
+}
+
+state [*] as Idle
+
+state Ejecting
+state Printing
+state Dispensing
+
+[*] --> WaitingForChoice : Card Inserted / Get PIN
+
+WaitingForChoice --> ProcessingWithdrawal : Withdrawal Selected /\nRequest Withdrawal, Display Wait
+
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash, Update Status
+ProcessingWithdrawal --> Ejecting : Rejected / Eject, Display Apology
+
+Dispensing --> Printing : Cash Dispensed /\nPrint Receipt, Display Cash Dispensed, Confirm Cash Dispensed
+Dispensing --> ClosedDown : Insufficient Cash / Eject, Abort Cash Dispensed
+
+Printing --> Ejecting : Receipt Printed / Eject
+
+Ejecting --> Terminating : Card Ejected / Display Ejected
+Terminating --> Idle : After (Elapsed Time) [Closedown Not Requested]
+
+Terminating --> ClosedDown : After (Elapsed Time) [Closedown Was Requested]
+
+ProcessingTransaction --> Idle : Cancel Transaction
+
+[*] --> Idle : Card Removed / Cancel
+
+WaitingForChoice --> Idle : Cancel Transaction
+
+@enduml

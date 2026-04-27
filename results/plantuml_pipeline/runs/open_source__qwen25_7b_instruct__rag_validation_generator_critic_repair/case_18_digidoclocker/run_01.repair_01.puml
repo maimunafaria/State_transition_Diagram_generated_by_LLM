@@ -1,0 +1,89 @@
+@startuml
+title UML State Machine Diagram (Digidoclocker)
+
+[*] --> Registration
+
+state Registration {
+  [*] --> CitizenLogin
+  CitizenLogin : entry / Get Citizen Login Details
+  CitizenLogin : do / Validate Login Details
+  CitizenLogin : exit / Citizen Logged In
+}
+
+state CitizenLogin {
+  [*] --> DocumentUpload
+  DocumentUpload : entry / Upload Documents
+  DocumentUpload : do / Validate Documents
+  DocumentUpload : exit / Document Upload Complete
+}
+
+state DocumentUpload {
+  [*] --> ProfileView
+  ProfileView : entry / View Profile
+  ProfileView : do / Display Profile
+  ProfileView : exit / Profile View Complete
+}
+
+state ProfileView {
+  [*] --> CertificateApply
+  CertificateApply : entry / Apply for Certificate
+  CertificateApply : do / Validate Application
+  CertificateApply : exit / Certificate Application Complete
+}
+
+state CertificateApply {
+  [*] --> MultipleCertificates
+  MultipleCertificates : entry / Apply for Multiple Certificates
+  MultipleCertificates : do / Validate Multiple Applications
+  MultipleCertificates : exit / Multiple Certificates Applied
+}
+
+state MultipleCertificates {
+  [*] --> ContinueUpload
+  ContinueUpload : entry / Continue Document Upload
+  ContinueUpload : do / Validate Upload
+  ContinueUpload : exit / Upload Complete
+}
+
+state ContinueUpload {
+  ContinueUpload --> Logout : session ended
+}
+
+state RegistrarRequest {
+  Registration --> RegistrarRequest
+  RegistrarRequest : entry / Request Certificate Verification
+  RegistrarRequest : do / Validate Request
+  RegistrarRequest : exit / Verification Requested
+}
+
+state CertificateVerification {
+  RegistrarRequest --> CertificateVerification
+  CertificateVerification : entry / Request Certificate Verification
+  CertificateVerification : do / Validate Request
+  CertificateVerification : exit / Verification Requested
+}
+
+state MultipleVerificationRequests {
+  CertificateVerification --> MultipleVerificationRequests
+  MultipleVerificationRequests : entry / Request Multiple Certificates
+  MultipleVerificationRequests : do / Validate Requests
+  MultipleVerificationRequests : exit / Multiple Requests Sent
+}
+
+state ContinueVerification {
+  MultipleVerificationRequests --> ContinueVerification
+  ContinueVerification : entry / Continue Verification Requests
+  ContinueVerification : do / Validate Requests
+  ContinueVerification : exit / Requests Sent
+}
+
+state Logout {
+  ContinueUpload --> Logout : session ended
+  ContinueVerification --> Logout : session ended
+}
+
+state [*] {
+  Logout --> [*] : session ended
+}
+
+@enduml

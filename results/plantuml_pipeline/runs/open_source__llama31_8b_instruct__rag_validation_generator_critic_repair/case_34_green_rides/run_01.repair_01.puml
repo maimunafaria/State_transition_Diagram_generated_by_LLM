@@ -1,0 +1,94 @@
+@startuml
+[*] --> J1 : [check user]
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state "Register" as Register
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/ successful registration
+Register : exit/ invalid registration
+
+state "Login" as Login {
+  state "Patient dashboard" as PatientDashboard
+  PatientDashboard : entry/if the user is logged in as patient
+  PatientDashboard : do/dashboard is displayed
+  PatientDashboard : exit/when user logout
+
+  state "Health worker Dashboard" as HealthWorkerDashboard
+  HealthWorkerDashboard : entry/if the user is logged in as health worker
+  HealthWorkerDashboard : do/display the health worker dashboard
+  HealthWorkerDashboard : exit/if health worker logout
+
+  state "Government dashboard" as GovernmentDashboard
+  GovernmentDashboard : entry/if the user is government official
+  GovernmentDashboard : do/display government dashboard
+  GovernmentDashboard : exit/after his activity is finished
+
+  state "Data Entry" as DataEntry
+  DataEntry : entry/if the data entry is logged in as patient
+  DataEntry : do/data entry is processed
+  DataEntry : exit/after data entry is completed
+  DataEntry : exit/send the data for validation
+
+  state "Validation of medical data" as ValidationMedicalData
+  ValidationMedicalData : entry/if the data entry by the patient is completed
+  ValidationMedicalData : do/validate the data by healthworker
+  ValidationMedicalData : exit/after validation of medical data is completed
+
+  state "Health Financing" as HealthPlanning
+  HealthPlanning : entry/analysis of data should be done
+  HealthPlanning : do/the basis of analysed data the best health schemes are drafted
+  HealthPlanning : exit/ the health schemes are sent to the government dashboard
+
+  state "Analysis" as Analysis
+  Analysis : entry/if the data entered is validated
+  Analysis : do/analysis of data
+  Analysis : exit/after analysis of data
+  Analysis : exit/send data to health monitoring
+  Analysis : exit/send data to activity scheduling module
+
+  state "Activity Scheduling" as ActivityScheduling
+  ActivityScheduling : entry/analysis of data should be done
+  ActivityScheduling : do/activity is scheduled for the healthworkers
+  ActivityScheduling : exit/the activity scheduling is complete
+  ActivityScheduling : exit/send data to alert module
+  ActivityScheduling : exit/send the schedule to health worker dashboard
+
+  state "Alerts" as Alerts
+  Alerts : entry/when data from analysis is received
+  Alerts : do/prepare alerts
+  Alerts : exit/after sending alerts patient dashboard and health worker dashboard
+
+  Login --> PatientDashboard
+  Login --> HealthWorkerDashboard
+  Login --> GovernmentDashboard
+
+  PatientDashboard --> DataEntry
+  DataEntry --> ValidationMedicalData
+  DataEntry --> Analysis
+
+  Analysis --> ActivityScheduling
+  Analysis --> Alerts
+  Analysis --> HealthPlanning
+  Alerts --> PatientDashboard
+  Alerts --> HealthWorkerDashboard
+  ActivityScheduling --> HealthWorkerDashboard
+  HealthWorkerDashboard --> ValidationMedicalData
+  HealthPlanning --> GovernmentDashboard
+}
+
+state "Logout" as Logout
+Logout : entry/when the user completes his process
+Logout : do/logout user
+Logout : exit/successfully logged out
+
+J1 --> Register : [ new user ]
+J2 --> [*]
+J3 --> [valid]
+J4 --> [invalid]
+Login --> J4
+Logout --> [*]
+
+@enduml

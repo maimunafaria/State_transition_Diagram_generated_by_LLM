@@ -1,0 +1,93 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Candidate PlantUML:
+@startuml
+[*] --> LoggedOut
+
+state LoggedOut {
+  [*] --> AccountCreation : create account
+  [*] --> Login : login
+}
+
+state AccountCreation {
+  [*] --> LoggedIn : account created
+}
+
+state Login {
+  [*] --> LoggedIn : logged in
+}
+
+state LoggedIn {
+  [*] --> Applying : apply for visa
+  Applying --> PaymentProcessing : make payment
+  PaymentProcessing --> ApplicationAccepted : payment successful
+  ApplicationAccepted --> Approved : visa approved
+  ApplicationAccepted --> Rejected : visa rejected
+  ApplicationAccepted --> StatusCheck : check status
+  StatusCheck --> ApplicationAccepted : status updated
+  [*] --> ModifyDetails : modify details
+  [*] --> ViewDetails : view details
+  [*] --> GiveFeedback : give feedback
+  [*] --> Logout : log out
+}
+
+state Approved {
+  [*] --> LoggedIn : back to dashboard
+}
+
+state Rejected {
+  [*] --> LoggedIn : back to dashboard
+}
+
+state ModifyDetails {
+  [*] --> LoggedIn : details modified
+}
+
+state ViewDetails {
+  [*] --> LoggedIn : details viewed
+}
+
+state GiveFeedback {
+  [*] --> LoggedIn : feedback given
+}
+
+state Logout {
+  [*] --> LoggedOut : logged out
+}
+@enduml
+
+
+Validation issues to fix:
+- multiple_initial_state_transitions (LoggedOut, AccountCreation, Login, LoggedIn, LoggedIn, Applying, ModifyDetails, ViewDetails, GiveFeedback, Logout, LoggedIn, LoggedIn, LoggedIn, LoggedIn, LoggedIn, LoggedOut)
+- missing_final_state_transition (state --> [*])
+- plantuml_command_not_found_for_official_syntax_check
+
+Repair guidance for these issues:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].

@@ -1,0 +1,159 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Candidate PlantUML:
+@startuml
+[*] --> Registration
+
+state Registration
+Registration : entry / start registration
+Registration : do / validate inputs
+Registration : exit / successful registration
+Registration : exit / registration failed
+
+state RegistrationDecision <<choice>>
+Registration --> RegistrationDecision
+
+state "Successful Registration" as SuccessReg
+SuccessReg : entry / registration completed
+SuccessReg : do / allow access
+SuccessReg : exit / proceed to login
+
+state "Registration Failed" as FailReg
+FailReg : entry / registration error
+FailReg : do / display error message
+FailReg : exit / return to start
+
+RegistrationDecision --> SuccessReg
+RegistrationDecision --> FailReg
+
+SuccessReg --> Login
+
+state Login
+Login : entry / start login
+Login : do / verify credentials
+Login : exit / login successful
+Login : exit / login failed
+
+state LoginDecision <<choice>>
+Login --> LoginDecision
+
+state "Valid Login" as ValidLogin
+ValidLogin : entry / login completed
+ValidLogin : do / access granted
+ValidLogin : exit / proceed to dashboard
+
+state "Invalid Login" as InvalidLogin
+InvalidLogin : entry / login error
+InvalidLogin : do / display error message
+InvalidLogin : exit / return to login
+
+LoginDecision --> ValidLogin
+LoginDecision --> InvalidLogin
+
+ValidLogin --> Dashboard
+
+state Dashboard
+Dashboard : entry / show facilities
+Dashboard : do / access features
+Dashboard : exit / continue or logout
+
+state DashboardDecision <<choice>>
+Dashboard --> DashboardDecision
+
+state "Continue Session" as Continue
+Continue : entry / continue using
+Continue : do / access features
+Continue : exit / proceed
+
+state Logout
+Logout : entry / start logout
+Logout : do / terminate session
+Logout : exit / logged out
+
+DashboardDecision --> Continue
+DashboardDecision --> Logout
+
+Continue --> Dashboard
+
+Continue --> PaymentOptions
+
+state PaymentOptions
+PaymentOptions : entry / select payment
+PaymentOptions : do / choose method
+PaymentOptions : exit / proceed
+
+state PaymentMethod <<choice>>
+PaymentOptions --> PaymentMethod
+
+state InsurancePayment
+InsurancePayment : entry / process insurance
+InsurancePayment : do / validate insurance
+InsurancePayment : exit / payment completed
+
+state CashPayment
+CashPayment : entry / cash payment
+CashPayment : do / confirm details
+CashPayment : exit / payment completed
+
+PaymentMethod --> InsurancePayment
+PaymentMethod --> CashPayment
+
+InsurancePayment --> PaymentConfirmation
+
+state PaymentConfirmation
+PaymentConfirmation : entry / confirm payment
+PaymentConfirmation : do / finalize
+PaymentConfirmation : exit / proceed
+
+CashPayment --> PaymentConfirmation
+
+PaymentConfirmation --> Feedback
+
+state Feedback
+Feedback : entry / collect feedback
+Feedback : do / submit feedback
+Feedback : exit / proceed
+
+Feedback --> Logout
+
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+- choice_node_without_guarded_outgoing_transitions (DashboardDecision)
+- choice_node_without_guarded_outgoing_transitions (LoginDecision)
+- choice_node_without_guarded_outgoing_transitions (PaymentMethod)
+- choice_node_without_guarded_outgoing_transitions (RegistrationDecision)
+- plantuml_command_not_found_for_official_syntax_check
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].
