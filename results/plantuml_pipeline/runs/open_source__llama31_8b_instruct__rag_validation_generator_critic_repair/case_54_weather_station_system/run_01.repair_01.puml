@@ -1,33 +1,34 @@
 @startuml
-title Weather Station System
+[*] --> Idle
 
-state "Shut Down" as ShutDown
-state "Running" as Running
-state "Configuring" as Configuring
-state "Collecting Data" as CollectingData
-state "Preparing Summary" as PreparingSummary
-state "Checking Status" as CheckingStatus
-state "Controlled" as Controlled
+state Idle {
+  [*] --> Restarting
+  Restarting --> Running : restartComplete
+}
 
-[*] --> ShutDown
-ShutDown --> [*]
+state Running {
+  [*] --> Configuring
+  Configuring --> Running : configComplete
+  Running --> CollectingData : collectDataTriggered
+  CollectingData --> Running : dataCollectionComplete
+  Running --> PreparingSummary : prepareSummaryTriggered
+  PreparingSummary --> Running : summaryPrepared
+  Running --> CheckingStatus : checkStatusTriggered
+  CheckingStatus --> Running : statusChecked
+  Running --> Controlled : remoteControlCommand
+}
 
-ShutDown --> Running : restart
+state Configuring {
+  Configuring --> SavingSettings : settingsSaved
+}
 
-Running --> Configuring : configButtonPressed
-Configuring --> Running : configComplete
+state Controlled {
+  Controlled --> Running
+}
 
-Running --> CollectingData : clockTriggered
-CollectingData --> Running : dataCollectionComplete
+state ShuttingDown {
+  Idle --> ShuttingDown : shutdownCommand
+}
 
-Running --> PreparingSummary : summaryButtonPressed
-PreparingSummary --> Running : summaryPrepared
-
-Running --> CheckingStatus : statusButtonPressed
-CheckingStatus --> Running : statusChecked
-
-Running --> Controlled : remoteControlPressed
-Controlled --> ShutDown : shutdownCommandPressed
-
-Running --> ShutDown : shutdownCommandPressed
+Idle --> ShuttingDown : shutdownCommand
 @enduml

@@ -33,6 +33,10 @@ Register : exit/ successful registration
 Register : exit/ invalid registration
 
 state "Login" as Login {
+  Login --> PatientDashboard
+  Login --> HealthWorkerDashboard
+  Login --> GovernmentDashboard
+
   state "Patient dashboard" as PatientDashboard
   PatientDashboard : entry/if the user is logged in as patient
   PatientDashboard : do/dashboard is displayed
@@ -83,9 +87,9 @@ state "Login" as Login {
   Alerts : do/prepare alerts
   Alerts : exit/after sending alerts patient dashboard and health worker dashboard
 
-  Login --> PatientDashboard
-  Login --> HealthWorkerDashboard
-  Login --> GovernmentDashboard
+  LJ --> PatientDashboard
+  LJ --> HealthWorkerDashboard
+  LJ --> GovernmentDashboard
 
   PatientDashboard --> DataEntry
   DataEntry --> ValidationMedicalData
@@ -107,10 +111,13 @@ Logout : do/logout user
 Logout : exit/successfully logged out
 
 J1 --> Register : [ new user ]
-J2 --> [*]
-J3 --> [valid]
-J4 --> [invalid]
+Register --> J2
+J2 --> J3
+J3 --> Login
+J3 --> [invalid]
 Login --> J4
+J4 --> Logout
+J2 --> [*]
 Logout --> [*]
 
 @enduml
@@ -118,13 +125,12 @@ Logout --> [*]
 
 Validation issues to fix:
 - unreachable_states_detected
-- unreachable: Activity Scheduling, Alerts, Analysis, Data Entry, Government dashboard, Health Financing, Health worker Dashboard, J2, J3, J4, Login, Logout, Patient dashboard, Validation of medical data, [invalid], [valid]
-- choice_node_without_outgoing_transitions (J2)
+- unreachable: Activity Scheduling, Alerts, Analysis, Data Entry, Government dashboard, Health Financing, Health worker Dashboard, LJ, Patient dashboard, Validation of medical data
+- choice_node_without_guarded_outgoing_transitions (J2)
 - choice_node_without_guarded_outgoing_transitions (J3)
 - choice_node_without_guarded_outgoing_transitions (J4)
 - plantuml_command_not_found_for_official_syntax_check
 
 Repair guidance for these issues:
 - For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
-- Give each choice node at least two outgoing alternatives when possible.
 - Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].

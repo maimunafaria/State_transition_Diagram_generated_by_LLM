@@ -20,42 +20,36 @@ Functional Requirements
 
 Candidate PlantUML:
 @startuml
-[*] --> StaffMember
-
-state StaffMember {
-  [*] --> Assigned
-  Assigned --> [*] : remove assignment
-  Assigned --> Assigned : switch assignment
-  Assigned --> Unassigned : remove assignment
-
-  state Unassigned {
-    [*] --> Assigned : assign to client or campaign
-  }
-
-  state Employed {
-    [*] --> Unemployed : mark as unemployed
-  }
-
-  state Unemployed {
-    [*] --> Archived : archive record
-  }
-
-  state Archived {
-    [*] --> Unemployed : restore record
-  }
+[*] --> Assigned
+state Assigned {
+  [*] --> AssignedToClient
+  AssignedToClient --> AssignedToCampaign : assign to campaign
+  AssignedToClient --> AssignedToClient : assign to client
+  AssignedToCampaign --> Unassigned : remove from campaign
+  Unassigned --> Assigned : reassign
 }
+
+state Unemployed {
+  [*] --> Unemployed : mark as unemployed
+}
+
+state Archived {
+  [*] --> Archived : archive record
+}
+
+AssignedToClient --> Unemployed : leave job
+AssignedToCampaign --> Unemployed : leave job
+Unemployed --> Archived : archive record
+Archived --> [*] : record archived
 
 @enduml
 
 
 Validation issues to fix:
-- multiple_initial_state_transitions (StaffMember, Assigned, Assigned, Unemployed, Archived, Unemployed)
-- orphan_states_detected
-- orphan: Employed
+- multiple_initial_state_transitions (Assigned, AssignedToClient, Unemployed, Archived)
 - plantuml_command_not_found_for_official_syntax_check
 
 Repair guidance for these issues:
 - For multiple initial transitions, keep only the one top-level [*] --> State transition.
 - If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
 - Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
-- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.

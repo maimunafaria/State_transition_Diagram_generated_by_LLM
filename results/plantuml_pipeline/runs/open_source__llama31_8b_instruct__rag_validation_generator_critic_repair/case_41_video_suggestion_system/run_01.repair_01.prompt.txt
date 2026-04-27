@@ -33,23 +33,23 @@ state Idle {
 }
 
 state ReceiveRequest {
-  ReceiveRequest --> Idle
+  ReceiveRequest --> Idle : idle
 }
 
 state Processing {
-  Processing --> Idle
+  Processing --> GatherVideos : gather videos
 }
 
 state GatherVideos {
-  GatherVideos --> AddDetails
+  GatherVideos --> AddDetails : add details
 }
 
 state AddDetails {
-  AddDetails --> SendVideos
+  AddDetails --> SendVideos : send videos
 }
 
 state SendVideos {
-  SendVideos --> Idle
+  SendVideos --> Idle : idle
 }
 
 @enduml
@@ -58,6 +58,7 @@ state SendVideos {
 Validation issues to fix:
 - multiple_initial_state_transitions (Idle, ReceiveRequest)
 - missing_final_state_transition (state --> [*])
+- duplicate_transitions_detected (4)
 - plantuml_command_not_found_for_official_syntax_check
 
 Repair guidance for these issues:
@@ -65,3 +66,4 @@ Repair guidance for these issues:
 - If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
 - Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
 - Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- Remove duplicate transitions or merge their labels into one transition.

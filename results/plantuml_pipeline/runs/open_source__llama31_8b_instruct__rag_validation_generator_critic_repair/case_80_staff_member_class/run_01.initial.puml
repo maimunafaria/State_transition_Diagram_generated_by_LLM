@@ -1,27 +1,24 @@
 @startuml
-[*] --> StaffMember
-
-state StaffMember {
-  [*] --> Assigned
-  Assigned --> [*] : remove assignment
-  Assigned --> Assigned : switch assignment
-  Assigned --> Unassigned : remove assignment
-
-  state Unassigned {
-    [*] --> Assigned : assign to client or campaign
-  }
-
-  state Employed {
-    [*] --> Unemployed : mark as unemployed
-  }
-
-  state Unemployed {
-    [*] --> Archived : archive record
-  }
-
-  state Archived {
-    [*] --> Unemployed : restore record
-  }
+[*] --> Assigned
+state Assigned {
+  [*] --> AssignedToClient
+  AssignedToClient --> AssignedToCampaign : assign to campaign
+  AssignedToClient --> AssignedToClient : assign to client
+  AssignedToCampaign --> Unassigned : remove from campaign
+  Unassigned --> Assigned : reassign
 }
+
+state Unemployed {
+  [*] --> Unemployed : mark as unemployed
+}
+
+state Archived {
+  [*] --> Archived : archive record
+}
+
+AssignedToClient --> Unemployed : leave job
+AssignedToCampaign --> Unemployed : leave job
+Unemployed --> Archived : archive record
+Archived --> [*] : record archived
 
 @enduml

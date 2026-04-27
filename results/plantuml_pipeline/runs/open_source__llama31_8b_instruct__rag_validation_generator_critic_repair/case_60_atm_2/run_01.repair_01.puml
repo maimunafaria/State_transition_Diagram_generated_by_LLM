@@ -1,15 +1,21 @@
 @startuml
 title ATM Control - Withdraw Funds
 
-[*] --> WaitingForAmount
+[*] --> Idle
 
+state Idle
 state WaitingForAmount
 state VerifyingTransaction
 state ReleasingCard
 
-WaitingForAmount --> VerifyingTransaction : amount
-VerifyingTransaction --> WaitingForAmount : invalidAmount
-VerifyingTransaction --> ReleasingCard : validAmount
-ReleasingCard --> [*] : end
+Idle : entry / Display Welcome
+Idle --> WaitingForAmount : Card Inserted / Get Amount
+
+WaitingForAmount --> VerifyingTransaction : Amount Entered / Validate Amount
+VerifyingTransaction --> ReleasingCard : Transaction Approved / Release Card
+
+WaitingForAmount --> Idle : Cancel / Eject
+VerifyingTransaction --> Idle : Rejected / Eject
+ReleasingCard --> [*] : Transaction Completed / End
 
 @enduml

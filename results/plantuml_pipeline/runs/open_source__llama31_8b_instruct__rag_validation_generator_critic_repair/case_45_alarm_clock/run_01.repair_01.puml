@@ -1,11 +1,21 @@
 @startuml
 [*] --> Off
-Off --> Idle
+
 state Off {
   Off --> Idle
 }
-Idle --> AlarmActivated : set alarm time
-AlarmActivated --> AlarmOn : alarm time matches
-AlarmOn --> AlarmOff : stop alarm
-AlarmOff --> Idle : next scheduled alarm time
+
+state Idle {
+  Idle --> SetAlarm : set alarm
+  SetAlarm --> AlarmActive : alarm active
+}
+
+state AlarmActive {
+  AlarmActive --> RingAlarm : ring alarm
+  RingAlarm --> AlarmActive : stop alarm
+}
+
+AlarmActive --> Off : next alarm
+Off --> Idle : idle
+
 @enduml
