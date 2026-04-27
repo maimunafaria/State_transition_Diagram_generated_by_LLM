@@ -603,14 +603,17 @@ def _repair_guidance_for_issues(issues: list[str]) -> list[str]:
             )
         if "multiple_initial_state_transitions" in low:
             add(
-                "For multiple initial transitions, keep only one [*] --> Start state. "
-                "If there are several possible first paths, create a choice node: "
-                "[*] --> StartChoice; state StartChoice <<choice>>; "
-                "StartChoice --> StateA : [condition]; StartChoice --> StateB : [condition]."
+                "For multiple initial transitions, keep only the one top-level [*] --> State transition."
             )
             add(
-                "Do not add extra [*] transitions inside composite states for this strict check; "
-                "use normal transitions or choice nodes instead."
+                "If an extra [*] --> Child transition appears inside a composite state block, "
+                "do not create a choice node. Replace only that line with Parent --> Child, "
+                "where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } "
+                "change it to Login --> Checking."
+            )
+            add(
+                "Do not add new states to fix multiple initial transitions. Do not redesign the diagram. "
+                "Usually this fix should only replace nested [*] arrows with normal arrows."
             )
         if "missing_initial_state_transition" in low:
             add("Add one clear initial transition from [*] to the first lifecycle state.")
@@ -660,6 +663,12 @@ def build_repair_prompt(
     return (
         "You are a UML repair assistant.\n"
         "Fix the candidate PlantUML using only the validation issues and repair guidance below.\n"
+        "Make the smallest possible edit.\n"
+        "Do not add new states or transitions unless a listed issue cannot be fixed without doing so.\n"
+        "Do not remove or rename unaffected states.\n"
+        "Do not change unaffected transition labels.\n"
+        "Do not redesign or simplify the diagram.\n"
+        "Only change the lines needed to fix the listed validation issues.\n"
         "Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.\n\n"
         "Requirement:\n"
         f"{requirement}\n\n"

@@ -39,13 +39,43 @@ def strip_history_suffix(name: str) -> tuple[str, bool]:
 
 
 def normalize_puml_text(text: str) -> str:
-    extracted = extract_plantuml_block(text)
+    clean = strip_markdown_fences(text)
+    extracted = extract_plantuml_block(clean)
     if extracted:
-        return extracted
-    clean = text.strip()
+        return clean_plantuml_boundaries(extracted)
+    clean = clean.strip()
     if not clean:
         return "@startuml\n@enduml\n"
-    return "@startuml\n" + clean + "\n@enduml\n"
+    return clean_plantuml_boundaries("@startuml\n" + clean + "\n@enduml\n")
+
+
+def strip_markdown_fences(text: str) -> str:
+    lines = []
+    for raw_line in text.splitlines():
+        stripped = raw_line.strip()
+        if stripped.startswith("```"):
+            continue
+        lines.append(raw_line)
+    return "\n".join(lines).strip()
+
+
+def clean_plantuml_boundaries(text: str) -> str:
+    lines = [line.rstrip() for line in text.strip().splitlines()]
+    start_indexes = [idx for idx, line in enumerate(lines) if line.strip().lower() == "@startuml"]
+    end_indexes = [idx for idx, line in enumerate(lines) if line.strip().lower() == "@enduml"]
+    cleaned: list[str] = []
+    for idx, line in enumerate(lines):
+        low = line.strip().lower()
+        if low == "@startuml" and idx != (start_indexes[0] if start_indexes else -1):
+            continue
+        if low == "@enduml" and idx != (end_indexes[-1] if end_indexes else -1):
+            continue
+        cleaned.append(line)
+    if not cleaned or cleaned[0].strip().lower() != "@startuml":
+        cleaned.insert(0, "@startuml")
+    if cleaned[-1].strip().lower() != "@enduml":
+        cleaned.append("@enduml")
+    return "\n".join(cleaned).strip() + "\n"
 
 
 def extract_plantuml_block(text: str) -> str:

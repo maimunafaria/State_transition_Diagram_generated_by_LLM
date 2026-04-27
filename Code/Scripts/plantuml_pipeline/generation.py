@@ -19,6 +19,12 @@ def is_strict_state_diagram_valid(validation: ValidationResult) -> bool:
     return not strict_state_diagram_issues(validation)
 
 
+def validation_repair_score(validation: ValidationResult) -> int:
+    return (1000 if not validation.valid else 0) + (100 * len(validation.errors)) + len(
+        validation.warnings
+    )
+
+
 def run_single_generation(
     case: Case,
     cfg: ExperimentConfig,
@@ -141,9 +147,10 @@ def run_single_generation(
             )
             repaired_puml = normalize_puml_text(repaired)
             _, repaired_validation = parse_and_validate_puml_text(repaired_puml)
-            final_puml = repaired_puml
-            final_validation = repaired_validation
             repaired_issues = strict_state_diagram_issues(repaired_validation)
+            current_score = validation_repair_score(final_validation)
+            repaired_score = validation_repair_score(repaired_validation)
+            accepted = repaired_score < current_score
             attempt_artifacts.append(
                 {
                     "stage": "repair",
@@ -152,21 +159,43 @@ def run_single_generation(
                     "puml": repaired_puml,
                     "validation": repaired_validation.to_dict(),
                     "strict_state_diagram_valid": not repaired_issues,
+                    "accepted": accepted,
+                    "previous_score": current_score,
+                    "repair_score": repaired_score,
                 }
             )
+            if accepted:
+                final_puml = repaired_puml
+                final_validation = repaired_validation
+                current_issues_after_attempt = repaired_issues
+            else:
+                current_issues_after_attempt = current_issues
             steps.append(
                 {
                     "stage": "repair",
                     "attempt": attempt,
-                    "plantuml_valid": final_validation.valid,
+                    "accepted": accepted,
+                    "previous_score": current_score,
+                    "repair_score": repaired_score,
+                    "plantuml_valid": repaired_validation.valid,
                     "strict_state_diagram_valid": not repaired_issues,
-                    "errors": list(final_validation.errors),
-                    "warnings": list(final_validation.warnings),
+                    "errors": list(repaired_validation.errors),
+                    "warnings": list(repaired_validation.warnings),
                     "strict_issues": repaired_issues,
                 }
             )
 
-            if not repaired_issues:
+            if not current_issues_after_attempt:
+                break
+            if not accepted:
+                steps.append(
+                    {
+                        "stage": "repair_rejected",
+                        "attempt": attempt,
+                        "reason": "repair_did_not_improve_validation_score",
+                        "kept_previous_issues": current_issues,
+                    }
+                )
                 break
 
         final_issues = strict_state_diagram_issues(final_validation)
