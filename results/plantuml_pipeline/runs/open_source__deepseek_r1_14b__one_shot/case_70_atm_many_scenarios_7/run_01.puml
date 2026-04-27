@@ -1,0 +1,56 @@
+@startuml
+title UML State Chart Diagram
+
+state "Greeting" as Greeting {
+  [*] --> CardInserted
+}
+
+state "CardInserted" as CardInserted {
+  [*] --> EnterPIN
+}
+
+state "EnterPIN" as EnterPIN {
+  [*] --> AuthenticatedState : [Correct PIN]
+  [*] --> IncorrectPIN : [Incorrect PIN]
+}
+
+state "AuthenticatedState" as AuthenticatedState {
+  [*] --> DisplayOptions
+}
+
+state "IncorrectPIN" as IncorrectPIN {
+  [*] --> EnterPIN : [Try Again]
+  [*] --> CardRetained : [Too Many Attempts]
+}
+
+state "CardRetained" as CardRetained {
+  [*] --> CardReturned : [Cancel Operation]
+}
+
+state "DisplayOptions" as DisplayOptions {
+  [*] --> ProcessRequest : [Choose Option]
+}
+
+state "ProcessRequest" as ProcessRequest {
+  [*] --> [*] : [Request Processed]
+}
+
+state "CardReturned" as CardReturned {
+  [*] --> [*]
+}
+
+Greeting --> CardInserted
+
+AuthenticatedState --> DisplayOptions
+
+DisplayOptions --> ProcessRequest
+
+ProcessRequest --> [*]
+
+IncorrectPIN --> CardRetained
+
+CardRetained --> CardReturned
+
+CardReturned --> [*]
+
+@enduml
