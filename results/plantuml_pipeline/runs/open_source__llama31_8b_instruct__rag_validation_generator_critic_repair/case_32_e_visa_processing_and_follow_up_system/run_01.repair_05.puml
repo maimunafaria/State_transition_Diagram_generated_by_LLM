@@ -6,7 +6,6 @@ Login : entry / Get the Login Details
 Login : do / Validate the Login Details
 Login : exit / Valid or Invalid Login
 
-Login --> Login : [Invalid Login]
 Login --> Choice1 : [Valid Login]
 
 state Choice1 <<choice>>
@@ -20,14 +19,13 @@ CancelCert : entry / Certificate is asked for Cancellation
 CancelCert : do / Certificate is Canceled
 CancelCert : exit / Move to End
 
-CancelCert --> EndMerge : [End]
+CancelCert --> EndMerge
 
 state "Request for Certificates" as RequestCert
 RequestCert : entry / Fill the Form and Upload the Details
 RequestCert : do / Request for Certificates
 RequestCert : exit / Apply for another Certificate or Move to End
 
-RequestCert --> RequestCert : [Apply for another Certificate if needed]
 RequestCert --> IssueCert : [Certificates requested]
 
 state "Issuing the Certificates" as IssueCert
@@ -36,7 +34,7 @@ IssueCert : do / Issuing the Certificates
 IssueCert : exit / Updating the Database
 
 IssueCert --> RequestCert : [Certificate is issued]
-IssueCert --> EndMerge : [End]
+RequestCert --> EndMerge : [End]
 
 state "View Profile" as ViewProfile
 ViewProfile : entry / View the Profile
@@ -53,7 +51,15 @@ UpdateProfile : exit / Move to End
 UpdateProfile --> EndMerge : [End]
 
 state EndMerge <<choice>>
-EndMerge --> [*]
-EndMerge --> [*] : [Back to Login]
+EndMerge --> Logout : [Log out]
+
+state Logout
+Logout : entry / Log out
+Logout : do / Log out
+Logout : exit / End
+
+Logout --> [*]
+
+[*] --> Choice1
 
 @enduml

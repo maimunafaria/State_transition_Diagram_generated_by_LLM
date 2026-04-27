@@ -81,33 +81,16 @@ UpdateProfile --> EndMerge : [End]
 
 state EndMerge <<choice>>
 EndMerge --> [*]
-EndMerge --> Logout : [Log out]
-
-state Logout
-Logout : entry / Log out
-Logout : do / Log out
-Logout : exit / End
-
-Logout --> [*] : [End]
-
-Choice1 --> UpdateProfile : [Profile Updation]
-Choice1 --> ViewProfile : [Profile Viewing]
-Choice1 --> CancelCert : [Cancel the Certificate]
-Choice1 --> RequestCert : [Applying for Certificates]
-
-CancelCert --> EndMerge : [End]
-RequestCert --> IssueCert : [Certificates requested]
-IssueCert --> EndMerge : [End]
-ViewProfile --> EndMerge : [End]
-UpdateProfile --> EndMerge : [End]
-Logout --> [*] : [End]
 
 @enduml
 
 
 Validation issues to fix:
-- duplicate_transitions_detected (2)
+- unreachable_states_detected
+- unreachable: Cancellation of Certificates, EndMerge, IssueCert, Issuing the Certificates, Request for Certificates, Update the Profile, View Profile
+- choice_node_without_outgoing_transitions (EndMerge)
 - plantuml_command_not_found_for_official_syntax_check
 
 Repair guidance for these issues:
-- Remove duplicate transitions or merge their labels into one transition.
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+- Give each choice node at least two outgoing alternatives when possible.

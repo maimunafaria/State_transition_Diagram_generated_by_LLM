@@ -81,16 +81,30 @@ UpdateProfile --> EndMerge : [End]
 
 state EndMerge <<choice>>
 EndMerge --> [*]
+EndMerge --> Logout : [Log out]
+
+state Logout
+Logout : entry / Log out
+Logout : do / Log out
+Logout : exit / End
+
+Logout --> [*]
+
+[*] --> Choice1
+
+Choice1 --> CancelCert : [Cancel the Certificate]
+Choice1 --> RequestCert : [Applying for Certificates]
+Choice1 --> ViewProfile : [Profile Viewing]
+Choice1 --> UpdateProfile : [Profile Updation]
 
 @enduml
 
 
 Validation issues to fix:
-- unreachable_states_detected
-- unreachable: Cancellation of Certificates, EndMerge, IssueCert, Issuing the Certificates, Request for Certificates, Update the Profile, View Profile
-- choice_node_without_outgoing_transitions (EndMerge)
+- multiple_initial_state_transitions (Login, Choice1)
 - plantuml_command_not_found_for_official_syntax_check
 
 Repair guidance for these issues:
-- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
-- Give each choice node at least two outgoing alternatives when possible.
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
