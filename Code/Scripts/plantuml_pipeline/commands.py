@@ -51,6 +51,61 @@ def _case_rag_docs(cases: list[Any]) -> list[tuple[str, str, set[str]]]:
     return docs
 
 
+def _existing_base_run_for_repair(
+    results_root: Path,
+    cfg: Any,
+    case_id: str,
+    run_index: int,
+    few_shot_count: int,
+) -> dict[str, str] | None:
+    if not cfg.use_structural_validation:
+        return None
+
+    base_run_id = ""
+    source_strategy = ""
+    if cfg.strategy == "few_shot_validation_generator_critic_repair":
+        if few_shot_count == 1:
+            base_run_id = cfg.run_id.replace(
+                "__one_shot_validation_generator_critic_repair",
+                "__one_shot",
+            )
+            source_strategy = "one_shot"
+        else:
+            base_run_id = cfg.run_id.replace(
+                "__few_shot_validation_generator_critic_repair",
+                "__few_shot",
+            )
+            source_strategy = "few_shot"
+    elif cfg.strategy == "rag_validation_generator_critic_repair":
+        base_run_id = cfg.run_id.replace(
+            "__rag_validation_generator_critic_repair",
+            "__rag",
+        )
+        source_strategy = "rag"
+    elif cfg.strategy == "zero_shot_validation_generator_critic_repair":
+        base_run_id = cfg.run_id.replace(
+            "__zero_shot_validation_generator_critic_repair",
+            "__zero_shot",
+        )
+        source_strategy = "zero_shot"
+
+    if not base_run_id:
+        return None
+
+    base_dir = results_root / "runs" / base_run_id / case_id
+    puml_path = base_dir / f"run_{run_index:02d}.puml"
+    if not puml_path.exists():
+        return None
+
+    prompt_path = base_dir / f"run_{run_index:02d}.prompt.txt"
+    return {
+        "run_id": base_run_id,
+        "strategy": source_strategy,
+        "puml_path": str(puml_path),
+        "prompt_path": str(prompt_path) if prompt_path.exists() else "",
+    }
+
+
 def command_split(args: argparse.Namespace) -> int:
     dataset_root = _resolve_root(args.dataset_root)
     output_path = _resolve_root(args.output)
@@ -510,8 +565,16 @@ def command_run(args: argparse.Namespace) -> int:
                 attempt_artifacts: list[dict[str, Any]] = []
                 final_puml = ""
                 final_validation: ValidationResult | None = None
+                reused_base: dict[str, str] | None = None
 
                 try:
+                    reused_base = _existing_base_run_for_repair(
+                        results_root=results_root,
+                        cfg=cfg,
+                        case_id=case.case_id,
+                        run_index=run_index,
+                        few_shot_count=args.few_shot_count,
+                    )
                     (
                         final_puml,
                         final_validation,
@@ -541,6 +604,13 @@ def command_run(args: argparse.Namespace) -> int:
                             few_shot_count=args.few_shot_count,
                             run_index=run_index,
                             repair_attempts=args.repair_attempts,
+                            initial_puml=read_text(Path(reused_base["puml_path"]))
+                            if reused_base
+                            else None,
+                            initial_prompt=read_text(Path(reused_base["prompt_path"]))
+                            if reused_base and reused_base.get("prompt_path")
+                            else "",
+                            initial_source=reused_base["run_id"] if reused_base else "",
                         )
                     )
                 except Exception as exc:  # noqa: BLE001 - preserve all run errors
@@ -625,6 +695,8 @@ def command_run(args: argparse.Namespace) -> int:
                     "attempt_artifacts": attempt_artifacts,
                     "metrics": metrics,
                 }
+                if reused_base:
+                    meta["reused_base_run"] = reused_base
                 write_json(meta_path, meta)
                 print(
                     f"  {case.case_id}/run_{run_index:02d} "
