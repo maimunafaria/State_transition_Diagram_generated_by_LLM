@@ -1,0 +1,28 @@
+@startuml
+title Weather Station System State Machine
+
+[*] --> Restarting : Shutdown Condition
+
+state "Running" as Running {
+  [*] --> ConfigMode : Configuration Required
+  ConfigMode --> Running : Configuration Completed
+  state "Data Collection" as DataCollection
+  DataCollection --> Running : Activity Complete
+  state "Summary Preparation" as SummaryPreparation
+  SummaryPreparation --> Running : Activity Complete
+  state "Status Checking" as StatusChecking
+  StatusChecking --> Running : Activity Complete
+}
+
+state "Configuration Mode" as ConfigMode {
+  [*] --> Running : Configuration Completed
+}
+
+state "Controlled Mode" as ControlledMode
+
+Running --> ControlledMode : Remote Control
+ControlledMode --> Running : Shutdown Command
+
+Restarting --> Running : Restarted
+
+@enduml

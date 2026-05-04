@@ -1,0 +1,92 @@
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register : [New User]
+Register --> MainMenu : [Registration Successful]
+Register --> Logout : [Registration Failed]
+
+[*] --> Login : [Existing User]
+Login --> MainMenu : [Login Successful]
+Login --> Logout : [Login Failed]
+
+state "MainMenu" as MainMenu {
+  MainMenu : entry / After successful login
+  MainMenu : do / Display main menu options
+  MainMenu : exit / User selects an option
+}
+
+MainMenu --> NewsContent : [View News/Expert Content]
+MainMenu --> HealthInfo : [Check Symptoms/Fitness Options]
+MainMenu --> InsuranceProcessing : [Use Finance Services]
+MainMenu --> PaymentOptions : [Purchase Drugs/Supplements]
+MainMenu --> Logout : [Logout]
+
+state "NewsContent" as NewsContent {
+  NewsContent : entry / User selects news
+  NewsContent : do / Display content
+  NewsContent : exit / User decides next action
+}
+
+NewsContent --> MainMenu : [Continue]
+NewsContent --> ResultView : [View Result]
+
+state "HealthInfo" as HealthInfo {
+  HealthInfo : entry / User selects health info
+  HealthInfo : do / Provide information
+  HealthInfo : exit / User decides next action
+}
+
+HealthInfo --> MainMenu : [Continue]
+HealthInfo --> ResultView : [View Result]
+
+state "InsuranceProcessing" as InsuranceProcessing {
+  InsuranceProcessing : entry / Processing insurance details
+  InsuranceProcessing : do / Validate insurance
+  InsuranceProcessing : exit / Based on validation result
+}
+
+InsuranceProcessing --> MainMenu : [Valid Insurance]
+InsuranceProcessing --> PaymentOptions : [Invalid Insurance]
+
+state "PaymentOptions" as PaymentOptions {
+  PaymentOptions : entry / Select payment method
+  PaymentOptions : do / Process selection
+  PaymentOptions : exit / Proceed accordingly
+}
+
+PaymentOptions --> CashPayment : [Cash Selected]
+PaymentOptions --> InsurancePayment : [Insurance Selected]
+
+state "CashPayment" as CashPayment {
+  CashPayment : entry / Processing cash payment
+  CashPayment : do / Collect details
+  CashPayment : exit / Confirm payment
+}
+
+CashPayment --> MainMenu : [Payment Completed]
+
+state "InsurancePayment" as InsurancePayment {
+  InsurancePayment : entry / Processing insurance payment
+  InsurancePayment : do / Validate and process
+  InsurancePayment : exit / Confirm payment
+}
+
+InsurancePayment --> MainMenu : [Payment Completed]
+
+state "ResultView" as ResultView {
+  ResultView : entry / Viewing result
+  ResultView : do / Display result
+  ResultView : exit / User decides next action
+}
+
+ResultView --> MainMenu : [Continue]
+ResultView --> Logout : [Finish Session]
+
+state "Logout" as Logout {
+  Logout : entry / Initiating logout
+  Logout : do / Log out user
+  Logout : exit / Return to start
+}
+
+MainMenu --> Feedback : [Provide Feedback]
+@enduml

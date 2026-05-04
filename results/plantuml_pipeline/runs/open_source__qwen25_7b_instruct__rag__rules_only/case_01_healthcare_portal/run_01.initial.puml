@@ -1,0 +1,67 @@
+@startuml
+[*] --> Registering
+
+state Registering {
+  Registering --> Registered : registration successful
+  Registering --> RegistrationFailed : registration failed
+}
+
+state Registered {
+  [*] --> LoggingIn
+
+  state LoggingIn {
+    LoggingIn --> SignedIn : sign in successful
+    LoggingIn --> AccessDenied : sign in failed
+  }
+
+  SignedIn {
+    [*] --> MainScreen
+    MainScreen --> MainScreen : continue using system
+    MainScreen --> Logout : logout
+  }
+}
+
+state RegistrationFailed {
+  [*] --> RegistrationFailed
+}
+
+state AccessDenied {
+  [*] --> AccessDenied
+}
+
+MainScreen {
+  [*] --> ReadingNews
+  ReadingNews --> MainScreen : finish session
+  ReadingNews --> CheckingSymptoms : check symptoms or use fitness options
+  CheckingSymptoms --> MainScreen : finish session
+}
+
+state MainScreen {
+  [*] --> ProcessingInsurance
+  ProcessingInsurance --> InsuranceProcessed : insurance processed
+  ProcessingInsurance --> PaymentProcess : payment process
+
+  state PaymentProcess {
+    PaymentProcess --> CashPayment : choose cash payment
+    CashPayment --> PaymentComplete : complete payment
+    PaymentProcess --> InsurancePayment : choose insurance payment
+    InsurancePayment --> PaymentComplete : complete payment
+  }
+
+  state PaymentComplete {
+    [*] --> MainScreen
+  }
+}
+
+state ReadingNews {
+  [*] --> MainScreen
+}
+
+state CheckingSymptoms {
+  [*] --> MainScreen
+}
+
+[*] --> FeedbackCollection
+
+FeedbackCollection --> [*] : end of session
+@enduml

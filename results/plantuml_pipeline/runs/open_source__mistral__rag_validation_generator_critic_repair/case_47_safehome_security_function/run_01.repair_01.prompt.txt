@@ -1,0 +1,86 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.
+
+Candidate PlantUML:
+@startuml
+title Safehome Security Function State Diagram
+
+state Startup {
+  [*] --> Checking
+
+  state Checking
+  Checking : do / Check everything during startup
+
+  state ReadyToUse
+  Checking --> ReadyToUse : Everything fine
+
+  state Problem
+  Checking --> Problem : Problem during startup
+
+  state Reset
+  Problem --> Reset : User request
+
+  state Activate
+  ReadyToUse --> Activate : User request
+
+  state Deactivate
+  ReadyToUse --> Deactivate : User request
+
+  state Monitoring
+  Activate --> Monitoring : System activated
+
+  state Alarm
+  Monitoring --> Alarm : Sensor triggered
+
+  state FalseAlarm
+  Alarm --> FalseAlarm : False alarm or time ended
+
+  state Normal
+  FalseAlarm --> Normal : Continue monitoring
+
+  state AlertSent
+  Alarm --> AlertSent : Send alerts
+
+  state PasswordEntered
+  Normal --> PasswordEntered : User enters password at any time
+
+  state Stopped
+  PasswordEntered --> Stopped : System stops and returns to normal
+}
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+- unreachable_states_detected
+- unreachable: Startup
+- orphan_states_detected
+- orphan: Startup
+- plantuml_command_not_found_for_official_syntax_check
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.

@@ -1,0 +1,74 @@
+@startuml
+title E Ticketing System State Machine Diagram
+
+state StartChoice <<choice>>
+[*] --> StartChoice
+
+StartChoice --> Registration : [New User]
+StartChoice --> Login : [Registered User]
+
+state "Registration" as Registration {
+    [*] --> RegEnterDetails
+
+    state "Enter Details" as RegEnterDetails
+    state "Validation" as Validation
+    state "Successful Registration" as SuccessfulReg
+    state "Re-enter Details" as ReEnterDetails
+
+    RegEnterDetails --> Validation : [Valid]
+    RegEnterDetails --> ReEnterDetails : [Invalid]
+    ReEnterDetails --> RegEnterDetails
+    Validation --> SuccessfulReg
+}
+
+state "Login" as Login {
+    [*] --> AuthEnterUsername
+
+    state "Enter Username" as AuthEnterUsername
+    state "Enter Password" as AuthEnterPassword
+    state "Successful Login" as SuccessfulLogin
+    state "Invalid Credentials" as InvalidCreds
+
+    AuthEnterUsername --> AuthEnterPassword
+    AuthEnterPassword --> SuccessfulLogin : [Valid]
+    AuthEnterPassword --> InvalidCreds : [Invalid]
+}
+
+state "Logged In" as LoggedIn {
+    [*] --> ChoiceAction
+
+    state "Choice Action" as ChoiceAction <<choice>>
+    state "Check Ticket Status" as CheckStatus
+    state "Book Ticket" as BookTicket
+    state "Manage Account" as ManageAccount
+    state Logout <<exit>>
+
+    ChoiceAction --> CheckStatus : [Check Status]
+    ChoiceAction --> BookTicket : [Book Ticket]
+    ChoiceAction --> ManageAccount : [Manage Account]
+    ChoiceAction --> Logout : [Logout]
+
+    CheckStatus --> [*] : [Complete Action]
+    BookTicket --> EnterTicketDetails
+    ManageAccount --> EditProfile
+}
+
+state "Enter Ticket Details" as EnterTicketDetails {
+    [*] --> DisplayOptions
+
+    state "Display Options" as DisplayOptions <<choice>>
+    state "Choose Alternate Option" as ChooseAltOption
+
+    DisplayOptions --> DisplaySuggestion : [Found]
+    DisplayOptions --> ChooseAltOption : [Not Found]
+
+    DisplaySuggestion --> BookConfirm
+    ChooseAltOption --> EnterTicketDetails
+}
+
+state "Book Confirmation" as BookConfirm {
+    [*] --> PayAmount
+
+    state "Pay Amount" as PayAmount <<choice>>
+    state "Payment Confirmed
+@enduml

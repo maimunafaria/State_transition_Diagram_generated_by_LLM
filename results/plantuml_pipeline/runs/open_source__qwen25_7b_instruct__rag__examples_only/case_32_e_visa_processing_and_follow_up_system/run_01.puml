@@ -1,0 +1,79 @@
+@startuml
+title UML State Machine Diagram for E Visa Processing And Follow Up System
+
+[*] --> AccountCreation
+
+state "Account Creation" as AccountCreation
+AccountCreation : entry / Create account
+AccountCreation : do / Verify details
+AccountCreation : exit / Account created or not
+
+AccountCreation --> [*] : [Invalid Details]
+AccountCreation --> Login : [Valid Details]
+
+state Login
+Login : entry / Log in
+Login : do / Verify password
+Login : exit / Logged in or not
+
+Login --> [*] : [Improper Password]
+Login --> VisaApplication : [Proper Password]
+
+state "Visa Application" as VisaApplication
+VisaApplication : entry / Apply for visa after login, make payment
+VisaApplication : do / Accept application
+VisaApplication : exit / Application accepted or not
+
+VisaApplication --> ViewStatus : [View status]
+VisaApplication --> CancelApplication : [Cancel application]
+
+state "View Status" as ViewStatus
+ViewStatus : entry / Check the status
+ViewStatus : do / Update status based on document check
+ViewStatus : exit / Status updated or not
+
+ViewStatus --> [*] : [No Change in Status]
+ViewStatus --> ModifyDetails : [Modify details after viewing status]
+
+state "Modify Details" as ModifyDetails
+ModifyDetails : entry / Update user's details
+ModifyDetails : do / Update details
+ModifyDetails : exit / Details updated or not
+
+ModifyDetails --> ViewDetails : [View details]
+ModifyDetails --> GiveFeedback : [Give feedback after modifying details]
+
+state "View Details" as ViewDetails
+ViewDetails : entry / View personal information
+ViewDetails : do / Show user's details
+ViewDetails : exit / Exit view details page
+
+ViewDetails --> [*] : [No Change in Details]
+ViewDetails --> ModifyDetails : [Modify more details]
+
+state "Give Feedback" as GiveFeedback
+GiveFeedback : entry / Provide feedback after checking status
+GiveFeedback : do / Add feedback
+GiveFeedback : exit / Feedback given or not
+
+GiveFeedback --> [*] : [No Feedback Given]
+GiveFeedback --> ViewStatus : [Check status again after giving feedback]
+
+state CancelApplication
+CancelApplication : entry / Cancel the application
+CancelApplication : do / Cancel application
+CancelApplication : exit / Application cancelled or not
+
+CancelApplication --> Login : [Logged out after cancellation]
+
+state "Logout" as Logout
+Logout : entry / Log out
+Logout : do / End session
+Logout : exit / User logged out
+
+Login --> ViewDetails : [View details]
+Login --> VisaApplication : [Apply for visa and make payment]
+Login --> ModifyDetails : [Modify user's details]
+Login --> GiveFeedback : [Give feedback after checking status]
+
+@enduml

@@ -1,0 +1,402 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Reference context (use as support; the target requirement above is primary):
+
+Example requirement:
+Advocate Diary — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to explore blogs and news updates.
+2. The system shall permit users to leave at any time after viewing blogs and news updates.
+3. The system shall enable users to create an account by providing their details.
+4. The system shall check the provided details during account creation.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML state machine diagram
+
+state "View blogs as news updates" as ViewBlogs
+ViewBlogs : entry/Visit page
+ViewBlogs : do/Shows blogs and news updates
+ViewBlogs : exit/Leave the page
+
+state "Register" as Register
+Register : entry/New user
+Register : do/Verify details
+Register : exit/Verified details
+
+state "Login" as Login
+Login : entry/Registered
+Login : do/Verify password
+Login : exit/View details
+
+state "View details and logs" as ViewDetails
+ViewDetails : entry/Login
+ViewDetails : do/Show details of case and logs
+ViewDetails : exit/Do required function
+
+state "Add case" as AddCase
+AddCase : entry/Wants to add case
+AddCase : do/Show Category
+AddCase : exit/Selects a category
+
+state "Civil" as Civil
+Civil : entry/Selects this category
+Civil : do/update view table
+Civil : exit/Allows to add details
+
+state "Criminal" as Criminal
+Criminal : entry/Selects this category
+Criminal : do/Update the view table
+Criminal : exit/Allows to add details
+
+state "Add details" as AddDetails
+AddDetails : entry/Selects category
+AddDetails : do/Add details about case
+AddDetails : exit/Update view table
+
+state "Add remainder" as AddReminder
+AddReminder : entry/Adds details
+AddReminder : do/Add remainder
+AddReminder : exit/Update calender
+
+state "Upload document" as UploadDocument
+UploadDocument : entry/Add details
+UploadDocument : do/Upload documents
+UploadDocument : exit/leave page
+
+state "File online" as FileOnline
+FileOnline : entry/Prefers online filing
+FileOnline : do/Select category
+FileOnline : exit/Click a link
+
+state "Redirect to page" as RedirectPage
+RedirectPage : entry/Click a link
+RedirectPage : do/Redirects to page
+RedirectPage : exit/Returns to page
+
+state "Download model forms" as DownloadForms
+DownloadForms : entry/wants to download forms
+DownloadForms : do/Select a form
+DownloadForms : exit/Downloads form
+
+state "Reference" as Reference
+Reference : entry/Pefers to refer
+Reference : do/Select a category
+Reference : exit/prefered categoried is showed
+
+state "Quick References" as QuickReferences
+QuickReferences : entry/Selects quick references
+QuickReferences : do/Shows some Quick references
+QuickReferences : exit/Leave the page
+
+state "Books" as Books
+Books : entry/Selects books
+Books : do/Shows books
+Books : exit/Leave page
+
+state "Feedback" as Feedback
+Feedback : entry/Wants to give feedback
+Feedback : do/Add feedback
+Feedback : exit/Exit page
+
+state "Logout" as Logout
+Logout : entry/Wants to leave the site
+Logout : do/The session of logged in user ended
+Logout : exit/Leave the site
+
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+
+state J10 <<choice>>
+
+[*] --> J1
+
+J1 --> ViewBlogs
+J1 --> Register
+
+ViewBlogs --> [*]
+
+Register --> J2
+J2 --> [*] : [Invalid Credentials]
+J2 --> Login : [Valid]
+
+Login --> [*] : [Improper]
+Login --> ViewDetails : [Proper]
+
+ViewDetails --> J3
+
+J3 --> AddCase
+J3 --> FileOnline
+J3 --> DownloadForms
+J3 --> Reference
+J3 --> Feedback
+
+AddCase --> J4
+J4 --> Civil
+J4 --> Criminal
+
+Civil --> J5
+Criminal --> J5
+J5 --> AddDetails
+AddDetails --> AddReminder
+AddReminder --> UploadDocument
+UploadDocument --> J10
+
+FileOnline --> RedirectPage
+RedirectPage --> J10
+
+DownloadForms --> J10
+
+Reference --> J6
+J6 --> QuickReferences
+J6 --> Books
+QuickReferences --> J10
+Books --> J10
+
+Feedback --> J10
+
+J10 --> Logout
+Logout --> [*]
+
+@enduml
+```
+
+Example requirement:
+E Province — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall register a new user.
+2. The system shall end the process if registration details are not accepted.
+3. The system shall allow a user to log in after successful registration.
+4. The system shall provide multiple login attempts if the details are incorrect.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Machine Diagram (Certificate Management)
+
+
+[*] --> Registration
+
+state Registration
+Registration : entry / Get the Registration Details
+Registration : do / Validate the Details
+Registration : exit / Valid or Invalid Registration
+
+
+Registration --> [*] : [Invalid Registration]
+
+
+Registration --> Login : [Valid Registration]
+
+
+state Login
+Login : entry / Get the Login Details
+Login : do / Validate the Login Details
+Login : exit / Valid or Invalid Login
+
+
+Login --> Login : [Invalid Login]
+
+
+Login --> Choice1 : [Valid Login]
+
+
+state Choice1 <<choice>>
+
+Choice1 --> CancelCert : [Cancel the Certificate]
+Choice1 --> RequestCert : [Applying for Certificates]
+Choice1 --> ViewProfile : [Profile Viewing]
+Choice1 --> UpdateProfile : [Profile Updation]
+
+
+state "Cancellation of Certificates" as CancelCert
+CancelCert : entry / Certificate is asked for Cancellation
+CancelCert : do / Certificate is Canceled
+CancelCert : exit / Move to End
+
+CancelCert --> EndMerge
+
+state "Request for Certificates" as RequestCert
+RequestCert : entry / Fill the Form and Upload the Details
+RequestCert : do / Request for Certificates
+RequestCert : exit / Apply for another Certificate or Move to End
+
+RequestCert --> RequestCert : [Apply for another Certificate if needed]
+
+RequestCert --> IssueCert : [Certificates requested]
+
+state "Issuing the Certificates" as IssueCert
+IssueCert : entry / Validating Details
+IssueCert : do / Issuing the Certificates
+IssueCert : exit / Updating the Database
+
+IssueCert --> RequestCert : [Certificate is issued]
+RequestCert --> EndMerge : [End]
+
+state "View Profile" as ViewProfile
+ViewProfile : entry / View the Profile
+ViewProfile : do / Display the Profile
+ViewProfile : exit / Exit from Profile Viewing
+
+ViewProfile --> EndMerge : [End]
+
+
+state "Update the Profile" as UpdateProfile
+UpdateProfile : entry / Update the User's Profile
+UpdateProfile : do / Citizen Profile is updated
+UpdateProfile : exit / Move to End
+
+UpdateProfile --> EndMerge : [End]
+
+
+state EndMerge <<choice>>
+
+EndMerge --> [*]
+
+@enduml
+```
+
+Example requirement:
+Art Gallery Mananement System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall verify login credentials upon submission.
+2. The system shall display an error message and prevent further interaction if login details are incorrect.
+3. The system shall allow users to view products or update their information after a successful login.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Chart Diagram
+
+
+[*] --> Login
+
+state Login
+Login : entry / getInfo
+Login : do / verifyData
+Login : exit / verified
+
+state LoginDecision <<choice>>
+Login --> LoginDecision
+
+state "Valid Login" as ValidLogin
+ValidLogin : entry / contain Info
+ValidLogin : do / allow Access to system
+ValidLogin : exit / gallery Entry
+
+state "Invalid Login" as InvalidLogin
+InvalidLogin : entry / wrong Info
+InvalidLogin : do / display Error message
+InvalidLogin : exit / return To Start
+
+LoginDecision --> ValidLogin
+LoginDecision --> InvalidLogin
+
+state NavChoice <<choice>>
+ValidLogin --> NavChoice
+
+state Gallery
+Gallery : entry / show Products
+Gallery : do / allow to select Products
+Gallery : exit / save Products
+
+state Update
+Update : entry / contain Info
+Update : do / take New Info
+Update : exit / save new Info
+
+NavChoice --> Gallery
+NavChoice --> Update
+
+Update --> [*]
+
+state Order
+Order : entry / select Items
+Order : do / allowto order If products In Stock
+Order : exit / verification
+
+state Cart
+Cart : entry / contain Selected Items
+Cart : do / all billing Info
+Cart : exit / payment Method
+
+Gallery --> Order
+Order --> Cart
+
+state Payment
+Payment : entry / get Payment Method
+Payment : do / confirm Payment
+Payment : exit / verify
+
+Cart --> Payment
+
+state PayDecision <<choice>>
+Payment --> PayDecision
+
+state "Valid Payment" as ValidPayment
+ValidPayment : entry / payment Method
+ValidPayment : do / get Cash
+ValidPayment : exit / confirmation of product
+
+state "Invalid Payment" as InvalidPayment
+InvalidPayment : entry / wrong Entry
+InvalidPayment : do / error Message
+InvalidPayment : exit / return
+
+PayDecision --> ValidPayment
+PayDecision --> InvalidPayment
+
+
+state Delivery
+Delivery : entry / take out Order
+Delivery : do / deliver Product
+Delivery : exit / exit System
+
+ValidPayment --> Delivery
+Delivery --> [*]
+
+InvalidPayment --> [*]
+
+@enduml
+```
+
+Now return only the final PlantUML.

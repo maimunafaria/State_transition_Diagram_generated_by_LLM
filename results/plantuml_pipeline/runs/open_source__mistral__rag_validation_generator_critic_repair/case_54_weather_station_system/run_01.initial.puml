@@ -1,0 +1,62 @@
+@startuml
+title Weather Station System State Machine
+
+state Idle {
+  [*] --> Running
+}
+
+state Running {
+  state CollectData {
+    [*] --> DataCollected : clock_ticks
+    CollectData --> CollectData
+  }
+  state Configuration {
+    [*] --> Configuring : config_mode_activated
+    Configuration --> Running : config_completed
+  }
+  state Controlled {
+    [*] --> Controlled : remote_control
+    Controlled --> Running : remote_control_off
+  }
+  state Shutdown {
+    [*] --> ShuttingDown : shutdown_command
+    Shutdown --> Idle : shutdown_completed
+  }
+}
+
+Running --> Configuration : power_saving_settings
+Running --> Controlled : remote_control_on
+Running --> Shutdown : system_failure
+Idle --> Running : start_up
+
+title Weather Station System - Data Collection State Machine
+
+state CollectData {
+  [*] --> Idle : data_collection_complete
+}
+
+state Idle {
+  state PrepareSummary {
+    [*] --> SummaryPrepared : summary_requested
+    PrepareSummary --> Idle : summary_prepared
+  }
+  state CheckStatus {
+    [*] --> Healthy : status_check_ok
+    CheckStatus --> Controlled : system_status_requested
+  }
+}
+
+PrepareSummary --> CollectData : data_collection_triggered
+CollectData --> PrepareSummary : summary_preparation_complete
+CheckStatus --> Idle : status_check_complete
+
+title Weather Station System - Configuration State Machine
+
+state Configuring {
+  [*] --> Settings : power_saving_settings_changed
+}
+
+state Settings {
+  [*] --> Configuring : back_to_config_mode
+}
+@enduml
