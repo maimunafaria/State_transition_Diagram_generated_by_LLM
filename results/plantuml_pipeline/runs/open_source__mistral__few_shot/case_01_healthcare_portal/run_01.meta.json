@@ -1,0 +1,173 @@
+{
+  "run_id": "open_source__mistral__few_shot",
+  "case_id": "case_01_healthcare_portal",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nJava — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall skip non-meaningful elements like spaces or comments.\n2. The system shall ignore empty spaces and line breaks at the beginning.\n3. The system shall skip all characters from // to the end of the line.\n4. The system shall continue skipping content until the end of a block comment (*/).\n\nExample 1 PlantUML:\n@startuml\ntitle State diagram for advancing past whitespace and comments in Java\n\n[*] --> Start\n\nstate Start\nstate \"saw '/'\" as SawSlash\nstate \"line comment\" as LineComment\nstate \"saw '*'\" as SawStar\nstate \"block comment\" as BlockComment\nstate EndWhitespace\n\n' whitespace loop\nStart --> Start : next char = ' ' \\\\t \\\\r \\\\n / advance\n\n' detect slash\nStart --> SawSlash : next char = '/' / advance\n\n' anything else → end\nStart --> EndWhitespace : next char = anything else\n\n' after seeing '/'\nSawSlash --> LineComment : next char = '/' / advance\nSawSlash --> SawStar : next char = '*' / advance\nSawSlash --> EndWhitespace : next char != '/' or '*' / pushback '/'\n\n' line comment behavior\nLineComment --> LineComment : next char != eoln / advance\nLineComment --> Start : next char = eoln / advance\n\n' saw '*' (possible block comment)\nSawStar --> BlockComment : next char = '*' / advance\n\n' block comment behavior\nBlockComment --> BlockComment : next char != '*' / advance\nBlockComment --> SawStar : next char = '*' / advance\n\n' loop back\nSawStar --> BlockComment : next char = '*' / advance\nBlockComment --> Start : next char = '/' / advance\n\nEndWhitespace --> [*]\n\n@enduml\n\nExample 2 Requirement:\nMy Helper — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow new users or users who have forgotten their password to create a new password.\n2. The system shall enable the user to continue using the app after setting a correct password.\n3. The system shall allow users to send messages from another mobile phone if they cannot use their own phone.\n4. The system shall read incoming messages to understand the user's needs.\n5. The system shall check the user’s password for correctness and inform the user if it is wrong.\n6. The system shall ensure that if the user's password is correct, the system shall check the user’s request.\n7. The system shall support for valid requests, the system shall complete them and send back required details to the user.\n8. The system shall support for invalid requests, the system shall inform the user that the request cannot be accepted.\n\nExample 2 PlantUML:\n@startuml\n\n[*] --> LoginSignup\n\nLoginSignup : entry / Download app\nLoginSignup : do / Enables the user to use app\nLoginSignup : exit / Verifies details\n\nLoginSignup --> SetPassword : signup / forgot password\nSetPassword : entry / Signup\nSetPassword : do / Set password\nSetPassword : exit / Validate password\n\nSetPassword --> LoginSignup : password set\n\nLoginSignup --> SendSMS : forgot phone\nSendSMS : entry / Forgot phone\nSendSMS : do / Send SMS from any other mobile\nSendSMS : exit / NIL\n\nSendSMS --> ReadsSMS : SMS sent\nReadsSMS : entry / SMS received\nReadsSMS : do / Scans SMS\nReadsSMS : exit / Performs required action\n\nReadsSMS --> VerifyPassword : verify request\nVerifyPassword : entry / Read SMS\nVerifyPassword : do / Check whether password is correct\nVerifyPassword : exit / Password is correct\n\nVerifyPassword --> ChecksRequirement : password correct\nVerifyPassword --> PasswordError : incorrect password\n\nPasswordError : entry / Incorrect password\nPasswordError : do / Send SMS stating incorrect password\nPasswordError : exit / SMS sent\nPasswordError --> [*]\n\nChecksRequirement : entry / Password is correct\nChecksRequirement : do / Check for requirement\nChecksRequirement : exit / Requirement is valid\n\nChecksRequirement --> FulfilRequirements : requirement valid\nChecksRequirement --> RequirementError : invalid requirement\n\nFulfilRequirements : entry / Requirement is valid\nFulfilRequirements : do / Fulfils requirement\nFulfilRequirements : exit / NIL\n\nFulfilRequirements --> SendRequestedDetails : fulfil completed\nSendRequestedDetails : entry / Requirement is fulfilled\nSendRequestedDetails : do / Send requested details back in form of SMS\nSendRequestedDetails : exit / SMS has been sent\nSendRequestedDetails --> [*]\n\nRequirementError : entry / Invalid requirement\nRequirementError : do / Send SMS stating invalid requirement\nRequirementError : exit / SMS sent\nRequirementError --> [*]\n\n@enduml\n\nExample 3 Requirement:\nStudent Counselling Management System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a student to log in.\n2. The system shall prompt the student to try again if login details are incorrect.\n3. The system shall proceed with registration and payment upon a successful login.\n4. The system shall end there if the registration payment is not completed.\n5. The system shall register the student and declare ranks if the registration payment is completed.\n6. The system shall allow the student to pay enrollment fees after rank declaration.\n7. The system shall end there if the payment for enrollment fees is not successful.\n8. The system shall allow the student to fill in their choices if the payment for enrollment fees is successful.\n9. The system shall lock the choices and allocate seats based on rank if they are correct.\n10. The system shall generate an admit letter once a seat is allotted.\n11. The system shall allow the student to accept or decline the admit letter.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\n[*] --> StartMerge\n\nstate StartMerge <<choice>>\nstate Login\nstate LoginDecision <<choice>>\nstate \"Invalid Login\" as InvalidLogin\nstate \"Valid Login\" as ValidLogin\nstate RegistrationDecision <<choice>>\nstate \"Failed Registration\" as FailedRegistration\nstate \"Rank Declaration\" as RankDeclaration\nstate \"Enrollment Fees\" as EnrollmentFees\nstate PaymentDecision <<choice>>\nstate \"Invalid Payment\" as InvalidPayment\nstate \"Valid Payment\" as ValidPayment\nstate \"Choice Filing\" as ChoiceFiling\nstate ChoiceDecision <<choice>>\nstate \"Failed choice filing\" as FailedChoiceFiling\nstate \"Seat Allotment\" as SeatAllotment\nstate \"Admit Letter Generation\" as AdmitLetterGeneration\nstate \"Accept/Decline\" as AcceptDecline\n\nLogin : entry / To Action\nLogin : do / Log in to the system\nLogin : exit / Username and password entered\n\nInvalidLogin : entry / Trying to log in\nInvalidLogin : do / Invalid username and password\nInvalidLogin : exit / Back to login page\n\nValidLogin : entry / Student logged in\nValidLogin : do / Registration form submission with payment\nValidLogin : exit / Student Registered\n\nFailedRegistration : entry / Payment not made\nFailedRegistration : do / Throw an error\nFailedRegistration : exit / Abnormal termination\n\nRankDeclaration : entry / Student registered\nRankDeclaration : do / Declare ranks for all the students\nRankDeclaration : exit / Rank published\n\nEnrollmentFees : entry / Rank declared\nEnrollmentFees : do / Pay enrollment fees\nEnrollmentFees : exit / Payment done\n\nInvalidPayment : entry / Payment not made\nInvalidPayment : do / Show the errors\nInvalidPayment : exit / Abnormal Termination\n\nValidPayment : entry / Payment made\nValidPayment : do / Allow to fill choices\nValidPayment : exit / log out from payment portal\n\nChoiceFiling : entry / Valid payment\nChoiceFiling : do / Fill choices\nChoiceFiling : exit / Lock choices\n\nFailedChoiceFiling : entry / Invalid choices\nFailedChoiceFiling : do / Show the errors\nFailedChoiceFiling : exit / Abnormal Termination\n\nSeatAllotment : entry / Choices must be locked\nSeatAllotment : do / Allot seats based on rank\nSeatAllotment : exit / Publish alloted results\n\nAdmitLetterGeneration : entry / Seat alotted\nAdmitLetterGeneration : do / Generate admit letter\nAdmitLetterGeneration : exit / Publish admit letters to students and colleges\n\nAcceptDecline : entry / Received admit letter\nAcceptDecline : do / Accept/Decline\nAcceptDecline : exit / After decision is made\n\nStartMerge --> Login\nLogin --> LoginDecision\nLoginDecision --> InvalidLogin\nLoginDecision --> ValidLogin\nInvalidLogin --> StartMerge\n\nValidLogin --> RegistrationDecision\nRegistrationDecision --> FailedRegistration\nRegistrationDecision --> RankDeclaration\n\nRankDeclaration --> EnrollmentFees\nEnrollmentFees --> PaymentDecision\nPaymentDecision --> InvalidPayment\nPaymentDecision --> ValidPayment\n\nValidPayment --> ChoiceFiling\nChoiceFiling --> ChoiceDecision\nChoiceDecision --> FailedChoiceFiling\nChoiceDecision --> SeatAllotment\n\nSeatAllotment --> AdmitLetterGeneration\nAdmitLetterGeneration --> AcceptDecline\nAcceptDecline --> [*]\n\nFailedRegistration --> [*]\nInvalidPayment --> [*]\nFailedChoiceFiling --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nHealthcare Portal — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow new users to complete registration.\n2. The system shall end access if registration fails.\n3. The system shall allow registered users to sign in.\n4. The system shall provide access to available facilities after signing in.\n5. The system shall allow users to read news and expert content.\n6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.\n7. The system shall allow users to continue using the system or finish the session after viewing a result.\n8. The system shall process and validate insurance for available finance-related services.\n9. The system shall check payment with insurance for doctor consultations and complete the payment process.\n10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.\n11. The system shall inform users about cash payment details if chosen as the payment method.\n12. The system shall complete the payment process for insurance-based payments.\n13. The system shall collect user feedback after service completion.\n14. The system shall log out users at the end of their session.\n",
+  "requirement_used": "Healthcare Portal — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow new users to complete registration.\n2. The system shall end access if registration fails.\n3. The system shall allow registered users to sign in.\n4. The system shall provide access to available facilities after signing in.\n5. The system shall allow users to read news and expert content.\n6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.\n7. The system shall allow users to continue using the system or finish the session after viewing a result.\n8. The system shall process and validate insurance for available finance-related services.\n9. The system shall check payment with insurance for doctor consultations and complete the payment process.\n10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.\n11. The system shall inform users about cash payment details if chosen as the payment method.\n12. The system shall complete the payment process for insurance-based payments.\n13. The system shall collect user feedback after service completion.\n14. The system shall log out users at the end of their session.",
+  "puml_path": "/Users/faria/State_transition_Diagram_generated_by_LLM/results/plantuml_pipeline/runs/open_source__mistral__few_shot/case_01_healthcare_portal/run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: Registration Failure, Registration Success",
+      "orphan_states_detected",
+      "orphan: Registration Failure, Registration Success",
+      "choice_node_without_guarded_outgoing_transitions (LoginDecision)",
+      "choice_node_without_guarded_outgoing_transitions (Registration)"
+    ],
+    "initial_state": "Registration",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [
+      "Registration Failure",
+      "Registration Success"
+    ],
+    "state_count": 16,
+    "transition_count": 14
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: Registration Failure, Registration Success",
+      "orphan_states_detected",
+      "orphan: Registration Failure, Registration Success",
+      "choice_node_without_guarded_outgoing_transitions (LoginDecision)",
+      "choice_node_without_guarded_outgoing_transitions (Registration)"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_50_java",
+        "case_06_my_helper",
+        "case_31_student_counselling_management_system"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: Registration Failure, Registration Success",
+        "orphan_states_detected",
+        "orphan: Registration Failure, Registration Success",
+        "choice_node_without_guarded_outgoing_transitions (LoginDecision)",
+        "choice_node_without_guarded_outgoing_transitions (Registration)"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: Registration Failure, Registration Success",
+        "orphan_states_detected",
+        "orphan: Registration Failure, Registration Success",
+        "choice_node_without_guarded_outgoing_transitions (LoginDecision)",
+        "choice_node_without_guarded_outgoing_transitions (Registration)"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])",
+          "unreachable_states_detected",
+          "unreachable: Registration Failure, Registration Success",
+          "orphan_states_detected",
+          "orphan: Registration Failure, Registration Success",
+          "choice_node_without_guarded_outgoing_transitions (LoginDecision)",
+          "choice_node_without_guarded_outgoing_transitions (Registration)"
+        ],
+        "initial_state": "Registration",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Registration Failure",
+          "Registration Success"
+        ],
+        "state_count": 16,
+        "transition_count": 14
+      },
+      "strict_state_diagram_valid": false,
+      "path": "/Users/faria/State_transition_Diagram_generated_by_LLM/results/plantuml_pipeline/runs/open_source__mistral__few_shot/case_01_healthcare_portal/run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.125,
+    "state_recall": 0.08,
+    "state_f1": 0.09756097560975609,
+    "state_tp": 2,
+    "state_fp": 14,
+    "state_fn": 23,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 14,
+    "transition_fn": 30,
+    "state_precision_relaxed": 0.125,
+    "state_recall_relaxed": 0.08,
+    "state_f1_relaxed": 0.09756097560975609,
+    "state_tp_relaxed": 2,
+    "state_fp_relaxed": 14,
+    "state_fn_relaxed": 23,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 14,
+    "transition_fn_relaxed": 30,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 14,
+    "transition_fn_semantic": 30,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: Registration Failure, Registration Success",
+      "orphan_states_detected",
+      "orphan: Registration Failure, Registration Success",
+      "choice_node_without_guarded_outgoing_transitions (LoginDecision)",
+      "choice_node_without_guarded_outgoing_transitions (Registration)"
+    ],
+    "hallucination_state_rate": 0.875,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.875,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.048780487804878044,
+    "overall_f1_relaxed": 0.048780487804878044,
+    "weighted_f1_relaxed_70_30": 0.06829268292682926,
+    "overall_f1_semantic": 0.048780487804878044,
+    "weighted_f1_semantic_70_30": 0.06829268292682926,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: Registration Failure, Registration Success",
+      "orphan_states_detected",
+      "orphan: Registration Failure, Registration Success",
+      "choice_node_without_guarded_outgoing_transitions (LoginDecision)",
+      "choice_node_without_guarded_outgoing_transitions (Registration)"
+    ]
+  }
+}

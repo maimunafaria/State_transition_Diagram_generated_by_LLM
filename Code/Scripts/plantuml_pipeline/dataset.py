@@ -187,6 +187,8 @@ def build_experiment_configs(
     strategies = [
         ("zero_shot", False, False, False),
         ("few_shot", False, False, False),
+        ("zero_shot_validation_generator_critic_repair", False, True, True),
+        ("few_shot_validation_generator_critic_repair", False, True, True),
         ("rag", True, False, False),
         ("rag_structural_validation", True, True, False),
         ("rag_validation_generator_critic_repair", True, True, True),

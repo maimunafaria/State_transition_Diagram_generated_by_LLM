@@ -1,0 +1,47 @@
+@startuml
+title Digital Watch State Transition Diagram
+
+[*] --> Idle
+
+state Idle {
+    state ChangingHour
+    state ChangingMinutes
+    state AlarmHour
+    state AlarmMinutes
+    state LightOn
+}
+
+Idle : entry / Display Initial Time and Alarm Status
+ChangingHour : entry / Increase Hours while adjusting time settings
+ChangingMinutes : entry / Increase Minutes while adjusting time settings
+AlarmHour : entry / Increase Alarm Hours
+AlarmMinutes : entry / Increase Alarm Minutes
+LightOn : entry / Turn On Light when button is pressed
+
+ChangingHour : exit / Save new hour and switch to Idle state
+ChangingMinutes : exit / Save new minute and switch to Idle state
+AlarmHour : exit / Save new alarm hour and switch to Idle state
+AlarmMinutes : exit / Save new alarm minute and switch to Idle state
+LightOn : exit / Turn Off Light when button is released
+
+Idle --> ChangingHour : Button Pressed for Hours Adjustment
+Idle --> ChangingMinutes : Button Pressed for Minutes Adjustment
+Idle --> AlarmHour : Button Pressed for Alarm Hour Adjustment
+Idle --> AlarmMinutes : Button Pressed for Alarm Minute Adjustment
+LightOn --> LightOn : Button Pressed
+LightOn --> Idle : Button Released
+
+ChangingHour --> ChangingHour : Increase Hours beyond 23 / Wrap around to 0
+ChangingMinutes --> ChangingMinutes : Increase Minutes beyond 59 / Wrap around to 0
+AlarmHour --> AlarmHour : Increase Alarm Hours beyond 23 / Wrap around to 0
+AlarmMinutes --> AlarmMinutes : Increase Alarm Minutes beyond 59 / Wrap around to 0
+
+ChangingHour --> Idle : Button Released while adjusting hours
+ChangingMinutes --> Idle : Button Released while adjusting minutes
+AlarmHour --> Idle : Button Released while adjusting alarm hours
+AlarmMinutes --> Idle : Button Released while adjusting alarm minutes
+
+Idle --> Idle : Current Time matches Alarm Time / Trigger Alarm and switch to LightOn state
+Idle --> Idle : Alarm is Off / No action taken
+LightOn --> Idle : Button Pressed for Alarm Stop / Turn off Alarm and switch to Idle state
+@enduml

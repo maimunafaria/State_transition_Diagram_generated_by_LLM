@@ -28,6 +28,9 @@ METHOD_LABELS = {
     "one_shot": "One-shot",
     "few_shot": "Few-shot",
     "rag": "RAG",
+    "zero_shot_validation_generator_critic_repair": "Zero-shot + Repair",
+    "one_shot_validation_generator_critic_repair": "One-shot + Repair",
+    "few_shot_validation_generator_critic_repair": "Few-shot + Repair",
     "rag_structural_validation": "RAG + Validation",
     "rag_validation_generator_critic_repair": "RAG + Repair",
 }

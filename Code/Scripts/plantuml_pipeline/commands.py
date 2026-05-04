@@ -425,11 +425,23 @@ def command_run(args: argparse.Namespace) -> int:
         for cfg in configs:
             if cfg.strategy == "few_shot":
                 cfg.run_id = cfg.run_id.replace("__few_shot", "__one_shot")
+            elif cfg.strategy == "few_shot_validation_generator_critic_repair":
+                cfg.run_id = cfg.run_id.replace(
+                    "__few_shot_validation_generator_critic_repair",
+                    "__one_shot_validation_generator_critic_repair",
+                )
 
     if args.only_run_id:
         wanted = set(args.only_run_id)
         if args.few_shot_count == 1:
             wanted |= {run_id.replace("__few_shot", "__one_shot") for run_id in wanted}
+            wanted |= {
+                run_id.replace(
+                    "__few_shot_validation_generator_critic_repair",
+                    "__one_shot_validation_generator_critic_repair",
+                )
+                for run_id in wanted
+            }
         configs = [cfg for cfg in configs if cfg.run_id in wanted]
         if not configs:
             print("No configurations matched --only-run-id", file=sys.stderr)

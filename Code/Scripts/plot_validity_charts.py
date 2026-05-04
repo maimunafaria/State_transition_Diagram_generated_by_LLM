@@ -38,12 +38,25 @@ MODEL_ORDER = [
     "Ensemble Qwen 14B",
     "Ensemble Llama 8B",
 ]
-METHOD_ORDER = ["Zero-shot", "One-shot", "Few-shot", "RAG", "RAG + Repair", "Stacked Ensemble"]
+METHOD_ORDER = [
+    "Zero-shot",
+    "Zero-shot + Repair",
+    "One-shot",
+    "One-shot + Repair",
+    "Few-shot",
+    "Few-shot + Repair",
+    "RAG",
+    "RAG + Repair",
+    "Stacked Ensemble",
+]
 METHOD_COLORS = {
     "Zero-shot": "#4E79A7",
     "One-shot": "#59A14F",
     "Few-shot": "#F28E2B",
     "RAG": "#76B7B2",
+    "Zero-shot + Repair": "#AF7AA1",
+    "One-shot + Repair": "#8CD17D",
+    "Few-shot + Repair": "#FFBE7D",
     "RAG + Repair": "#E15759",
     "Stacked Ensemble": "#7B61FF",
 }

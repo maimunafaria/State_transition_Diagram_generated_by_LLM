@@ -1,0 +1,42 @@
+@startuml
+hide empty package
+
+skinparam packageStyle rectangular
+skinparam packageFillColor #f2f2f2
+
+package "User" {
+    state NotRegistered
+    state Registering
+    state RegisterFailed
+    state LoggedOut
+    state LoggedIn
+}
+
+package "System" {
+    state HealthInfoUnavailable
+    state HealthInfoAvailable
+    state FacilitiesUnavailable
+    state FacilitiesAvailable
+    state NewsContentUnavailable
+    state NewsContentAvailable
+    state PaymentProcessing
+    state PaymentCompleted
+    state FeedbackCollection
+}
+
+User::NotRegistered -- Registering: Register
+RegisterFailed -- LoggedOut: EndAccess
+LoggedOut -- LoggedIn: SignIn
+LoggedIn -- FacilitiesUnavailable: SignInFailed
+LoggedIn -- HealthInfoUnavailable: HealthInfoUnavailableEvent
+LoggedIn -- NewsContentUnavailable: NewsContentUnavailableEvent
+LoggedIn -- PaymentProcessing: PurchaseDrugsOrSupplements
+PaymentCompleted -- LoggedIn: ContinueUsingSystem
+LoggedIn -- FeedbackCollection: ServiceCompletion
+FeedbackCollection -- LoggedOut: Logout
+
+HealthInfoAvailable -- HealthInfoUnavailable: SymptomCheckFailed
+FacilitiesAvailable -- FacilitiesUnavailable: FacilityAccessFailed
+NewsContentAvailable -- NewsContentUnavailable: ContentLoadFailed
+
+@enduml

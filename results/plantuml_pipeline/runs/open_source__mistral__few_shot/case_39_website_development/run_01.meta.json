@@ -1,0 +1,152 @@
+{
+  "run_id": "open_source__mistral__few_shot",
+  "case_id": "case_39_website_development",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nOnline Pharmacy Management System Scenario 2 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow admins to update medicine details.\n2. The system shall allow admins to manage customer orders.\n3. The system shall allow admins to view delivery addresses related to customer orders.\n4. The system shall allow admins to update attendance records.\n5. The system shall allow admins to update salary details.\n\nExample 1 PlantUML:\n@startuml\ntitle UML State Machine Diagram - Admin\n\n[*] --> UpdateMedicine\n\nstate \"Update medicine\" as UpdateMedicine\nstate \"Manage orders\" as ManageOrders\nstate \"View delivery address\" as ViewDeliveryAddress\nstate \"Update attendance\" as UpdateAttendance\nstate \"Update salary\" as UpdateSalary\n\nUpdateMedicine --> ManageOrders\nManageOrders --> ViewDeliveryAddress\nViewDeliveryAddress --> UpdateAttendance\nUpdateAttendance --> UpdateSalary\nUpdateSalary --> [*]\n\n@enduml\n\nExample 2 Requirement:\nE Ration Shop — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to raise a complaint directly.\n2. The system shall end the process after a user raises a complaint.\n3. The system shall allow users to authenticate their identity using an OTP.\n4. The system shall allow multiple attempts for OTP authentication if the initial attempt fails.\n5. The system shall enable users to view items based on different categories once they are successfully authenticated.\n6. The system shall allow users to select items for purchase after viewing them.\n7. The system shall provide users with the option to pay either through an online method or by cash on delivery.\n8. The system shall deliver the product after the payment is completed.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Machine Diagram\n\n\n[*] --> C1\n\nstate C1 <<choice>>\nC1 --> Auth : [possibilities to start]\nC1 --> Complaints\n\n\nstate \"Authentication of aadhar card by OTP\" as Auth\nAuth : entry / card holder\nAuth : do / Generates OTP\nAuth : do / OTP should match\nAuth : exit / authentication completed\n\nstate Complaints\nComplaints : entry / fill\nComplaints : do / raise a complaint\nComplaints : exit / complaint send\n\nComplaints --> [*]\n\nAuth --> Auth\nAuth --> ViewItems\n\nstate \"View items\" as ViewItems\nViewItems : entry / from Authentication\nViewItems : do / items shown based on category\nViewItems : do / select items required\nViewItems : exit / after selecting\n\nViewItems --> Purchase\n\nstate \"make purchase\" as Purchase\nPurchase : entry / from view items\nPurchase : do / payment\nPurchase : exit / chose the mode of payment\n\n\nstate C2 <<choice>>\nPurchase --> C2 : [possibilities for payment]\n\nstate PAYTM\nPAYTM : entry / make purchase\nPAYTM : do / making payment\nPAYTM : exit / payment done\n\nstate COD\nCOD : entry / make purchase\nCOD : do / making payment\nCOD : exit / payment done\n\nC2 --> PAYTM\nC2 --> COD\n\n\nstate C3 <<choice>>\nPAYTM --> C3\nCOD --> C3\n\nC3 --> Delivery : [payment completed]\n\n\nstate Delivery\nDelivery : entry / COD\nDelivery : entry / PAYTM\nDelivery : do / product delivered\n\nDelivery --> [*]\n\n@enduml\n\nExample 3 Requirement:\nBusiness Process Outsourcing Bpo Management System Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to upload a new request.\n2. The system shall enable a BPO organization to save the details of a project.\n3. The system shall allow a client to search for a suitable project category.\n4. The system shall enable an BPO organization to accept or decline a request from a client.\n5. The system shall allow a client to decide whether to proceed with an accepted project or reject it.\n6. The system shall update the project status after acceptance by both parties.\n7. The system shall allow a client to track the progress of a project.\n8. The system shall enable an BPO organization to update the progress of a project.\n9. The system shall upload a final project once work is completed.\n10. The system shall perform a quality check on the final project.\n11. The system shall restart the process if a client is unsatisfied with the final project.\n12. The system shall make payment if the client is satisfied with the final project.\n13. The system shall deliver the project after payment.\n14. The system shall allow a client to provide a rating for the completed project.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Machine Diagram (Upload or Accept Request)\n\nstate \"Upload or Accept request\" as UAR {\n\n    [*] --> ChoiceUser\n\n\n    UAR : entry / Regarding request details\n    UAR : do / Project dealings\n    UAR : exit / After finishing rating\n\n\n    state ChoiceUser <<choice>>\n\n    ChoiceUser --> EnterDetails : [user = BPO organization]\n    ChoiceUser --> SearchCategory : [user = client]\n\n\n    state \"Enter project details\" as EnterDetails\n    state \"Update database\" as UpdateDB\n\n    EnterDetails --> UpdateDB\n    UpdateDB --> [*]\n\n\n    state \"Search project category\" as SearchCategory\n    state ChoiceBPO <<choice>>\n    state ChoiceClient <<choice>>\n\n    SearchCategory --> ChoiceBPO\n\n    ChoiceBPO --> EndDecline : [BPO org declines]\n    ChoiceBPO --> ChoiceClient : [BPO org accepts]\n\n    ChoiceClient --> EndReject : [client rejects]\n    ChoiceClient --> UpdateStatus : [client accepts]\n\n    state EndDecline <<choice>>\n    EndDecline --> [*]\n\n    state EndReject <<choice>>\n    EndReject --> [*]\n\n    state \"Update status of project\" as UpdateStatus\n\n    state ChoiceTracking <<choice>>\n\n    UpdateStatus --> ChoiceTracking\n\n    ChoiceTracking --> DisplayProgress : [client wishes to track]\n    ChoiceTracking --> UpdateProgress : [user = BPO org]\n\n    state \"Display progress\" as DisplayProgress\n    DisplayProgress --> [*]\n\n    state \"Update progress\" as UpdateProgress\n\n\n    UpdateProgress --> UploadFinal : [End of project]\n\n    state \"Upload final project\" as UploadFinal\n\n    state QualityCheck <<choice>>\n\n    UploadFinal --> QualityCheck : [Quality check]\n\n    QualityCheck --> Payment : [satisfied]\n    QualityCheck --> ChoiceTracking : [Not satisfied]\n\n    state Payment\n    state Shipment\n    state Rating\n\n    Payment --> Shipment\n    Shipment --> Rating\n\n    Rating --> [*]\n}\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nWebsite Development — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to navigate from the homepage using a navigation bar.\n2. The system shall display information about projects when selected by the user.\n3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.\n4. The system shall display information about career opportunities when selected by the user.\n5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.\n6. The system shall check submitted job applications after they are submitted.\n",
+  "requirement_used": "Website Development — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to navigate from the homepage using a navigation bar.\n2. The system shall display information about projects when selected by the user.\n3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.\n4. The system shall display information about career opportunities when selected by the user.\n5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.\n6. The system shall check submitted job applications after they are submitted.",
+  "puml_path": "/Users/faria/State_transition_Diagram_generated_by_LLM/results/plantuml_pipeline/runs/open_source__mistral__few_shot/case_39_website_development/run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "unreachable_states_detected",
+      "unreachable: Internship Application, Job Application",
+      "orphan_states_detected",
+      "orphan: Job Application"
+    ],
+    "initial_state": "Homepage",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [
+      "Internship Application",
+      "Job Application"
+    ],
+    "state_count": 9,
+    "transition_count": 7
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "unreachable_states_detected",
+      "unreachable: Internship Application, Job Application",
+      "orphan_states_detected",
+      "orphan: Job Application"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_25_online_pharmacy_management_system_2",
+        "case_20_e_ration_shop",
+        "case_13_business_process_outsourcing_bpo_management_system_3"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: Internship Application, Job Application",
+        "orphan_states_detected",
+        "orphan: Job Application"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: Internship Application, Job Application",
+        "orphan_states_detected",
+        "orphan: Job Application"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: Internship Application, Job Application",
+          "orphan_states_detected",
+          "orphan: Job Application"
+        ],
+        "initial_state": "Homepage",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Internship Application",
+          "Job Application"
+        ],
+        "state_count": 9,
+        "transition_count": 7
+      },
+      "strict_state_diagram_valid": false,
+      "path": "/Users/faria/State_transition_Diagram_generated_by_LLM/results/plantuml_pipeline/runs/open_source__mistral__few_shot/case_39_website_development/run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.2222222222222222,
+    "state_recall": 0.14285714285714285,
+    "state_f1": 0.17391304347826086,
+    "state_tp": 2,
+    "state_fp": 7,
+    "state_fn": 12,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 7,
+    "transition_fn": 19,
+    "state_precision_relaxed": 0.3333333333333333,
+    "state_recall_relaxed": 0.21428571428571427,
+    "state_f1_relaxed": 0.2608695652173913,
+    "state_tp_relaxed": 3,
+    "state_fp_relaxed": 6,
+    "state_fn_relaxed": 11,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 7,
+    "transition_fn_relaxed": 19,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 7,
+    "transition_fn_semantic": 19,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "unreachable_states_detected",
+      "unreachable: Internship Application, Job Application",
+      "orphan_states_detected",
+      "orphan: Job Application"
+    ],
+    "hallucination_state_rate": 0.7777777777777778,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.6666666666666666,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.08695652173913043,
+    "overall_f1_relaxed": 0.13043478260869565,
+    "weighted_f1_relaxed_70_30": 0.18260869565217389,
+    "overall_f1_semantic": 0.13043478260869565,
+    "weighted_f1_semantic_70_30": 0.18260869565217389,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "unreachable_states_detected",
+      "unreachable: Internship Application, Job Application",
+      "orphan_states_detected",
+      "orphan: Job Application"
+    ]
+  }
+}
