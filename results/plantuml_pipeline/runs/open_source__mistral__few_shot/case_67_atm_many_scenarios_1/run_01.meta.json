@@ -1,0 +1,146 @@
+{
+  "run_id": "open_source__mistral__few_shot",
+  "case_id": "case_67_atm_many_scenarios_1",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nFirst Person Shooter Fps Games — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall keep the troll in a calm state with no actions if there is no detected threat.\n2. The system shall determine the troll's reaction based on the perceived strength of the detected opponent.\n3. The system shall make the troll aggressive and start an attack if the opponent appears weak enough to defeat.\n4. The system shall continue the troll's fight while it can see the opponent.\n5. The system shall calm the troll and return it to a normal state if it loses sight of the opponent.\n6. The system shall make the troll scared and panic if the opponent appears too strong.\n7. The system shall calm the troll and return it to a normal state if it gets away from or loses sight of a stronger opponent.\n8. The system shall remove the troll from the game if it takes a fatal hit and its health reaches zero.\n\nExample 1 PlantUML:\n@startuml\ntitle Troll State Diagram\n\n[*] --> Neutral\n\nstate Neutral\nstate Attack\nstate Panic\nstate Die\n\nNeutral --> Attack : see opponent [defeatable]\nAttack --> Neutral : lost opponent\n\nNeutral --> Panic : see opponent [undefeatable]\nPanic --> Neutral : lost opponent\n\nAttack --> Die : receive blow [health = 0] / pray\nPanic --> Die : receive blow [health = 0] / pray\n\nDie --> [*]\n\n@enduml\n\nExample 2 Requirement:\nArt Gallery Mananement System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall verify login credentials upon submission.\n2. The system shall display an error message and prevent further interaction if login details are incorrect.\n3. The system shall allow users to view products or update their information after a successful login.\n4. The system shall allow users to select items and place an order when viewing products.\n5. The system shall add selected product items to the order and prepare billing details.\n6. The system shall allow users to choose a payment method after adding products to their order.\n7. The system shall process and deliver the order if the payment is successful.\n8. The system shall end the process without further action if the payment fails.\n9. The system shall allow users to save updated information after entering new details.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\n\n[*] --> Login\n\nstate Login\nLogin : entry / getInfo\nLogin : do / verifyData\nLogin : exit / verified\n\nstate LoginDecision <<choice>>\nLogin --> LoginDecision\n\nstate \"Valid Login\" as ValidLogin\nValidLogin : entry / contain Info\nValidLogin : do / allow Access to system\nValidLogin : exit / gallery Entry\n\nstate \"Invalid Login\" as InvalidLogin\nInvalidLogin : entry / wrong Info\nInvalidLogin : do / display Error message\nInvalidLogin : exit / return To Start\n\nLoginDecision --> ValidLogin\nLoginDecision --> InvalidLogin\n\nstate NavChoice <<choice>>\nValidLogin --> NavChoice\n\nstate Gallery\nGallery : entry / show Products\nGallery : do / allow to select Products\nGallery : exit / save Products\n\nstate Update\nUpdate : entry / contain Info\nUpdate : do / take New Info\nUpdate : exit / save new Info\n\nNavChoice --> Gallery\nNavChoice --> Update\n\nUpdate --> [*]\n\nstate Order\nOrder : entry / select Items\nOrder : do / allowto order If products In Stock\nOrder : exit / verification\n\nstate Cart\nCart : entry / contain Selected Items\nCart : do / all billing Info\nCart : exit / payment Method\n\nGallery --> Order\nOrder --> Cart\n\nstate Payment\nPayment : entry / get Payment Method\nPayment : do / confirm Payment\nPayment : exit / verify\n\nCart --> Payment\n\nstate PayDecision <<choice>>\nPayment --> PayDecision\n\nstate \"Valid Payment\" as ValidPayment\nValidPayment : entry / payment Method\nValidPayment : do / get Cash\nValidPayment : exit / confirmation of product\n\nstate \"Invalid Payment\" as InvalidPayment\nInvalidPayment : entry / wrong Entry\nInvalidPayment : do / error Message\nInvalidPayment : exit / return\n\nPayDecision --> ValidPayment\nPayDecision --> InvalidPayment\n\n\nstate Delivery\nDelivery : entry / take out Order\nDelivery : do / deliver Product\nDelivery : exit / exit System\n\nValidPayment --> Delivery\nDelivery --> [*]\n\nInvalidPayment --> [*]\n\n@enduml\n\nExample 3 Requirement:\nCovid — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to create an account by entering their details.\n2. The system shall allow users to sign in using a correct username and password.\n3. The system shall enable logged-in users to read blogs shared by recovered patients.\n4. The system shall allow users to update the number of infected people in their area, triggering updates on infection statistics and mask demand.\n5. The system shall enable users in home quarantine to share their information.\n6. The system shall allow doctors to view shared information from quarantined users and suggest medicines.\n7. The system shall enable users to view a list of nearby medical shops and purchase medicines online.\n8. The system shall allow assigning workers to clean an area, updating the cleanliness status accordingly.\n\nExample 3 PlantUML:\n@startuml\ntitle UML state machine diagram\n\nstate \"Idle\" as Idle\nIdle : entry/To action\nIdle : do/Remain in same state\nIdle : exit/Login / Register\n\nstate \"Register\" as Register\nRegister : entry/Register\nRegister : do/Register after validating\nRegister : exit/Login/Invalid registration\n\nstate \"Invalid registration\" as InvalidRegistration\nInvalidRegistration : entry/Invalid registration\nInvalidRegistration : do/Cannot register\nInvalidRegistration : exit/Abnormal termination\n\nstate \"Login\" as Login\nLogin : entry/Login\nLogin : do/Login using valid username and password\nLogin : exit/Invalid login/To home page\n\nstate \"Invalid login\" as InvalidLogin\nInvalidLogin : entry/Invalid login\nInvalidLogin : do/Cannot login\nInvalidLogin : exit/Abnormal termination\n\nstate \"Read blog\" as ReadBlog\nReadBlog : entry/To home page\nReadBlog : entry/Read blogs of recovered patients\nReadBlog : exit/Idle\n\nstate \"Update current no. of infected people\" as UpdateInfected\nUpdateInfected : entry/To home page\nUpdateInfected : do/Update current no. of infected people in the locality\nUpdateInfected : exit/View\n\nstate \"View number of infected people in the locality\" as ViewInfected\nViewInfected : entry/View\nViewInfected : do/View number of infected people in the locality\nViewInfected : exit/Idle\n\nstate \"No. of deaths in the locality\" as DeathCount\nDeathCount : entry/View\nDeathCount : do/View no. of deaths in the locality\nDeathCount : exit/Idle\n\nstate \"View mask demand\" as ViewMaskDemand\nViewMaskDemand : entry/View\nViewMaskDemand : do/View mask demand in the locality\nViewMaskDemand : exit/Stock\n\nstate \"Stock up\" as StockUp\nStockUp : entry/Stock\nStockUp : do/Stock up masks and gloves by the shops\nStockUp : exit/End\n\nstate \"Send patient info\" as SendPatientInfo\nSendPatientInfo : entry/To home page\nSendPatientInfo : do/Update data by home quarantined patients\nSendPatientInfo : exit/View patient info\n\nstate \"View patient info\" as ViewPatientInfo\nViewPatientInfo : entry/View patient info\nViewPatientInfo : do/View patient info by the medical professional\nViewPatientInfo : exit/Prescribe\n\nstate \"Prescribe medicines if needed\" as PrescribeMedicines\nPrescribeMedicines : entry/Prescribe\nPrescribeMedicines : do/Prescribe medicines if needed\nPrescribeMedicines : exit/View data from doc\n\nstate \"View data shared by doctor\" as ViewDoctorData\nViewDoctorData : entry/View data from doc\nViewDoctorData : do/View data shared by doctor\nViewDoctorData : exit/Buy medicines\n\nstate \"List all medical shops\" as ListMedicalShops\nListMedicalShops : entry/To home page\nListMedicalShops : do/List all medical shops in the locality\nListMedicalShops : exit/Buy medicines\n\nstate \"Assign corporation worker\" as AssignWorker\nAssignWorker : entry/To home page\nAssignWorker : do/Assign workers to disinfect in an area\nAssignWorker : exit/Update status\n\nstate \"Update status of cleanliness\" as CleanlinessStatus\nCleanlinessStatus : entry/Update status\nCleanlinessStatus : do/Update status of cleanliness in the locality\nCleanlinessStatus : exit/End\n\nstate \"Buy medicines\" as BuyMedicines\nBuyMedicines : entry/Buy medicines\nBuyMedicines : do/Buy medicines if needed\nBuyMedicines : exit/End\n\nstate J1 <<choice>>\nstate J2 <<choice>>\nstate J3 <<choice>>\nstate J4 <<choice>>\nstate J5 <<choice>>\nstate J6 <<choice>>\nstate J7 <<choice>>\n[*] --> Idle\n\nIdle --> J1\nJ1 --> Register\nJ1 --> Login\n\nRegister --> J2\nJ2 --> Login\nJ2 --> InvalidRegistration\nInvalidRegistration --> [*]\n\nLogin --> J3\nJ3 --> InvalidLogin\nJ3 --> ReadBlog\nJ3 --> UpdateInfected\nJ3 --> SendPatientInfo\nJ3 --> ListMedicalShops\nJ3 --> AssignWorker\nInvalidLogin --> [*]\n\nReadBlog --> J7\nUpdateInfected --> J4\nViewInfected --> J7\nDeathCount --> J7\nJ7 --> Idle\nJ4 --> ViewInfected\nJ4 --> DeathCount\nJ4 --> ViewMaskDemand\n\nViewMaskDemand --> StockUp\nStockUp --> J6\n\nSendPatientInfo --> ViewPatientInfo\nViewPatientInfo --> PrescribeMedicines\nPrescribeMedicines --> ViewDoctorData\nViewDoctorData --> J5\nListMedicalShops --> J5\nJ5 --> BuyMedicines\nBuyMedicines --> J6\n\nAssignWorker --> CleanlinessStatus\nCleanlinessStatus --> J6\n\nJ6 --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nAtm Many Scenarios Scenario 1 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall prompt the user to enter their PIN after the card is inserted.\n2. The system shall verify the entered PIN against the stored information.\n3. The system shall ensure that if the PIN is verified successfully, the system shall provide options to the user.\n4. The system shall support upon user approval, the system shall process the withdrawal request.\n5. The system shall support after dispensing cash, the system shall print a receipt for the transaction.\n6. The system shall support after completing the transaction, the system shall return the user's card.\n7. The system shall support after a brief moment, the system shall reset itself and become ready for the next user.\n",
+  "requirement_used": "Atm Many Scenarios Scenario 1 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall prompt the user to enter their PIN after the card is inserted.\n2. The system shall verify the entered PIN against the stored information.\n3. The system shall ensure that if the PIN is verified successfully, the system shall provide options to the user.\n4. The system shall support upon user approval, the system shall process the withdrawal request.\n5. The system shall support after dispensing cash, the system shall print a receipt for the transaction.\n6. The system shall support after completing the transaction, the system shall return the user's card.\n7. The system shall support after a brief moment, the system shall reset itself and become ready for the next user.",
+  "puml_path": "/Users/faria/State_transition_Diagram_generated_by_LLM/results/plantuml_pipeline/runs/open_source__mistral__few_shot/case_67_atm_many_scenarios_1/run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])",
+      "orphan_states_detected",
+      "orphan: Cancel Transaction, Card Inserted, Complete Transaction, Dispense Cash, Idle, Invalid Card, Invalid PIN, PIN Entered, PIN Verified, Withdrawal"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 10,
+    "transition_count": 0
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])",
+      "orphan_states_detected",
+      "orphan: Cancel Transaction, Card Inserted, Complete Transaction, Dispense Cash, Idle, Invalid Card, Invalid PIN, PIN Entered, PIN Verified, Withdrawal"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_58_first_person_shooter_fps_games",
+        "case_35_art_gallery_mananement_system",
+        "case_07_covid"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_initial_state_transition ([*] --> state)",
+        "missing_final_state_transition (state --> [*])",
+        "orphan_states_detected",
+        "orphan: Cancel Transaction, Card Inserted, Complete Transaction, Dispense Cash, Idle, Invalid Card, Invalid PIN, PIN Entered, PIN Verified, Withdrawal"
+      ],
+      "strict_issues": [
+        "missing_initial_state_transition ([*] --> state)",
+        "missing_final_state_transition (state --> [*])",
+        "orphan_states_detected",
+        "orphan: Cancel Transaction, Card Inserted, Complete Transaction, Dispense Cash, Idle, Invalid Card, Invalid PIN, PIN Entered, PIN Verified, Withdrawal"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_initial_state_transition ([*] --> state)",
+          "missing_final_state_transition (state --> [*])",
+          "orphan_states_detected",
+          "orphan: Cancel Transaction, Card Inserted, Complete Transaction, Dispense Cash, Idle, Invalid Card, Invalid PIN, PIN Entered, PIN Verified, Withdrawal"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 10,
+        "transition_count": 0
+      },
+      "strict_state_diagram_valid": false,
+      "path": "/Users/faria/State_transition_Diagram_generated_by_LLM/results/plantuml_pipeline/runs/open_source__mistral__few_shot/case_67_atm_many_scenarios_1/run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.1,
+    "state_recall": 0.1111111111111111,
+    "state_f1": 0.10526315789473685,
+    "state_tp": 1,
+    "state_fp": 9,
+    "state_fn": 8,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 0,
+    "transition_fn": 9,
+    "state_precision_relaxed": 0.1,
+    "state_recall_relaxed": 0.1111111111111111,
+    "state_f1_relaxed": 0.10526315789473685,
+    "state_tp_relaxed": 1,
+    "state_fp_relaxed": 9,
+    "state_fn_relaxed": 8,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 0,
+    "transition_fn_relaxed": 9,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 0,
+    "transition_fn_semantic": 9,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])",
+      "orphan_states_detected",
+      "orphan: Cancel Transaction, Card Inserted, Complete Transaction, Dispense Cash, Idle, Invalid Card, Invalid PIN, PIN Entered, PIN Verified, Withdrawal"
+    ],
+    "hallucination_state_rate": 0.9,
+    "hallucination_transition_rate": 0.0,
+    "hallucination_state_rate_relaxed": 0.9,
+    "hallucination_transition_rate_relaxed": 0.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.052631578947368425,
+    "overall_f1_relaxed": 0.052631578947368425,
+    "weighted_f1_relaxed_70_30": 0.0736842105263158,
+    "overall_f1_semantic": 0.052631578947368425,
+    "weighted_f1_semantic_70_30": 0.0736842105263158,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])",
+      "orphan_states_detected",
+      "orphan: Cancel Transaction, Card Inserted, Complete Transaction, Dispense Cash, Idle, Invalid Card, Invalid PIN, PIN Entered, PIN Verified, Withdrawal"
+    ]
+  }
+}

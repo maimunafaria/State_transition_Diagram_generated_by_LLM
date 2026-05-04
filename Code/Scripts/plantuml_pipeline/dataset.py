@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import re
 from pathlib import Path
 from typing import Any
 
@@ -160,6 +161,7 @@ def build_experiment_configs(
     llama70_model: str,
     deepseek_model: str,
     deepseek14_model: str,
+    rag_ablation_tag: str = "",
 ) -> list[ExperimentConfig]:
     configs: list[ExperimentConfig] = [
         ExperimentConfig(
@@ -194,11 +196,19 @@ def build_experiment_configs(
         ("rag_validation_generator_critic_repair", True, True, True),
     ]
 
+    def normalize_tag(tag: str) -> str:
+        return re.sub(r"[^a-z0-9]+", "_", tag.strip().lower()).strip("_")
+
+    rag_tag = normalize_tag(rag_ablation_tag)
+
     for model_label, model_name, model_tag in open_models:
         for strategy, use_rag, use_validation, use_ensemble in strategies:
+            run_id = f"open_source__{model_tag}__{strategy}"
+            if use_rag and rag_tag:
+                run_id = f"{run_id}__{rag_tag}"
             configs.append(
                 ExperimentConfig(
-                    run_id=f"open_source__{model_tag}__{strategy}",
+                    run_id=run_id,
                     model_group="open_source",
                     model_label=model_label,
                     model_name=model_name,

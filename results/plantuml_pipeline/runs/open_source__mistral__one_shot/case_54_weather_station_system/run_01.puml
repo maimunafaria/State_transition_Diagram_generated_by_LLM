@@ -1,0 +1,66 @@
+@startuml
+title UML State Machine Diagram
+
+state StartRunning <<choice>>
+state ConfigurationMode <<choice>>
+state RunningState <<choice>>
+state DataCollection <<choice>>
+state SummaryPreparation <<choice>>
+state StatusChecking <<choice>>
+state ControlledMode <<choice>>
+state ShutdownCondition <<choice>>
+
+[*] --> StartRunning
+
+state Restart
+Restart : do / Power on system
+Restart : exit / System ready to run
+
+state EnterConfiguration
+EnterConfiguration : entry / Requirement for changes or power-saving settings
+EnterConfiguration : do / Enter configuration mode
+EnterConfiguration : exit / Configuration mode active
+
+state ReturnRunning
+ReturnRunning : entry / Completed configuration
+ReturnRunning : do / Return to running state
+ReturnRunning : exit / Running state active
+
+state CollectData
+CollectData : entry / Triggered by clock while running
+CollectData : do / Collect data
+CollectData : exit / Data collected
+
+state PrepareSummary
+PrepareSummary : entry / Upon request
+PrepareSummary : do / Prepare and send out weather summary
+PrepareSummary : exit / Summary prepared
+
+state CheckStatus
+CheckStatus : entry / Upon request
+CheckStatus : do / Check own status
+CheckStatus : exit / Status checked
+
+state ReturnControlledMode
+ReturnControlledMode : entry / Through remote control
+ReturnControlledMode : do / Move into controlled mode
+ReturnControlledMode : exit / Controlled mode active
+
+state Shutdown
+Shutdown : entry / Given shutdown command while running
+Shutdown : do / Return to shut down condition
+Shutdown : exit / System shut down
+
+StartRunning --> Restart
+Restart --> EnterConfiguration
+EnterConfiguration --> ConfigurationMode
+ConfigurationMode --> ReturnRunning
+ReturnRunning --> CollectData
+CollectData --> PrepareSummary
+PrepareSummary --> CheckStatus
+CheckStatus --> RunningState
+RunningState --> CollectData
+ControlledMode --> [*]
+Shutdown --> ShutdownCondition
+
+@enduml

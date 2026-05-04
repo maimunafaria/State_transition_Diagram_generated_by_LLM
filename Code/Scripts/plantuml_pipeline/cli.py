@@ -135,6 +135,14 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         help="Optional domain hint to bias RAG retrieval (repeatable)",
     )
+    p_run.add_argument(
+        "--rag-ablation-tag",
+        default="",
+        help=(
+            "Optional tag added to RAG-family run_ids so ablation runs do not overwrite "
+            "default RAG outputs, e.g. examples_only or rules_only."
+        ),
+    )
     p_run.add_argument("--seed", type=int, default=42, help="Random seed")
     p_run.add_argument(
         "--few-shot-seed",

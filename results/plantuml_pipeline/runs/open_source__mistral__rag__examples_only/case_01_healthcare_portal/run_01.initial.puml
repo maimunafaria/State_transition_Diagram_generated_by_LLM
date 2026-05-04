@@ -1,0 +1,56 @@
+@startuml
+title UML state machine diagram
+
+[*] --> Register
+state Register <<choice>>
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/successful registration
+Register : exit/invalid registration
+
+state Login {
+  state "Healthcare Portal" as HealthcarePortal
+  HealthcarePortal : entry/if the user is registered
+  HealthcarePortal : do/allow access to available facilities after signing in
+  HealthcarePortal : exit/when user logout
+
+  state "News and Expert Content" as NewsAndExpertContent
+  NewsAndExpertContent : entry/if the user is logged in
+  NewsAndExpertContent : do/provide access to read news and expert content
+  NewsAndExpertContent : exit/when user logout
+
+  state "Health-related Information" as HealthRelatedInformation
+  HealthRelatedInformation : entry/if the user is logged in
+  HealthRelatedInformation : do/provide health-related information allowing users to check symptoms or use fitness checking options
+  HealthRelatedInformation : exit/after viewing a result
+
+  state "Payment Process" as PaymentProcess {
+    state "Doctor Consultations" as DoctorConsultations
+    DoctorConsultations : entry/if the user chooses payment method for doctor consultations
+    DoctorConsultations : do/process and validate insurance for available finance-related services
+    DoctorConsultations : checkPaymentWithInsurance
+    DoctorConsultations : exit/complete the payment process
+
+    state "Drug and Supplement Purchases" as DrugAndSupplementPurchases
+    DrugAndSupplementPurchases : entry/if the user chooses payment method for drug and supplement purchases
+    DrugAndSupplementPurchases : do/inform users about cash payment details if chosen as the payment method
+    DrugAndSupplementPurchases : exit/complete the payment process for insurance-based payments
+  }
+
+  state "Feedback Collection" as FeedbackCollection
+  FeedbackCollection : entry/after service completion
+  FeedbackCollection : do/collect user feedback
+  FeedbackCollection : exit/logout users at the end of their session
+}
+
+Register --> Login
+Login --> HealthcarePortal
+HealthcarePortal --> NewsAndExpertContent
+HealthcarePortal --> HealthRelatedInformation
+HealthRelatedInformation --> PaymentProcess
+PaymentProcess --> DoctorConsultations
+DoctorConsultations --> checkPaymentWithInsurance
+checkPaymentWithInsurance --> DrugAndSupplementPurchases
+DrugAndSupplementPurchases --> FeedbackCollection
+FeedbackCollection --> Logout
+@enduml
