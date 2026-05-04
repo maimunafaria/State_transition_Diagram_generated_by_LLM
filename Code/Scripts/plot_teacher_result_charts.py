@@ -19,13 +19,27 @@ MODEL_ORDER = [
     "Mistral",
     "Qwen 2.5 7B Instruct",
 ]
-METHOD_ORDER = ["Zero-shot", "One-shot", "Few-shot", "RAG", "RAG + Repair"]
+METHOD_ORDER = [
+    "Zero-shot",
+    "Zero-shot + Repair",
+    "One-shot",
+    "One-shot + Repair",
+    "Few-shot",
+    "Few-shot + Repair",
+    "RAG",
+    "RAG + Validation",
+    "RAG + Repair",
+]
 COMPLEXITY_ORDER = ["simple", "medium", "complex"]
 METHOD_COLORS = {
     "Zero-shot": "#4E79A7",
+    "Zero-shot + Repair": "#AF7AA1",
     "One-shot": "#59A14F",
+    "One-shot + Repair": "#8CD17D",
     "Few-shot": "#F28E2B",
+    "Few-shot + Repair": "#FFBE7D",
     "RAG": "#76B7B2",
+    "RAG + Validation": "#B6992D",
     "RAG + Repair": "#E15759",
 }
 
@@ -82,7 +96,10 @@ def read_case_complexity(path: Path) -> dict[str, str]:
         for line in handle:
             if not line.strip():
                 continue
-            row = json.loads(line)
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
             case_id = row.get("case_id")
             complexity = row.get("complexity")
             if case_id and complexity:
