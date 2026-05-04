@@ -1,0 +1,46 @@
+@startuml
+title Microwave Oven Control - State Diagram
+
+[*] --> DoorShut
+
+state "Door Shut" as DoorShut
+state "Door Open" as DoorOpen
+state "Door Open With Item" as DoorOpenItem
+state "Door Shut With Item" as DoorShutItem
+state "Ready To Cook" as ReadyToCook
+state Cooking
+
+DoorShut --> DoorOpen : Door Opened
+DoorOpen --> DoorShut : Door Closed
+
+DoorOpen --> DoorOpenItem : Item Placed
+DoorOpenItem --> DoorOpen : Item Removed
+
+DoorOpenItem --> DoorShutItem : Door Closed
+DoorShutItem --> DoorOpenItem : Door Opened
+
+DoorShutItem --> ReadyToCook : Cooking Time Entered
+ReadyToCook --> ReadyToCook : Cooking Time Entered
+
+ReadyToCook --> Cooking : Start
+
+Cooking --> DoorOpenItem : Door Opened
+Cooking --> DoorShutItem : Timer Expired
+
+state Inactive {
+  state "Door Open During Operation" as DoorOpenDuringOperation
+  state "Door Open During Cancel" as DoorOpenDuringCancel
+}
+Inactive --> Cooking : DoorClosed
+Cooking --> Inactive : DoorOpened
+Inactive --> Inactive : TimerExpired
+
+state "Cancelled" as Cancelled {
+  [*] --> Cancelled
+  state "Door Open During Cancel" as DoorOpenDuringCancel
+  state "Door Closed After Cancel" as DoorClosedAfterCancel
+
+  DoorOpenDuringCancel --> DoorClosedAfterCancel : DoorClosed
+  DoorClosedAfterCancel --> ReadyToCook : WaitForNextUse
+}
+@enduml

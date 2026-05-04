@@ -1,0 +1,45 @@
+@startuml
+[*] --> AssignedManagerAndStaff
+
+state AssignedManagerAndStaff {
+    ApprovalAndContractSigned --> ActivatedCampaign
+    ApprovalAndContractNotSigned --> WaitingForApprovalAndContract
+}
+
+state ActivatedCampaign {
+    PrepareAdverts --> ApproveAndScheduleAdverts
+    ApproveAndScheduleAdverts --> RunningAdverts
+}
+
+state RunningAdverts {
+    AdjustmentRequested --> AdjustingCampaign
+    AllAdvertsFinished --> CompletedCampaign
+}
+
+state AdjustingCampaign {
+    [*] --> RunningAdverts
+}
+
+state CompletedCampaign {
+    PaymentReceivedLessThanRequired --> WaitingForCorrectBalance
+    PaymentReceivedMoreThanRequired --> WaitingForCorrectBalanceOrRefund
+    PaymentReceivedCorrectly --> MarkedAsPaidAndArchived
+}
+
+state WaitingForCorrectBalance {
+    CorrectBalanceSettled --> MarkedAsPaidAndArchived
+}
+
+state WaitingForCorrectBalanceOrRefund {
+    RefundRequested --> RefundGiven
+    CorrectBalanceSettled --> MarkedAsPaidAndArchived
+}
+
+state RefundGiven {
+    [*] --> AssignedManagerAndStaff
+}
+
+state MarkedAsPaidAndArchived {
+    [*] --> AssignedManagerAndStaff
+}
+@enduml

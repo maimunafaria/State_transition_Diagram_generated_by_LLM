@@ -1,0 +1,69 @@
+@startuml
+title Safehome Security Function
+
+state "Startup Check" {
+  state "Checking"
+  Checking : do / Check Status
+
+  state "Problem"
+  Problem : do / Stop System
+
+  state "Ready"
+  Ready : do / Prepare for User Input
+}
+
+state "User Input" {
+  state "Resetting"
+  Resetting : do / Reset System
+
+  state "Activating"
+  Activating : do / Arm System
+
+  state "Deactivating"
+  Deactivating : do / Disarm System
+
+  state "Turning Off"
+  TurningOff : do / Power Off System
+}
+
+state "Monitoring" {
+  state "Monitoring"
+  Monitoring : do / Check Sensors
+
+  state "Alarm Triggered"
+  AlarmTriggered : do / Send Alerts and Start Alarm
+
+  state "False Alarm or Time Ended"
+  FalseAlarmOrTimeEnded : do / Continue Monitoring
+}
+
+state "Password Entry" {
+  state "Reading Password"
+  ReadingPassword : do / Read Input
+
+  state "Comparing Password"
+  ComparingPassword : do / Compare with Stored Password
+
+  state "Incorrect Password"
+  IncorrectPassword : do / Limit Tries
+
+  state "Correct Password"
+  CorrectPassword : do / Return to User Input
+}
+
+[*] --> StartupCheck
+StartupCheck --> Ready : OK
+ReadingPassword --> ComparingPassword
+ComparingPassword --> IncorrectPassword : Wrong Password
+ComparingPassword --> CorrectPassword : Right Password
+IncorrectPassword --> IncorrectPassword : Tries < Max Tries
+IncorrectPassword --> PasswordEntry : Tries >= Max Tries
+CorrectPassword --> UserInput : Password Matched
+
+UserInput --> Monitoring : Activating
+Monitoring --> AlarmTriggered : Sensor Triggered
+AlarmTriggered --> PasswordEntry
+FalseAlarmOrTimeEnded --> Monitoring
+TurningOff --> [*]
+
+@enduml
