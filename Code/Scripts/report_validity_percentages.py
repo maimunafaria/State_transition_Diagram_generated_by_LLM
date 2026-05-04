@@ -36,13 +36,34 @@ METHOD_LABELS = {
 }
 
 
+def format_method_label(method_key: str) -> str:
+    if method_key in METHOD_LABELS:
+        return METHOD_LABELS[method_key]
+
+    if method_key.startswith("rag__"):
+        tag = method_key.split("__", 1)[1]
+        return f"RAG [{tag.replace('_', ' ')}]"
+
+    if method_key.startswith("rag_validation_generator_critic_repair__"):
+        tag = method_key.split("__", 1)[1].replace(
+            "rag_validation_generator_critic_repair__", ""
+        )
+        return f"RAG + Repair [{tag.replace('_', ' ')}]"
+
+    if method_key.startswith("rag_structural_validation__"):
+        tag = method_key.split("__", 1)[1].replace("rag_structural_validation__", "")
+        return f"RAG + Validation [{tag.replace('_', ' ')}]"
+
+    return method_key
+
+
 def parse_run_id(run_id: str) -> tuple[str, str]:
     parts = run_id.split("__")
     if len(parts) < 3:
         return run_id, "unknown"
     model_key = parts[1]
-    method_key = parts[2]
-    return MODEL_LABELS.get(model_key, model_key), METHOD_LABELS.get(method_key, method_key)
+    method_key = "__".join(parts[2:])
+    return MODEL_LABELS.get(model_key, model_key), format_method_label(method_key)
 
 
 def iter_run_files(runs_root: Path, run_id_contains: list[str]):

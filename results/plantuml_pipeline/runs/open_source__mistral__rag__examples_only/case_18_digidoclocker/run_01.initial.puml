@@ -1,0 +1,116 @@
+@startuml
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. UserTypeIdentification
+2. CitizenRegistration
+3. CorrectLogin
+4. ProfileManagement
+5. ContinuedDocumentUploads
+6. MultipleCertificateApplications
+7. RegistrarRequests
+8. RegistrarMultipleRequests
+9. SessionEnd
+
+UserTypeIdentification[*] --> Registration
+
+state Registration
+Registration : entry / Get the User Details
+Registration : do / Validate the Details
+Registration : exit / Citizen or Registrar
+
+Registration --> [*] : [Citizen]
+Registration --> RegistrarRequest : [Registrar]
+
+state RegistrarRequest
+RegistrarRequest : entry / Request for Certificates
+RegistrarRequest : do / Validate the Details
+RegistrarRequest : exit / Request Sent
+
+RegistrarRequest --> [*] : [End]
+
+
+state Citizen
+Citizen : entry / Logged In
+Citizen : do / Display Options
+Citizen : exit / End Session
+
+Citizen --> DocumentUpload : [Upload Documents]
+Citizen --> CertificateApplication : [Apply for a Certificate]
+Citizen --> ProfileView : [View Profile]
+Citizen --> SessionEnd : [Logout]
+
+state DocumentUpload
+DocumentUpload : entry / Upload Documents
+DocumentUpload : do / Validate the Details
+DocumentUpload : exit / Continue or End
+
+DocumentUpload --> DocumentUpload : [Continue]
+DocumentUpload --> SessionEnd : [End]
+
+state CertificateApplication
+CertificateApplication : entry / Apply for a Certificate
+CertificateApplication : do / Validate the Details
+CertificateApplication : exit / Request Sent
+
+CertificateApplication --> MultipleCertificates : [Multiple Certificates]
+CertificateApplication --> IssueCert : [Issue Certificate]
+CertificateApplication --> SessionEnd : [Logout]
+
+state MultipleCertificates
+MultipleCertificates : entry / Apply for Multiple Certificates
+MultipleCertificates : do / Validate the Details
+MultipleCertificates : exit / Request Sent
+
+MultipleCertificates --> IssueCert : [Issue Certificate]
+MultipleCertificates --> RegistrarRequest : [Registrar Request]
+MultipleCertificates --> SessionEnd : [Logout]
+
+state Registrar
+Registrar : entry / Logged In
+Registrar : do / Display Options
+Registrar : exit / End Session
+
+Registrar --> CertificateRequest : [Request for Certificates]
+Registrar --> MultipleCertificateRequest : [Multiple Requests]
+Registrar --> SessionEnd : [Logout]
+
+state CertificateRequest
+CertificateRequest : entry / Request for Certificates
+CertificateRequest : do / Validate the Details
+CertificateRequest : exit / Request Sent
+
+CertificateRequest --> IssueCert : [Issue Certificate]
+CertificateRequest --> RegistrarMultipleRequests : [More Requests]
+CertificateRequest --> SessionEnd : [Logout]
+
+state MultipleCertificateRequest
+MultipleCertificateRequest : entry / More Requests
+MultipleCertificateRequest : do / Validate the Details
+MultipleCertificateRequest : exit / Request Sent
+
+MultipleCertificateRequest --> IssueCert : [Issue Certificate]
+MultipleCertificateRequest --> RegistrarMultipleRequests : [More Requests]
+MultipleCertificateRequest --> SessionEnd : [Logout]
+
+state ProfileView
+ProfileView : entry / View Profile
+ProfileView : do / Display the Profile
+ProfileView : exit / Exit from Profile Viewing
+
+ProfileView --> EndSession : [End]
+
+state IssueCert
+IssueCert : entry / Validate Details
+IssueCert : do / Issue Certificate
+IssueCert : exit / Update Database
+
+IssueCert --> MultipleCertificates : [Multiple Certificates]
+IssueCert --> SessionEnd : [Logout]
+
+state SessionEnd
+SessionEnd : entry / To End Session
+SessionEnd : do / End the Session
+SessionEnd : exit / End
+
+@enduml
