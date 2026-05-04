@@ -1,0 +1,29 @@
+@startuml
+title UML State Chart Diagram for Cash Register - Process Sale
+
+[*] --> WaitingCustomer
+
+state "Waiting for customer" as WaitingCustomer
+state "Record items" as RecordItems
+state "Waiting for payment" as WaitingPayment
+state "Payment confirmed" as PaymentConfirmed
+
+WaitingCustomer --> RecordItems : enter item
+RecordItems --> RecordItems : enter item
+RecordItems --> WaitingPayment : end of sale
+WaitingPayment --> CashPayment : cash payment
+CashPayment --> PaymentConfirmed : payment confirmed
+CashPayment --> WaitingCustomer : invalid payment method
+
+WaitingPayment --> CardPayment : card or check payment
+CardPayment --> PaymentVerified : payment verified
+CardPayment --> PaymentDenied : payment denied
+
+WaitingPayment --> CheckPayment : check payment
+CheckPayment --> PaymentVerified : payment verified
+CheckPayment --> PaymentDenied : payment denied
+
+PaymentConfirmed --> WaitingCustomer : end of sale
+
+WaitingPayment --> WaitingCustomer : no items selected (unreachable state fixed)
+@enduml

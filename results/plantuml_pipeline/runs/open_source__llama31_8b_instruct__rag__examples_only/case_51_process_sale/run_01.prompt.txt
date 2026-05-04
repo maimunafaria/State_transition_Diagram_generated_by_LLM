@@ -1,0 +1,242 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Process Sale — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a new sale.
+2. The system shall enter items one by one as they are selected by the customer.
+3. The system shall move to payment after all items have been added.
+4. The system shall complete the sale immediately if the customer pays with cash.
+5. The system shall verify the payment if the customer chooses to pay by card or check.
+6. The system shall complete the sale once the payment is approved.
+7. The system shall return to waiting for the next customer after the payment has been finished.
+
+Reference context (use as support; the target requirement above is primary):
+
+Example requirement:
+Guide Dropshipping Website — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to choose whether they are a seller or a customer.
+2. The system shall enable the seller to add or remove products from their list and finalize their offerings.
+3. The system shall allow the customer to view available products and select ones of interest.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Chart Diagram
+
+
+[*] --> StartChoice
+
+state StartChoice <<choice>>
+
+StartChoice --> SellerLogin
+StartChoice --> CustomerLogin
+
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry / seller should be registered
+SellerLogin : do / user provide Login Details
+SellerLogin : exit / login Successful
+
+state "Add/Remove Products" as ManageProducts
+ManageProducts : entry / seller should be LoggedIn
+ManageProducts : do / the seller should be able to add and remove products from the lists
+ManageProducts : exit / fthe seller finalise his products list 
+
+SellerLogin --> ManageProducts
+
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry / customer should be registered
+CustomerLogin : do / user provide Login Details
+CustomerLogin : exit / login Successful
+
+state "View Products" as ViewProducts
+ViewProducts : entry / customer should be LoggedIn
+ViewProducts : do / the customer view Product List
+ViewProducts : exit / customer decides to buy a product
+
+state "Purchase Products" as PurchaseProducts
+PurchaseProducts : entry / customer select a Product
+PurchaseProducts : do / customer contacts Seller via messaging
+PurchaseProducts : exit / customer should be able to message the seller
+CustomerLogin --> ViewProducts
+ViewProducts --> PurchaseProducts
+
+
+state MergePoint <<choice>>
+
+ManageProducts --> MergePoint
+PurchaseProducts --> MergePoint
+
+
+state Message
+Message : entry /customer wanting to purchase a product 
+Message : do / customer seller messaging each other discussing the deal 
+Message : exit / conclusion is drawn
+
+MergePoint --> Message
+
+state Decision <<choice>>
+Message --> Decision
+
+state "Purchase successful" as Success
+Success : entry / customer and the seller agrees on the deal
+Success : do / customer pays the seller through external means 
+Success : exit / customer asks for product feedback
+
+state "Purchase Unsuccessful" as Fail
+Fail : entry / customer not Interested in the offer
+Fail : do / customer decline sellers's Offer
+Fail : exit / end
+
+Decision --> Success
+Decision --> Fail
+
+
+state "Rate Products" as RateProducts
+RateProducts : entry / customer purchases the products
+RateProducts : do / customer gives Feedback for the transaction
+RateProducts : exit / end
+
+Success --> RateProducts
+
+RateProducts --> [*]
+Fail --> [*]
+
+@enduml
+```
+
+Example requirement:
+Textile — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow customers to create an account by filling in required details.
+2. The system shall enable customers to place orders for garments once they are registered.
+3. The system shall send out sample materials if a customer needs them after placing an order.
+
+Reference PlantUML:
+```plantuml
+@startuml
+
+[*] --> CustomerRegistration
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+CustomerRegistration : entry / Start state
+CustomerRegistration : do / Fill in required details
+CustomerRegistration : exit / Getting garment orders
+
+CustomerRegistration --> GettingGarmentOrders : registration complete
+
+GettingGarmentOrders : entry / Customer registration
+GettingGarmentOrders : do / Place the orders
+GettingGarmentOrders : exit / Sampling / Stock checking
+
+GettingGarmentOrders --> Sampling : sampling required
+GettingGarmentOrders --> StockChecking : check stock
+
+Sampling : entry / Getting garment orders
+Sampling : do / Send out sample materials while ordering
+Sampling : exit / decision
+
+Sampling --> Choice1 : proceed
+StockChecking --> Choice1
+
+StockChecking : entry / Getting garment orders
+StockChecking : do / Check availability of raw material
+StockChecking : exit / decision making
+
+Choice1 --> PurchasingRawMaterials : not in stock
+Choice1 --> ProcessingRawMaterials : in stock
+
+PurchasingRawMaterials : entry / Stock checking
+PurchasingRawMaterials : do / Buy raw materials
+PurchasingRawMaterials : exit / Production of garments
+
+ProcessingRawMaterials : entry / Stock checking
+ProcessingRawMaterials : do / Processing
+ProcessingRawMaterials : exit / Production of garments
+ProcessingRawMaterials --> Choice2
+PurchasingRawMaterials --> Choice2
+Choice2 --> ProductionOfGarments
+
+ProductionOfGarments : entry / Purchasing or processing of raw materials
+ProductionOfGarments : do / Manufacturing
+ProductionOfGarments : exit / Product checking
+
+ProductionOfGarments --> ProductChecking
+
+ProductChecking : entry / Production of garments
+ProductChecking : do / Checking for defects and clearance
+ProductChecking : exit / Receiving the ordered garments
+
+ProductChecking --> ReceivingOrderedGarments
+
+ReceivingOrderedGarments : entry / Product checking
+ReceivingOrderedGarments : do / Garment delivered
+ReceivingOrderedGarments : exit / Billing
+
+ReceivingOrderedGarments --> Billing
+
+Billing : entry / Receiving the ordered garments
+Billing : do / Making payments
+Billing : exit / Report generation
+
+Billing --> ReportGeneration
+
+ReportGeneration : entry / Billing
+ReportGeneration : do / Giving feedback
+ReportGeneration : exit / final state
+
+ReportGeneration --> [*]
+
+@enduml
+```
+
+Example requirement:
+Cash Register — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a customer.
+2. The system shall add items one by one when a customer begins a purchase.
+3. The system shall wait for payment after all items are added.
+4. The system shall go back to waiting for the next customer after the payment is made.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title State diagram of the system operations of "Process sale"
+
+[*] --> WaitingCustomer
+
+state "Waiting for customer" as WaitingCustomer
+state "Record items" as RecordItems
+state "Waiting for payment" as WaitingPayment
+
+WaitingCustomer --> RecordItems : enter item
+RecordItems --> RecordItems : enter item
+RecordItems --> WaitingPayment : end of sale
+WaitingPayment --> WaitingCustomer : enter payment
+
+@enduml
+```
+
+Now return only the final PlantUML.

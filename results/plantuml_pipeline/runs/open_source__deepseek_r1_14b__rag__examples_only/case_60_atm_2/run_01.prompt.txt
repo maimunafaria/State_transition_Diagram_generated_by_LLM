@@ -1,0 +1,167 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Atm Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select an amount to withdraw from a list of options.
+2. The system shall permit the user to enter a custom value if they want a different amount.
+3. The system shall verify the transaction after the user enters an amount.
+4. The system shall allow the user to re-enter the amount if the transaction is rejected.
+
+Reference context (use as support; the target requirement above is primary):
+
+Example requirement:
+Atm Many Scenarios Scenario 6 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if the entered PIN is correct.
+2. The system shall ask for the PIN again if it is incorrect.
+3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title ATM Control - Validate PIN and Withdraw Funds
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForCustomerChoice
+state ProcessingWithdrawal
+state Dispensing
+state Printing
+state Ejecting
+state Confiscating
+state Terminating
+state ClosedDown
+
+Idle : entry / Display Welcome
+ClosedDown : entry / Display System Down
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+WaitingForPIN --> Confiscating : Card Confiscated / display Confiscated
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> Confiscating : Card Stolen, Card Expired /\nConfiscate, Update Status
+ValidatingPIN --> Confiscating : Third Invalid PIN /\nConfiscate
+
+ValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+WaitingForCustomerChoice --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+
+WaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected /\nRequest Withdrawal, Display Wait
+
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash, Update Status
+ProcessingWithdrawal --> Ejecting : Rejected / Eject
+
+Dispensing --> Printing : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+Dispensing --> ClosedDown : Insufficient Cash / Eject
+
+Printing --> Ejecting : Receipt Printed / Eject
+
+Ejecting --> Terminating : Card Ejected / Display Ejected
+Confiscating --> Terminating : Card Confiscated / Display Confiscated
+
+Terminating --> Idle : After (Elapsed Time)\n[Closedown Not Requested]
+
+
+@enduml
+```
+
+Example requirement:
+Atm Many Scenarios Scenario 9 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to choose to transfer money after entering the correct PIN.
+2. The system shall process the transfer request if it is approved.
+3. The system shall print a receipt for approved transfers and queries.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title ATM Control - Processing Transaction
+
+state "Waiting for Customer Choice" as WaitingForChoice
+
+state "Processing Transaction" as ProcessingTransaction {
+  state "Processing Transfer" as ProcessingTransfer
+  state "Processing Query" as ProcessingQuery
+  state "Processing Withdrawal" as ProcessingWithdrawal
+}
+
+state Ejecting
+state Printing
+state Dispensing
+
+WaitingForChoice --> ProcessingTransfer : Transfer Selected /\nRequest Transfer,\nDisplay Wait
+WaitingForChoice --> ProcessingQuery : Query Selected /\nRequest Query,\nDisplay Wait
+WaitingForChoice --> ProcessingWithdrawal : Withdrawal Selected /\nRequest Withdrawal,\nDisplay Wait
+
+ProcessingTransaction --> Ejecting : Rejected /\nEject,\nDisplay Apology
+ProcessingTransfer --> Printing : Transfer Approved /\nPrint Receipt,\nUpdate Status
+ProcessingQuery --> Printing : Query Approved /\nPrint Receipt,\nUpdate Status
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash,\nUpdate Status
+
+@enduml
+```
+
+Example requirement:
+Atm Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if the inserted card is valid.
+2. The system shall prompt the user to select an amount to withdraw if the card is valid.
+3. The system shall verify the transaction after the user selects an amount.
+4. The system shall return the card to the user once the transaction is completed.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title ATM State Machine
+
+[*] --> VerifyCard
+
+state "VerifyCard <<final>>" as VerifyCard
+
+state ReadAmount {
+  [*] --> SelectAmount
+  state SelectAmount
+  SelectAmount --> [*] : amount
+}
+
+state OutOfService
+state "VerifyTransaction <<final>>" as VerifyTransaction
+state ReleaseCard
+
+VerifyCard --> ReadAmount : acceptCard
+ReadAmount --> OutOfService : outOfService
+ReadAmount --> VerifyTransaction
+VerifyTransaction --> ReleaseCard : releaseCard / <<final>>
+
+@enduml
+```
+
+Now return only the final PlantUML.

@@ -1,0 +1,49 @@
+@startuml
+[*] --> Unauthenticated
+
+state Unauthenticated {
+  [*] --> CreateAccount : "Create Account"
+  [*] --> Login : "Log In"
+}
+
+state CreateAccount {
+  [*] --> RegistrationFailed : "Registration failed"
+  RegistrationFailed --> [*]
+  [*] --> RegisteredSuccessfully
+  RegisteredSuccessfully --> Unauthenticated
+}
+
+state Login {
+  [*] --> AuthenticationFailed : "Login failed"
+  AuthenticationFailed --> [*]
+  [*] --> AuthenticatedSuccessfully
+  AuthenticatedSuccessfully --> LoggedIn
+}
+
+state LoggedIn {
+  [*] --> LocationCheck : "Check weather"
+  state LocationCheck {
+    [*] --> InvalidLocation : "Invalid location"
+    InvalidLocation --> [*]
+    [*] --> ValidLocation
+    ValidLocation --> DataSelection
+  }
+
+  state DataSelection {
+    [*] --> ShowData : "Show selected data"
+    ShowData --> Dashboard
+  }
+}
+
+state AdditionalDetails {
+  [*] --> ViewMoreInfo : "View additional details"
+  ViewMoreInfo --> Dashboard
+  [*] --> Logout : "Log out"
+  Logout --> Unauthenticated
+}
+
+LoggedIn --> AdditionalDetails : "View additional details"
+LoggedIn --> LocationCheck
+
+Unauthenticated --> AdditionalDetails : "Direct to dashboard (if logged in)"
+@enduml

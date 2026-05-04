@@ -1,0 +1,65 @@
+@startuml
+state Start {
+  [*] --> Registration
+}
+
+state AccessDenied {
+  --> Start : retry registration
+}
+
+state Registration {
+  --> AccessDenied : failure
+  --> SignIn : success
+}
+
+state SignIn {
+  --> ActiveSession : success
+  --> AccessDenied : failure
+}
+
+state ActiveSession {
+  --> FacilitiesAccess : access facilities
+  --> NewsAndContent : read news/expert content
+  --> SymptomCheck : check symptoms/fitness
+  --> PaymentSelection : select payment method (insurance/cash)
+  --> Logout : initiate logout
+}
+
+state FacilitiesAccess {
+  --> ActiveSession : continue using system
+  --> Logout : finish session
+}
+
+state NewsAndContent {
+  --> ActiveSession : continue using system
+  --> Logout : finish session
+}
+
+state SymptomCheck {
+  --> ActiveSession : continue using system
+  --> Logout : finish session
+}
+
+state PaymentSelection {
+  --> InsurancePaymentProcessing : insurance
+  --> CashPaymentDetails : cash
+}
+
+state InsurancePaymentProcessing {
+  --> PaymentComplete : approve insurance
+}
+
+state CashPaymentDetails {
+  --> PaymentComplete : confirm payment details
+}
+
+state PaymentComplete {
+  --> ActiveSession : continue using system
+  --> Logout : finish session
+}
+
+state Logout {
+  --> Start : new user
+}
+
+@enduml
