@@ -1,0 +1,508 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+E Ticketing For Bus — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create a new account.
+2. The system shall validate the registration of a new user.
+3. The system shall allow the user to log in upon successful registration.
+4. The system shall provide options for logged-in users to check their ticket status.
+5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.
+6. The system shall enable users to manage their account details such as editing or deleting them.
+7. The system shall log out the user after they complete any action.
+
+Reference context (use as support; the target requirement above is primary):
+
+# PlantUML State Aliases, Notes, and Descriptions
+
+Use this document when state names are long or when the diagram needs annotations.
+
+## Long state names with alias
+
+Use aliases to keep transitions readable when state names are long.
+
+```plantuml
+state "Waiting for Payment Confirmation" as WaitingPayment
+state "Order Completed Successfully" as OrderComplete
+
+WaitingPayment --> OrderComplete : payment confirmed
+```
+
+Alternative alias form:
+
+```plantuml
+state WaitingPayment as "Waiting for Payment Confirmation"
+```
+
+## Notes attached to states
+
+Use notes to add additional explanation without changing the state name.
+
+```plantuml
+note right of Processing : validates request details
+```
+
+Multi-line notes:
+
+```plantuml
+note left of Processing
+The system checks the request,
+
+# PlantUML Composite States and Pseudostates
+
+Use this document when the requirement contains nested behavior, decisions, history, branching, or concurrent regions.
+
+## Composite states
+
+A composite state is declared with `state Name { ... }`.
+
+```plantuml
+@startuml
+[*] --> LoggedIn
+
+state LoggedIn {
+  [*] --> Dashboard
+  Dashboard --> Settings : open settings
+  Settings --> Dashboard : back
+}
+
+LoggedIn --> [*] : logout
+@enduml
+```
+
+## Nested substates
+
+Nested states may be declared inside a composite state.
+
+```plantuml
+state Parent {
+  state ChildA
+  state ChildB
+  ChildA --> ChildB
+}
+```
+
+## Substate-to-substate transitions
+
+Transitions between substates are allowed.
+
+```plantuml
+state A {
+  [*] --> X
+  X --> Y : next
+}
+```
+
+## History states
+
+# UML State Diagram Usage Guidelines
+
+Use this document to decide whether a requirement should be modeled as a state machine and how much detail to include.
+
+## When state diagrams are useful
+
+State diagrams are most useful when the same system or object behaves differently depending on its current state.
+
+Good candidates:
+
+```text
+ATM sessions
+login/authentication flows
+order/payment lifecycles
+device controllers
+approval workflows
+booking or registration workflows
+alarm/notification systems
+```
+
+## Scope
+
+A state diagram should focus on the lifecycle of one system, object, session, controller, or business process.
+
+Avoid mixing unrelated lifecycles into one diagram unless the requirement clearly describes them as one process.
+
+## Observability
+
+# Event Types for State Transitions
+
+Use this document to choose better transition labels from requirements.
+
+## Event role
+
+An event is a noteworthy occurrence that may trigger a transition. In generated PlantUML, events usually appear as transition labels.
+
+```plantuml
+Idle --> Authenticating : login submitted
+Authenticating --> LoggedIn : credentials valid
+Authenticating --> LoginFailed : credentials invalid
+```
+
+## Call events
+
+A call event represents a request for an operation or service.
+
+Requirement phrases that often indicate call events:
+
+```text
+user submits
+admin approves
+system validates
+customer requests
+doctor confirms
+```
+
+Example:
+
+```plantuml
+Waiting --> Processing : submit request
+```
+
+## Signal events
+
+A signal event represents an asynchronous notification or message.
+
+Example requirement:
+Book Bank Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to register by entering their details.
+2. The system shall issue a member ID and complete the registration upon correct entry of details.
+3. The system shall require the user to re-enter their details upon incorrect entry of details.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Chart Diagram
+
+state "Registration" as Registration {
+  [*] --> RegEnterDetails
+
+  state "Enter Details" as RegEnterDetails
+  state "Get Member_ID" as GetMemberID
+  state "Successful Registration" as SuccessfulRegistration
+  state "Re-enter Details" as ReEnterDetails
+
+  RegEnterDetails --> GetMemberID : [Valid]
+  RegEnterDetails --> ReEnterDetails : [Invalid]
+  ReEnterDetails --> RegEnterDetails
+  GetMemberID --> SuccessfulRegistration
+}
+
+state "Authentication" as Authentication {
+  [*] --> AuthEnterMemberID
+
+  state "Enter Member_ID" as AuthEnterMemberID
+  state "Enter Password" as EnterPassword
+  state "successful Login" as SuccessfulLogin
+  state "Invalid Member_ID or Password" as InvalidCreds
+
+  AuthEnterMemberID --> EnterPassword
+  EnterPassword --> SuccessfulLogin : [Valid]
+  EnterPassword --> InvalidCreds : [Invalid]
+}
+
+state "Search Books" as SearchBooks {
+  [*] --> EnterBookDetails
+
+  state "Enter Book Details" as EnterBookDetails
+  state "Display Suggestion" as DisplaySuggestion
+  state "choose Alternate option" as ChooseAlternate
+
+  EnterBookDetails --> DisplaySuggestion : [Found]
+  EnterBookDetails --> ChooseAlternate : [Not Found]
+}
+
+state "Get Books" as GetBooksState {
+  [*] --> GetEnterBookID
+
+  state "Enter Book_ID" as GetEnterBookID
+  state "Enter Member_ID" as GetEnterMemberID
+  state "Obtain Books" as ObtainBooks
+  state "Pay Fine Amount" as PayFineAmount
+
+  GetEnterBookID --> GetEnterMemberID
+  GetEnterMemberID --> ObtainBooks : [Active Member]
+  GetEnterMemberID --> PayFineAmount : [Inactive Member]
+}
+
+state "Buy Books" as BuyBooks {
+  [*] --> BuyEnterBookID
+
+  state "Enter Book_ID" as BuyEnterBookID
+  state "Display Book Amount" as DisplayBookAmount
+  state "Get Books" as BuyGetBooks
+  state BuyNotPaidEnd <<choice>>
+
+  BuyEnterBookID --> DisplayBookAmount
+  DisplayBookAmount --> BuyGetBooks : [Paid]
+  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]
+  BuyNotPaidEnd --> [*]
+}
+
+state StartJoin <<choice>>
+
+[*] --> StartJoin
+StartJoin --> Registration
+StartJoin --> Authentication
+StartJoin --> SearchBooks
+StartJoin --> GetBooksState
+StartJoin --> BuyBooks
+
+SuccessfulRegistration --> AuthEnterMemberID
+
+SuccessfulLogin --> EnterBookDetails
+SuccessfulLogin --> GetEnterBookID
+SuccessfulLogin --> BuyEnterBookID
+
+
+ObtainBooks --> [*]
+BuyGetBooks --> [*]
+
+@enduml
+```
+
+Example requirement:
+Car Care — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose whether they are using the service center side or the car owner side.
+2. The system shall allow service center users to register or log in if already registered.
+
+Reference PlantUML excerpt:
+```plantuml
+@startuml
+title UML state machine diagram
+
+state PortalChoice1 <<choice>>
+state PortalChoice2 <<choice>>
+state PortalChoice3 <<choice>>
+state ServiceJoin <<choice>>
+state OwnerJoin <<choice>>
+
+
+[*] --> PortalChoice1
+
+PortalChoice1 --> PortalChoice2 : [Service Center Portal]
+PortalChoice1 --> PortalChoice3 : [Car Owner Portal]
+
+PortalChoice2 --> ServiceCenterRegistration : [New Service Center]
+PortalChoice2 --> ServiceJoin : [Registered Service center]
+PortalChoice3 --> CarOwnerRegistration : [New Car Owner]
+PortalChoice3 --> OwnerJoin : [Registered Car Owner]
+
+state "Service Center Registration" as ServiceCenterRegistration
+ServiceCenterRegistration : entry / Unregistered service center
+ServiceCenterRegistration : do / Enter Valid Credentials
+ServiceCenterRegistration : exit / Account registered
+
+state "Service Center Verification" as ServiceCenterVerification
+ServiceCenterVerification : entry / Service Center account registered
+ServiceCenterVerification : do / Verify Service center
+ServiceCenterVerification : exit / Login Service center
+
+state "Service Center Login" as ServiceCenterLogin
+ServiceCenterLogin : entry / Verified Service Center
+ServiceCenterLogin : entry / Service Center not logged in
+ServiceCenterLogin : do / Authenticate Service Center
+ServiceCenterLogin : exit / Logged In Successfully
+
+state "Service center Home" as ServiceCenterHome
+ServiceCenterHome : entry / Logged in Service Center
+ServiceCenterHome : do / Display home page
+ServiceCenterHome : exit / Enter Damaged parts list
+ServiceCenterHome : exit / Expiry Notification page
+ServiceCenterHome : exit / Updating Information list
+
+state "Expiry Notification page" as ExpiryNotification
+ExpiryNotification : entry / To view expiry notification
+ExpiryNotification : do / Send service request to Car owner
+ExpiryNotification : exit / Return to Service center home page
+
+state "Entering Damaged parts list" as DamagedParts
+DamagedParts : entry / To enter Damaged parts list
+DamagedParts : do / Preparing and entering damaged parts list
+DamagedParts : exit / Return to service center home page
+
+state "Updating parts Information" as UpdatingParts
+UpdatingParts : entry / To update changed parts information
+UpdatingParts : do / Update Information
+UpdatingParts : exit / Return to Service center home page
+
+state "Logout" as Logout
+Logout : entry / To Logout
+Logout : do / Logout
+Logout : exit / Logged out Successfully
+
+state "Car Owner Registration" as CarOwnerRegistration
+CarOwnerRegistration : entry / Unregistered Car Owner
+CarOwnerRegistration : do / Enter valid Credentials
+CarOwnerRegistration : exit / Account registered
+
+state "Car owner Verification" as CarOwnerVerification
+CarOwnerVerification : entry / Car owner account registered
+CarOwnerVerification : do / Verify Car owner
+CarOwnerVerification : exit / Login Car Owner
+
+state "Car Owner Login" as CarOwnerLogin
+CarOwnerLogin : entry / Verified Car Owner
+CarOwnerLogin : entry / Car owner not logged in
+CarOwnerLogin : do / Authenticate Car Owner
+CarOwnerLogin : exit / Logged In Successfully
+
+state "Car Owner Home" as CarOwnerHome
+CarOwnerHome : entry / Logged in Car Owner
+CarOwnerHome : do / Display home page
+CarOwnerHome : exit / View parts information
+CarOwnerHome : exit / Service
+CarOwnerHome : exit / Report
+
+state "Report" as Report
+Report : entry / To Report Service center
+Report : do / Enter the report
+Report : exit / Return to car owner home page
+
+state "View Parts Information" as ViewPartsInformation
+ViewPartsInformation : entry / To view parts information
+ViewPartsInformation : do / View car parts Information
+ViewPartsInformation : exit / Return to Car owner home page
+
+state "Service" as Service
+Service : entry / Service request from service center
+Service : do / Accept or deny request
+Service : exit / Return to Car Owner home page
+
+state "Choose parts" as ChooseParts
+ChooseParts : entry / To choose selected parts
+ChooseParts : do / Choose the part to be serviced
+ChooseParts : exit / Return to service page
+
+state "Make Payment" as MakePayment
+MakePayment : entry / To make payments
+MakePayment : do / Make payments
+MakePayment : exit / Return to Service page
+
+
+state ServiceHomeChoice <<choice>>
+state ServiceLoginChoice <<choice>>
+state OwnerHomeChoice <<choice>>
+state OwnerLoginChoice <<choice>>
+state FinalJoin <<choice>>
+
+
+ServiceCenterRegistration --> ServiceCenterVerification
+ServiceCenterVerification --> ServiceJoin
+ServiceJoin --> ServiceCenterLogin
+ServiceCenterLogin --> ServiceLoginChoice
+ServiceLoginChoice --> ServiceCenterHome
+ExpiryNotification --> ServiceLoginChoice 
+UpdatingParts --> ServiceLoginChoice 
+DamagedParts --> ServiceLoginChoice 
+
+ServiceCenterHome --> ServiceHomeChoice : [Possible Activities]
+ServiceHomeChoice --> ExpiryNotification
+ServiceHomeChoice --> DamagedParts
+ServiceHomeChoice --> UpdatingParts
+ServiceHomeChoice --> FinalJoin
+
+FinalJoin --> Logout
+Logout --> [*]
+
+
+
+CarOwnerRegistration --> CarOwnerVerification
+CarOwnerVerification --> OwnerJoin
+```
+
+Example requirement:
+Business Process Outsourcing Bpo Management System Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall prompt the user to choose whether they are a new user or an already registered user.
+2. The system shall require new users to enter their details for registration and end the process if the details are invalid.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Machine Diagram (User System)
+
+[*] --> UserType
+
+state UserType <<choice>>
+UserType --> Registration : [New user]
+UserType --> Login : [Registered user]
+
+state "Registration" as Registration {
+    [*] --> GettingDetails
+
+    state GettingDetails
+    state ChoiceReg <<choice>>
+    state "Update Database" as UpdateDB
+    state EndInvalid <<choice>>
+
+    GettingDetails --> ChoiceReg : [Registration verification]
+    ChoiceReg --> UpdateDB : [valid]
+    ChoiceReg --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+Registration : entry / New user
+Registration : do / Registration
+Registration : exit / After updation
+
+UpdateDB --> Login : [verified]
+
+state Login
+Login : do / Enter username and password
+Login : exit / After verification
+
+Login --> Profile : [valid uname & pwd]
+
+state "Profile" as Profile {
+    [*] --> ChoiceProfile
+
+    state ChoiceProfile <<choice>>
+    state "View or Edit profile" as EditProfile
+    state "Upload or Accept request" as UploadReq
+    state "Search users" as SearchUsers
+    state "View current deals" as ViewDeals
+
+    ChoiceProfile --> EditProfile : [edit profile data]
+    ChoiceProfile --> UploadReq : [new project]
+    ChoiceProfile --> SearchUsers : [search user]
+    ChoiceProfile --> ViewDeals : [current deals]
+
+    
+}
+
+Profile : entry / View or Edit profile
+Profile : do / Upload or Accept request
+Profile : do / Search users
+Profile : do / View current deals
+Profile : exit / Logout
+
+    EditProfile --> [*] : [Logout]
+    UploadReq --> [*] : [Logout]
+    SearchUsers --> [*] : [Logout]
+    ViewDeals --> [*] : [Logout]
+
+@enduml
+```
+
+Now return only the final PlantUML.

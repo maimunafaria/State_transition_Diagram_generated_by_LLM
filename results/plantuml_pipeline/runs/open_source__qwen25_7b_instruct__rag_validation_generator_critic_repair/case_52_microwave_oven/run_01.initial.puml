@@ -1,0 +1,45 @@
+@startuml
+title Microwave Oven - State Diagram
+
+[*] --> Idle
+
+state "Idle" as Idle {
+  [*] --> WaitingForInput
+  WaitingForInput --> Idle : Door Opened
+}
+
+state "WaitingForInput" as WaitingForInput {
+  [*] --> SettingCookingTime
+  SettingCookingTime --> WaitingForInput : Cancel Cooking
+  SettingCookingTime --> HalfPowerSelected : Select Half Power
+  SettingCookingTime --> FullPowerSelected : Select Full Power
+}
+
+state "HalfPowerSelected" as HalfPowerSelected {
+  [*] --> Cooking
+  Cooking --> HalfPowerSelected : Door Opened
+}
+
+state "FullPowerSelected" as FullPowerSelected {
+  [*] --> Cooking
+  Cooking --> FullPowerSelected : Door Opened
+}
+
+state "Cooking" as Cooking {
+  [*] --> DoorOpenItem
+  DoorOpenItem --> DoorShutItem : Door Closed
+  DoorShutItem --> Idle : Timer Expired
+  DoorOpenItem --> HalfPowerSelected : Select Half Power
+  DoorOpenItem --> FullPowerSelected : Select Full Power
+}
+
+state "DoorShutItem" as DoorShutItem {
+  [*] --> Cooking
+  Cooking --> DoorShutItem : Door Opened
+}
+
+state "Idle" as Idle {
+  [*] --> WaitingForInput
+  WaitingForInput --> Idle : Door Opened
+}
+@enduml

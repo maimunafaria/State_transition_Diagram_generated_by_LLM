@@ -1,0 +1,425 @@
+{
+  "run_id": "open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair",
+  "case_id": "case_52_microwave_oven",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nMicrowave Oven — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall display the current time when it is waiting for user input.\n2. The system shall allow the user to choose between full power and half power levels.\n3. The system shall enable the user to set cooking time by entering a number.\n4. The system shall remain inactive if the door is open during operation.\n5. The system shall stop immediately when the door is opened during the cooking process.\n6. The system shall allow the user to cancel the cooking process.\n7. The system shall return to displaying the current time after stopping or cancelling and wait for the next use.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Diagram Core Syntax\n\nUse this document when generating a basic UML state transition diagram in PlantUML.\n\n## Diagram wrapper\n\nPlantUML code should be enclosed between `@startuml` and `@enduml`.\n\n```plantuml\n@startuml\n[*] --> Idle\nIdle --> [*]\n@enduml\n```\n\n## Initial and final state\n\nThe initial and final pseudostate is written as `[*]`.\n\nInitial transition:\n\n```plantuml\n[*] --> State1\n```\n\nFinal transition:\n\n```plantuml\nState1 --> [*]\n```\n\n## Transitions\n\nUse arrows between states.\n\n```plantuml\nState1 --> State2\nState1 -> State2\n```\n\nTransitions can include labels after a colon.\n\n```plantuml\nIdle --> LoggedIn : login successful\nLoggedIn --> LoggedOut : logout\n```\n\nLabels may include event, guard, and action information.\n\n```plantuml\n\n# PlantUML Composite States and Pseudostates\n\nUse this document when the requirement contains nested behavior, decisions, history, branching, or concurrent regions.\n\n## Composite states\n\nA composite state is declared with `state Name { ... }`.\n\n```plantuml\n@startuml\n[*] --> LoggedIn\n\nstate LoggedIn {\n  [*] --> Dashboard\n  Dashboard --> Settings : open settings\n  Settings --> Dashboard : back\n}\n\nLoggedIn --> [*] : logout\n@enduml\n```\n\n## Nested substates\n\nNested states may be declared inside a composite state.\n\n```plantuml\nstate Parent {\n  state ChildA\n  state ChildB\n  ChildA --> ChildB\n}\n```\n\n## Substate-to-substate transitions\n\nTransitions between substates are allowed.\n\n```plantuml\nstate A {\n  [*] --> X\n  X --> Y : next\n}\n```\n\n## History states\n\n# UML State Diagram Usage Guidelines\n\nUse this document to decide whether a requirement should be modeled as a state machine and how much detail to include.\n\n## When state diagrams are useful\n\nState diagrams are most useful when the same system or object behaves differently depending on its current state.\n\nGood candidates:\n\n```text\nATM sessions\nlogin/authentication flows\norder/payment lifecycles\ndevice controllers\napproval workflows\nbooking or registration workflows\nalarm/notification systems\n```\n\n## Scope\n\nA state diagram should focus on the lifecycle of one system, object, session, controller, or business process.\n\nAvoid mixing unrelated lifecycles into one diagram unless the requirement clearly describes them as one process.\n\n## Observability\n\n# State Syntax, Actions, and Activities\n\nUse this document when deciding whether something belongs inside a state or on a transition.\n\n## State meaning\n\nA state represents a condition during the lifecycle of the reactive object. In that condition, the object may wait for events, perform behavior, or react in a specific way.\n\nGood states:\n\n```text\nWaitingForInput\nAuthenticating\nPaymentPending\nProcessingOrder\nAlarmActive\n```\n\n## Actions\n\nAn action is short, atomic behavior. In modeling, actions are often attached to transitions or to state entry/exit behavior.\n\nTransition action pattern:\n\n```plantuml\nPending --> Approved : approve / notify user\n```\n\n## Activities\n\nExample requirement:\nOven — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to open the door whenever it is closed.\n2. The system shall allow the user to place food inside or remove it from the microwave when the door is open.\n3. The system shall require the user to close the door after placing food inside.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Microwave Oven Control - State Diagram\n\n[*] --> DoorShut\n\nstate \"Door Shut\" as DoorShut\nstate \"Door Open\" as DoorOpen\nstate \"Door Open With Item\" as DoorOpenItem\nstate \"Door Shut With Item\" as DoorShutItem\nstate \"Ready To Cook\" as ReadyToCook\nstate Cooking\n\nDoorShut --> DoorOpen : Door Opened\nDoorOpen --> DoorShut : Door Closed\n\nDoorOpen --> DoorOpenItem : Item Placed\nDoorOpenItem --> DoorOpen : Item Removed\n\nDoorOpenItem --> DoorShutItem : Door Closed\nDoorShutItem --> DoorOpenItem : Door Opened\n\nDoorShutItem --> ReadyToCook : Cooking Time Entered\nReadyToCook --> ReadyToCook : Cooking Time Entered\n\nReadyToCook --> Cooking : Start\n\nCooking --> DoorOpenItem : Door Opened\nCooking --> DoorShutItem : Timer Expired\n\n@enduml\n```\n\nExample requirement:\nMicrowave Oven Operation — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check for proper functioning before starting.\n2. The system shall alert the user and stop operation if an issue is detected.\n3. The system shall start cooking and run for the set time if no issues are detected.\n4. The system shall emit a sound to notify the user upon completion of cooking.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Microwave Oven Operation\n\nstate Operation {\n\n  state Checking\n  Checking : do / Check Status\n\n  state Cook\n  Cook : do / Run Generator\n\n  state Alarm\n  Alarm : do / Display Event\n\n  state Done\n  Done : do / Buzzer On for 5 Secs.\n\n  [*] --> Checking\n\n  Checking --> Cook : OK\n  Checking --> Alarm : Turntable Fault\n  Checking --> Alarm : Emitter Fault\n\n  Cook --> Done : Timeout\n  Cook --> Cook : Time\n}\n\nstate Disabled\nstate Waiting\n\nOperation --> Disabled : Door Open\nOperation --> Waiting : Cancel\n\nAlarm --> Disabled\nDone --> Waiting\n\n@enduml\n```\n\nExample requirement:\nUi — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to open a budget-checking window from the main screen.\n2. The system shall wait for the user to select a client before proceeding with the checking process.\n3. The system shall require users to select a campaign related to the chosen client before allowing them to check information.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Check Budget Window State Machine\n\nstate \"Main Window\" as MainWindow\nstate \"5 Alert Dialog\" as AlertDialog\n\nstate \"Check Budget Window\" as CBW {\n  [*] --> NoClientSelected\n\n  state \"1 No Client Selected\" as NoClientSelected\n\n  state \"Selection Flow\" as SelectionFlow {\n    [*] --> NoCampaignSelected\n\n    state \"2 No Campaign Selected\" as NoCampaignSelected\n\n    state \"Result Flow\" as ResultFlow {\n      [*] --> Blank\n      state \"3 Blank\" as Blank\n      state \"4 Display Result\" as DisplayResult\n\n      Blank --> DisplayResult : checkButtonClicked()\n      DisplayResult --> DisplayResult : checkButtonClicked()\n    }\n\n    NoCampaignSelected --> ResultFlow : campaignSelected()\n    ResultFlow --> ResultFlow : campaignSelected()\n  }\n\n  NoClientSelected --> SelectionFlow : clientSelected()\n  SelectionFlow --> SelectionFlow : clientSelected()\n  state H <<history*>>\n}\n\nMainWindow --> CBW : checkCampaignBudget\\nMenuSelected()\n\nCBW --> AlertDialog : closeButtonClicked()\n\nAlertDialog --> MainWindow : OK\nAlertDialog --> H : Cancel\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Microwave Oven — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall display the current time when it is waiting for user input.\n2. The system shall allow the user to choose between full power and half power levels.\n3. The system shall enable the user to set cooking time by entering a number.\n4. The system shall remain inactive if the door is open during operation.\n5. The system shall stop immediately when the door is opened during the cooking process.\n6. The system shall allow the user to cancel the cooking process.\n7. The system shall return to displaying the current time after stopping or cancelling and wait for the next use.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_52_microwave_oven\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "multiple_initial_state_transitions (Idle, Idle)",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 8,
+    "transition_count": 11
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "multiple_initial_state_transitions (Idle, Idle)",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "vector",
+      "top_k": 3,
+      "query_domains": [],
+      "retrieved_docs": [
+        {
+          "name": "plantuml_rules/plantuml_state_core_syntax.md",
+          "source_type": "plantuml_rule",
+          "vector_distance": 1.669543981552124,
+          "clipped_chars": 759
+        },
+        {
+          "name": "plantuml_rules/plantuml_state_composite_pseudostates.md",
+          "source_type": "plantuml_rule",
+          "vector_distance": 1.7186880111694336,
+          "clipped_chars": 755
+        },
+        {
+          "name": "state_diagram_theory/uml_state_diagram_usage_guidelines.md",
+          "source_type": "state_diagram_theory",
+          "vector_distance": 1.4690600633621216,
+          "clipped_chars": 755
+        },
+        {
+          "name": "state_diagram_theory/arlow_state_action_activity_syntax.md",
+          "source_type": "state_diagram_theory",
+          "vector_distance": 1.4946894645690918,
+          "clipped_chars": 669
+        },
+        {
+          "name": "dataset_examples/case_73_oven.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.3228563666343689,
+          "clipped_chars": 1136
+        },
+        {
+          "name": "dataset_examples/case_53_microwave_oven_operation.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.6048340797424316,
+          "clipped_chars": 1017
+        },
+        {
+          "name": "dataset_examples/case_76_ui.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.3035755157470703,
+          "clipped_chars": 1494
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (Idle, WaitingForInput, SettingCookingTime, Cooking, Cooking, DoorOpenItem, Cooking, WaitingForInput)",
+        "missing_final_state_transition (state --> [*])",
+        "duplicate_transitions_detected (1)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (Idle, WaitingForInput, SettingCookingTime, Cooking, Cooking, DoorOpenItem, Cooking, WaitingForInput)",
+        "missing_final_state_transition (state --> [*])",
+        "duplicate_transitions_detected (1)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": true,
+      "previous_score": 4,
+      "repair_score": 3,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (Idle, WaitingForInput, SettingCookingTime, Cooking, Cooking, DoorOpenItem, Cooking, Idle)",
+        "missing_final_state_transition (state --> [*])",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (Idle, WaitingForInput, SettingCookingTime, Cooking, Cooking, DoorOpenItem, Cooking, Idle)",
+        "missing_final_state_transition (state --> [*])",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "accepted": true,
+      "previous_score": 3,
+      "repair_score": 2,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (Idle, Idle)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (Idle, Idle)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (Idle, Idle)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (Idle, Idle)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 3,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (Idle, Idle)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (Idle, Idle)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (Idle, Idle)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 4,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (Idle, Idle)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (Idle, Idle)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (Idle, Idle)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 5,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (Idle, Idle)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 5,
+      "strict_state_diagram_valid": false,
+      "remaining_issues": [
+        "multiple_initial_state_transitions (Idle, Idle)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (Idle, WaitingForInput, SettingCookingTime, Cooking, Cooking, DoorOpenItem, Cooking, WaitingForInput)",
+          "missing_final_state_transition (state --> [*])",
+          "duplicate_transitions_detected (1)",
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 1,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 11
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_52_microwave_oven\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (Idle, WaitingForInput, SettingCookingTime, Cooking, Cooking, DoorOpenItem, Cooking, Idle)",
+          "missing_final_state_transition (state --> [*])",
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 11
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": true,
+      "previous_score": 4,
+      "repair_score": 3,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_52_microwave_oven\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_52_microwave_oven\\run_01.repair_01.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (Idle, Idle)",
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 11
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": true,
+      "previous_score": 3,
+      "repair_score": 2,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_52_microwave_oven\\run_01.repair_02.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_52_microwave_oven\\run_01.repair_02.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (Idle, Idle)",
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 11
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_52_microwave_oven\\run_01.repair_03.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_52_microwave_oven\\run_01.repair_03.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (Idle, Idle)",
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 11
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_52_microwave_oven\\run_01.repair_04.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_52_microwave_oven\\run_01.repair_04.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (Idle, Idle)",
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 11
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_52_microwave_oven\\run_01.repair_05.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_52_microwave_oven\\run_01.repair_05.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 8,
+    "state_fn": 7,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 11,
+    "transition_fn": 15,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 8,
+    "state_fn_relaxed": 7,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 11,
+    "transition_fn_relaxed": 14,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 11,
+    "transition_fn_semantic": 15,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "multiple_initial_state_transitions (Idle, Idle)",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "multiple_initial_state_transitions (Idle, Idle)",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  }
+}

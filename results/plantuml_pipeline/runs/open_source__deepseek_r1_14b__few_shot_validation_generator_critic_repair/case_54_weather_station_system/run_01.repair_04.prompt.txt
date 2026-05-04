@@ -1,0 +1,59 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.
+
+Candidate PlantUML:
+@startuml
+skinparam default {
+    state {
+        BackgroundColor<<Running>> #9CCEFF
+        BackgroundColor<<ConfigurationMode>> #E0E0FF
+        BackgroundColor<<ControlledMode>> #F0FFF0
+        BackgroundColor<<Shutdown>> #FFB8B8
+    }
+}
+
+state Shutdown {
+    [*] --> Running : restart
+}
+state Running {
+    - collect data : clock trigger
+    - prepare/send summary : request
+    - check status : request
+}
+state ConfigurationMode {
+    --> Running : configuration completed
+}
+Running --> ConfigurationMode : config needed
+Running --> ControlledMode : remote control
+ControlledMode --> [*] : exit controlled mode
+Running --> Shutdown : shutdown command
+
+@enduml
+
+
+Validation issues to fix:
+- plantuml_command_not_found_for_official_syntax_check
+
+Repair guidance for these issues:
+- Fix each listed issue while preserving the requirement meaning.

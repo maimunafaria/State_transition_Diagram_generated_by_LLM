@@ -1,0 +1,53 @@
+@startuml
+title UML State Machine Diagram (Digidoclocker)
+
+[*] --> Registration
+
+state Registration {
+  Registration --> CitizenLogin
+  CitizenLogin : entry / Get Citizen Details
+  CitizenLogin : do / Validate Citizen Details
+  CitizenLogin : exit / Login Successful or Invalid Credentials
+}
+
+Registration --> [*] : [Invalid Registration]
+
+CitizenLogin --> CitizenLoggedIn : [Valid Credentials]
+CitizenLoggedIn --> Dashboard : [Access Profile, Upload Documents, Apply for Certificate]
+
+state Dashboard {
+  Dashboard --> DocumentUpload : [Continue Uploading]
+  DocumentUpload : entry / Get Document Details
+  DocumentUpload : do / Validate Document Details
+  DocumentUpload : exit / Document Uploaded Successfully or Invalid Details
+
+  DocumentUpload --> DocumentUpload : [Continue Uploading]
+}
+
+Dashboard --> ProfileView : [View Profile]
+Dashboard --> CertificateApply : [Apply for Certificate]
+
+state ProfileView {
+  ProfileView --> [*] : session ended
+}
+
+state CertificateApply {
+  CertificateApply --> MultipleCertificates : [Request More Certificates]
+  MultipleCertificates : entry / Get Certificate Details
+  MultipleCertificates : do / Validate Certificate Details
+  MultipleCertificates : exit / Certificate Applied Successfully or Invalid Details
+
+  MultipleCertificates --> ReapplyCertificate : [Reapply for Certificate]
+  ReapplyCertificate : entry / Get Reapplication Details
+  ReapplyCertificate : do / Validate Reapplication Details
+  ReapplyCertificate : exit / Certificate Reapplied Successfully or Invalid Details
+}
+
+state ReapplyCertificate {
+  ReapplyCertificate --> [*] : session ended
+}
+
+state MultipleCertificates {
+  MultipleCertificates --> [*] : session ended
+}
+@enduml
