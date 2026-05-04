@@ -1,0 +1,29 @@
+@startuml
+title Safehome Security System - State Diagram
+
+state "Power On" as PowerOn
+state "Startup Check" as StartupCheck
+state "Problem During Startup" as ProblemDuringStartup
+state "Ready to Use" as ReadyToUse
+state "Resetting" as Resetting
+state "Activating" as Activating
+state "Turning Off" as TurningOff
+state "Monitoring" as Monitoring
+state "Alarm Triggered" as AlarmTriggered
+state "False Alarm or Time Ended" as FalseAlarmOrTimeEnded
+state "Normal" as Normal
+
+PowerOn --> StartupCheck : Check Everything /\nIf Problem, Go to ProblemDuringStartup
+StartupCheck --> ReadyToUse : No Problem, Continue
+StartupCheck --> ProblemDuringStartup : Problem, Stop
+
+ReadyToUse --> Resetting : User Requests Reset /\nReset System
+ReadyToUse --> Activating : User Requests Activation /\nActivate System
+ReadyToUse --> TurningOff : User Requests Shutdown /\nTurn Off System
+
+Activating --> Monitoring : Successfully Activated /\nStart Monitoring
+Monitoring --> AlarmTriggered : Sensor Triggered /\nStart Alarm, Send Alerts
+AlarmTriggered --> FalseAlarmOrTimeEnded : False Alarm or Time Ended /\nContinue Monitoring
+FalseAlarmOrTimeEnded --> Monitoring : Continue Monitoring
+Monitoring --> Normal : User Enters Password /\nReturn to Normal
+@enduml

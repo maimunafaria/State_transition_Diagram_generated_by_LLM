@@ -1,0 +1,57 @@
+@startuml
+title UML State Chart Diagram - Ott Based System Mini Reel
+
+[*] --> CreateAccount
+
+state CreateAccount <<choice>>
+CreateAccount : [User already has an account?]
+CreateAccount --> NoAccount : [No]
+CreateAccount --> AlreadyLoggedIn : [Yes, but not watching a video]
+
+state NoAccount
+NoAccount : do / prompt user to create an account
+NoAccount --> CreateSuccess : [Account created successfully]
+NoAccount --> CreateFailure : [Failed to create account]
+
+state AlreadyLoggedIn
+AlreadyLoggedIn : do / check if the user is watching a video
+AlreadyLoggedIn --> WatchingVideo : [Yes, user is already watching a video]
+AlreadyLoggedIn --> NotWatchingVideo : [No, user is not watching a video]
+
+state WatchingVideo
+WatchingVideo : do / allow user to watch the video
+WatchingVideo : [User wants to save the video in their likes list?]
+WatchingVideo --> SaveLike : [Yes]
+WatchingVideo --> ContinueWatching : [No]
+
+state SaveLike
+SaveLike : do / add the video to the user's likes list
+SaveLike --> Success : [Saved successfully]
+SaveLike --> Failure : [Failed to save the video]
+
+state ContinueWatching
+ContinueWatching : do / continue watching the video
+ContinueWatching : [User wants to leave the discussion option?]
+ContinueWatching --> Discussion : [Yes]
+ContinueWatching --> NotDiscussion : [No]
+
+state Discussion
+Discussion : do / enter the discussion option
+Discussion : [User wants to exit the discussion option?]
+Discussion --> ExitDiscussion : [Yes]
+Discussion --> ContinueDiscussion : [No]
+
+state ExitDiscussion
+ExitDiscussion : do / exit the discussion option and return to watching the video
+ExitDiscussion --> WatchingVideo
+
+state NotDiscussion
+NotDiscussion : do / continue watching the video without entering the discussion option
+NotDiscussion --> WatchingVideo
+
+state LikesList
+LikesList : entry / entered the app
+LikesList : do / display saved videos in the user's likes list
+LikesList : exit / viewed saved videos
+
+@enduml

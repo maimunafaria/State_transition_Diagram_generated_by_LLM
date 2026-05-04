@@ -1,0 +1,52 @@
+@startuml
+title ATM Withdrawal State Diagram
+
+state "Display Options" as DisplayOptions
+state "User Selection" as UserSelection
+state "Custom Amount" as CustomAmount
+state "Transaction Verification" as TransactionVerification
+state "Re-Enter Amount" as ReEnterAmount
+state "Dispense Cash" as DispenseCash
+state "Insufficient Funds" as InsufficientFunds
+state "End Session" as EndSession
+
+DisplayOptions : do / Show available options
+UserSelection : entry / User selects an option
+UserSelection : do / Validate user selection
+UserSelection : exit / Amount set
+
+CustomAmount : entry / No option selected
+CustomAmount : do / Prompt user to enter custom amount
+CustomAmount : exit / Custom amount entered
+
+TransactionVerification : entry / Amount verified
+TransactionVerification : do / Check account balance
+TransactionVerification : exit / Transaction accepted or rejected
+
+ReEnterAmount : entry / Transaction rejected
+ReEnterAmount : do / Prompt user to re-enter amount
+ReEnterAmount : exit / Re-entered amount
+
+DispenseCash : entry / Amount verified and sufficient funds available
+DispenseCash : do / Dispense cash and return change
+DispenseCash : exit / Cash dispensed
+
+InsufficientFunds : entry / Insufficient funds
+InsufficientFunds : do / Notify user of insufficient funds
+InsufficientFunds : exit / End session
+
+EndSession : entry / Transaction completed
+EndSession : do / End the ATM session
+EndSession : exit / [*]
+
+DisplayOptions --> UserSelection
+UserSelection --> CustomAmount
+CustomAmount --> TransactionVerification
+TransactionVerification --> ReEnterAmount
+ReEnterAmount --> TransactionVerification
+TransactionVerification --> DispenseCash
+TransactionVerification --> InsufficientFunds
+
+InsufficientFunds --> EndSession
+DispenseCash --> EndSession
+@enduml
