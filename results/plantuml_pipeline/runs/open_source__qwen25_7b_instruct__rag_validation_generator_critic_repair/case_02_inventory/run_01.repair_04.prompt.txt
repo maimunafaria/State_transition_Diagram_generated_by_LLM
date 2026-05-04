@@ -1,0 +1,72 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Inventory — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to add new goods to the inventory.
+2. The system shall allow the user to update the price of existing items in the inventory.
+3. The system shall allow the user to remove goods from the inventory that are no longer required.
+4. The system shall identify expired goods and notify the user about their removal from the inventory.
+5. The system shall allow the user to place an order to a supplier for additional goods when required.
+6. The system shall generate an invoice for the order once it is placed.
+7. The system shall allow the user to search for items available in the inventory and select them for purchase.
+8. The system shall calculate the applicable discount and tax based on the selected items.
+9. The system shall generate a receipt for the customer after the purchase.
+10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.
+11. The system shall record customer requests for items that may not be currently available.
+12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.
+
+Candidate PlantUML:
+@startuml
+
+[*] --> AddNewGoods
+
+state "Add New Goods" as AddNewGoods
+state "Update Price" as UpdatePrice
+state "Remove Goods" as RemoveGoods
+state "Identify Expired Goods" as IdentifyExpiredGoods
+state "Place Order" as PlaceOrder
+state "Generate Invoice" as GenerateInvoice
+state "Search Items" as SearchItems
+state "Calculate Discount and Tax" as CalculateDiscountTax
+state "Generate Receipt" as GenerateReceipt
+state "Replace Item or Cancel Receipt" as ReplaceItemCancelReceipt
+state "Record Customer Requests" as RecordCustomerRequests
+state "View Summary Report" as ViewSummaryReport
+
+AddNewGoods --> UpdatePrice : update price of existing items
+UpdatePrice --> RemoveGoods : remove goods from inventory
+RemoveGoods --> IdentifyExpiredGoods : identify expired goods and notify user
+IdentifyExpiredGoods --> PlaceOrder : place order for additional goods when required
+PlaceOrder --> GenerateInvoice : generate invoice once order is placed
+GenerateInvoice --> SearchItems : search for items available in the inventory and select them for purchase
+SearchItems --> CalculateDiscountTax : calculate applicable discount and tax based on selected items
+CalculateDiscountTax --> GenerateReceipt : generate receipt after purchase
+GenerateReceipt --> ReplaceItemCancelReceipt : replace item or cancel receipt during billing process if needed
+ReplaceItemCancelReceipt --> RecordCustomerRequests : record customer requests for items that may not be currently available
+RecordCustomerRequests --> ViewSummaryReport : view summary report of all transactions carried out in the system at any point
+
+[*] --> AddNewGoods
+
+@enduml
+
+
+Validation issues to fix:
+- multiple_initial_state_transitions (AddNewGoods, Add New Goods)
+- missing_final_state_transition (state --> [*])
+- plantuml_command_not_found_for_official_syntax_check
+
+Repair guidance for these issues:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].

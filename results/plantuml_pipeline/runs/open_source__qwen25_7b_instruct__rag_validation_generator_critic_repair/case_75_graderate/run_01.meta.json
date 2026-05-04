@@ -1,0 +1,408 @@
+{
+  "run_id": "open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair",
+  "case_id": "case_75_graderate",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nGraderate — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall keep the rate in a waiting state until the start date arrives.\n2. The system shall activate the rate once the current date equals or surpasses its start date.\n3. The system shall maintain the rate's active state until the end of its validity period.\n4. The system shall mark the rate as expired once the finish date is reached.\n5. The system shall remove or archive the rate after one year from its expiration date.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Diagram Core Syntax\n\nUse this document when generating a basic UML state transition diagram in PlantUML.\n\n## Diagram wrapper\n\nPlantUML code should be enclosed between `@startuml` and `@enduml`.\n\n```plantuml\n@startuml\n[*] --> Idle\nIdle --> [*]\n@enduml\n```\n\n## Initial and final state\n\nThe initial and final pseudostate is written as `[*]`.\n\nInitial transition:\n\n```plantuml\n[*] --> State1\n```\n\nFinal transition:\n\n```plantuml\nState1 --> [*]\n```\n\n## Transitions\n\nUse arrows between states.\n\n```plantuml\nState1 --> State2\nState1 -> State2\n```\n\nTransitions can include labels after a colon.\n\n```plantuml\nIdle --> LoggedIn : login successful\nLoggedIn --> LoggedOut : logout\n```\n\nLabels may include event, guard, and action information.\n\n```plantuml\n\n# PlantUML State Aliases, Notes, and Descriptions\n\nUse this document when state names are long or when the diagram needs annotations.\n\n## Long state names with alias\n\nUse aliases to keep transitions readable when state names are long.\n\n```plantuml\nstate \"Waiting for Payment Confirmation\" as WaitingPayment\nstate \"Order Completed Successfully\" as OrderComplete\n\nWaitingPayment --> OrderComplete : payment confirmed\n```\n\nAlternative alias form:\n\n```plantuml\nstate WaitingPayment as \"Waiting for Payment Confirmation\"\n```\n\n## Notes attached to states\n\nUse notes to add additional explanation without changing the state name.\n\n```plantuml\nnote right of Processing : validates request details\n```\n\nMulti-line notes:\n\n```plantuml\nnote left of Processing\nThe system checks the request,\n\n# UML State Machine Core Concepts\n\nUse this document to decide what should become a state and what should become a transition.\n\n## Purpose\n\nA state machine diagram describes how a system, object, or controller behaves over time. It is useful when the object reacts differently depending on its current condition.\n\n## State\n\nA state is not just a variable value. In a state machine, a state means an abstract condition where the system reacts to events in a particular way.\n\nGood state names usually describe stable conditions:\n\n```text\nIdle\nWaiting for Payment\nVerifying User\nOrder Confirmed\nSession Active\n```\n\nAvoid making every action a state. Actions such as \"click button\" or \"enter password\" are often better as transition labels unless the system remains in that condition.\n\n# UML State Diagram Usage Guidelines\n\nUse this document to decide whether a requirement should be modeled as a state machine and how much detail to include.\n\n## When state diagrams are useful\n\nState diagrams are most useful when the same system or object behaves differently depending on its current state.\n\nGood candidates:\n\n```text\nATM sessions\nlogin/authentication flows\norder/payment lifecycles\ndevice controllers\napproval workflows\nbooking or registration workflows\nalarm/notification systems\n```\n\n## Scope\n\nA state diagram should focus on the lifecycle of one system, object, session, controller, or business process.\n\nAvoid mixing unrelated lifecycles into one diagram unless the requirement clearly describes them as one process.\n\n## Observability\n\nExample requirement:\nClass Campaign Final Version — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall activate a campaign once a manager and staff are assigned, it is approved, and the contract is signed.\n2. The system shall allow surveys to be carried out and evaluated during the campaign.\n3. The system shall prepare, approve, schedule, and run adverts during the campaign.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Campaign State Machine (Final Version)\n\n[*] --> Commissioned : /assignManager; assignStaff\n\nstate Commissioned\nstate Suspended\nstate Completed\nstate Paid\n\nCommissioned --> Active : authorized(authorizationCode)\\n[contract signed]\\n/setCampaignActive\nCommissioned --> Completed : campaignCancelled;\\ncalculateCosts;\\nprepareFinalStatement\nstate Active {\n\n  state Monitoring {\n    [*] --> Survey\n\n    state Survey\n    state Evaluation\n    state H1 <<history>>\n\n    Survey --> Evaluation : surveyComplete\n    Evaluation --> Survey : runSurvey\n  }\n\n  --\n\n  state Running {\n    [*] --> AdvertPreparation\n\n    state AdvertPreparation\n    state Scheduling\n    state \"Running Adverts\" as RunningAdverts\n    state H2 <<history>>\n\n    AdvertPreparation --> Scheduling : advertsApproved\\n/authorize\n    Scheduling --> RunningAdverts : confirmSchedule\n    RunningAdverts --> AdvertPreparation : extendCampaign\\n/modifyBudget\n  }\n\n}\n\n\nActive --> Suspended : suspendCampaign\\n/stopAdverts\nSuspended --> Active : resumeCampaign\n\n\nActive --> Completed : campaignCancelled\\n/cancelSchedule;\\ncalculateCosts;\\nprepareFinalStatement\nAdvertPreparation --> Completed : campaignCompleted\\n/prepareFinalStatement\n\n\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment = 0]\nCompleted --> Completed : paymentReceived(payment)\\n[paymentDue - payment > 0]\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment < 0]\\n/generateRefund\n\n\nPaid --> [*] : archiveCampaign\\n/unassignStaff;\\nunassignManager\n\n@enduml\n```\n\nExample requirement:\nStudent Counselling Management System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a student to log in.\n2. The system shall prompt the student to try again if login details are incorrect.\n3. The system shall proceed with registration and payment upon a successful login.\n4. The system shall end there if the registration payment is not completed.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Chart Diagram\n\n[*] --> StartMerge\n\nstate StartMerge <<choice>>\nstate Login\nstate LoginDecision <<choice>>\nstate \"Invalid Login\" as InvalidLogin\nstate \"Valid Login\" as ValidLogin\nstate RegistrationDecision <<choice>>\nstate \"Failed Registration\" as FailedRegistration\nstate \"Rank Declaration\" as RankDeclaration\nstate \"Enrollment Fees\" as EnrollmentFees\nstate PaymentDecision <<choice>>\nstate \"Invalid Payment\" as InvalidPayment\nstate \"Valid Payment\" as ValidPayment\nstate \"Choice Filing\" as ChoiceFiling\nstate ChoiceDecision <<choice>>\nstate \"Failed choice filing\" as FailedChoiceFiling\nstate \"Seat Allotment\" as SeatAllotment\nstate \"Admit Letter Generation\" as AdmitLetterGeneration\nstate \"Accept/Decline\" as AcceptDecline\n\nLogin : entry / To Action\nLogin : do / Log in to the system\nLogin : exit / Username and password entered\n\nInvalidLogin : entry / Trying to log in\nInvalidLogin : do / Invalid username and password\nInvalidLogin : exit / Back to login page\n\nValidLogin : entry / Student logged in\nValidLogin : do / Registration form submission with payment\nValidLogin : exit / Student Registered\n\nFailedRegistration : entry / Payment not made\nFailedRegistration : do / Throw an error\nFailedRegistration : exit / Abnormal termination\n\nRankDeclaration : entry / Student registered\nRankDeclaration : do / Declare ranks for all the students\nRankDeclaration : exit / Rank published\n\nEnrollmentFees : entry / Rank declared\nEnrollmentFees : do / Pay enrollment fees\nEnrollmentFees : exit / Payment done\n\nInvalidPayment : entry / Payment not made\nInvalidPayment : do / Show the errors\nInvalidPayment : exit / Abnormal Termination\n\nValidPayment : entry / Payment made\nValidPayment : do / Allow to fill choices\nValidPayment : exit / log out from payment portal\n\nChoiceFiling : entry / Valid payment\nChoiceFiling : do / Fill choices\nChoiceFiling : exit / Lock choices\n\nFailedChoiceFiling : entry / Invalid choices\nFailedChoiceFiling : do / Show the errors\nFailedChoiceFiling : exit / Abnormal Termination\n\nSeatAllotment : entry / Choices must be locked\nSeatAllotment : do / Allot seats based on rank\nSeatAllotment : exit / Publish alloted results\n\nAdmitLetterGeneration : entry / Seat alotted\nAdmitLetterGeneration : do / Generate admit letter\nAdmitLetterGeneration : exit / Publish admit letters to students and colleges\n\nAcceptDecline : entry / Received admit letter\nAcceptDecline : do / Accept/Decline\nAcceptDecline : exit / After decision is made\n\nStartMerge --> Login\nLogin --> LoginDecision\nLoginDecision --> InvalidLogin\nLoginDecision --> ValidLogin\nInvalidLogin --> StartMerge\n\nValidLogin --> RegistrationDecision\nRegistrationDecision --> FailedRegistration\nRegistrationDecision --> RankDeclaration\n\nRankDeclaration --> EnrollmentFees\nEnrollmentFees --> PaymentDecision\nPaymentDecision --> InvalidPayment\nPaymentDecision --> ValidPayment\n\nValidPayment --> ChoiceFiling\nChoiceFiling --> ChoiceDecision\nChoiceDecision --> FailedChoiceFiling\nChoiceDecision --> SeatAllotment\n\nSeatAllotment --> AdmitLetterGeneration\nAdmitLetterGeneration --> AcceptDecline\nAcceptDecline --> [*]\n\nFailedRegistration --> [*]\nInvalidPayment --> [*]\nFailedChoiceFiling --> [*]\n\n@enduml\n```\n\nExample requirement:\nAccountapplication — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall store an application in a pending state during review.\n2. The system shall update the application status to either approved or rejected after review.\n3. The system shall finalize the application process once a decision is made.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Account Application State Diagram\n\n[*] --> pending\n\nstate pending\nstate approved\nstate rejected\nstate finalizing\n\npending --> approved : approve\npending --> rejected : reject\n\napproved --> finalizing : complete\nrejected --> finalizing : complete\n\nfinalizing --> [*]\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Graderate — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall keep the rate in a waiting state until the start date arrives.\n2. The system shall activate the rate once the current date equals or surpasses its start date.\n3. The system shall maintain the rate's active state until the end of its validity period.\n4. The system shall mark the rate as expired once the finish date is reached.\n5. The system shall remove or archive the rate after one year from its expiration date.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_75_graderate\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "initial_state": "WaitingForStartDate",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 4,
+    "transition_count": 3
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "vector",
+      "top_k": 3,
+      "query_domains": [],
+      "retrieved_docs": [
+        {
+          "name": "plantuml_rules/plantuml_state_core_syntax.md",
+          "source_type": "plantuml_rule",
+          "vector_distance": 1.5985971689224243,
+          "clipped_chars": 759
+        },
+        {
+          "name": "plantuml_rules/plantuml_state_alias_notes_descriptions.md",
+          "source_type": "plantuml_rule",
+          "vector_distance": 1.614515781402588,
+          "clipped_chars": 779
+        },
+        {
+          "name": "state_diagram_theory/uml_state_machine_core_concepts.md",
+          "source_type": "state_diagram_theory",
+          "vector_distance": 1.4177188873291016,
+          "clipped_chars": 780
+        },
+        {
+          "name": "state_diagram_theory/uml_state_diagram_usage_guidelines.md",
+          "source_type": "state_diagram_theory",
+          "vector_distance": 1.4528372287750244,
+          "clipped_chars": 755
+        },
+        {
+          "name": "dataset_examples/case_79_class_campaign_final_version.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.1256515979766846,
+          "clipped_chars": 1971
+        },
+        {
+          "name": "dataset_examples/case_31_student_counselling_management_system.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.1980361938476562,
+          "clipped_chars": 3636
+        },
+        {
+          "name": "dataset_examples/case_56_accountapplication.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.2098125219345093,
+          "clipped_chars": 677
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 1,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 2,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 3,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 4,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 5,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 5,
+      "strict_state_diagram_valid": false,
+      "remaining_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": "WaitingForStartDate",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 4,
+        "transition_count": 3
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_75_graderate\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": "WaitingForStartDate",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 4,
+        "transition_count": 3
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_75_graderate\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_75_graderate\\run_01.repair_01.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": "WaitingForStartDate",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 4,
+        "transition_count": 3
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_75_graderate\\run_01.repair_02.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_75_graderate\\run_01.repair_02.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": "WaitingForStartDate",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 4,
+        "transition_count": 3
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_75_graderate\\run_01.repair_03.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_75_graderate\\run_01.repair_03.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": "WaitingForStartDate",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 4,
+        "transition_count": 3
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_75_graderate\\run_01.repair_04.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_75_graderate\\run_01.repair_04.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": "WaitingForStartDate",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 4,
+        "transition_count": 3
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_75_graderate\\run_01.repair_05.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair\\case_75_graderate\\run_01.repair_05.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.25,
+    "state_recall": 0.3333333333333333,
+    "state_f1": 0.28571428571428575,
+    "state_tp": 1,
+    "state_fp": 3,
+    "state_fn": 2,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 3,
+    "transition_fn": 2,
+    "state_precision_relaxed": 0.25,
+    "state_recall_relaxed": 0.3333333333333333,
+    "state_f1_relaxed": 0.28571428571428575,
+    "state_tp_relaxed": 1,
+    "state_fp_relaxed": 3,
+    "state_fn_relaxed": 2,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 3,
+    "transition_fn_relaxed": 2,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 3,
+    "transition_fn_semantic": 2,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "hallucination_state_rate": 0.75,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.75,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.14285714285714288,
+    "overall_f1_relaxed": 0.14285714285714288,
+    "weighted_f1_relaxed_70_30": 0.2,
+    "overall_f1_semantic": 0.14285714285714288,
+    "weighted_f1_semantic_70_30": 0.2,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  }
+}

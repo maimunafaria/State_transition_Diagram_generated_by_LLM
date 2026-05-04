@@ -1,0 +1,101 @@
+@startuml
+title UML State Machine Diagram
+
+state "Register or Login" as RegisterOrLogin {
+  [*] --> Register
+  Register : do / Fill details
+  Register : exit / Registration successful
+
+  Register --> Login
+  Login : entry / Registered user
+  Login : do / Enter login credentials
+  Login : exit / Valid username and password
+
+  Login --> TeacherChoice
+  Login --> StudentChoice
+}
+
+state "Continue as" as ContinueAs {
+  state "Teacher Choice" as TeacherChoice
+  TeacherChoice --> CreateQuiz
+  TeacherChoice --> EditQuiz
+  TeacherChoice --> ViewResults
+
+  state "Student Choice" as StudentChoice
+  StudentChoice --> SelectQuiz
+  StudentChoice --> AnswerQuiz
+  StudentChoice --> SubmitQuiz
+  StudentChoice --> ViewResult
+}
+
+state "Create Quiz" as CreateQuiz {
+  CreateQuiz : entry / Teacher logged in
+  CreateQuiz : do / Create new quiz
+  CreateQuiz : exit / Quiz created
+
+  [*] --> CreateQuiz
+}
+
+state "Edit Quiz" as EditQuiz {
+  EditQuiz : entry / Teacher logged in and quiz exists
+  EditQuiz : do / Edit existing quiz
+  EditQuiz : exit / Quiz edited
+
+  [*] --> EditQuiz
+}
+
+state "View Results" as ViewResults {
+  ViewResults : entry / Quiz results available
+  ViewResults : do / View quiz results
+  ViewResults : exit / Results viewed
+
+  [*] --> ViewResults
+}
+
+state "Select Quiz" as SelectQuiz {
+  SelectQuiz : entry / Student notified and logged in
+  SelectQuiz : do / Select a quiz
+  SelectQuiz : exit / Quiz selected
+
+  TeacherChoice --> SelectQuiz
+  StudentChoice --> SelectQuiz
+}
+
+state "Answer Quiz" as AnswerQuiz {
+  AnswerQuiz : entry / Quiz selected by student
+  AnswerQuiz : do / Answer questions
+  AnswerQuiz : exit / Questions answered
+
+  SelectQuiz --> AnswerQuiz
+}
+
+state "Submit Quiz" as SubmitQuiz {
+  SubmitQuiz : entry / Student has answered all questions
+  SubmitQuiz : do / Submit quiz
+  SubmitQuiz : exit / Quiz submitted
+
+  AnswerQuiz --> SubmitQuiz
+}
+
+state "View Result" as ViewResult {
+  ViewResult : entry / Quiz submission complete
+  ViewResult : do / View result
+  ViewResult : exit / Result viewed
+
+  SubmitQuiz --> ViewResult
+}
+
+RegisterOrLogin --> ContinueAs
+
+TeacherChoice --> CreateQuiz
+TeacherChoice --> EditQuiz
+TeacherChoice --> ViewResults
+
+StudentChoice --> SelectQuiz
+SelectQuiz --> AnswerQuiz
+AnswerQuiz --> SubmitQuiz
+SubmitQuiz --> ViewResult
+
+[*] --> RegisterOrLogin
+
+@enduml

@@ -1,0 +1,35 @@
+@startuml
+[*] --> RegistrationState
+RegistrationState --> RegisteredState : registration success
+RegistrationState --> EndAccessState : registration failure
+
+RegisteredState --> SignInState : sign in request
+SignInState --> AccessGrantedState : valid credentials
+SignInState --> EndAccessState : invalid credentials
+
+AccessGrantedState --> FacilitiesState : access granted
+FacilitiesState --> NewsAndExpertContentState : facilities accessed
+NewsAndExpertContentState --> HealthInfoState : news and expert content viewed
+HealthInfoState --> ContinueOrFinishState : health information result viewed
+ContinueOrFinishState --> FacilitiesState : continue using system
+ContinueOrFinishState --> EndSessionState : finish session
+
+AccessGrantedState --> FinanceServicesState : finance-related services accessed
+FinanceServicesState --> InsuranceValidationState : insurance validation required
+InsuranceValidationState --> PaymentProcessingState : payment processing started
+PaymentProcessingState --> CheckPaymentWithInsuranceState : check payment with insurance
+CheckPaymentWithInsuranceState --> CompletePaymentProcessState : payment completed
+
+AccessGrantedState --> PurchaseState : purchase request
+PurchaseState --> SelectPaymentMethodState : select payment method
+SelectPaymentMethodState --> CashPaymentDetailsState : cash payment selected
+CashPaymentDetailsState --> CompletePaymentProcessState : complete payment process
+SelectPaymentMethodState --> InsuranceBasedPaymentState : insurance-based payment selected
+InsuranceBasedPaymentState --> CompletePaymentProcessState : complete payment process
+
+PurchaseState --> CollectFeedbackState : service completed
+CollectFeedbackState --> EndSessionState : log out user
+
+EndSessionState --> EndAccessState : end access
+
+@enduml

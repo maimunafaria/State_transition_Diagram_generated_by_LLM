@@ -1,0 +1,27 @@
+@startuml
+title ATM Control - PIN Validation and User Interaction
+
+[*] --> Idle
+
+state Idle
+state "Waiting for PIN" as WaitingForPIN
+state ValidatingPIN
+state "Try Again" as TryAgain
+state Confiscating
+state Ejecting
+state LoggedOut
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+ValidatingPIN --> TryAgain : Third Invalid PIN, Card Stolen, Card Expired / Confiscate, Update Status
+TryAgain --> ValidatingPIN : Try Again / Get PIN
+
+ValidatingPIN --> Ejecting : Cancel / Eject
+WaitingForPIN --> Ejecting : Cancel / Eject
+Confiscating --> [*] : Card Confiscated
+
+LoggedOut --> Idle : User Cancels Operation
+
+@enduml

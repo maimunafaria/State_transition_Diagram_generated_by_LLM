@@ -1,0 +1,28 @@
+@startuml
+skinparam default {
+    state Running backgroundColor #9CCEFF
+    state ConfigurationMode backgroundColor #E0E0FF
+    state ControlledMode backgroundColor #F0FFF0
+    state Shutdown backgroundColor #FFB8B8
+}
+
+state Shutdown {
+    [*] --> Running : restart
+}
+
+state Running {
+    on clock trigger -> collect data
+    on request -> prepare/send summary
+    on request -> check status
+}
+
+Running --> ConfigurationMode : /config
+
+ConfigurationMode --> Running : configuration completed
+
+Running --> ControlledMode : /remoteRequest
+
+ControlledMode --> Running : /exitControlled
+
+Running --> Shutdown : /shutdown
+@enduml

@@ -1,0 +1,36 @@
+@startuml
+title ATM Control - Withdrawal Process
+
+[*] --> Idle
+
+state Idle
+state WaitingForAmountSelection
+state ProcessingWithdrawalRequest
+state DispensingCash
+state PrintingReceipt
+state EjectingCard
+state TerminatingTransaction
+
+Idle : entry / Display Welcome
+ClosedDown : entry / Display System Down
+
+Idle --> WaitingForAmountSelection : Card Inserted / Get PIN
+
+WaitingForAmountSelection --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> Confiscating : Invalid PIN / Confiscate, Update Status
+ValidatingPIN --> WaitingForAmountSelection : Invalid PIN Prompt
+ValidatingPIN --> ProcessingWithdrawalRequest : Valid PIN / Display Menu
+
+WaitingForAmountSelection --> EjectingCard : Cancel / Eject
+
+ProcessingWithdrawalRequest --> DispensingCash : Withdrawal Selected / Request Withdrawal, Display Wait
+DispensingCash --> PrintingReceipt : Cash Dispensed / Print Receipt, Display Cash Dispensed, Confirm Cash Dispensed
+PrintingReceipt --> EjectingCard : Rejected / Eject, Display Apology
+
+Confiscating --> TerminatingTransaction : Card Confiscated / Display Confiscated
+EjectingCard --> TerminatingTransaction : Card Ejected / Display Ejected
+
+TerminatingTransaction --> Idle : After (Elapsed Time) [Closedown Not Requested]
+TerminatingTransaction --> ClosedDown : After (Elapsed Time) [Closedown Was Requested]
+
+@enduml
