@@ -16,6 +16,7 @@ RUN_FILE_RE = re.compile(r"^run_\d+\.puml$")
 MODEL_LABELS = {
     "qwen25_7b_instruct": "Qwen 2.5 7B Instruct",
     "qwen25_14b_instruct": "Qwen 2.5 14B Instruct",
+    "mistral": "Mistral",
     "llama31_8b_instruct": "Llama 3.1 8B Instruct",
     "llama31_70b_instruct": "Llama 3.1 70B Instruct",
     "deepseek_r1_8b": "DeepSeek R1 8B",

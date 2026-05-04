@@ -33,6 +33,7 @@ DEFAULT_ENSEMBLE_RUN_SPECS = [
 MODEL_ORDER = [
     "DeepSeek R1 14B",
     "Llama 3.1 8B Instruct",
+    "Mistral",
     "Qwen 2.5 7B Instruct",
     "Ensemble Qwen 14B",
     "Ensemble Llama 8B",

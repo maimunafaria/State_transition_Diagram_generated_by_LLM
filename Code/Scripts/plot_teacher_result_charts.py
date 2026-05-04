@@ -16,6 +16,7 @@ DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "results" / "plantuml_pipeline" / "charts_te
 MODEL_ORDER = [
     "DeepSeek R1 14B",
     "Llama 3.1 8B Instruct",
+    "Mistral",
     "Qwen 2.5 7B Instruct",
 ]
 METHOD_ORDER = ["Zero-shot", "One-shot", "Few-shot", "RAG", "RAG + Repair"]
