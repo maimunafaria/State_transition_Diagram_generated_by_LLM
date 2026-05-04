@@ -1,0 +1,28 @@
+@startuml
+state PowerOn
+state ReadyToUse
+state AlarmActive
+state FalseAlarm
+state Normal
+
+[*] PowerOn --> ReadyToUse: CheckEverythingWorking
+
+ReadyToUse --> Reset: User_Reset
+ReadyToUse --> Activate: User_Activate
+ReadyToUse --> Off: User_TurnOff
+
+Activate --> AlarmActive: StartMonitoring
+AlarmActive --> FalseAlarm: SensorFalseAlarm
+AlarmActive --> Normal: ContinueMonitoring
+
+FalseAlarm --> AlarmActive: TimeEnds
+Normal --> PowerOn: SystemProblemDuringStartup
+
+Off --> PowerOn: SystemShutdown
+Reset --> ReadyToUse: SystemReset
+
+state PasswordInput
+[*] Normal --> PasswordInput: User_EntersPassword
+PasswordInput --> Normal: PasswordCorrect
+PasswordInput --> Off: PasswordIncorrect
+@enduml
