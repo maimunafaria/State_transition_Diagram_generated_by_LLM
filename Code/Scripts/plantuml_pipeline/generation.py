@@ -46,71 +46,91 @@ def run_single_generation(
     few_shot_count: int = 3,
     run_index: int = 1,
     repair_attempts: int = DEFAULT_REPAIR_ATTEMPTS,
+    initial_puml: str | None = None,
+    initial_prompt: str = "",
+    initial_source: str = "",
 ) -> tuple[str, ValidationResult, str, str, list[dict[str, Any]], list[dict[str, Any]]]:
     requirement = case.structured_requirement if requirement_source == "structured" else case.raw_requirement
     if not requirement.strip():
         requirement = case.raw_requirement or case.structured_requirement
 
     steps: list[dict[str, Any]] = []
-    prompt, prompt_meta = build_generation_prompt(
-        case=case,
-        cfg=cfg,
-        all_cases=all_cases,
-        rag_docs=rag_docs,
-        requirement_source=requirement_source,
-        top_k_rag=top_k_rag,
-        rag_max_chars_per_doc=rag_max_chars_per_doc,
-        rag_domain_hints=rag_domain_hints,
-        rag_mode=rag_mode,
-        rag_db_dir=rag_db_dir,
-        rag_collection_name=rag_collection_name,
-        few_shot_seed=few_shot_seed,
-        few_shot_count=few_shot_count,
-        run_index=run_index,
-    )
-    if prompt_meta.get("few_shot_case_ids"):
-        steps.append(
-            {
-                "stage": "few_shot_selection",
-                "case_ids": list(prompt_meta["few_shot_case_ids"]),
-                "seed": prompt_meta.get("few_shot_seed"),
-                "run_index": prompt_meta.get("few_shot_run_index"),
-            }
+    if initial_puml is None:
+        prompt, prompt_meta = build_generation_prompt(
+            case=case,
+            cfg=cfg,
+            all_cases=all_cases,
+            rag_docs=rag_docs,
+            requirement_source=requirement_source,
+            top_k_rag=top_k_rag,
+            rag_max_chars_per_doc=rag_max_chars_per_doc,
+            rag_domain_hints=rag_domain_hints,
+            rag_mode=rag_mode,
+            rag_db_dir=rag_db_dir,
+            rag_collection_name=rag_collection_name,
+            few_shot_seed=few_shot_seed,
+            few_shot_count=few_shot_count,
+            run_index=run_index,
         )
-    rag_meta = prompt_meta.get("rag", {})
-    if rag_meta.get("enabled"):
-        steps.append(
-            {
-                "stage": "rag_retrieval",
-                "mode": str(rag_meta.get("mode", "lexical")),
-                "top_k": int(rag_meta.get("top_k", 0)),
-                "query_domains": list(rag_meta.get("query_domains", [])),
-                "retrieved_docs": list(rag_meta.get("retrieved_docs", [])),
-            }
-        )
+        if prompt_meta.get("few_shot_case_ids"):
+            steps.append(
+                {
+                    "stage": "few_shot_selection",
+                    "case_ids": list(prompt_meta["few_shot_case_ids"]),
+                    "seed": prompt_meta.get("few_shot_seed"),
+                    "run_index": prompt_meta.get("few_shot_run_index"),
+                }
+            )
+        rag_meta = prompt_meta.get("rag", {})
+        if rag_meta.get("enabled"):
+            steps.append(
+                {
+                    "stage": "rag_retrieval",
+                    "mode": str(rag_meta.get("mode", "lexical")),
+                    "top_k": int(rag_meta.get("top_k", 0)),
+                    "query_domains": list(rag_meta.get("query_domains", [])),
+                    "retrieved_docs": list(rag_meta.get("retrieved_docs", [])),
+                }
+            )
 
-    generated = call_model(
-        model_name=cfg.model_name,
-        prompt=prompt,
-        ollama_host=ollama_host,
-        temperature=temperature,
-        top_p=top_p,
-        max_tokens=max_tokens,
-        timeout=timeout,
-    )
-    generated_puml = normalize_puml_text(generated)
-    _, validation = parse_and_validate_puml_text(generated_puml)
-    strict_issues = strict_state_diagram_issues(validation)
-    steps.append(
-        {
-            "stage": "generator",
-            "plantuml_valid": validation.valid,
-            "strict_state_diagram_valid": not strict_issues,
-            "errors": list(validation.errors),
-            "warnings": list(validation.warnings),
-            "strict_issues": strict_issues,
-        }
-    )
+        generated = call_model(
+            model_name=cfg.model_name,
+            prompt=prompt,
+            ollama_host=ollama_host,
+            temperature=temperature,
+            top_p=top_p,
+            max_tokens=max_tokens,
+            timeout=timeout,
+        )
+        generated_puml = normalize_puml_text(generated)
+        _, validation = parse_and_validate_puml_text(generated_puml)
+        strict_issues = strict_state_diagram_issues(validation)
+        steps.append(
+            {
+                "stage": "generator",
+                "plantuml_valid": validation.valid,
+                "strict_state_diagram_valid": not strict_issues,
+                "errors": list(validation.errors),
+                "warnings": list(validation.warnings),
+                "strict_issues": strict_issues,
+            }
+        )
+    else:
+        prompt = initial_prompt
+        generated_puml = normalize_puml_text(initial_puml)
+        _, validation = parse_and_validate_puml_text(generated_puml)
+        strict_issues = strict_state_diagram_issues(validation)
+        steps.append(
+            {
+                "stage": "generator_reused",
+                "source": initial_source or "existing_base_run",
+                "plantuml_valid": validation.valid,
+                "strict_state_diagram_valid": not strict_issues,
+                "errors": list(validation.errors),
+                "warnings": list(validation.warnings),
+                "strict_issues": strict_issues,
+            }
+        )
 
     final_puml = generated_puml
     final_validation = validation
