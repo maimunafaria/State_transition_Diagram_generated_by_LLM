@@ -1,0 +1,64 @@
+@startuml
+title ATM State Transition Diagram
+
+[*] --> PINEntry
+
+state PINEntry
+PINEntry : entry / card inserted
+PINEntry : do / prompt user to enter PIN
+PINEntry : exit / PIN entered
+
+PINEntry --> PINVerification
+
+state PINVerification
+PINVerification : entry / PIN entered
+PINVerification : do / verify PIN against stored information
+PINVerification : exit / PIN verified or not
+
+PINVerification --> Verified : [PIN verified]
+PINVerification --> NotVerified : [PIN not verified]
+
+state Verified
+Verified : entry / PIN verified
+Verified : do / provide options to user
+Verified : do / process withdrawal request
+Verified : exit / transaction completed
+
+Verified --> CashDispensing : [Withdrawal request]
+
+state CashDispensing
+CashDispensing : entry / withdrawal request
+CashDispensing : do / dispense cash
+CashDispensing : exit / cash dispensed
+
+CashDispensing --> ReceiptPrinting : [Cash dispensed]
+
+state ReceiptPrinting
+ReceiptPrinting : entry / cash dispensed
+ReceiptPrinting : do / print receipt
+ReceiptPrinting : exit / receipt printed
+
+ReceiptPrinting --> CardReturn : [Receipt printed]
+
+state CardReturn
+CardReturn : entry / receipt printed
+CardReturn : do / return user's card
+CardReturn : exit / transaction completed
+
+CardReturn --> Reset : [Card returned]
+
+state Reset
+Reset : entry / card returned
+Reset : do / reset system
+Reset : exit / system reset
+
+Reset --> [*]
+
+state NotVerified
+NotVerified : entry / PIN not verified
+NotVerified : do / prompt user to re-enter PIN
+NotVerified : exit / PIN re-entered
+
+NotVerified --> PINVerification : [PIN re-entered]
+
+@enduml

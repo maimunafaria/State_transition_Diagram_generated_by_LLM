@@ -1,0 +1,55 @@
+@startuml
+title UML State Machine Diagram (Plane Management)
+
+[*] --> Order
+
+state Order
+Order : entry / Plane is placed in order
+Order : do / Wait for delivery
+Order : exit / Plane is delivered
+
+Order --> Arrival
+
+state Arrival
+Arrival : entry / Plane arrives
+Arrival : do / Transition to preparation
+Arrival : exit / Plane is prepared
+
+Arrival --> Preparation
+
+state Preparation
+Preparation : entry / Plane is prepared
+Preparation : do / Assign to operations or maintenance
+Preparation : exit / Plane is assigned
+
+Preparation --> Operations
+Preparation --> Maintenance
+
+state Operations
+Operations : entry / Plane is in operations
+Operations : do / Check for scheduled flights
+Operations : exit / Plane is still in operations
+
+Operations --> Operations : Scheduled flights available
+
+Operations --> Maintenance : No scheduled flights or maintenance required
+
+state Maintenance
+Maintenance : entry / Plane is in maintenance
+Maintenance : do / Check and service plane
+Maintenance : exit / Plane is ready for operations
+
+Maintenance --> Preparation : Plane is ready for operations
+
+state "Plane is no longer available" as NoLongerAvailable
+NoLongerAvailable : entry / Plane is no longer available
+NoLongerAvailable : do / Take plane out of service
+NoLongerAvailable : exit / Plane is removed from operations
+
+[*] --> NoLongerAvailable : Plane is permanently withdrawn from service
+
+state End <<choice>>
+End --> [*]
+End --> NoLongerAvailable : Plane is taken out of service
+
+@enduml

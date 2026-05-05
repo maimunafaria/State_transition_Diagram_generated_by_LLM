@@ -1,0 +1,323 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Product Recommendation — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or sign in to access the platform.
+2. The system shall enable users to search for products after they have registered or logged in.
+3. The system shall display matching product results based on the user's search query.
+4. The system shall allow users to apply filters to refine their search results.
+5. The system shall update the displayed product results based on the applied filters.
+6. The system shall allow users to select a product from search or filtered results.
+7. The system shall redirect the user to the official website of the selected product upon selection.
+
+Example 1 PlantUML:
+@startuml
+[*] --> Register
+Register : entry / nil
+Register : do / login / Register
+Register : exit / valid registration / login
+
+Register --> SearchProduct : user registers
+SearchProduct : entry / login
+SearchProduct : do / search for the product
+SearchProduct : exit / display search results
+
+SearchProduct --> SearchFilterProductFilter : user applies filters
+SearchFilterProductFilter : entry / search product
+SearchFilterProductFilter : do / apply filters to get desired results
+SearchFilterProductFilter : exit / display filtered results
+state J1 <<choice>>
+SearchProduct --> J1 : user selects product
+SearchFilterProductFilter --> J1 : user selects product
+GetProduct : entry / login
+GetProduct : do / get the product from the official website
+GetProduct : exit / redirect to the website
+J1 --> GetProduct 
+GetProduct --> [*]
+@enduml
+
+Example 2 Requirement:
+Crime Bureau — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to log in by entering their username and password.
+2. The system shall allow the user to try again if the login details are incorrect until successful login.
+3. The system shall allow the user to choose between requesting an FIR, requesting a petition, or viewing the list of wanted and missing persons after login.
+4. The system shall display the requested information once the user selects an option.
+5. The system shall allow a police user to log in by entering their username and password.
+6. The system shall allow the police user to try again if the login details are incorrect until successful login.
+7. The system shall allow the police user to view the list of wanted and missing persons or perform major activities such as adding station details and crime records after login.
+
+Example 2 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+
+state "Login Verification" as LV
+LV : entry / Enters username and password
+LV : do / Verification of login credentials of users
+LV : exit / Enters the website if login is correct
+
+state "Requests FIR" as RF
+RF : entry / Verified login
+RF : do / FIR Request
+RF : exit / Displays FIR
+
+state "Requests Petition" as RP
+RP : entry / Verified login
+RP : do / Requests Petition
+RP : exit / Displays Petition
+
+state "Requests Wanted person and missing list" as RW
+RW : entry / Verified login
+RW : do / Requests Wanted persons
+RW : do / Requests Missing list
+RW : exit / Saving changes
+
+state Choice1 <<choice>>
+
+LV --> LV : Repeats until login credentials are correct
+LV --> Choice1 : Chooses any one
+
+Choice1 --> RF
+Choice1 --> RP
+Choice1 --> RW
+
+RF --> [*]
+RP --> [*]
+RW --> [*]
+
+
+
+state "Login Verification-Police" as LVP
+LVP : entry / Enters username and password
+LVP : do / Verification of login credentials
+LVP : exit / Enters the website if login is correct
+
+state "Requests Wanted person and missing list" as RWP
+RWP : entry / Verified login
+RWP : do / Requests Wanted persons
+RWP : do / Requests Missing list
+RWP : exit / Saving changes
+
+state "Performs Major Activities" as PMA
+PMA : entry / EntryAction1
+PMA : do / Add station details
+PMA : do / Add crimes
+PMA : exit / Saving changes
+
+state Choice2 <<choice>>
+
+LVP --> LVP : Repeats until login credentials are correct
+LVP --> Choice2 : Chooses any one
+
+Choice2 --> RWP
+Choice2 --> PMA
+
+RWP --> [*]
+PMA --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Smart Traffic Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall monitor traffic conditions whenever vehicles are on the road or pedestrians are waiting to cross.
+2. The system shall control street lights according to traffic conditions.
+3. The system shall manage traffic signals in response to detected situations.
+4. The system shall capture vehicle numbers and check driver details when a vehicle passes through a signal or an emergency is identified.
+5. The system shall verify if traffic rules (overspeeding, not wearing a seat belt, or not wearing a helmet) have been broken after capturing vehicle numbers and checking driver details.
+6. The system shall support if no traffic rule has been broken, the system shall end the process.
+7. The system shall ensure that if a traffic rule is broken, the system shall record the violation and issue a fine.
+8. The system shall ensure that if the fine is paid, the system shall complete the process.
+9. The system shall ensure that if the fine is not paid, the system shall send a warning.
+10. The system shall ensure that if the number of violations exceeds the allowed limit, the system shall temporarily hold the driver's license until the fine is cleared or the probation period is over.
+
+Example 3 PlantUML:
+@startuml
+title UML state chart diagram
+
+state "idle" as Idle
+Idle : entry/road empty
+Idle : do/remain same
+Idle : exit/encounter a vehicle
+Idle : exit/people waiting to cross road
+
+state "Analyse traffic flow" as AnalyseTrafficFlow
+AnalyseTrafficFlow : entry/encounter a vehicle
+AnalyseTrafficFlow : entry/people waiting to cross road
+AnalyseTrafficFlow : do/analyse traffic density
+AnalyseTrafficFlow : exit/set signal
+AnalyseTrafficFlow : exit/emergency situation
+
+state "smart lights" as SmartLights
+SmartLights : entry/population density
+SmartLights : do/turn on/off street lights
+SmartLights : exit/population density is zero
+
+state "Pedestrians detection" as PedestriansDetection
+PedestriansDetection : entry/pedestrians waiting to cross
+PedestriansDetection : do/change signal to red
+PedestriansDetection : exit/pedestrians crossed
+
+state "Traffic signal" as TrafficSignal
+TrafficSignal : entry/vehicles at signal
+TrafficSignal : do/read number plate
+TrafficSignal : exit/signal empty
+TrafficSignal : exit/vehicle crossed the signal
+TrafficSignal : exit/number plate captured
+
+state "Medical Emergency" as MedicalEmergency
+MedicalEmergency : entry/emergency situation
+MedicalEmergency : do/call medical assistance
+MedicalEmergency : exit/number plate captured
+
+state "Number plate recognition" as NumberPlateRecognition
+NumberPlateRecognition : entry/number plate captured
+NumberPlateRecognition : do/get details about driver
+NumberPlateRecognition : exit/penalty check
+
+state "penalty check" as PenaltyCheck
+PenaltyCheck : entry/law violation
+PenaltyCheck : do/check violation count
+PenaltyCheck : exit/no violation committed
+PenaltyCheck : exit/exceeding speed limit
+PenaltyCheck : exit/seat belt violation
+PenaltyCheck : exit/helmet violation
+
+state "speeding" as Speeding
+Speeding : entry/exceeding speed limit
+Speeding : do/violation count+1
+Speeding : exit/impose penalty
+
+state "seat belt violation" as SeatBeltViolation
+SeatBeltViolation : entry/not wearing seat belt
+SeatBeltViolation : do/violation count +1
+SeatBeltViolation : exit/impose penalty
+
+state "helmet violation" as HelmetViolation
+HelmetViolation : entry/not wearing a helmet
+HelmetViolation : do/violation count +1
+HelmetViolation : exit/impose penalty
+
+state "fine payment" as FinePayment
+FinePayment : entry/impose penalty
+FinePayment : exit/paid
+FinePayment : exit/not paid
+FinePayment : exit/violation count>3
+
+state "warning" as Warning
+Warning : entry/not paid
+Warning : do/send court notice to driver
+Warning : exit/abnormal termination
+
+state "Hold license" as HoldLicense
+HoldLicense : entry/violation count>3
+HoldLicense : do/temporary license cancellation
+HoldLicense : exit/repayment of fine
+HoldLicense : exit/after the probation period
+
+state J0 <<choice>>
+state J1 <<choice>>
+state J2 <<choice>>
+state Merge1 <<choice>>
+state Merge2 <<choice>>
+
+[*] --> J0
+
+J0 --> Idle
+SmartLights --> J0 
+PedestriansDetection --> J0 
+TrafficSignal --> J0 
+
+Idle --> AnalyseTrafficFlow
+AnalyseTrafficFlow --> J1 : [possible activities]
+
+J1 --> SmartLights
+J1 --> PedestriansDetection
+AnalyseTrafficFlow --> TrafficSignal : [signal empty]
+AnalyseTrafficFlow --> MedicalEmergency : [emergency situation]
+
+TrafficSignal --> NumberPlateRecognition
+MedicalEmergency --> NumberPlateRecognition
+NumberPlateRecognition --> PenaltyCheck
+
+PenaltyCheck --> J2 : [possibilities]
+J2 --> Speeding
+J2 --> SeatBeltViolation
+J2 --> HelmetViolation
+PenaltyCheck --> Merge2 : [no violations]
+
+Speeding --> Merge1
+SeatBeltViolation --> Merge1
+HelmetViolation --> Merge1
+
+Merge1 --> FinePayment : [total fine amount calculation]
+
+FinePayment --> Warning : [fine not paid]
+FinePayment --> HoldLicense : [violation count>3]
+FinePayment --> Merge2 : [paid]
+
+HoldLicense --> Merge2 : [repayment of fine]
+
+Merge2 --> [*] : [any one of the three possibilities]
+
+Warning --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Atm Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose or enter a withdrawal amount.
+2. The system shall support predefined amounts for selection by the user.
+3. The system shall allow users to input their own custom withdrawal amount.
+4. The system shall provide an option for the user to cancel the transaction at any point.
+5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.

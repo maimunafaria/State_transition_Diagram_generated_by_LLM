@@ -1,0 +1,118 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram
+
+state "Registration" as Registration {
+  [*] --> RegEnterDetails
+
+  state "Enter Details" as RegEnterDetails
+  state "Get Member_ID" as GetMemberID
+  state "Successful Registration" as SuccessfulRegistration
+  state "Re-enter Details" as ReEnterDetails
+
+  RegEnterDetails --> GetMemberID : [Valid]
+  RegEnterDetails --> ReEnterDetails : [Invalid]
+  ReEnterDetails --> RegEnterDetails
+  GetMemberID --> SuccessfulRegistration
+}
+
+state "Authentication" as Authentication {
+  [*] --> AuthEnterMemberID
+
+  state "Enter Member_ID" as AuthEnterMemberID
+  state "Enter Password" as EnterPassword
+  state "successful Login" as SuccessfulLogin
+  state "Invalid Member_ID or Password" as InvalidCreds
+
+  AuthEnterMemberID --> EnterPassword
+  EnterPassword --> SuccessfulLogin : [Valid]
+  EnterPassword --> InvalidCreds : [Invalid]
+}
+
+state "Search Books" as SearchBooks {
+  [*] --> EnterBookDetails
+
+  state "Enter Book Details" as EnterBookDetails
+  state "Display Suggestion" as DisplaySuggestion
+  state "choose Alternate option" as ChooseAlternate
+
+  EnterBookDetails --> DisplaySuggestion : [Found]
+  EnterBookDetails --> ChooseAlternate : [Not Found]
+}
+
+state "Get Books" as GetBooksState {
+  [*] --> GetEnterBookID
+
+  state "Enter Book_ID" as GetEnterBookID
+  state "Enter Member_ID" as GetEnterMemberID
+  state "Obtain Books" as ObtainBooks
+  state PayFineAmount
+
+  GetEnterBookID --> GetEnterMemberID
+  GetEnterMemberID --> ObtainBooks : [Active Member]
+  GetEnterMemberID --> PayFineAmount : [Inactive Member]
+}
+
+state "Buy Books" as BuyBooks {
+  [*] --> BuyEnterBookID
+
+  state "Enter Book_ID" as BuyEnterBookID
+  state "Display Book Amount" as DisplayBookAmount
+  state "Get Books" as BuyGetBooks
+  state BuyNotPaidEnd <<choice>>
+    DisplayBookAmount --> BuyGetBooks : [Paid]
+    BuyNotPaidEnd --> BuyGetBooks : [Not Paid]
+}
+
+state StartJoin
+StartJoin --> Registration
+StartJoin --> Authentication
+StartJoin --> SearchBooks
+StartJoin --> GetBooksState
+StartJoin --> BuyBooks
+
+SuccessfulRegistration --> AuthEnterMemberID
+
+SuccessfulLogin --> EnterBookDetails
+SuccessfulLogin --> GetEnterBookID
+SuccessfulLogin --> BuyEnterBookID
+
+ObtainBooks --> [*]
+BuyGetBooks --> [*]
+@enduml
+
+
+Validation issues to fix:
+- multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, EnterBookDetails, GetEnterBookID, BuyEnterBookID)
+- duplicate_transitions_detected (1)
+
+Repair guidance for these issues:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+- Remove duplicate transitions or merge their labels into one transition.

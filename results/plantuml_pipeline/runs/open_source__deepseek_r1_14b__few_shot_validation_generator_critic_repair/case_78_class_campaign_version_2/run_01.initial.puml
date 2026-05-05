@@ -1,0 +1,36 @@
+@startuml
+title Campaign State Transition Diagram
+
+[*] --> StartCampaign
+
+state StartCampaign
+state Running
+state PrepareAdverts
+state ApprovedAdverts
+state CompleteCampaign
+state PaymentHandling
+state RefundGenerated
+state AwaitingBalance
+state Paid
+state Archived
+
+StartCampaign --> Running : Campaign started
+
+Running --> PrepareAdverts : Prepare adverts
+PrepareAdverts --> ApprovedAdverts : Approve adverts
+ApprovedAdverts --> Running : Schedule adverts
+
+Running --> CompleteCampaign : All adverts finished
+CompleteCampaign --> PaymentHandling : Process payment
+
+PaymentHandling --> RefundGenerated : Amount paid less than required
+PaymentHandling --> AwaitingBalance : Amount paid more than required
+PaymentHandling --> Paid : Full amount paid
+
+Paid --> Archived : Archive campaign
+RefundGenerated --> Archived : Archive campaign
+AwaitingBalance --> Paid : Correct balance settled
+
+Archived --> [*]
+
+@enduml

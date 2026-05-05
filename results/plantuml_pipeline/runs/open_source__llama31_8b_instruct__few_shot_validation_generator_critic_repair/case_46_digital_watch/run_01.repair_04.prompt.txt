@@ -1,0 +1,92 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.
+
+Candidate PlantUML:
+@startuml
+title Digital Watch System States
+
+[*] --> AdjustTime
+
+state "Adjust Time" as AdjustTime
+state "Switch Mode" as SwitchMode
+state "Increase Value" as IncreaseValue
+state "Alarm On/Off" as AlarmOnOff
+state "Alarm Triggered" as AlarmTriggered
+state "Alarm Stopped" as AlarmStopped
+state "Light On/Off" as LightOnOff
+
+AdjustTime : entry / View time
+AdjustTime : do / Adjust time settings
+AdjustTime : exit / Time adjusted
+
+SwitchMode : entry / Switch mode
+SwitchMode : do / Switch mode
+SwitchMode : exit / Mode switched
+
+IncreaseValue : entry / Increase value
+IncreaseValue : do / Increase value
+IncreaseValue : exit / Value increased
+
+AlarmOnOff : entry / Turn alarm on/off
+AlarmOnOff : do / Alarm on/off
+AlarmOnOff : exit / Alarm status updated
+
+AlarmTriggered : entry / Alarm triggered
+AlarmTriggered : do / Alarm triggered
+AlarmTriggered : exit / Alarm triggered
+
+AlarmStopped : entry / Alarm stopped
+AlarmStopped : do / Alarm stopped
+AlarmStopped : exit / Alarm stopped
+
+LightOnOff : entry / Turn light on/off
+LightOnOff : do / Light on/off
+LightOnOff : exit / Light status updated
+
+[*] --> SwitchMode : [press button]
+SwitchMode --> IncreaseValue : [press button]
+IncreaseValue --> AdjustTime : [press button]
+AdjustTime --> AlarmOnOff : [press button]
+AlarmOnOff --> AlarmTriggered : [alarm on]
+AlarmTriggered --> AlarmStopped : [alarm off]
+AlarmStopped --> [*] : [press button]
+AdjustTime --> LightOnOff : [press button]
+LightOnOff --> AlarmOnOff : [press button]
+
+SwitchMode --> AlarmOnOff : [press button]
+IncreaseValue --> SwitchMode : [press button]
+AlarmOnOff --> IncreaseValue : [press button]
+
+[*] --> AdjustTime
+[*] --> AlarmOnOff
+[*] --> LightOnOff
+
+@enduml
+
+
+Validation issues to fix:
+- multiple_initial_state_transitions (AdjustTime, Switch Mode, Adjust Time, Alarm On/Off, Light On/Off)
+
+Repair guidance for these issues:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.

@@ -1,0 +1,80 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Staff Member Class — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow assigning a staff member to a client or adding them to a campaign.
+2. The system shall allow removing assignments from staff members, returning them to an unassigned state.
+3. The system shall enable staff members to switch between different assignments during their work period.
+4. The system shall mark a staff member as unemployed when they leave the job.
+5. The system shall archive the record of a former employee after some time has passed.
+
+Candidate PlantUML:
+@startuml
+title Staff Member State Machine
+
+state "Unassigned" as Unassigned {
+  [*] --> AssignToClient : [assign to client]
+  AssignToClient --> AssignedToClient : [assigned to client]
+  AssignToClient --> AddToCampaign : [add to campaign]
+  AddToCampaign --> AssignedToCampaign : [assigned to campaign]
+}
+
+state "Assigned to client" as AssignedToClient {
+  AssignedToClient --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AssignedToCampaign : [switch to campaign]
+  AssignedToClient --> LeaveJob : [leave job]
+}
+
+state "Assigned to campaign" as AssignedToCampaign {
+  AssignedToCampaign --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AssignedToClient : [switch to client]
+  AssignedToCampaign --> LeaveJob : [leave job]
+}
+
+state "Unemployed" as Unemployed {
+  LeaveJob --> Unemployed : [leave job]
+  Unemployed --> ArchiveRecord : [archive record]
+}
+
+state "Archived" as Archived {
+  ArchiveRecord --> Archived : [archive record]
+}
+
+Unassigned : entry / staff member is unassigned
+AssignedToClient : entry / staff member is assigned to client
+AssignedToCampaign : entry / staff member is assigned to campaign
+Unemployed : entry / staff member is unemployed
+Archived : entry / staff member record is archived
+
+state Choice <<choice>>
+Choice --> AssignToClient : [assign to client]
+Choice --> AddToCampaign : [add to campaign]
+Choice --> SwitchAssignments : [switch assignments]
+Choice --> LeaveJob : [leave job]
+Choice --> ArchiveRecord : [archive record]
+
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+- duplicate_transitions_detected (1)
+- unreachable_states_detected
+- unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- Remove duplicate transitions or merge their labels into one transition.
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.

@@ -1,0 +1,229 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Online Pharmacy Management System Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display a list of available orders to the delivery person.
+2. The system shall allow the delivery person to contact the delivery address for coordination.
+3. The system shall enable the delivery person to update their profile as needed.
+
+Example 1 PlantUML:
+@startuml
+title UML State Machine Diagram - Delivery Man
+
+[*] --> ViewOrders
+
+state "View orders" as ViewOrders
+state "Contact delivery address" as ContactDeliveryAddress
+state "Update profile" as UpdateProfile
+
+ViewOrders --> ContactDeliveryAddress
+ContactDeliveryAddress --> UpdateProfile
+UpdateProfile --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Information System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start a training request upon creation.
+2. The system shall send the request for approval after its creation.
+3. The system shall end the process if the request is rejected.
+4. The system shall look for a suitable session if the request is accepted.
+5. The system shall perform enrolment once a session is chosen.
+6. The system shall satisfy the request if enrolment is confirmed.
+7. The system shall allow completion of the session after enrolment confirmation.
+8. The system shall allow cancellation of a selected session and selection of a new one.
+9. The system shall end the process if the request is cancelled at any point before completion.
+
+Example 2 PlantUML:
+@startuml
+title Complete state diagram of the training request
+
+[*] --> Creation
+
+state Creation
+state "WaitingForAcknowledgement" as WaitingAck
+state SearchForSession
+state "WaitingForEnrolment" as WaitingEnrolment
+state Satisfied
+
+state rejected <<final>>
+state cancelled <<final>>
+state completed <<final>>
+
+Creation --> WaitingAck : validate / send personincharge.self
+Creation --> cancelled : cancel
+
+WaitingAck --> rejected : reject / send employee.rejection
+WaitingAck --> SearchForSession : accept / send employee.agreement
+WaitingAck --> cancelled : cancel
+
+SearchForSession --> WaitingEnrolment : sessionChoice / send body.order
+SearchForSession --> cancelled : cancel
+
+WaitingEnrolment --> Satisfied : enrolment / send employee.confirmation
+WaitingEnrolment --> cancelled : cancel / send body.cancellation
+
+Satisfied --> WaitingEnrolment : cancelSession / send employee.cancellation
+Satisfied --> cancelled : cancel / send body.cancellation
+Satisfied --> completed : endSession
+
+@enduml
+
+Example 3 Requirement:
+Business Process Outsourcing Bpo Management System Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to upload a new request.
+2. The system shall enable a BPO organization to save the details of a project.
+3. The system shall allow a client to search for a suitable project category.
+4. The system shall enable an BPO organization to accept or decline a request from a client.
+5. The system shall allow a client to decide whether to proceed with an accepted project or reject it.
+6. The system shall update the project status after acceptance by both parties.
+7. The system shall allow a client to track the progress of a project.
+8. The system shall enable an BPO organization to update the progress of a project.
+9. The system shall upload a final project once work is completed.
+10. The system shall perform a quality check on the final project.
+11. The system shall restart the process if a client is unsatisfied with the final project.
+12. The system shall make payment if the client is satisfied with the final project.
+13. The system shall deliver the project after payment.
+14. The system shall allow a client to provide a rating for the completed project.
+
+Example 3 PlantUML:
+@startuml
+title UML State Machine Diagram (Upload or Accept Request)
+
+state "Upload or Accept request" as UAR {
+
+    [*] --> ChoiceUser
+
+
+    UAR : entry / Regarding request details
+    UAR : do / Project dealings
+    UAR : exit / After finishing rating
+
+
+    state ChoiceUser <<choice>>
+
+    ChoiceUser --> EnterDetails : [user = BPO organization]
+    ChoiceUser --> SearchCategory : [user = client]
+
+
+    state "Enter project details" as EnterDetails
+    state "Update database" as UpdateDB
+
+    EnterDetails --> UpdateDB
+    UpdateDB --> [*]
+
+
+    state "Search project category" as SearchCategory
+    state ChoiceBPO <<choice>>
+    state ChoiceClient <<choice>>
+
+    SearchCategory --> ChoiceBPO
+
+    ChoiceBPO --> EndDecline : [BPO org declines]
+    ChoiceBPO --> ChoiceClient : [BPO org accepts]
+
+    ChoiceClient --> EndReject : [client rejects]
+    ChoiceClient --> UpdateStatus : [client accepts]
+
+    state EndDecline <<choice>>
+    EndDecline --> [*]
+
+    state EndReject <<choice>>
+    EndReject --> [*]
+
+    state "Update status of project" as UpdateStatus
+
+    state ChoiceTracking <<choice>>
+
+    UpdateStatus --> ChoiceTracking
+
+    ChoiceTracking --> DisplayProgress : [client wishes to track]
+    ChoiceTracking --> UpdateProgress : [user = BPO org]
+
+    state "Display progress" as DisplayProgress
+    DisplayProgress --> [*]
+
+    state "Update progress" as UpdateProgress
+
+
+    UpdateProgress --> UploadFinal : [End of project]
+
+    state "Upload final project" as UploadFinal
+
+    state QualityCheck <<choice>>
+
+    UploadFinal --> QualityCheck : [Quality check]
+
+    QualityCheck --> Payment : [satisfied]
+    QualityCheck --> ChoiceTracking : [Not satisfied]
+
+    state Payment
+    state Shipment
+    state Rating
+
+    Payment --> Shipment
+    Shipment --> Rating
+
+    Rating --> [*]
+}
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Staff Member Class — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow assigning a staff member to a client or adding them to a campaign.
+2. The system shall allow removing assignments from staff members, returning them to an unassigned state.
+3. The system shall enable staff members to switch between different assignments during their work period.
+4. The system shall mark a staff member as unemployed when they leave the job.
+5. The system shall archive the record of a former employee after some time has passed.

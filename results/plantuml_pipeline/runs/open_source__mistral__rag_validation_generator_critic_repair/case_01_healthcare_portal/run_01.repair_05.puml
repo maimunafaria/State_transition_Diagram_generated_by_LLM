@@ -1,0 +1,58 @@
+@startuml
+title Healthcare Portal - User State Machine Diagram
+
+state PortalChoice1 <<choice>>
+state ServiceCenterRegistration
+state ServiceCenterVerification
+state ServiceCenterLogin
+state ServiceCenterHome
+state Logout
+
+[*] --> PortalChoice1
+
+PortalChoice1 --> PortalChoice2 : [Healthcare Portal]
+
+PortalChoice2 --> ServiceCenterRegistration : [New User Registration]
+PortalChoice2 --> ServiceJoin : [Registered User]
+
+state "Service Center Registration" as ServiceCenterRegistration
+ServiceCenterRegistration : entry / Unregistered user
+ServiceCenterRegistration : do / Enter Valid Credentials
+ServiceCenterRegistration : exit / Account registered
+
+state "Service Center Verification" as ServiceCenterVerification
+ServiceCenterVerification : entry / Service Center account registered
+ServiceCenterVerification : do / Verify Service center
+ServiceCenterVerification --> ServiceCenterLogin : [Logged In Successfully]
+
+state "Service Center Login" as ServiceCenterLogin
+ServiceCenterLogin : entry / Verified Service Center
+ServiceCenterLogin : entry / Service Center not logged in
+ServiceCenterLogin : do / Authenticate Service Center
+ServiceCenterLogin : exit / Logged In Successfully
+
+state "Service center Home" as ServiceCenterHome
+ServiceCenterHome : entry / Logged in Service Center
+ServiceCenterHome : do / Display home page
+ServiceCenterHome : exit / Enter Damaged parts list or Expiry Notification page
+ServiceCenterHome --> DamagedParts : [To enter Damaged parts list]
+ServiceCenterHome --> ExpiryNotification : [To view expiry notification]
+ServiceCenterHome --> ServiceCenterHome : [Continue using the system or finish session]
+ServiceCenterHome --> Logout : [To Logout]
+
+state "Expiry Notification page" as ExpiryNotification
+ExpiryNotification : entry / To view expiry notification
+ExpiryNotification : do / Send service request to Car owner
+ExpiryNotification --> ServiceCenterHome : [Return to Service center home page]
+
+state "Entering Damaged parts list" as DamagedParts
+DamagedParts : entry / To enter Damaged parts list
+DamagedParts : do / Preparing and entering damaged parts list
+DamagedParts --> ServiceCenterHome : [Return to service center home page]
+
+state "Logout" as Logout
+Logout : entry / To Logout
+Logout : do / Logout
+Logout --> [*] : [Logged out Successfully]
+ServiceCenterLogin --> Logout : [To Logout]
+@enduml

@@ -1,0 +1,50 @@
+@startuml
+title ATM Control - Withdrawal Process
+
+[*] --> Idle
+
+state Idle
+state WaitingForAmount
+state ValidatingAmount
+state ProcessingWithdrawal
+state Dispensing
+state Printing
+state Ejecting
+state Confiscating
+state Terminating
+state ClosedDown
+
+Idle : entry / Display Welcome
+ClosedDown : entry / Display System Down
+
+Idle --> WaitingForAmount : Card Inserted / Get Amount
+
+WaitingForAmount --> ValidatingAmount : Amount Entered / Validate Amount
+WaitingForAmount --> Confiscating : Card Confiscated / display Confiscated
+
+ValidatingAmount --> WaitingForAmount : Invalid Amount / Invalid Amount Prompt
+ValidatingAmount --> Confiscating : Card Stolen, Card Expired \nConfiscate, Update Status
+ValidatingAmount --> Confiscating : Third Invalid Amount \nConfiscate
+
+ValidatingAmount --> ProcessingWithdrawal : Valid Amount / Display Menu
+
+WaitingForAmount --> Ejecting : Cancel / Eject
+WaitingForAmount --> Confiscating : Cancel / Confiscate
+
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved / Dispense Cash, Update Status
+ProcessingWithdrawal --> Ejecting : Rejected / Eject
+
+Dispensing --> Printing : Cash Dispensed / Print Receipt, Display Cash Dispensed, Confirm Cash Dispensed
+Dispensing --> ClosedDown : Insufficient Cash / Eject
+
+Printing --> Ejecting : Receipt Printed / Eject
+
+Ejecting --> Terminating : Card Ejected / Display Ejected
+Confiscating --> Terminating : Card Confiscated / Display Confiscated
+
+Terminating --> Idle : After (Elapsed Time) [Closedown Not Requested]
+Terminating --> ClosedDown : After (Elapsed Time) [Closedown Was Requested]
+
+ClosedDown --> [*] : After (Elapsed Time)
+
+@enduml

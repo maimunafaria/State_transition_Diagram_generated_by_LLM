@@ -1,0 +1,483 @@
+{
+  "run_id": "open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair",
+  "case_id": "case_80_staff_member_class",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nProduct Recommendation — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to register or sign in to access the platform.\n2. The system shall enable users to search for products after they have registered or logged in.\n3. The system shall display matching product results based on the user's search query.\n4. The system shall allow users to apply filters to refine their search results.\n5. The system shall update the displayed product results based on the applied filters.\n6. The system shall allow users to select a product from search or filtered results.\n7. The system shall redirect the user to the official website of the selected product upon selection.\n\nExample 1 PlantUML:\n@startuml\n[*] --> Register\nRegister : entry / nil\nRegister : do / login / Register\nRegister : exit / valid registration / login\n\nRegister --> SearchProduct : user registers\nSearchProduct : entry / login\nSearchProduct : do / search for the product\nSearchProduct : exit / display search results\n\nSearchProduct --> SearchFilterProductFilter : user applies filters\nSearchFilterProductFilter : entry / search product\nSearchFilterProductFilter : do / apply filters to get desired results\nSearchFilterProductFilter : exit / display filtered results\nstate J1 <<choice>>\nSearchProduct --> J1 : user selects product\nSearchFilterProductFilter --> J1 : user selects product\nGetProduct : entry / login\nGetProduct : do / get the product from the official website\nGetProduct : exit / redirect to the website\nJ1 --> GetProduct \nGetProduct --> [*]\n@enduml\n\nExample 2 Requirement:\nLoggedin Mechanism — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall prompt the user to enter their username.\n2. The system shall terminate the login process and exit if the user cancels at any point.\n3. The system shall check the entered username against its records.\n4. The system shall prompt for a password if the username is valid.\n5. The system shall verify both the username and password to allow login.\n6. The system shall allow the user to try again if the credentials are incorrect.\n7. The system shall increase the number of failed attempts with each incorrect entry.\n8. The system shall limit the number of login attempts for a user.\n9. The system shall block further login attempts if the maximum number of attempts is reached.\n10. The system shall prevent login if it cannot recognize the user during any step.\n\nExample 2 PlantUML:\n@startuml\ntitle LoggingOn State Machine\n\nstate LoggingOn {\n  [*] --> AcceptingUserName\n\n  state AcceptingUserName\n  state AcceptingPassword\n  state VerifyingDetails\n\n  state BadDetails {\n    state BadUsername\n    state BadPassword\n  }\n\n  BadDetails : entry / ++tries\n\n  AcceptingUserName --> AcceptingPassword : ok\n  \n  AcceptingUserName --> Canceling : cancel\n\n  AcceptingPassword --> VerifyingDetails : ok\n  AcceptingPassword --> Canceling : cancel\n\n  VerifyingDetails --> BadUsername : badUserName\n  VerifyingDetails --> BadPassword : badPassword\n  VerifyingDetails --> Authenticated : detailsVerified\n\n  BadDetails --> AcceptingUserName : [tries < 4]\n  BadDetails --> Fail : [tries = 4]\n}\n\nLoggingOn : entry / tries := 0\n\nstate Canceling\nstate Authenticated\nstate Fail\nFail : entry / logFailure\nuserRecognized --> AcceptingPassword\n@enduml\n\nExample 3 Requirement:\nBusiness Process Outsourcing Bpo Management System Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to upload a new request.\n2. The system shall enable a BPO organization to save the details of a project.\n3. The system shall allow a client to search for a suitable project category.\n4. The system shall enable an BPO organization to accept or decline a request from a client.\n5. The system shall allow a client to decide whether to proceed with an accepted project or reject it.\n6. The system shall update the project status after acceptance by both parties.\n7. The system shall allow a client to track the progress of a project.\n8. The system shall enable an BPO organization to update the progress of a project.\n9. The system shall upload a final project once work is completed.\n10. The system shall perform a quality check on the final project.\n11. The system shall restart the process if a client is unsatisfied with the final project.\n12. The system shall make payment if the client is satisfied with the final project.\n13. The system shall deliver the project after payment.\n14. The system shall allow a client to provide a rating for the completed project.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Machine Diagram (Upload or Accept Request)\n\nstate \"Upload or Accept request\" as UAR {\n\n    [*] --> ChoiceUser\n\n\n    UAR : entry / Regarding request details\n    UAR : do / Project dealings\n    UAR : exit / After finishing rating\n\n\n    state ChoiceUser <<choice>>\n\n    ChoiceUser --> EnterDetails : [user = BPO organization]\n    ChoiceUser --> SearchCategory : [user = client]\n\n\n    state \"Enter project details\" as EnterDetails\n    state \"Update database\" as UpdateDB\n\n    EnterDetails --> UpdateDB\n    UpdateDB --> [*]\n\n\n    state \"Search project category\" as SearchCategory\n    state ChoiceBPO <<choice>>\n    state ChoiceClient <<choice>>\n\n    SearchCategory --> ChoiceBPO\n\n    ChoiceBPO --> EndDecline : [BPO org declines]\n    ChoiceBPO --> ChoiceClient : [BPO org accepts]\n\n    ChoiceClient --> EndReject : [client rejects]\n    ChoiceClient --> UpdateStatus : [client accepts]\n\n    state EndDecline <<choice>>\n    EndDecline --> [*]\n\n    state EndReject <<choice>>\n    EndReject --> [*]\n\n    state \"Update status of project\" as UpdateStatus\n\n    state ChoiceTracking <<choice>>\n\n    UpdateStatus --> ChoiceTracking\n\n    ChoiceTracking --> DisplayProgress : [client wishes to track]\n    ChoiceTracking --> UpdateProgress : [user = BPO org]\n\n    state \"Display progress\" as DisplayProgress\n    DisplayProgress --> [*]\n\n    state \"Update progress\" as UpdateProgress\n\n\n    UpdateProgress --> UploadFinal : [End of project]\n\n    state \"Upload final project\" as UploadFinal\n\n    state QualityCheck <<choice>>\n\n    UploadFinal --> QualityCheck : [Quality check]\n\n    QualityCheck --> Payment : [satisfied]\n    QualityCheck --> ChoiceTracking : [Not satisfied]\n\n    state Payment\n    state Shipment\n    state Rating\n\n    Payment --> Shipment\n    Shipment --> Rating\n\n    Rating --> [*]\n}\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nStaff Member Class — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow assigning a staff member to a client or adding them to a campaign.\n2. The system shall allow removing assignments from staff members, returning them to an unassigned state.\n3. The system shall enable staff members to switch between different assignments during their work period.\n4. The system shall mark a staff member as unemployed when they leave the job.\n5. The system shall archive the record of a former employee after some time has passed.\n",
+  "requirement_used": "Staff Member Class — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow assigning a staff member to a client or adding them to a campaign.\n2. The system shall allow removing assignments from staff members, returning them to an unassigned state.\n3. The system shall enable staff members to switch between different assignments during their work period.\n4. The system shall mark a staff member as unemployed when they leave the job.\n5. The system shall archive the record of a former employee after some time has passed.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_80_staff_member_class\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "duplicate_transitions_detected (1)",
+      "unreachable_states_detected",
+      "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+    ],
+    "initial_state": "AssignToClient",
+    "duplicate_transition_count": 1,
+    "unreachable_states": [
+      "ArchiveRecord",
+      "Archived",
+      "Assigned to campaign",
+      "Assigned to client",
+      "Choice",
+      "LeaveJob",
+      "SwitchAssignments",
+      "Unassigned",
+      "Unemployed"
+    ],
+    "state_count": 13,
+    "transition_count": 20
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "duplicate_transitions_detected (1)",
+      "unreachable_states_detected",
+      "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__llama31_8b_instruct__few_shot",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])",
+        "duplicate_transitions_detected (1)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "duplicate_transitions_detected (1)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": true,
+      "previous_score": 4,
+      "repair_score": 3,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "duplicate_transitions_detected (1)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ],
+      "strict_issues": [
+        "duplicate_transitions_detected (1)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "duplicate_transitions_detected (1)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ],
+      "strict_issues": [
+        "duplicate_transitions_detected (1)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 2,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "duplicate_transitions_detected (1)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "duplicate_transitions_detected (2)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ],
+      "strict_issues": [
+        "duplicate_transitions_detected (2)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 3,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "duplicate_transitions_detected (1)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "duplicate_transitions_detected (2)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ],
+      "strict_issues": [
+        "duplicate_transitions_detected (2)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 4,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "duplicate_transitions_detected (1)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "duplicate_transitions_detected (1)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ],
+      "strict_issues": [
+        "duplicate_transitions_detected (1)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 5,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "duplicate_transitions_detected (1)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 5,
+      "strict_state_diagram_valid": false,
+      "remaining_issues": [
+        "duplicate_transitions_detected (1)",
+        "unreachable_states_detected",
+        "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])",
+          "duplicate_transitions_detected (1)",
+          "unreachable_states_detected",
+          "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+        ],
+        "initial_state": "AssignToClient",
+        "duplicate_transition_count": 1,
+        "unreachable_states": [
+          "ArchiveRecord",
+          "Archived",
+          "Assigned to campaign",
+          "Assigned to client",
+          "Choice",
+          "LeaveJob",
+          "SwitchAssignments",
+          "Unassigned",
+          "Unemployed"
+        ],
+        "state_count": 13,
+        "transition_count": 18
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_80_staff_member_class\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "duplicate_transitions_detected (1)",
+          "unreachable_states_detected",
+          "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+        ],
+        "initial_state": "AssignToClient",
+        "duplicate_transition_count": 1,
+        "unreachable_states": [
+          "ArchiveRecord",
+          "Archived",
+          "Assigned to campaign",
+          "Assigned to client",
+          "Choice",
+          "LeaveJob",
+          "SwitchAssignments",
+          "Unassigned",
+          "Unemployed"
+        ],
+        "state_count": 13,
+        "transition_count": 20
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": true,
+      "previous_score": 4,
+      "repair_score": 3,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_80_staff_member_class\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_80_staff_member_class\\run_01.repair_01.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "duplicate_transitions_detected (1)",
+          "unreachable_states_detected",
+          "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+        ],
+        "initial_state": "AssignToClient",
+        "duplicate_transition_count": 1,
+        "unreachable_states": [
+          "ArchiveRecord",
+          "Archived",
+          "Assigned to campaign",
+          "Assigned to client",
+          "Choice",
+          "LeaveJob",
+          "SwitchAssignments",
+          "Unassigned",
+          "Unemployed"
+        ],
+        "state_count": 12,
+        "transition_count": 19
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_80_staff_member_class\\run_01.repair_02.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_80_staff_member_class\\run_01.repair_02.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "duplicate_transitions_detected (2)",
+          "unreachable_states_detected",
+          "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+        ],
+        "initial_state": "AssignToClient",
+        "duplicate_transition_count": 2,
+        "unreachable_states": [
+          "ArchiveRecord",
+          "Archived",
+          "Assigned to campaign",
+          "Assigned to client",
+          "Choice",
+          "LeaveJob",
+          "SwitchAssignments",
+          "Unassigned",
+          "Unemployed"
+        ],
+        "state_count": 13,
+        "transition_count": 24
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_80_staff_member_class\\run_01.repair_03.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_80_staff_member_class\\run_01.repair_03.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "duplicate_transitions_detected (2)",
+          "unreachable_states_detected",
+          "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+        ],
+        "initial_state": "AssignToClient",
+        "duplicate_transition_count": 2,
+        "unreachable_states": [
+          "ArchiveRecord",
+          "Archived",
+          "Assigned to campaign",
+          "Assigned to client",
+          "Choice",
+          "LeaveJob",
+          "SwitchAssignments",
+          "Unassigned",
+          "Unemployed"
+        ],
+        "state_count": 12,
+        "transition_count": 22
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_80_staff_member_class\\run_01.repair_04.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_80_staff_member_class\\run_01.repair_04.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "duplicate_transitions_detected (1)",
+          "unreachable_states_detected",
+          "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+        ],
+        "initial_state": "AssignToClient",
+        "duplicate_transition_count": 1,
+        "unreachable_states": [
+          "ArchiveRecord",
+          "Archived",
+          "Assigned to campaign",
+          "Assigned to client",
+          "Choice",
+          "LeaveJob",
+          "SwitchAssignments",
+          "Unassigned",
+          "Unemployed"
+        ],
+        "state_count": 12,
+        "transition_count": 19
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_80_staff_member_class\\run_01.repair_05.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_80_staff_member_class\\run_01.repair_05.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 13,
+    "state_fn": 8,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 20,
+    "transition_fn": 5,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 11,
+    "state_fn_relaxed": 7,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 20,
+    "transition_fn_relaxed": 5,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 20,
+    "transition_fn_semantic": 5,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "duplicate_transitions_detected (1)",
+      "unreachable_states_detected",
+      "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "duplicate_transitions_detected (1)",
+      "unreachable_states_detected",
+      "unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed"
+    ]
+  },
+  "reused_base_run": {
+    "run_id": "open_source__llama31_8b_instruct__few_shot",
+    "strategy": "few_shot",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot\\case_80_staff_member_class\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot\\case_80_staff_member_class\\run_01.prompt.txt"
+  }
+}

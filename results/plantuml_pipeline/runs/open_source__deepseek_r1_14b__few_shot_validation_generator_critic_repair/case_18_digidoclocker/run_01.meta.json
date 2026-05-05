@@ -1,0 +1,114 @@
+{
+  "run_id": "open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair",
+  "case_id": "case_18_digidoclocker",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nFirst Person Shooter Fps Games — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall keep the troll in a calm state with no actions if there is no detected threat.\n2. The system shall determine the troll's reaction based on the perceived strength of the detected opponent.\n3. The system shall make the troll aggressive and start an attack if the opponent appears weak enough to defeat.\n4. The system shall continue the troll's fight while it can see the opponent.\n5. The system shall calm the troll and return it to a normal state if it loses sight of the opponent.\n6. The system shall make the troll scared and panic if the opponent appears too strong.\n7. The system shall calm the troll and return it to a normal state if it gets away from or loses sight of a stronger opponent.\n8. The system shall remove the troll from the game if it takes a fatal hit and its health reaches zero.\n\nExample 1 PlantUML:\n@startuml\ntitle Troll State Diagram\n\n[*] --> Neutral\n\nstate Neutral\nstate Attack\nstate Panic\nstate Die\n\nNeutral --> Attack : see opponent [defeatable]\nAttack --> Neutral : lost opponent\n\nNeutral --> Panic : see opponent [undefeatable]\nPanic --> Neutral : lost opponent\n\nAttack --> Die : receive blow [health = 0] / pray\nPanic --> Die : receive blow [health = 0] / pray\n\nDie --> [*]\n\n@enduml\n\nExample 2 Requirement:\nE Ration Shop — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to raise a complaint directly.\n2. The system shall end the process after a user raises a complaint.\n3. The system shall allow users to authenticate their identity using an OTP.\n4. The system shall allow multiple attempts for OTP authentication if the initial attempt fails.\n5. The system shall enable users to view items based on different categories once they are successfully authenticated.\n6. The system shall allow users to select items for purchase after viewing them.\n7. The system shall provide users with the option to pay either through an online method or by cash on delivery.\n8. The system shall deliver the product after the payment is completed.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Machine Diagram\n\n\n[*] --> C1\n\nstate C1 <<choice>>\nC1 --> Auth : [possibilities to start]\nC1 --> Complaints\n\n\nstate \"Authentication of aadhar card by OTP\" as Auth\nAuth : entry / card holder\nAuth : do / Generates OTP\nAuth : do / OTP should match\nAuth : exit / authentication completed\n\nstate Complaints\nComplaints : entry / fill\nComplaints : do / raise a complaint\nComplaints : exit / complaint send\n\nComplaints --> [*]\n\nAuth --> Auth \nAuth --> ViewItems\n\nstate \"View items\" as ViewItems\nViewItems : entry / from Authentication\nViewItems : do / items shown based on category\nViewItems : do / select items required\nViewItems : exit / after selecting\n\nViewItems --> Purchase\n\nstate \"make purchase\" as Purchase\nPurchase : entry / from view items\nPurchase : do / payment\nPurchase : exit / chose the mode of payment\n\n\nstate C2 <<choice>>\nPurchase --> C2 : [possibilities for payment]\n\nstate PAYTM\nPAYTM : entry / make purchase\nPAYTM : do / making payment\nPAYTM : exit / payment done\n\nstate COD\nCOD : entry / make purchase\nCOD : do / making payment\nCOD : exit / payment done\n\nC2 --> PAYTM\nC2 --> COD\n\n\nstate C3 <<choice>>\nPAYTM --> C3\nCOD --> C3\n\nC3 --> Delivery : [payment completed]\n\n\nstate Delivery\nDelivery : entry / COD\nDelivery : entry / PAYTM\nDelivery : do / product delivered\n\nDelivery --> [*]\n\n@enduml\n\nExample 3 Requirement:\nFor Online College Magazine System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall require a person to either create an account or log in.\n2. The system shall allow admins to add, edit, or remove user profiles.\n3. The system shall enable admins to review articles and decide on their publication or rejection.\n4. The system shall permit content creators to write articles and send them for editing.\n5. The system shall have editors review articles from content creators and pass them for approval.\n6. The system shall restrict access if a login attempt is invalid.\n7. The system shall make published articles available for user reading.\n8. The system shall allow users to search for more articles during their reading session.\n9. The system shall enable users to provide feedback after reading articles.\n10. The system shall end when users complete their search or provide feedback.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Machine Diagram\n\nstate StartChoice <<choice>>\nstate AdminChoice <<choice>>\nstate EditorChoice <<choice>>\nstate ReadFeedbackChoice <<choice>>\nstate EndJoin <<choice>>\n\n[*] --> StartChoice\n\nstate Register\nRegister : do / Fill details\nRegister : exit / Registration successful\n\nstate Login\nLogin : entry / Registered user\nLogin : do / Enter login credentials\nLogin : exit / Valid username and password\n\nstate \"Manage profiles\" as ManageProfiles\nManageProfiles : entry / Admin logged in\nManageProfiles : do / Manage profile in database\nManageProfiles : do / Add, delete or edit profiles if necessary\nManageProfiles : exit / Action completed\n\nstate \"Invalid user\" as InvalidUser\nInvalidUser : entry / Invalid login or invalid registration\nInvalidUser : do / Block entry to system\nInvalidUser : exit / Abnormal termination\n\nstate Writing\nWriting : entry / Writer logged in\nWriting : do / Write article\nWriting : exit / Send to editor\n\nstate Editing\nEditing : entry / Editor logged in and article to be edited\nEditing : do / Edit article\nEditing : exit / Send to moderator/admin\n\nstate Publishing\nPublishing : entry / Admin logged in and article to be approved\nPublishing : do / Choose to approve and publish or reject article\nPublishing : do / Add article to database if approved\nPublishing : exit / Publish article\n\nstate Search\nSearch : entry / Choose to search for articles\nSearch : do / Read searched articles\nSearch : exit / Completed reading\n\nstate Reading\nReading : entry / Published article\nReading : do / Read article\nReading : exit / Completed reading\n\nstate Feedback\nFeedback : entry / Reader chosen to give feedback\nFeedback : do / Get feedback\nFeedback : exit / Feedback entry successful\n\nStartChoice --> Register\nStartChoice --> Login\n\nRegister --> AdminChoice\nLogin --> EditorChoice\n\nAdminChoice --> ManageProfiles\nAdminChoice --> InvalidUser\n\nEditorChoice --> Writing\nEditorChoice --> Editing\nEditorChoice --> InvalidUser\n\nWriting --> Editing\nEditing --> Publishing\nManageProfiles --> Publishing\n\nInvalidUser --> [*]\n\nPublishing --> Reading\nReading --> Reading\n\nSearch --> Search\nReading --> ReadFeedbackChoice\n\nReadFeedbackChoice --> Search\nReadFeedbackChoice --> Feedback\n\nFeedback --> EndJoin\nSearch --> EndJoin\n\nEndJoin --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nDigidoclocker — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall identify the type of user based on their entered details.\n2. The system shall require citizens to register before logging in.\n3. The system shall allow citizens to log in if their login details are correct.\n4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.\n5. The system shall allow citizens to continue uploading documents if needed after initial uploads.\n6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.\n7. The system shall allow registrars to request certificates for verification.\n8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.\n9. The system shall end the session once the user is done with their actions.\n",
+  "requirement_used": "Digidoclocker — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall identify the type of user based on their entered details.\n2. The system shall require citizens to register before logging in.\n3. The system shall allow citizens to log in if their login details are correct.\n4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.\n5. The system shall allow citizens to continue uploading documents if needed after initial uploads.\n6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.\n7. The system shall allow registrars to request certificates for verification.\n8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.\n9. The system shall end the session once the user is done with their actions.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "Start",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 10,
+    "transition_count": 13
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__deepseek_r1_14b__few_shot",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 0,
+      "strict_state_diagram_valid": true,
+      "remaining_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "Start",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 10,
+        "transition_count": 13
+      },
+      "strict_state_diagram_valid": true,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.1,
+    "state_recall": 0.08333333333333333,
+    "state_f1": 0.0909090909090909,
+    "state_tp": 1,
+    "state_fp": 9,
+    "state_fn": 11,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 13,
+    "transition_fn": 19,
+    "state_precision_relaxed": 0.1,
+    "state_recall_relaxed": 0.08333333333333333,
+    "state_f1_relaxed": 0.0909090909090909,
+    "state_tp_relaxed": 1,
+    "state_fp_relaxed": 9,
+    "state_fn_relaxed": 11,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 13,
+    "transition_fn_relaxed": 19,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 13,
+    "transition_fn_semantic": 19,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 0.9,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.9,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.04545454545454545,
+    "overall_f1_relaxed": 0.04545454545454545,
+    "weighted_f1_relaxed_70_30": 0.06363636363636363,
+    "overall_f1_semantic": 0.04545454545454545,
+    "weighted_f1_semantic_70_30": 0.06363636363636363,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  },
+  "reused_base_run": {
+    "run_id": "open_source__deepseek_r1_14b__few_shot",
+    "strategy": "few_shot",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot\\case_18_digidoclocker\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot\\case_18_digidoclocker\\run_01.prompt.txt"
+  }
+}

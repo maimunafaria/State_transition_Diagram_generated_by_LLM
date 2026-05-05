@@ -1,0 +1,372 @@
+{
+  "run_id": "open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair",
+  "case_id": "case_46_digital_watch",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nAlert Notifier — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall initialize a component to detect updates upon initial loading.\n2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.\n3. The system shall process detected updates by storing them and evaluating their significance.\n4. The system shall notify appropriate operators of changes based on evaluation results if certain conditions are met.\n5. The system shall return to a waiting state after processing an update.\n6. The system shall enter an unloading phase if initialization fails or if the system is shut down while the component is running.\n7. The system shall perform necessary cleanup operations and inform the component manager of successful removal during unloading.\n8. The system shall terminate the component's operation after unloading is complete.\n\nExample 1 PlantUML:\n@startuml\ntitle Alert Notifier Component States\n\n[*] --> InitializeComponent : Load Component\n\nstate \"Initialize\\nComponent\" as InitializeComponent\nstate \"Waiting for Update\" as WaitingForUpdate\nstate \"Processing Update\" as ProcessingUpdate\nstate \"Unloading Component\" as UnloadingComponent\n\nWaitingForUpdate : do / checkForUpdate\n\nProcessingUpdate : entry / storeUpdate\nProcessingUpdate : do / evaluateUpdate\nProcessingUpdate : exit / [update > delta] Operator.Notify(update)\n\nUnloadingComponent : exit / compMgr.compUnloaded()\n\nInitializeComponent --> WaitingForUpdate : [ init. success ]\nInitializeComponent --> UnloadingComponent : [ init. failure ]\n\nWaitingForUpdate --> ProcessingUpdate : stock update\nProcessingUpdate --> WaitingForUpdate\n\nWaitingForUpdate --> UnloadingComponent : shutdown\n\nUnloadingComponent --> [*]\n\n@enduml\n\nExample 2 Requirement:\nMy Helper — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow new users or users who have forgotten their password to create a new password.\n2. The system shall enable the user to continue using the app after setting a correct password.\n3. The system shall allow users to send messages from another mobile phone if they cannot use their own phone.\n4. The system shall read incoming messages to understand the user's needs.\n5. The system shall check the user’s password for correctness and inform the user if it is wrong.\n6. The system shall ensure that if the user's password is correct, the system shall check the user’s request.\n7. The system shall support for valid requests, the system shall complete them and send back required details to the user.\n8. The system shall support for invalid requests, the system shall inform the user that the request cannot be accepted.\n\nExample 2 PlantUML:\n@startuml\n\n[*] --> LoginSignup\n\nLoginSignup : entry / Download app\nLoginSignup : do / Enables the user to use app\nLoginSignup : exit / Verifies details\n\nLoginSignup --> SetPassword : signup / forgot password\nSetPassword : entry / Signup\nSetPassword : do / Set password\nSetPassword : exit / Validate password\n\nSetPassword --> LoginSignup : password set\n\nLoginSignup --> SendSMS : forgot phone\nSendSMS : entry / Forgot phone\nSendSMS : do / Send SMS from any other mobile\nSendSMS : exit / NIL\n\nSendSMS --> ReadsSMS : SMS sent\nReadsSMS : entry / SMS received\nReadsSMS : do / Scans SMS\nReadsSMS : exit / Performs required action\n\nReadsSMS --> VerifyPassword : verify request\nVerifyPassword : entry / Read SMS\nVerifyPassword : do / Check whether password is correct\nVerifyPassword : exit / Password is correct\n\nVerifyPassword --> ChecksRequirement : password correct\nVerifyPassword --> PasswordError : incorrect password\n\nPasswordError : entry / Incorrect password\nPasswordError : do / Send SMS stating incorrect password\nPasswordError : exit / SMS sent\nPasswordError --> [*]\n\nChecksRequirement : entry / Password is correct\nChecksRequirement : do / Check for requirement\nChecksRequirement : exit / Requirement is valid\n\nChecksRequirement --> FulfilRequirements : requirement valid\nChecksRequirement --> RequirementError : invalid requirement\n\nFulfilRequirements : entry / Requirement is valid\nFulfilRequirements : do / Fulfils requirement\nFulfilRequirements : exit / NIL\n\nFulfilRequirements --> SendRequestedDetails : fulfil completed\nSendRequestedDetails : entry / Requirement is fulfilled\nSendRequestedDetails : do / Send requested details back in form of SMS\nSendRequestedDetails : exit / SMS has been sent\nSendRequestedDetails --> [*]\n\nRequirementError : entry / Invalid requirement\nRequirementError : do / Send SMS stating invalid requirement\nRequirementError : exit / SMS sent\nRequirementError --> [*]\n\n@enduml\n\nExample 3 Requirement:\nBusiness Process Outsourcing Bpo Management System Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to upload a new request.\n2. The system shall enable a BPO organization to save the details of a project.\n3. The system shall allow a client to search for a suitable project category.\n4. The system shall enable an BPO organization to accept or decline a request from a client.\n5. The system shall allow a client to decide whether to proceed with an accepted project or reject it.\n6. The system shall update the project status after acceptance by both parties.\n7. The system shall allow a client to track the progress of a project.\n8. The system shall enable an BPO organization to update the progress of a project.\n9. The system shall upload a final project once work is completed.\n10. The system shall perform a quality check on the final project.\n11. The system shall restart the process if a client is unsatisfied with the final project.\n12. The system shall make payment if the client is satisfied with the final project.\n13. The system shall deliver the project after payment.\n14. The system shall allow a client to provide a rating for the completed project.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Machine Diagram (Upload or Accept Request)\n\nstate \"Upload or Accept request\" as UAR {\n\n    [*] --> ChoiceUser\n\n\n    UAR : entry / Regarding request details\n    UAR : do / Project dealings\n    UAR : exit / After finishing rating\n\n\n    state ChoiceUser <<choice>>\n\n    ChoiceUser --> EnterDetails : [user = BPO organization]\n    ChoiceUser --> SearchCategory : [user = client]\n\n\n    state \"Enter project details\" as EnterDetails\n    state \"Update database\" as UpdateDB\n\n    EnterDetails --> UpdateDB\n    UpdateDB --> [*]\n\n\n    state \"Search project category\" as SearchCategory\n    state ChoiceBPO <<choice>>\n    state ChoiceClient <<choice>>\n\n    SearchCategory --> ChoiceBPO\n\n    ChoiceBPO --> EndDecline : [BPO org declines]\n    ChoiceBPO --> ChoiceClient : [BPO org accepts]\n\n    ChoiceClient --> EndReject : [client rejects]\n    ChoiceClient --> UpdateStatus : [client accepts]\n\n    state EndDecline <<choice>>\n    EndDecline --> [*]\n\n    state EndReject <<choice>>\n    EndReject --> [*]\n\n    state \"Update status of project\" as UpdateStatus\n\n    state ChoiceTracking <<choice>>\n\n    UpdateStatus --> ChoiceTracking\n\n    ChoiceTracking --> DisplayProgress : [client wishes to track]\n    ChoiceTracking --> UpdateProgress : [user = BPO org]\n\n    state \"Display progress\" as DisplayProgress\n    DisplayProgress --> [*]\n\n    state \"Update progress\" as UpdateProgress\n\n\n    UpdateProgress --> UploadFinal : [End of project]\n\n    state \"Upload final project\" as UploadFinal\n\n    state QualityCheck <<choice>>\n\n    UploadFinal --> QualityCheck : [Quality check]\n\n    QualityCheck --> Payment : [satisfied]\n    QualityCheck --> ChoiceTracking : [Not satisfied]\n\n    state Payment\n    state Shipment\n    state Rating\n\n    Payment --> Shipment\n    Shipment --> Rating\n\n    Rating --> [*]\n}\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nDigital Watch — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to view and adjust the time.\n2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.\n3. The system shall allow the user to increase values while adjusting time settings.\n4. The system shall provide an alarm feature that can be turned on or off by the user.\n5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.\n6. The system shall allow the user to stop the alarm by pressing a specific button.\n7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.\n",
+  "requirement_used": "Digital Watch — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to view and adjust the time.\n2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.\n3. The system shall allow the user to increase values while adjusting time settings.\n4. The system shall provide an alarm feature that can be turned on or off by the user.\n5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.\n6. The system shall allow the user to stop the alarm by pressing a specific button.\n7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_46_digital_watch\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "multiple_initial_state_transitions (AdjustTime, Switch Mode, Adjust Time, Alarm On/Off, Light On/Off)"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 8,
+    "transition_count": 10
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "multiple_initial_state_transitions (AdjustTime, Switch Mode, Adjust Time, Alarm On/Off, Light On/Off)"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__llama31_8b_instruct__few_shot",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: Adjust Time, Alarm On/Off, Alarm Stopped, Alarm Triggered, Increase Value, Light On/Off, Switch Mode"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: Adjust Time, Alarm On/Off, Alarm Stopped, Alarm Triggered, Increase Value, Light On/Off, Switch Mode"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": true,
+      "previous_score": 3,
+      "repair_score": 2,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: Adjust Time, Alarm On/Off, Alarm Stopped, Alarm Triggered, Increase Value, Light On/Off, Switch Mode"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: Adjust Time, Alarm On/Off, Alarm Stopped, Alarm Triggered, Increase Value, Light On/Off, Switch Mode"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "accepted": true,
+      "previous_score": 2,
+      "repair_score": 1,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (AdjustTime, Switch Mode, Adjust Time, Alarm On/Off, Light On/Off)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (AdjustTime, Switch Mode, Adjust Time, Alarm On/Off, Light On/Off)"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (AdjustTime, Switch Mode)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (AdjustTime, Switch Mode)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 3,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (AdjustTime, Switch Mode, Adjust Time, Alarm On/Off, Light On/Off)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (AdjustTime, Switch Mode, Light On/Off, Alarm On/Off)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (AdjustTime, Switch Mode, Light On/Off, Alarm On/Off)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 4,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (AdjustTime, Switch Mode, Adjust Time, Alarm On/Off, Light On/Off)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (AdjustTime, Switch Mode)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (AdjustTime, Switch Mode)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 5,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (AdjustTime, Switch Mode, Adjust Time, Alarm On/Off, Light On/Off)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 5,
+      "strict_state_diagram_valid": false,
+      "remaining_issues": [
+        "multiple_initial_state_transitions (AdjustTime, Switch Mode, Adjust Time, Alarm On/Off, Light On/Off)"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])",
+          "unreachable_states_detected",
+          "unreachable: Adjust Time, Alarm On/Off, Alarm Stopped, Alarm Triggered, Increase Value, Light On/Off, Switch Mode"
+        ],
+        "initial_state": "AdjustTime",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Adjust Time",
+          "Alarm On/Off",
+          "Alarm Stopped",
+          "Alarm Triggered",
+          "Increase Value",
+          "Light On/Off",
+          "Switch Mode"
+        ],
+        "state_count": 8,
+        "transition_count": 9
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_46_digital_watch\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: Adjust Time, Alarm On/Off, Alarm Stopped, Alarm Triggered, Increase Value, Light On/Off, Switch Mode"
+        ],
+        "initial_state": "AdjustTime",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Adjust Time",
+          "Alarm On/Off",
+          "Alarm Stopped",
+          "Alarm Triggered",
+          "Increase Value",
+          "Light On/Off",
+          "Switch Mode"
+        ],
+        "state_count": 8,
+        "transition_count": 12
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": true,
+      "previous_score": 3,
+      "repair_score": 2,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_01.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (AdjustTime, Switch Mode, Adjust Time, Alarm On/Off, Light On/Off)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 10
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": true,
+      "previous_score": 2,
+      "repair_score": 1,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_02.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_02.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (AdjustTime, Switch Mode)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 12
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_03.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_03.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (AdjustTime, Switch Mode, Light On/Off, Alarm On/Off)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 12
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_04.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_04.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (AdjustTime, Switch Mode)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 12
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_05.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_46_digital_watch\\run_01.repair_05.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 8,
+    "state_fn": 11,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 10,
+    "transition_fn": 15,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 7,
+    "state_fn_relaxed": 11,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 10,
+    "transition_fn_relaxed": 15,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 10,
+    "transition_fn_semantic": 15,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "multiple_initial_state_transitions (AdjustTime, Switch Mode, Adjust Time, Alarm On/Off, Light On/Off)"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "multiple_initial_state_transitions (AdjustTime, Switch Mode, Adjust Time, Alarm On/Off, Light On/Off)"
+    ]
+  },
+  "reused_base_run": {
+    "run_id": "open_source__llama31_8b_instruct__few_shot",
+    "strategy": "few_shot",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot\\case_46_digital_watch\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot\\case_46_digital_watch\\run_01.prompt.txt"
+  }
+}

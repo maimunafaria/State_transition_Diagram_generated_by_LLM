@@ -1,0 +1,282 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Online Pharmacy Management System Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow admins to update medicine details.
+2. The system shall allow admins to manage customer orders.
+3. The system shall allow admins to view delivery addresses related to customer orders.
+4. The system shall allow admins to update attendance records.
+5. The system shall allow admins to update salary details.
+
+Example 1 PlantUML:
+@startuml
+title UML State Machine Diagram - Admin
+
+[*] --> UpdateMedicine
+
+state "Update medicine" as UpdateMedicine
+state "Manage orders" as ManageOrders
+state "View delivery address" as ViewDeliveryAddress
+state "Update attendance" as UpdateAttendance
+state "Update salary" as UpdateSalary
+
+UpdateMedicine --> ManageOrders
+ManageOrders --> ViewDeliveryAddress
+ViewDeliveryAddress --> UpdateAttendance
+UpdateAttendance --> UpdateSalary
+UpdateSalary --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Crime Bureau — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to log in by entering their username and password.
+2. The system shall allow the user to try again if the login details are incorrect until successful login.
+3. The system shall allow the user to choose between requesting an FIR, requesting a petition, or viewing the list of wanted and missing persons after login.
+4. The system shall display the requested information once the user selects an option.
+5. The system shall allow a police user to log in by entering their username and password.
+6. The system shall allow the police user to try again if the login details are incorrect until successful login.
+7. The system shall allow the police user to view the list of wanted and missing persons or perform major activities such as adding station details and crime records after login.
+
+Example 2 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+
+state "Login Verification" as LV
+LV : entry / Enters username and password
+LV : do / Verification of login credentials of users
+LV : exit / Enters the website if login is correct
+
+state "Requests FIR" as RF
+RF : entry / Verified login
+RF : do / FIR Request
+RF : exit / Displays FIR
+
+state "Requests Petition" as RP
+RP : entry / Verified login
+RP : do / Requests Petition
+RP : exit / Displays Petition
+
+state "Requests Wanted person and missing list" as RW
+RW : entry / Verified login
+RW : do / Requests Wanted persons
+RW : do / Requests Missing list
+RW : exit / Saving changes
+
+state Choice1 <<choice>>
+
+LV --> LV : Repeats until login credentials are correct
+LV --> Choice1 : Chooses any one
+
+Choice1 --> RF
+Choice1 --> RP
+Choice1 --> RW
+
+RF --> [*]
+RP --> [*]
+RW --> [*]
+
+
+
+state "Login Verification-Police" as LVP
+LVP : entry / Enters username and password
+LVP : do / Verification of login credentials
+LVP : exit / Enters the website if login is correct
+
+state "Requests Wanted person and missing list" as RWP
+RWP : entry / Verified login
+RWP : do / Requests Wanted persons
+RWP : do / Requests Missing list
+RWP : exit / Saving changes
+
+state "Performs Major Activities" as PMA
+PMA : entry / EntryAction1
+PMA : do / Add station details
+PMA : do / Add crimes
+PMA : exit / Saving changes
+
+state Choice2 <<choice>>
+
+LVP --> LVP : Repeats until login credentials are correct
+LVP --> Choice2 : Chooses any one
+
+Choice2 --> RWP
+Choice2 --> PMA
+
+RWP --> [*]
+PMA --> [*]
+
+@enduml
+
+Example 3 Requirement:
+For Online College Magazine System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall require a person to either create an account or log in.
+2. The system shall allow admins to add, edit, or remove user profiles.
+3. The system shall enable admins to review articles and decide on their publication or rejection.
+4. The system shall permit content creators to write articles and send them for editing.
+5. The system shall have editors review articles from content creators and pass them for approval.
+6. The system shall restrict access if a login attempt is invalid.
+7. The system shall make published articles available for user reading.
+8. The system shall allow users to search for more articles during their reading session.
+9. The system shall enable users to provide feedback after reading articles.
+10. The system shall end when users complete their search or provide feedback.
+
+Example 3 PlantUML:
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>>
+state EditorChoice <<choice>>
+state ReadFeedbackChoice <<choice>>
+state EndJoin <<choice>>
+
+[*] --> StartChoice
+
+state Register
+Register : do / Fill details
+Register : exit / Registration successful
+
+state Login
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+state "Manage profiles" as ManageProfiles
+ManageProfiles : entry / Admin logged in
+ManageProfiles : do / Manage profile in database
+ManageProfiles : do / Add, delete or edit profiles if necessary
+ManageProfiles : exit / Action completed
+
+state "Invalid user" as InvalidUser
+InvalidUser : entry / Invalid login or invalid registration
+InvalidUser : do / Block entry to system
+InvalidUser : exit / Abnormal termination
+
+state Writing
+Writing : entry / Writer logged in
+Writing : do / Write article
+Writing : exit / Send to editor
+
+state Editing
+Editing : entry / Editor logged in and article to be edited
+Editing : do / Edit article
+Editing : exit / Send to moderator/admin
+
+state Publishing
+Publishing : entry / Admin logged in and article to be approved
+Publishing : do / Choose to approve and publish or reject article
+Publishing : do / Add article to database if approved
+Publishing : exit / Publish article
+
+state Search
+Search : entry / Choose to search for articles
+Search : do / Read searched articles
+Search : exit / Completed reading
+
+state Reading
+Reading : entry / Published article
+Reading : do / Read article
+Reading : exit / Completed reading
+
+state Feedback
+Feedback : entry / Reader chosen to give feedback
+Feedback : do / Get feedback
+Feedback : exit / Feedback entry successful
+
+StartChoice --> Register
+StartChoice --> Login
+
+Register --> AdminChoice
+Login --> EditorChoice
+
+AdminChoice --> ManageProfiles
+AdminChoice --> InvalidUser
+
+EditorChoice --> Writing
+EditorChoice --> Editing
+EditorChoice --> InvalidUser
+
+Writing --> Editing
+Editing --> Publishing
+ManageProfiles --> Publishing
+
+InvalidUser --> [*]
+
+Publishing --> Reading
+Reading --> Reading
+
+Search --> Search
+Reading --> ReadFeedbackChoice
+
+ReadFeedbackChoice --> Search
+ReadFeedbackChoice --> Feedback
+
+Feedback --> EndJoin
+Search --> EndJoin
+
+EndJoin --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Atm Many Scenarios Scenario 7 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall greet the user when they arrive.
+2. The system shall check the PIN after the card is inserted.
+3. The system shall allow the user to try again if the entered PIN is incorrect.
+4. The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times.
+5. The system shall return the card if the user cancels the operation.
+6. The system shall display available options (withdrawing money, checking information, or making a transfer) for the user to choose from if the PIN is correct.
+7. The system shall process the selected request after the user makes a choice.

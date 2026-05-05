@@ -1,0 +1,43 @@
+@startuml
+title Staff Member State Machine
+
+state "Unassigned" as Unassigned {
+  [*] --> AssignToClient : [assign to client]
+  AssignToClient --> AssignedToClient : [assigned to client]
+  AssignToClient --> AddToCampaign : [add to campaign]
+}
+
+state "Assigned to client" as AssignedToClient {
+  Unassigned --> AssignedToClient : [switch to assigned to client]
+  AssignedToClient --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AddToCampaign : [switch to campaign]
+  AssignedToClient --> LeaveJob : [leave job]
+}
+
+state "Assigned to campaign" as AssignedToCampaign {
+  Unassigned --> AssignedToCampaign : [switch to assigned to campaign]
+  AssignedToCampaign --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AssignedToClient : [switch to client]
+  AssignedToCampaign --> LeaveJob : [leave job]
+}
+
+state "Unemployed" as Unemployed {
+  LeaveJob --> Unemployed : [leave job]
+  Unemployed --> ArchiveRecord : [archive record]
+}
+
+state "Archived" as Archived {
+  ArchiveRecord --> Archived : [archive record]
+}
+
+state Choice <<choice>>
+Choice --> AssignToClient : [assign to client]
+Choice --> AddToCampaign : [add to campaign]
+Choice --> SwitchAssignments : [switch assignments]
+Choice --> LeaveJob : [leave job]
+Choice --> ArchiveRecord : [archive record]
+
+LeaveJob --> [*] : [end of work period]
+@enduml

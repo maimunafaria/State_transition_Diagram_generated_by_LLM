@@ -1,0 +1,322 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Cash Register — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a customer.
+2. The system shall add items one by one when a customer begins a purchase.
+3. The system shall wait for payment after all items are added.
+4. The system shall go back to waiting for the next customer after the payment is made.
+
+Example 1 PlantUML:
+@startuml
+title State diagram of the system operations of "Process sale"
+
+[*] --> WaitingCustomer
+
+state "Waiting for customer" as WaitingCustomer
+state "Record items" as RecordItems
+state "Waiting for payment" as WaitingPayment
+
+WaitingCustomer --> RecordItems : enter item
+RecordItems --> RecordItems : enter item
+RecordItems --> WaitingPayment : end of sale
+WaitingPayment --> WaitingCustomer : enter payment
+
+@enduml
+
+Example 2 Requirement:
+Textile — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow customers to create an account by filling in required details.
+2. The system shall enable customers to place orders for garments once they are registered.
+3. The system shall send out sample materials if a customer needs them after placing an order.
+4. The system shall review the availability of raw materials for orders that require stock checking.
+5. The system shall purchase raw materials if they are not available after stock checking.
+6. The system shall process raw materials if they are already available.
+7. The system shall begin garment production once raw materials are ready, either through purchasing or processing.
+8. The system shall conduct a defect check on the produced garments.
+9. The system shall deliver the finished garments to the customer if all checks pass.
+10. The system shall complete billing and payment processes after delivering the garments.
+11. The system shall generate a report along with feedback at the end of the process.
+
+Example 2 PlantUML:
+@startuml
+
+[*] --> CustomerRegistration
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+CustomerRegistration : entry / Start state
+CustomerRegistration : do / Fill in required details
+CustomerRegistration : exit / Getting garment orders
+
+CustomerRegistration --> GettingGarmentOrders : registration complete
+
+GettingGarmentOrders : entry / Customer registration
+GettingGarmentOrders : do / Place the orders
+GettingGarmentOrders : exit / Sampling / Stock checking
+
+GettingGarmentOrders --> Sampling : sampling required
+GettingGarmentOrders --> StockChecking : check stock
+
+Sampling : entry / Getting garment orders
+Sampling : do / Send out sample materials while ordering
+Sampling : exit / decision
+
+Sampling --> Choice1 : proceed
+StockChecking --> Choice1
+
+StockChecking : entry / Getting garment orders
+StockChecking : do / Check availability of raw material
+StockChecking : exit / decision making
+
+Choice1 --> PurchasingRawMaterials : not in stock
+Choice1 --> ProcessingRawMaterials : in stock
+
+PurchasingRawMaterials : entry / Stock checking
+PurchasingRawMaterials : do / Buy raw materials
+PurchasingRawMaterials : exit / Production of garments
+
+ProcessingRawMaterials : entry / Stock checking
+ProcessingRawMaterials : do / Processing
+ProcessingRawMaterials : exit / Production of garments
+ProcessingRawMaterials --> Choice2
+PurchasingRawMaterials --> Choice2
+Choice2 --> ProductionOfGarments
+
+ProductionOfGarments : entry / Purchasing or processing of raw materials
+ProductionOfGarments : do / Manufacturing
+ProductionOfGarments : exit / Product checking
+
+ProductionOfGarments --> ProductChecking
+
+ProductChecking : entry / Production of garments
+ProductChecking : do / Checking for defects and clearance
+ProductChecking : exit / Receiving the ordered garments
+
+ProductChecking --> ReceivingOrderedGarments
+
+ReceivingOrderedGarments : entry / Product checking
+ReceivingOrderedGarments : do / Garment delivered
+ReceivingOrderedGarments : exit / Billing
+
+ReceivingOrderedGarments --> Billing
+
+Billing : entry / Receiving the ordered garments
+Billing : do / Making payments
+Billing : exit / Report generation
+
+Billing --> ReportGeneration
+
+ReportGeneration : entry / Billing
+ReportGeneration : do / Giving feedback
+ReportGeneration : exit / final state
+
+ReportGeneration --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Smart Traffic Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall monitor traffic conditions whenever vehicles are on the road or pedestrians are waiting to cross.
+2. The system shall control street lights according to traffic conditions.
+3. The system shall manage traffic signals in response to detected situations.
+4. The system shall capture vehicle numbers and check driver details when a vehicle passes through a signal or an emergency is identified.
+5. The system shall verify if traffic rules (overspeeding, not wearing a seat belt, or not wearing a helmet) have been broken after capturing vehicle numbers and checking driver details.
+6. The system shall support if no traffic rule has been broken, the system shall end the process.
+7. The system shall ensure that if a traffic rule is broken, the system shall record the violation and issue a fine.
+8. The system shall ensure that if the fine is paid, the system shall complete the process.
+9. The system shall ensure that if the fine is not paid, the system shall send a warning.
+10. The system shall ensure that if the number of violations exceeds the allowed limit, the system shall temporarily hold the driver's license until the fine is cleared or the probation period is over.
+
+Example 3 PlantUML:
+@startuml
+title UML state chart diagram
+
+state "idle" as Idle
+Idle : entry/road empty
+Idle : do/remain same
+Idle : exit/encounter a vehicle
+Idle : exit/people waiting to cross road
+
+state "Analyse traffic flow" as AnalyseTrafficFlow
+AnalyseTrafficFlow : entry/encounter a vehicle
+AnalyseTrafficFlow : entry/people waiting to cross road
+AnalyseTrafficFlow : do/analyse traffic density
+AnalyseTrafficFlow : exit/set signal
+AnalyseTrafficFlow : exit/emergency situation
+
+state "smart lights" as SmartLights
+SmartLights : entry/population density
+SmartLights : do/turn on/off street lights
+SmartLights : exit/population density is zero
+
+state "Pedestrians detection" as PedestriansDetection
+PedestriansDetection : entry/pedestrians waiting to cross
+PedestriansDetection : do/change signal to red
+PedestriansDetection : exit/pedestrians crossed
+
+state "Traffic signal" as TrafficSignal
+TrafficSignal : entry/vehicles at signal
+TrafficSignal : do/read number plate
+TrafficSignal : exit/signal empty
+TrafficSignal : exit/vehicle crossed the signal
+TrafficSignal : exit/number plate captured
+
+state "Medical Emergency" as MedicalEmergency
+MedicalEmergency : entry/emergency situation
+MedicalEmergency : do/call medical assistance
+MedicalEmergency : exit/number plate captured
+
+state "Number plate recognition" as NumberPlateRecognition
+NumberPlateRecognition : entry/number plate captured
+NumberPlateRecognition : do/get details about driver
+NumberPlateRecognition : exit/penalty check
+
+state "penalty check" as PenaltyCheck
+PenaltyCheck : entry/law violation
+PenaltyCheck : do/check violation count
+PenaltyCheck : exit/no violation committed
+PenaltyCheck : exit/exceeding speed limit
+PenaltyCheck : exit/seat belt violation
+PenaltyCheck : exit/helmet violation
+
+state "speeding" as Speeding
+Speeding : entry/exceeding speed limit
+Speeding : do/violation count+1
+Speeding : exit/impose penalty
+
+state "seat belt violation" as SeatBeltViolation
+SeatBeltViolation : entry/not wearing seat belt
+SeatBeltViolation : do/violation count +1
+SeatBeltViolation : exit/impose penalty
+
+state "helmet violation" as HelmetViolation
+HelmetViolation : entry/not wearing a helmet
+HelmetViolation : do/violation count +1
+HelmetViolation : exit/impose penalty
+
+state "fine payment" as FinePayment
+FinePayment : entry/impose penalty
+FinePayment : exit/paid
+FinePayment : exit/not paid
+FinePayment : exit/violation count>3
+
+state "warning" as Warning
+Warning : entry/not paid
+Warning : do/send court notice to driver
+Warning : exit/abnormal termination
+
+state "Hold license" as HoldLicense
+HoldLicense : entry/violation count>3
+HoldLicense : do/temporary license cancellation
+HoldLicense : exit/repayment of fine
+HoldLicense : exit/after the probation period
+
+state J0 <<choice>>
+state J1 <<choice>>
+state J2 <<choice>>
+state Merge1 <<choice>>
+state Merge2 <<choice>>
+
+[*] --> J0
+
+J0 --> Idle
+SmartLights --> J0 
+PedestriansDetection --> J0 
+TrafficSignal --> J0 
+
+Idle --> AnalyseTrafficFlow
+AnalyseTrafficFlow --> J1 : [possible activities]
+
+J1 --> SmartLights
+J1 --> PedestriansDetection
+AnalyseTrafficFlow --> TrafficSignal : [signal empty]
+AnalyseTrafficFlow --> MedicalEmergency : [emergency situation]
+
+TrafficSignal --> NumberPlateRecognition
+MedicalEmergency --> NumberPlateRecognition
+NumberPlateRecognition --> PenaltyCheck
+
+PenaltyCheck --> J2 : [possibilities]
+J2 --> Speeding
+J2 --> SeatBeltViolation
+J2 --> HelmetViolation
+PenaltyCheck --> Merge2 : [no violations]
+
+Speeding --> Merge1
+SeatBeltViolation --> Merge1
+HelmetViolation --> Merge1
+
+Merge1 --> FinePayment : [total fine amount calculation]
+
+FinePayment --> Warning : [fine not paid]
+FinePayment --> HoldLicense : [violation count>3]
+FinePayment --> Merge2 : [paid]
+
+HoldLicense --> Merge2 : [repayment of fine]
+
+Merge2 --> [*] : [any one of the three possibilities]
+
+Warning --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.

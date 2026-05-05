@@ -1,0 +1,356 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Java — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall skip non-meaningful elements like spaces or comments.
+2. The system shall ignore empty spaces and line breaks at the beginning.
+3. The system shall skip all characters from // to the end of the line.
+4. The system shall continue skipping content until the end of a block comment (*/).
+
+Example 1 PlantUML:
+@startuml
+title State diagram for advancing past whitespace and comments in Java
+
+[*] --> Start
+
+state Start
+state "saw '/'" as SawSlash
+state "line comment" as LineComment
+state "saw '*'" as SawStar
+state "block comment" as BlockComment
+state EndWhitespace
+
+' whitespace loop
+Start --> Start : next char = ' ' \\t \\r \\n / advance
+
+' detect slash
+Start --> SawSlash : next char = '/' / advance
+
+' anything else → end
+Start --> EndWhitespace : next char = anything else
+
+' after seeing '/'
+SawSlash --> LineComment : next char = '/' / advance
+SawSlash --> SawStar : next char = '*' / advance
+SawSlash --> EndWhitespace : next char != '/' or '*' / pushback '/'
+
+' line comment behavior
+LineComment --> LineComment : next char != eoln / advance
+LineComment --> Start : next char = eoln / advance
+
+' saw '*' (possible block comment)
+SawStar --> BlockComment : next char = '*' / advance
+
+' block comment behavior
+BlockComment --> BlockComment : next char != '*' / advance
+BlockComment --> SawStar : next char = '*' / advance
+
+' loop back
+SawStar --> BlockComment : next char = '*' / advance
+BlockComment --> Start : next char = '/' / advance
+
+EndWhitespace --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Guide Dropshipping Website — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to choose whether they are a seller or a customer.
+2. The system shall enable the seller to add or remove products from their list and finalize their offerings.
+3. The system shall allow the customer to view available products and select ones of interest.
+4. The system shall facilitate communication between customers and sellers for deal discussions.
+5. The system shall determine whether a purchase is completed based on the discussion or if it does not proceed.
+6. The system shall allow the customer to make payment after a purchase is completed and provide feedback later.
+7. The system shall end the interaction if no deal occurs.
+
+Example 2 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+
+[*] --> StartChoice
+
+state StartChoice <<choice>>
+
+StartChoice --> SellerLogin
+StartChoice --> CustomerLogin
+
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry / seller should be registered
+SellerLogin : do / user provide Login Details
+SellerLogin : exit / login Successful
+
+state "Add/Remove Products" as ManageProducts
+ManageProducts : entry / seller should be LoggedIn
+ManageProducts : do / the seller should be able to add and remove products from the lists
+ManageProducts : exit / fthe seller finalise his products list 
+
+SellerLogin --> ManageProducts
+
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry / customer should be registered
+CustomerLogin : do / user provide Login Details
+CustomerLogin : exit / login Successful
+
+state "View Products" as ViewProducts
+ViewProducts : entry / customer should be LoggedIn
+ViewProducts : do / the customer view Product List
+ViewProducts : exit / customer decides to buy a product
+
+state "Purchase Products" as PurchaseProducts
+PurchaseProducts : entry / customer select a Product
+PurchaseProducts : do / customer contacts Seller via messaging
+PurchaseProducts : exit / customer should be able to message the seller
+CustomerLogin --> ViewProducts
+ViewProducts --> PurchaseProducts
+
+
+state MergePoint <<choice>>
+
+ManageProducts --> MergePoint
+PurchaseProducts --> MergePoint
+
+
+state Message
+Message : entry /customer wanting to purchase a product 
+Message : do / customer seller messaging each other discussing the deal 
+Message : exit / conclusion is drawn
+
+MergePoint --> Message
+
+state Decision <<choice>>
+Message --> Decision
+
+state "Purchase successful" as Success
+Success : entry / customer and the seller agrees on the deal
+Success : do / customer pays the seller through external means 
+Success : exit / customer asks for product feedback
+
+state "Purchase Unsuccessful" as Fail
+Fail : entry / customer not Interested in the offer
+Fail : do / customer decline sellers's Offer
+Fail : exit / end
+
+Decision --> Success
+Decision --> Fail
+
+
+state "Rate Products" as RateProducts
+RateProducts : entry / customer purchases the products
+RateProducts : do / customer gives Feedback for the transaction
+RateProducts : exit / end
+
+Success --> RateProducts
+
+RateProducts --> [*]
+Fail --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Smart Traffic Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall monitor traffic conditions whenever vehicles are on the road or pedestrians are waiting to cross.
+2. The system shall control street lights according to traffic conditions.
+3. The system shall manage traffic signals in response to detected situations.
+4. The system shall capture vehicle numbers and check driver details when a vehicle passes through a signal or an emergency is identified.
+5. The system shall verify if traffic rules (overspeeding, not wearing a seat belt, or not wearing a helmet) have been broken after capturing vehicle numbers and checking driver details.
+6. The system shall support if no traffic rule has been broken, the system shall end the process.
+7. The system shall ensure that if a traffic rule is broken, the system shall record the violation and issue a fine.
+8. The system shall ensure that if the fine is paid, the system shall complete the process.
+9. The system shall ensure that if the fine is not paid, the system shall send a warning.
+10. The system shall ensure that if the number of violations exceeds the allowed limit, the system shall temporarily hold the driver's license until the fine is cleared or the probation period is over.
+
+Example 3 PlantUML:
+@startuml
+title UML state chart diagram
+
+state "idle" as Idle
+Idle : entry/road empty
+Idle : do/remain same
+Idle : exit/encounter a vehicle
+Idle : exit/people waiting to cross road
+
+state "Analyse traffic flow" as AnalyseTrafficFlow
+AnalyseTrafficFlow : entry/encounter a vehicle
+AnalyseTrafficFlow : entry/people waiting to cross road
+AnalyseTrafficFlow : do/analyse traffic density
+AnalyseTrafficFlow : exit/set signal
+AnalyseTrafficFlow : exit/emergency situation
+
+state "smart lights" as SmartLights
+SmartLights : entry/population density
+SmartLights : do/turn on/off street lights
+SmartLights : exit/population density is zero
+
+state "Pedestrians detection" as PedestriansDetection
+PedestriansDetection : entry/pedestrians waiting to cross
+PedestriansDetection : do/change signal to red
+PedestriansDetection : exit/pedestrians crossed
+
+state "Traffic signal" as TrafficSignal
+TrafficSignal : entry/vehicles at signal
+TrafficSignal : do/read number plate
+TrafficSignal : exit/signal empty
+TrafficSignal : exit/vehicle crossed the signal
+TrafficSignal : exit/number plate captured
+
+state "Medical Emergency" as MedicalEmergency
+MedicalEmergency : entry/emergency situation
+MedicalEmergency : do/call medical assistance
+MedicalEmergency : exit/number plate captured
+
+state "Number plate recognition" as NumberPlateRecognition
+NumberPlateRecognition : entry/number plate captured
+NumberPlateRecognition : do/get details about driver
+NumberPlateRecognition : exit/penalty check
+
+state "penalty check" as PenaltyCheck
+PenaltyCheck : entry/law violation
+PenaltyCheck : do/check violation count
+PenaltyCheck : exit/no violation committed
+PenaltyCheck : exit/exceeding speed limit
+PenaltyCheck : exit/seat belt violation
+PenaltyCheck : exit/helmet violation
+
+state "speeding" as Speeding
+Speeding : entry/exceeding speed limit
+Speeding : do/violation count+1
+Speeding : exit/impose penalty
+
+state "seat belt violation" as SeatBeltViolation
+SeatBeltViolation : entry/not wearing seat belt
+SeatBeltViolation : do/violation count +1
+SeatBeltViolation : exit/impose penalty
+
+state "helmet violation" as HelmetViolation
+HelmetViolation : entry/not wearing a helmet
+HelmetViolation : do/violation count +1
+HelmetViolation : exit/impose penalty
+
+state "fine payment" as FinePayment
+FinePayment : entry/impose penalty
+FinePayment : exit/paid
+FinePayment : exit/not paid
+FinePayment : exit/violation count>3
+
+state "warning" as Warning
+Warning : entry/not paid
+Warning : do/send court notice to driver
+Warning : exit/abnormal termination
+
+state "Hold license" as HoldLicense
+HoldLicense : entry/violation count>3
+HoldLicense : do/temporary license cancellation
+HoldLicense : exit/repayment of fine
+HoldLicense : exit/after the probation period
+
+state J0 <<choice>>
+state J1 <<choice>>
+state J2 <<choice>>
+state Merge1 <<choice>>
+state Merge2 <<choice>>
+
+[*] --> J0
+
+J0 --> Idle
+SmartLights --> J0 
+PedestriansDetection --> J0 
+TrafficSignal --> J0 
+
+Idle --> AnalyseTrafficFlow
+AnalyseTrafficFlow --> J1 : [possible activities]
+
+J1 --> SmartLights
+J1 --> PedestriansDetection
+AnalyseTrafficFlow --> TrafficSignal : [signal empty]
+AnalyseTrafficFlow --> MedicalEmergency : [emergency situation]
+
+TrafficSignal --> NumberPlateRecognition
+MedicalEmergency --> NumberPlateRecognition
+NumberPlateRecognition --> PenaltyCheck
+
+PenaltyCheck --> J2 : [possibilities]
+J2 --> Speeding
+J2 --> SeatBeltViolation
+J2 --> HelmetViolation
+PenaltyCheck --> Merge2 : [no violations]
+
+Speeding --> Merge1
+SeatBeltViolation --> Merge1
+HelmetViolation --> Merge1
+
+Merge1 --> FinePayment : [total fine amount calculation]
+
+FinePayment --> Warning : [fine not paid]
+FinePayment --> HoldLicense : [violation count>3]
+FinePayment --> Merge2 : [paid]
+
+HoldLicense --> Merge2 : [repayment of fine]
+
+Merge2 --> [*] : [any one of the three possibilities]
+
+Warning --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Alarm Clock — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall be in an off state initially.
+2. The system shall support when the user sets an alarm time, the system shall activate the alarm.
+3. The system shall ensure that the user shall be able to turn off the activated alarm.
+4. The system shall support when the current time matches the set alarm time, the system shall start ringing the alarm.
+5. The system shall ensure that once the alarm is ringing, the user shall be able to stop it.
+6. The system shall support after stopping the alarm, the system shall remain active for the next scheduled alarm time.
