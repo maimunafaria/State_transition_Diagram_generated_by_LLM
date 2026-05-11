@@ -299,7 +299,6 @@ def summarize_new_violations(rows: list[dict[str, object]], group_fields: tuple[
 
 def write_markdown_summary(
     path: Path,
-    overall_rows: list[dict[str, object]],
     by_model_method_rows: list[dict[str, object]],
 ) -> None:
     def table(rows: list[dict[str, object]], fields: list[str]) -> str:
@@ -316,22 +315,6 @@ def write_markdown_summary(
         "# Repair Effectiveness Analysis",
         "",
         "Repair success is final strict structural validity. Validity recovery is invalid-to-valid transition. Regression means the final diagram introduced at least one violation type not present initially.",
-        "",
-        "## Overall",
-        table(
-            overall_rows,
-            [
-                "method",
-                "total",
-                "repair_success_rate",
-                "structural_improvement_rate",
-                "validity_recovery_rate",
-                "regression_rate",
-                "mean_attempted_repair_iterations",
-                "mean_violation_reduction",
-                "mean_total_graph_change",
-            ],
-        ),
         "",
         "## By LLM and Method",
         table(
@@ -370,9 +353,7 @@ def main() -> int:
     rows = build_repair_rows(args.runs_root.resolve(), official_syntax=args.official_syntax)
     output_dir = args.output_dir.resolve()
 
-    overall_rows = summarize(rows, ("method",))
     by_model_method_rows = summarize(rows, ("model", "method"))
-    new_violation_rows = summarize_new_violations(rows, ("method",))
     new_violation_by_model_rows = summarize_new_violations(rows, ("model", "method"))
 
     detail_fields = [
@@ -412,7 +393,8 @@ def main() -> int:
         "initial_path",
         "final_path",
     ]
-    summary_fields = [
+    by_model_fields = [
+        "model",
         "method",
         "total",
         "initial_invalid",
@@ -437,26 +419,19 @@ def main() -> int:
         "mean_modified_transition_labels",
         "mean_total_graph_change",
     ]
-    by_model_fields = ["model", *summary_fields]
 
     write_csv(output_dir / "repair_detail.csv", rows, detail_fields)
-    write_csv(output_dir / "repair_summary_by_method.csv", overall_rows, summary_fields)
     write_csv(
         output_dir / "repair_summary_by_model_method.csv",
         by_model_method_rows,
         by_model_fields,
     )
     write_csv(
-        output_dir / "repair_new_violation_types_by_method.csv",
-        new_violation_rows,
-        ["method", "new_violation_type", "count", "total", "frequency_percent"],
-    )
-    write_csv(
         output_dir / "repair_new_violation_types_by_model_method.csv",
         new_violation_by_model_rows,
         ["model", "method", "new_violation_type", "count", "total", "frequency_percent"],
     )
-    write_markdown_summary(output_dir / "summary.md", overall_rows, by_model_method_rows)
+    write_markdown_summary(output_dir / "summary.md", by_model_method_rows)
 
     print(f"Wrote repair effectiveness analysis to: {output_dir}")
     print(f"Summary: {output_dir / 'summary.md'}")

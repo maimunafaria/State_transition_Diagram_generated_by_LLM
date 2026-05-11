@@ -192,8 +192,6 @@ def heatmap_svg(rows: list[dict[str, str]], value_col: str, title: str, suffix: 
 
 
 def line_svg(rows: list[dict[str, str]], value_col: str, title: str, suffix: str, scope: str) -> str:
-    if scope == "overall":
-        return bar_svg(rows, value_col, title, suffix, scope)
     models = ordered_models(rows)
     methods = ordered_methods(rows)
     lookup = {(row["model"], row["method"]): row for row in rows}
@@ -305,16 +303,13 @@ def main() -> int:
         choices=["success", "improvement", "recovery", "regression", "iterations", "change", "all"],
         default="all",
     )
-    parser.add_argument("--scope", choices=["overall", "by-model"], default="by-model")
+    parser.add_argument("--scope", choices=["by-model"], default="by-model")
     args = parser.parse_args()
 
     input_dir = args.input_dir.resolve()
     output_dir = args.output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
-    rows = read_csv(
-        input_dir
-        / ("repair_summary_by_model_method.csv" if args.scope == "by-model" else "repair_summary_by_method.csv")
-    )
+    rows = read_csv(input_dir / "repair_summary_by_model_method.csv")
 
     if args.chart_type == "minimality":
         svg = minimality_stacked_svg(rows, args.scope)

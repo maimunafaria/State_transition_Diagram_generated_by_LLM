@@ -2,12 +2,6 @@
 
 Repair success is final strict structural validity. Validity recovery is invalid-to-valid transition. Regression means the final diagram introduced at least one violation type not present initially.
 
-## Overall
-| method | total | repair_success_rate | structural_improvement_rate | validity_recovery_rate | regression_rate | mean_attempted_repair_iterations | mean_violation_reduction | mean_total_graph_change |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Few-shot + Repair | 54 | 75.93 | 61.11 | 67.5 | 9.26 | 2.037 | 2.7222 | 4.8704 |
-| RAG + Repair | 54 | 37.04 | 42.59 | 24.44 | 3.7 | 3.4259 | 0.5926 | 1.9259 |
-
 ## By LLM and Method
 | model | method | total | repair_success_rate | structural_improvement_rate | validity_recovery_rate | regression_rate | mean_attempted_repair_iterations | mean_violation_reduction | mean_total_graph_change |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |

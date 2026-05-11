@@ -709,44 +709,6 @@ def write_markdown_summary(
         "",
         "Structural validity and violation counts are computed only on diagrams that passed PlantUML syntax checking.",
         "",
-        "## PlantUML Syntax Validity",
-        table(plantuml_summary, ["method", "total", "valid", "invalid", "validity_percent"]),
-        "",
-        "## Structural Validity on PlantUML-Valid Diagrams",
-        table(structural_summary, ["method", "total", "valid", "invalid", "validity_percent"]),
-        "",
-        "## Violation Counts",
-        table(
-            violation_summary,
-            [
-                "method",
-                "plantuml_valid_diagrams",
-                "mean_violations",
-                "median_violations",
-                "max_violations",
-                "zero_violation_diagrams",
-            ],
-        ),
-        "",
-        "## Statistical Tests",
-        table(stats_rows, sorted({key for row in stats_rows for key in row})),
-        "",
-        "## Target Method Error Delta",
-        "Negative delta means the target method has lower violation frequency than the reference method. Positive delta means the target method has higher violation frequency.",
-        "",
-        table(
-            target_error_delta_rows,
-            [
-                "target_method",
-                "reference_method",
-                "violation_type",
-                "target_frequency_percent",
-                "reference_frequency_percent",
-                "delta_percentage_points",
-                "status",
-            ],
-        ),
-        "",
         "## By LLM: PlantUML Syntax Validity",
         table(model_plantuml_summary, ["model", "method", "total", "valid", "invalid", "validity_percent"]),
         "",
@@ -869,36 +831,14 @@ def main() -> int:
         ],
     )
     write_csv(
-        output_dir / "plantuml_syntax_validity_by_method.csv",
-        plantuml_summary,
-        ["method", "total", "valid", "invalid", "validity_percent"],
-    )
-    write_csv(
         output_dir / "plantuml_syntax_validity_by_model_method.csv",
         model_plantuml_summary,
         ["model", "method", "total", "valid", "invalid", "validity_percent"],
     )
     write_csv(
-        output_dir / "structural_validity_by_method_on_plantuml_valid.csv",
-        structural_summary,
-        ["method", "total", "valid", "invalid", "validity_percent"],
-    )
-    write_csv(
         output_dir / "structural_validity_by_model_method_on_plantuml_valid.csv",
         model_structural_summary,
         ["model", "method", "total", "valid", "invalid", "validity_percent"],
-    )
-    write_csv(
-        output_dir / "violation_count_summary_by_method.csv",
-        violation_count_summary,
-        [
-            "method",
-            "plantuml_valid_diagrams",
-            "mean_violations",
-            "median_violations",
-            "max_violations",
-            "zero_violation_diagrams",
-        ],
     )
     write_csv(
         output_dir / "violation_count_summary_by_model_method.csv",
@@ -914,11 +854,6 @@ def main() -> int:
         ],
     )
     write_csv(
-        output_dir / "violation_type_distribution_by_method.csv",
-        violation_type_summary,
-        ["method", "violation_type", "count", "plantuml_valid_diagrams", "frequency_percent"],
-    )
-    write_csv(
         output_dir / "violation_type_distribution_by_model_method.csv",
         model_violation_type_summary,
         [
@@ -928,23 +863,6 @@ def main() -> int:
             "count",
             "plantuml_valid_diagrams",
             "frequency_percent",
-        ],
-    )
-    write_csv(
-        output_dir / "target_error_delta_vs_references.csv",
-        target_error_delta_rows,
-        [
-            "target_method",
-            "reference_method",
-            "violation_type",
-            "target_count",
-            "target_plantuml_valid_diagrams",
-            "target_frequency_percent",
-            "reference_count",
-            "reference_plantuml_valid_diagrams",
-            "reference_frequency_percent",
-            "delta_percentage_points",
-            "status",
         ],
     )
     write_csv(
@@ -966,38 +884,18 @@ def main() -> int:
         ],
     )
     write_csv(
-        output_dir / "statistical_tests.csv",
-        stats_rows,
-        sorted({key for row in stats_rows for key in row}),
-    )
-    write_csv(
         output_dir / "statistical_tests_by_model.csv",
         model_stats_rows,
         sorted({key for row in model_stats_rows for key in row}),
     )
 
     if args.pairwise_fisher:
-        fisher_rows = (
-            [{"metric": "PlantUML syntax validity", **row} for row in fisher_pairwise_tests(plantuml_rows)]
-            + [{"metric": "Structural validity", **row} for row in fisher_pairwise_tests(structural_rows)]
-        )
-        write_csv(
-            output_dir / "pairwise_fisher_tests.csv",
-            fisher_rows,
-            sorted({key for row in fisher_rows for key in row}),
-        )
         write_csv(
             output_dir / "pairwise_fisher_tests_by_model.csv",
             model_fisher_rows,
             sorted({key for row in model_fisher_rows for key in row}),
         )
 
-    dunn_rows = dunn_posthoc(diagram_rows)
-    write_csv(
-        output_dir / "dunn_posthoc_violation_counts.csv",
-        dunn_rows,
-        sorted({key for row in dunn_rows for key in row}),
-    )
     write_csv(
         output_dir / "dunn_posthoc_violation_counts_by_model.csv",
         model_dunn_rows,

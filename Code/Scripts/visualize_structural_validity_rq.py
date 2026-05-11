@@ -493,9 +493,9 @@ def main() -> int:
     )
     parser.add_argument(
         "--scope",
-        choices=["overall", "by-model"],
+        choices=["by-model"],
         default="by-model",
-        help="Use overall strategy averages or model-stratified values.",
+        help="Model-stratified values only.",
     )
     args = parser.parse_args()
 
