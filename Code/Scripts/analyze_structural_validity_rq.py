@@ -15,6 +15,15 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_METRICS_DIR = PROJECT_ROOT / "results" / "plantuml_pipeline" / "metrics"
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "results" / "plantuml_pipeline" / "rq_structural_validity"
 DEFAULT_METHODS = ("Zero-shot", "Few-shot", "RAG")
+METHOD_PRESETS = {
+    "main": DEFAULT_METHODS,
+    "rag-ablation": (
+        "RAG",
+        "RAG [examples only]",
+        "RAG [rules only]",
+        "RAG [theory only]",
+    ),
+}
 
 
 def read_csv(path: Path) -> list[dict[str, str]]:
@@ -292,12 +301,94 @@ def summarize_violation_types_by(
     return output
 
 
+def compare_target_error_types(
+    rows: list[dict[str, object]],
+    methods: tuple[str, ...],
+    target_method: str,
+    group_fields: tuple[str, ...] = (),
+) -> list[dict[str, object]]:
+    if target_method not in methods:
+        return []
+
+    references = [method for method in methods if method != target_method]
+    denominators: Counter[tuple[object, ...]] = Counter()
+    counts: Counter[tuple[object, ...]] = Counter()
+    violation_types: set[str] = set()
+    groups: set[tuple[object, ...]] = set()
+
+    for row in rows:
+        if not row["plantuml_valid"]:
+            continue
+        method = str(row["method"])
+        if method not in methods:
+            continue
+        group_key = tuple(row[field] for field in group_fields)
+        groups.add(group_key)
+        denominators[(*group_key, method)] += 1
+        for violation in str(row["violation_types"]).split(";"):
+            if not violation:
+                continue
+            violation_types.add(violation)
+            counts[(*group_key, method, violation)] += 1
+
+    output: list[dict[str, object]] = []
+    for group_key in sorted(groups):
+        target_total = denominators[(*group_key, target_method)]
+        if not target_total:
+            continue
+        for reference in references:
+            reference_total = denominators[(*group_key, reference)]
+            if not reference_total:
+                continue
+            for violation in sorted(violation_types):
+                target_count = counts[(*group_key, target_method, violation)]
+                reference_count = counts[(*group_key, reference, violation)]
+                target_frequency = percent(target_count, target_total)
+                reference_frequency = percent(reference_count, reference_total)
+                delta = round(target_frequency - reference_frequency, 2)
+
+                if target_count == 0 and reference_count > 0:
+                    status = "eliminated_by_target"
+                elif target_count > 0 and reference_count == 0:
+                    status = "introduced_by_target"
+                elif delta < 0:
+                    status = "mitigated_by_target"
+                elif delta > 0:
+                    status = "increased_by_target"
+                else:
+                    status = "unchanged"
+
+                output.append(
+                    {
+                        **dict(zip(group_fields, group_key)),
+                        "target_method": target_method,
+                        "reference_method": reference,
+                        "violation_type": violation,
+                        "target_count": target_count,
+                        "target_plantuml_valid_diagrams": target_total,
+                        "target_frequency_percent": target_frequency,
+                        "reference_count": reference_count,
+                        "reference_plantuml_valid_diagrams": reference_total,
+                        "reference_frequency_percent": reference_frequency,
+                        "delta_percentage_points": delta,
+                        "status": status,
+                    }
+                )
+
+    return output
+
+
 def chi_square_sf(statistic: float, df: int) -> float | None:
     # Closed forms for the degrees of freedom used by the planned comparisons.
     if df == 1:
         return math.erfc(math.sqrt(statistic / 2.0))
     if df == 2:
         return math.exp(-statistic / 2.0)
+    if df == 3:
+        root = math.sqrt(statistic / 2.0)
+        return math.erfc(root) + math.sqrt(2.0 * statistic / math.pi) * math.exp(
+            -statistic / 2.0
+        )
     return None
 
 
@@ -598,6 +689,7 @@ def write_markdown_summary(
     model_structural_summary: list[dict[str, object]],
     model_violation_summary: list[dict[str, object]],
     model_stats_rows: list[dict[str, object]],
+    target_error_delta_rows: list[dict[str, object]],
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -639,6 +731,22 @@ def write_markdown_summary(
         "## Statistical Tests",
         table(stats_rows, sorted({key for row in stats_rows for key in row})),
         "",
+        "## Target Method Error Delta",
+        "Negative delta means the target method has lower violation frequency than the reference method. Positive delta means the target method has higher violation frequency.",
+        "",
+        table(
+            target_error_delta_rows,
+            [
+                "target_method",
+                "reference_method",
+                "violation_type",
+                "target_frequency_percent",
+                "reference_frequency_percent",
+                "delta_percentage_points",
+                "status",
+            ],
+        ),
+        "",
         "## By LLM: PlantUML Syntax Validity",
         table(model_plantuml_summary, ["model", "method", "total", "valid", "invalid", "validity_percent"]),
         "",
@@ -673,21 +781,32 @@ def main() -> int:
     parser.add_argument("--metrics-dir", type=Path, default=DEFAULT_METRICS_DIR)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument(
+        "--preset",
+        choices=sorted(METHOD_PRESETS),
+        default="main",
+        help="Method group to analyze. Use rag-ablation for full RAG and RAG corpus ablations.",
+    )
+    parser.add_argument(
         "--method",
         action="append",
         default=[],
-        help="Method label to include. Repeatable. Defaults to Zero-shot, Few-shot, RAG.",
+        help="Method label to include. Repeatable. Overrides --preset when provided.",
     )
     parser.add_argument(
         "--pairwise-fisher",
         action="store_true",
         help="Also write pairwise Fisher exact tests for pass/fail rates.",
     )
+    parser.add_argument(
+        "--target-method",
+        default="RAG",
+        help="Method to compare against the other selected methods for mitigated/introduced violation types.",
+    )
     args = parser.parse_args()
 
     metrics_dir = args.metrics_dir.resolve()
     output_dir = args.output_dir.resolve()
-    methods = tuple(args.method) if args.method else DEFAULT_METHODS
+    methods = tuple(args.method) if args.method else METHOD_PRESETS[args.preset]
 
     plantuml_rows = method_rows(read_csv(metrics_dir / "plantuml_validity_cases.csv"), methods)
     state_rows = method_rows(read_csv(metrics_dir / "state_rules_validity_cases.csv"), methods)
@@ -710,6 +829,17 @@ def main() -> int:
     model_structural_summary = summarize_pass_rates_by(structural_rows, ("model", "method"))
     model_violation_count_summary = summarize_violation_counts_by(diagram_rows, ("model", "method"))
     model_violation_type_summary = summarize_violation_types_by(diagram_rows, ("model", "method"))
+    target_error_delta_rows = compare_target_error_types(
+        diagram_rows,
+        methods,
+        args.target_method,
+    )
+    target_error_delta_by_model_rows = compare_target_error_types(
+        diagram_rows,
+        methods,
+        args.target_method,
+        group_fields=("model",),
+    )
     model_stats_rows, model_fisher_rows, model_dunn_rows = per_model_stats(
         plantuml_rows,
         structural_rows,
@@ -801,6 +931,41 @@ def main() -> int:
         ],
     )
     write_csv(
+        output_dir / "target_error_delta_vs_references.csv",
+        target_error_delta_rows,
+        [
+            "target_method",
+            "reference_method",
+            "violation_type",
+            "target_count",
+            "target_plantuml_valid_diagrams",
+            "target_frequency_percent",
+            "reference_count",
+            "reference_plantuml_valid_diagrams",
+            "reference_frequency_percent",
+            "delta_percentage_points",
+            "status",
+        ],
+    )
+    write_csv(
+        output_dir / "target_error_delta_vs_references_by_model.csv",
+        target_error_delta_by_model_rows,
+        [
+            "model",
+            "target_method",
+            "reference_method",
+            "violation_type",
+            "target_count",
+            "target_plantuml_valid_diagrams",
+            "target_frequency_percent",
+            "reference_count",
+            "reference_plantuml_valid_diagrams",
+            "reference_frequency_percent",
+            "delta_percentage_points",
+            "status",
+        ],
+    )
+    write_csv(
         output_dir / "statistical_tests.csv",
         stats_rows,
         sorted({key for row in stats_rows for key in row}),
@@ -849,6 +1014,7 @@ def main() -> int:
         model_structural_summary,
         model_violation_count_summary,
         model_stats_rows,
+        target_error_delta_rows,
     )
 
     print(f"Wrote RQ analysis tables to: {output_dir}")

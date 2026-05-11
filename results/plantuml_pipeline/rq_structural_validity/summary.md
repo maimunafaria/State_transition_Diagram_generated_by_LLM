@@ -32,6 +32,30 @@ Structural validity and violation counts are computed only on diagrams that pass
 | 2 | Few-shot;RAG;Zero-shot | Structural validity |  |  | 0.0315612 | 6.911653 | 19/82;18/79;0/31 | chi-square independence |
 | 2 | Few-shot;RAG;Zero-shot | Structural violation count | Few-shot:101;RAG:97;Zero-shot:31 |  | 0.0000151 | 22.202116 |  | Kruskal-Wallis |
 
+## Target Method Error Delta
+Negative delta means the target method has lower violation frequency than the reference method. Positive delta means the target method has higher violation frequency.
+
+| target_method | reference_method | violation_type | target_frequency_percent | reference_frequency_percent | delta_percentage_points | status |
+| --- | --- | --- | --- | --- | --- | --- |
+| RAG | Zero-shot | duplicate_transitions | 11.34 | 9.68 | 1.66 | increased_by_target |
+| RAG | Zero-shot | invalid_choice_guards | 22.68 | 0.0 | 22.68 | introduced_by_target |
+| RAG | Zero-shot | invalid_choice_node | 11.34 | 0.0 | 11.34 | introduced_by_target |
+| RAG | Zero-shot | missing_final_state | 42.27 | 100.0 | -57.73 | mitigated_by_target |
+| RAG | Zero-shot | missing_initial_state | 7.22 | 74.19 | -66.97 | mitigated_by_target |
+| RAG | Zero-shot | multiple_initial_states | 34.02 | 3.23 | 30.79 | increased_by_target |
+| RAG | Zero-shot | orphan_states | 11.34 | 32.26 | -20.92 | mitigated_by_target |
+| RAG | Zero-shot | parse_warning | 2.06 | 0.0 | 2.06 | introduced_by_target |
+| RAG | Zero-shot | unreachable_states | 15.46 | 6.45 | 9.01 | increased_by_target |
+| RAG | Few-shot | duplicate_transitions | 11.34 | 5.94 | 5.4 | increased_by_target |
+| RAG | Few-shot | invalid_choice_guards | 22.68 | 7.92 | 14.76 | increased_by_target |
+| RAG | Few-shot | invalid_choice_node | 11.34 | 16.83 | -5.49 | mitigated_by_target |
+| RAG | Few-shot | missing_final_state | 42.27 | 51.49 | -9.22 | mitigated_by_target |
+| RAG | Few-shot | missing_initial_state | 7.22 | 11.88 | -4.66 | mitigated_by_target |
+| RAG | Few-shot | multiple_initial_states | 34.02 | 5.94 | 28.08 | increased_by_target |
+| RAG | Few-shot | orphan_states | 11.34 | 13.86 | -2.52 | mitigated_by_target |
+| RAG | Few-shot | parse_warning | 2.06 | 0.0 | 2.06 | introduced_by_target |
+| RAG | Few-shot | unreachable_states | 15.46 | 38.61 | -23.15 | mitigated_by_target |
+
 ## By LLM: PlantUML Syntax Validity
 | model | method | total | valid | invalid | validity_percent |
 | --- | --- | --- | --- | --- | --- |

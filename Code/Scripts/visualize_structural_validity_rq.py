@@ -11,7 +11,14 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_INPUT_DIR = PROJECT_ROOT / "results" / "plantuml_pipeline" / "rq_structural_validity"
 DEFAULT_OUTPUT_DIR = DEFAULT_INPUT_DIR / "charts"
 
-METHOD_ORDER = ["Zero-shot", "Few-shot", "RAG"]
+METHOD_ORDER = [
+    "Zero-shot",
+    "Few-shot",
+    "RAG",
+    "RAG [examples only]",
+    "RAG [rules only]",
+    "RAG [theory only]",
+]
 MODEL_ORDER = [
     "DeepSeek R1 14B",
     "Llama 3.1 8B Instruct",
@@ -22,6 +29,9 @@ METHOD_COLORS = {
     "Zero-shot": "#4E79A7",
     "Few-shot": "#F28E2B",
     "RAG": "#76B7B2",
+    "RAG [examples only]": "#59A14F",
+    "RAG [rules only]": "#EDC948",
+    "RAG [theory only]": "#B07AA1",
 }
 VIOLATION_COLORS = {
     "missing_final_state": "#4E79A7",
