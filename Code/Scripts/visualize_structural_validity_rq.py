@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import csv
 import html
+from collections import defaultdict
 from pathlib import Path
 
 
@@ -453,6 +454,105 @@ def stacked_bar_svg(
     return "\n".join(parts)
 
 
+def violation_heatmap_svg(rows: list[dict[str, str]], top_n: int = 8) -> str:
+    violation_totals: dict[str, int] = defaultdict(int)
+    for row in rows:
+        violation_totals[row["violation_type"]] += int(row["count"])
+    types = [
+        violation
+        for violation, _count in sorted(
+            violation_totals.items(), key=lambda item: (-item[1], item[0])
+        )[:top_n]
+    ]
+
+    groups = []
+    seen = set()
+    for row in rows:
+        key = (row["model"], row["method"])
+        if key not in seen:
+            seen.add(key)
+            groups.append(key)
+    groups = sorted(
+        groups,
+        key=lambda key: (
+            MODEL_ORDER.index(key[0]) if key[0] in MODEL_ORDER else 99,
+            METHOD_ORDER.index(key[1]) if key[1] in METHOD_ORDER else 99,
+            key,
+        ),
+    )
+    lookup = {
+        (row["model"], row["method"], row["violation_type"]): float(row["frequency_percent"])
+        for row in rows
+    }
+    cell_w = 120
+    cell_h = 44
+    label_w = 260
+    header_h = 120
+    width = label_w + cell_w * len(types) + 50
+    height = header_h + cell_h * len(groups) + 40
+    parts = line_bar_common_svg_start(
+        width,
+        height,
+        "Structural Violation Type Heatmap",
+        "Frequency percent among PlantUML-valid diagrams; showing top violation types",
+    )
+    for col, violation in enumerate(types):
+        x = label_w + col * cell_w + cell_w / 2
+        parts.append(
+            f'<text class="label" x="{x:.1f}" y="96" text-anchor="end" '
+            f'transform="rotate(-35 {x:.1f} 96)">{html.escape(violation)}</text>'
+        )
+    for row_idx, group in enumerate(groups):
+        y = header_h + row_idx * cell_h
+        label = f"{group[0]} | {group[1]}"
+        parts.append(f'<text class="label" x="{label_w - 12}" y="{y + 28:.1f}" text-anchor="end">{html.escape(label)}</text>')
+        for col, violation in enumerate(types):
+            x = label_w + col * cell_w
+            value = lookup.get((group[0], group[1], violation), 0.0)
+            fill = heatmap_color(value, 100.0, True)
+            parts.append(
+                f'<rect x="{x}" y="{y}" width="{cell_w}" height="{cell_h}" fill="{fill}" '
+                f'stroke="#fff" stroke-width="2"><title>{html.escape(label)} | {html.escape(violation)}: {value:.1f}%</title></rect>'
+            )
+            if value:
+                parts.append(f'<text class="value" x="{x + cell_w / 2:.1f}" y="{y + 27:.1f}" text-anchor="middle">{value:.1f}%</text>')
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
+def violation_top_bars_svg(rows: list[dict[str, str]], top_n: int = 10) -> str:
+    totals: dict[str, int] = defaultdict(int)
+    for row in rows:
+        totals[row["violation_type"]] += int(row["count"])
+    items = sorted(totals.items(), key=lambda item: (-item[1], item[0]))[:top_n]
+    max_value = max((value for _key, value in items), default=1)
+
+    width = 980
+    height = 120 + 42 * len(items)
+    margin_left = 260
+    margin_right = 50
+    margin_top = 82
+    bar_h = 24
+    bar_gap = 18
+    plot_w = width - margin_left - margin_right
+
+    parts = line_bar_common_svg_start(
+        width,
+        height,
+        "Top Structural Violation Types",
+        "Total counts across LLM-method groups",
+    )
+    for idx, (violation, value) in enumerate(items):
+        y = margin_top + idx * (bar_h + bar_gap)
+        bar_w = value / max_value * plot_w
+        fill = VIOLATION_COLORS.get(violation, "#777")
+        parts.append(f'<text class="label" x="{margin_left - 12}" y="{y + 17}" text-anchor="end">{html.escape(violation)}</text>')
+        parts.append(f'<rect x="{margin_left}" y="{y}" width="{bar_w:.1f}" height="{bar_h}" fill="{fill}" rx="2"><title>{html.escape(violation)}: {value}</title></rect>')
+        parts.append(f'<text class="value" x="{margin_left + bar_w + 8:.1f}" y="{y + 17}">{value}</text>')
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
 def render_chart(
     rows: list[dict[str, str]],
     chart_type: str,
@@ -483,7 +583,7 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument(
         "--chart-type",
-        choices=["bar", "line", "heatmap", "stacked-bar"],
+        choices=["bar", "line", "heatmap", "stacked-bar", "violation-heatmap", "violation-top-bars"],
         required=True,
     )
     parser.add_argument(
@@ -503,11 +603,14 @@ def main() -> int:
     output_dir = args.output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    if args.chart_type == "stacked-bar" and args.metric not in {"violation-types", "all"}:
-        raise ValueError("--chart-type stacked-bar is only supported with --metric violation-types or --metric all")
+    if args.chart_type in {"stacked-bar", "violation-heatmap", "violation-top-bars"} and args.metric not in {"violation-types", "all"}:
+        raise ValueError(
+            "--chart-type stacked-bar, violation-heatmap, and violation-top-bars are only supported "
+            "with --metric violation-types or --metric all"
+        )
 
     metrics = list(METRIC_CONFIG) if args.metric == "all" else [args.metric]
-    if args.chart_type == "stacked-bar" and args.metric == "all":
+    if args.chart_type in {"stacked-bar", "violation-heatmap", "violation-top-bars"} and args.metric == "all":
         metrics = ["violation-types"]
 
     for metric in metrics:
@@ -518,17 +621,22 @@ def main() -> int:
                 else "violation_type_distribution_by_method.csv"
             )
             rows = read_csv(input_dir / filename)
-            svg = stacked_bar_svg(
-                rows=rows,
-                title="Structural Violation Type Distribution",
-                scope=args.scope,
-            )
+            if args.chart_type == "violation-heatmap":
+                svg = violation_heatmap_svg(rows)
+            elif args.chart_type == "violation-top-bars":
+                svg = violation_top_bars_svg(rows)
+            else:
+                svg = stacked_bar_svg(
+                    rows=rows,
+                    title="Structural Violation Type Distribution",
+                    scope=args.scope,
+                )
             output_path = output_dir / f"violation_types_{args.scope}_{args.chart_type}.svg"
             output_path.write_text(svg, encoding="utf-8")
             print(f"Wrote {output_path}")
             continue
 
-        if args.chart_type == "stacked-bar":
+        if args.chart_type in {"stacked-bar", "violation-heatmap", "violation-top-bars"}:
             continue
 
         config = METRIC_CONFIG[metric]

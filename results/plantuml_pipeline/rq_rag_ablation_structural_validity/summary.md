@@ -65,17 +65,17 @@ Structural validity and violation counts are computed only on diagrams that pass
 | Qwen 2.5 7B Instruct | RAG [theory only] | 22 | 1.4091 | 1.0 | 3 | 1 |
 
 ## By LLM: Statistical Tests
-| df | methods | metric | model | n_by_method | note | p_value | statistic | table_valid_invalid | test |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 3 | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | PlantUML syntax validity | DeepSeek R1 14B |  |  | 0.23519707 | 4.255159 | 23/4;20/7;22/5;17/10 | chi-square independence |
-| 3 | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural validity | DeepSeek R1 14B |  |  | 0.28769778 | 3.767426 | 4/19;2/18;4/18;0/17 | chi-square independence |
-| 3 | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural violation count | DeepSeek R1 14B | RAG:23;RAG [examples only]:20;RAG [rules only]:22;RAG [theory only]:17 |  | 0.83118993 | 0.876106 |  | Kruskal-Wallis |
-| 3 | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | PlantUML syntax validity | Llama 3.1 8B Instruct |  |  | 0.02606037 | 9.257143 | 27/0;26/1;21/6;24/3 | chi-square independence |
-| 3 | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural validity | Llama 3.1 8B Instruct |  |  | 0.01244099 | 10.871573 | 6/21;4/22;9/12;1/23 | chi-square independence |
-| 3 | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural violation count | Llama 3.1 8B Instruct | RAG:27;RAG [examples only]:26;RAG [rules only]:21;RAG [theory only]:24 |  | 0.00301762 | 13.918917 |  | Kruskal-Wallis |
-| 3 | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | PlantUML syntax validity | Mistral |  |  | 0.00001222 | 25.48495 | 20/7;24/3;18/9;7/20 | chi-square independence |
-| 3 | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural validity | Mistral |  |  | 0.19272678 | 4.729299 | 4/16;1/23;1/17;0/7 | chi-square independence |
-| 3 | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural violation count | Mistral | RAG:20;RAG [examples only]:24;RAG [rules only]:18;RAG [theory only]:7 |  | 0.21472687 | 4.472827 |  | Kruskal-Wallis |
-| 3 | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | PlantUML syntax validity | Qwen 2.5 7B Instruct |  |  | 0.08030773 | 6.75 | 27/0;25/2;22/5;22/5 | chi-square independence |
-| 3 | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural validity | Qwen 2.5 7B Instruct |  |  | 0.00062918 | 17.245388 | 4/23;3/22;11/11;1/21 | chi-square independence |
-| 3 | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural violation count | Qwen 2.5 7B Instruct | RAG:27;RAG [examples only]:25;RAG [rules only]:22;RAG [theory only]:22 |  | 0.00018556 | 19.813242 |  | Kruskal-Wallis |
+| alpha | df | interpretation | methods | metric | model | n_by_method | note | p_value | significant | statistic | table_valid_invalid | test |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0.05 | 3 | No significant difference among methods. | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | PlantUML syntax validity | DeepSeek R1 14B |  |  | 0.23519707 | False | 4.255159 | 23/4;20/7;22/5;17/10 | chi-square independence |
+| 0.05 | 3 | No significant difference among methods. | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural validity | DeepSeek R1 14B |  |  | 0.28769778 | False | 3.767426 | 4/19;2/18;4/18;0/17 | chi-square independence |
+| 0.05 | 3 | No significant difference in violation counts among methods. | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural violation count | DeepSeek R1 14B | RAG:23;RAG [examples only]:20;RAG [rules only]:22;RAG [theory only]:17 |  | 0.83118993 | False | 0.876106 |  | Kruskal-Wallis |
+| 0.05 | 3 | Significant difference among methods. | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | PlantUML syntax validity | Llama 3.1 8B Instruct |  |  | 0.02606037 | True | 9.257143 | 27/0;26/1;21/6;24/3 | chi-square independence |
+| 0.05 | 3 | Significant difference among methods. | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural validity | Llama 3.1 8B Instruct |  |  | 0.01244099 | True | 10.871573 | 6/21;4/22;9/12;1/23 | chi-square independence |
+| 0.05 | 3 | Significant difference in violation counts among methods. | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural violation count | Llama 3.1 8B Instruct | RAG:27;RAG [examples only]:26;RAG [rules only]:21;RAG [theory only]:24 |  | 0.00301762 | True | 13.918917 |  | Kruskal-Wallis |
+| 0.05 | 3 | Significant difference among methods. | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | PlantUML syntax validity | Mistral |  |  | 0.00001222 | True | 25.48495 | 20/7;24/3;18/9;7/20 | chi-square independence |
+| 0.05 | 3 | No significant difference among methods. | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural validity | Mistral |  |  | 0.19272678 | False | 4.729299 | 4/16;1/23;1/17;0/7 | chi-square independence |
+| 0.05 | 3 | No significant difference in violation counts among methods. | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural violation count | Mistral | RAG:20;RAG [examples only]:24;RAG [rules only]:18;RAG [theory only]:7 |  | 0.21472687 | False | 4.472827 |  | Kruskal-Wallis |
+| 0.05 | 3 | No significant difference among methods. | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | PlantUML syntax validity | Qwen 2.5 7B Instruct |  |  | 0.08030773 | False | 6.75 | 27/0;25/2;22/5;22/5 | chi-square independence |
+| 0.05 | 3 | Significant difference among methods. | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural validity | Qwen 2.5 7B Instruct |  |  | 0.00062918 | True | 17.245388 | 4/23;3/22;11/11;1/21 | chi-square independence |
+| 0.05 | 3 | Significant difference in violation counts among methods. | RAG;RAG [examples only];RAG [rules only];RAG [theory only] | Structural violation count | Qwen 2.5 7B Instruct | RAG:27;RAG [examples only]:25;RAG [rules only]:22;RAG [theory only]:22 |  | 0.00018556 | True | 19.813242 |  | Kruskal-Wallis |

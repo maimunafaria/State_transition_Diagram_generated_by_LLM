@@ -15,6 +15,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_METRICS_DIR = PROJECT_ROOT / "results" / "plantuml_pipeline" / "metrics"
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "results" / "plantuml_pipeline" / "rq_structural_validity"
 DEFAULT_METHODS = ("Zero-shot", "Few-shot", "RAG")
+ALPHA = 0.05
 METHOD_PRESETS = {
     "main": DEFAULT_METHODS,
     "rag-ablation": (
@@ -63,6 +64,25 @@ def format_p_value(value: float) -> str:
     if value < 1e-8:
         return "<1e-8"
     return f"{value:.8f}".rstrip("0").rstrip(".")
+
+
+def significance_fields(
+    p_value: float | None,
+    significant_text: str,
+    not_significant_text: str,
+) -> dict[str, object]:
+    if p_value is None:
+        return {
+            "alpha": ALPHA,
+            "significant": "",
+            "interpretation": "Significance not computed.",
+        }
+    significant = p_value < ALPHA
+    return {
+        "alpha": ALPHA,
+        "significant": significant,
+        "interpretation": significant_text if significant else not_significant_text,
+    }
 
 
 def method_rows(
@@ -443,7 +463,12 @@ def chi_square_test(rows: list[dict[str, str]], valid_field: str = "valid") -> d
                 "statistic": round(float(statistic), 6),
                 "df": df,
                 "p_value": "",
-                "note": "p-value omitted because this script only implements chi-square survival for df=1 or df=2.",
+                "note": "p-value omitted because this script only implements chi-square survival for df=1, df=2, or df=3.",
+                **significance_fields(
+                    None,
+                    "Significant difference among methods.",
+                    "No significant difference among methods.",
+                ),
             }
         )
         return result
@@ -453,6 +478,11 @@ def chi_square_test(rows: list[dict[str, str]], valid_field: str = "valid") -> d
             "df": int(df),
             "p_value": format_p_value(float(p_value)),
             "note": "",
+            **significance_fields(
+                float(p_value),
+                "Significant difference among methods.",
+                "No significant difference among methods.",
+            ),
         }
     )
     return result
@@ -478,6 +508,11 @@ def fisher_pairwise_tests(rows: list[dict[str, str]], valid_field: str = "valid"
             "odds_ratio": round(float(odds_ratio), 6) if math.isfinite(float(odds_ratio)) else str(odds_ratio),
             "p_value": format_p_value(float(p_value)),
             "note": "",
+            **significance_fields(
+                float(p_value),
+                f"Significant pairwise difference between {a} and {b}.",
+                f"No significant pairwise difference between {a} and {b}.",
+            ),
         }
         output.append(row)
     return output
@@ -554,7 +589,12 @@ def kruskal_wallis_test(rows: list[dict[str, object]]) -> dict[str, object]:
                 "statistic": round(float(statistic), 6),
                 "df": df,
                 "p_value": "",
-                "note": "p-value omitted because this script only implements chi-square survival for df=1 or df=2.",
+                "note": "p-value omitted because this script only implements chi-square survival for df=1, df=2, or df=3.",
+                **significance_fields(
+                    None,
+                    "Significant difference in violation counts among methods.",
+                    "No significant difference in violation counts among methods.",
+                ),
             }
         )
         return result
@@ -564,6 +604,11 @@ def kruskal_wallis_test(rows: list[dict[str, object]]) -> dict[str, object]:
             "df": df,
             "p_value": format_p_value(float(p_value)),
             "note": "",
+            **significance_fields(
+                float(p_value),
+                "Significant difference in violation counts among methods.",
+                "No significant difference in violation counts among methods.",
+            ),
         }
     )
     return result
@@ -627,6 +672,11 @@ def dunn_posthoc(rows: list[dict[str, object]]) -> list[dict[str, object]]:
                 "p_value_raw": format_p_value(float(row["p_value_raw"])),
                 "p_value_holm": format_p_value(float(adjusted_by_index[idx])),
                 "note": "",
+                **significance_fields(
+                    float(adjusted_by_index[idx]),
+                    f"Significant Dunn-Holm pairwise difference between {row['method_a']} and {row['method_b']}.",
+                    f"No significant Dunn-Holm pairwise difference between {row['method_a']} and {row['method_b']}.",
+                ),
             }
         )
     return output
