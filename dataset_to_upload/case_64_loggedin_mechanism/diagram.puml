@@ -1,0 +1,40 @@
+@startuml
+title LoggingOn State Machine
+
+state LoggingOn {
+  [*] --> AcceptingUserName
+
+  state AcceptingUserName
+  state AcceptingPassword
+  state VerifyingDetails
+
+  state BadDetails {
+    state BadUsername
+    state BadPassword
+  }
+
+  BadDetails : entry / ++tries
+
+  AcceptingUserName --> AcceptingPassword : ok
+  
+  AcceptingUserName --> Canceling : cancel
+
+  AcceptingPassword --> VerifyingDetails : ok
+  AcceptingPassword --> Canceling : cancel
+
+  VerifyingDetails --> BadUsername : badUserName
+  VerifyingDetails --> BadPassword : badPassword
+  VerifyingDetails --> Authenticated : detailsVerified
+
+  BadDetails --> AcceptingUserName : [tries < 4]
+  BadDetails --> Fail : [tries = 4]
+}
+
+LoggingOn : entry / tries := 0
+
+state Canceling
+state Authenticated
+state Fail
+Fail : entry / logFailure
+userRecognized --> AcceptingPassword
+@enduml

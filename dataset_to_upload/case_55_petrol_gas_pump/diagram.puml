@@ -1,0 +1,51 @@
+@startuml
+title State machine model of a petrol (gas) pump
+
+[*] --> Waiting
+
+state Waiting
+Waiting : do / display welcome
+
+state Reading
+Reading : do / get CC details
+
+state Validating
+Validating : do / validate credit card
+
+state Initializing
+Initializing : do / initialize display
+
+state Ready
+
+state Delivering
+Delivering : do / deliver fuel
+Delivering : do / update display
+
+state Stopped
+
+state Paying
+Paying : do / debit CC account
+
+state Resetting
+Resetting : do / display CC error
+
+Waiting --> Reading : Card Inserted into Reader
+Reading --> Validating : Card Removed
+
+Validating --> Initializing : Card OK
+Validating --> Resetting : Invalid Card
+
+Resetting --> Waiting : Timeout
+Paying --> Waiting : Payment ack.
+Initializing --> Waiting : Timeout
+
+Initializing --> Ready : Hose Out of Holster
+Ready --> Initializing : Hose in Holster
+
+Ready --> Delivering : Nozzle Trigger On
+Delivering --> Stopped : Nozzle Trigger Off
+Stopped --> Delivering : Nozzle Trigger On
+
+Stopped --> Paying : Hose in Holster
+
+@enduml

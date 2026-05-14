@@ -1,0 +1,154 @@
+@startuml
+title UML State Machine Diagram
+
+[*] --> RegisterChoice
+
+state RegisterChoice <<choice>>
+
+RegisterChoice --> Register : [new user]
+RegisterChoice --> LoginComposite : [No]
+
+state Register
+Register : entry / new user
+Register : do / registration process
+Register : exit / successfully registered
+
+Register --> [*] : [invalid]
+Register --> LoginComposite
+state "login" as LoginComposite {
+
+  LoginComposite : entry / registered user
+  LoginComposite : do / permitted to monitor weather
+  LoginComposite : exit / quitting the system
+
+  state H <<history>>
+  state startChoice <<choice>>
+  state startChoice1 <<choice>>
+  state locationChoice <<choice>>
+  [*] --> startChoice
+
+  startChoice --> UserLocation : [user location]
+  startChoice --> startChoice1
+  state UserLocation
+  UserLocation : entry / user wants to see weather status
+  UserLocation : do / get user location
+  UserLocation : exit / permitted to check weather
+  H --> startChoice1
+  startChoice1 --> NewLocation : [new location]
+  NewLocation --> locationChoice : [valid]
+  UserLocation --> locationChoice
+  state NewLocation
+  NewLocation : entry / user wants weather of new location
+  NewLocation : do / get new location
+  NewLocation : exit / valid location
+
+  locationChoice --> WeatherStatus 
+  NewLocation --> [*] : [invalid]
+
+  state WeatherStatus
+  WeatherStatus : entry / valid location
+  WeatherStatus : do / select parameter to monitor
+  WeatherStatus : exit / option selected
+
+  state SensorChoice <<choice>>
+
+  WeatherStatus --> SensorChoice
+
+  SensorChoice --> MeasureTemperature : [temperature]
+  SensorChoice --> MeasureHumidity : [humidity]
+  SensorChoice --> MeasureRainfall : [rainfall]
+  SensorChoice --> MeasurePressure : [pressure]
+  SensorChoice --> MeasureDewPoint : [dew point]
+
+  state MeasureTemperature
+  MeasureTemperature : entry / temperature selected
+  MeasureTemperature : do / sensor active
+  MeasureTemperature : exit / receive signal
+
+  state MeasureHumidity
+  MeasureHumidity : entry / humidity selected
+  MeasureHumidity : do / sensor active
+  MeasureHumidity : exit / receive signal
+
+  state MeasureRainfall
+  MeasureRainfall : entry / rainfall selected
+  MeasureRainfall : do / sensor active
+  MeasureRainfall : exit / receive signal
+
+  state MeasurePressure
+  MeasurePressure : entry / pressure selected
+  MeasurePressure : do / sensor active
+  MeasurePressure : exit / receive signal
+
+  state MeasureDewPoint
+  MeasureDewPoint : entry / dew point selected
+  MeasureDewPoint : do / sensor active
+  MeasureDewPoint : exit / receive signal
+  state LiveUpdateChoice <<choice>>
+
+  MeasureTemperature --> LiveUpdateChoice
+  MeasureHumidity --> LiveUpdateChoice
+  MeasureRainfall --> LiveUpdateChoice
+  MeasurePressure --> LiveUpdateChoice
+  MeasureDewPoint --> LiveUpdateChoice
+
+  LiveUpdateChoice --> LiveUpdate
+  state LiveUpdate
+  LiveUpdate : entry / signal received
+  LiveUpdate : do / convert data
+  LiveUpdate : exit / display data
+
+  state AnalysisChoice <<choice>>
+
+  LiveUpdate --> AnalysisChoice
+  state H1 <<history>>
+  H1 --> AnalysisChoice
+  AnalysisChoice --> Alert : [alert]
+  AnalysisChoice --> WeeklyAnalysis : [weekly]
+  AnalysisChoice --> FuturePrediction : [prediction]
+  AnalysisChoice --> Graph : [graph]
+  AnalysisChoice --> [*] : [exit]
+
+  state Alert
+  Alert : entry / user wants alert messages
+  Alert : do / warnings based on weather
+  Alert : exit / message generated
+
+  state WeeklyAnalysis
+  WeeklyAnalysis : entry / weekly analysis
+  WeeklyAnalysis : do / analyze past 7 days
+  WeeklyAnalysis : exit / data analyzed
+
+  state FuturePrediction
+  FuturePrediction : entry / future prediction
+  FuturePrediction : do / predict next day
+  FuturePrediction : exit / forecast ready
+
+  state Graph
+  Graph : entry / graphical representation
+  Graph : do / generate graph
+  Graph : exit / graph ready
+  state DisplayChoice <<choice>>
+  Alert --> DisplayChoice
+  WeeklyAnalysis --> DisplayChoice
+  FuturePrediction --> DisplayChoice
+  Graph --> DisplayChoice
+  DisplayChoice --> Display
+  state Display
+  Display : entry / data received
+  Display : do / display messages
+  Display : exit / quit system
+  Display --> [*]
+
+}
+
+LoginComposite --> Logout
+
+state Logout
+Logout : entry / after getting required details
+Logout : do / logging out
+Logout : exit / terminate system
+
+Logout --> [*]
+
+@enduml

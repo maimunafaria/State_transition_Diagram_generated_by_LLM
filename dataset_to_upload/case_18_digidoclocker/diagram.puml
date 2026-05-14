@@ -1,0 +1,86 @@
+@startuml
+title UML state machine diagram
+
+
+state UserOps <<choice>>
+state EndJoin <<choice>>
+
+[*] --> ValidateUserType
+
+state "validate the Type of User" as ValidateUserType
+ValidateUserType : entry / select the user details
+ValidateUserType : do / validate the registration details
+ValidateUserType : exit / choose operations as registrar operations
+
+state Registration
+Registration : entry / fill the registration details
+Registration : do / submit the registration details
+Registration : exit / user is valid registration
+
+state Login
+Login : entry / fill the login details
+Login : do / validate the login details
+Login : exit / allow the user to login
+
+state "Upload a Document" as UploadDocument
+UploadDocument : entry / upload the document
+UploadDocument : do / upload the document
+UploadDocument : exit / upload another certificate / move to end
+
+state "View Profile" as ViewProfile
+ViewProfile : entry / view the citizen profile
+ViewProfile : do / view the citizen profile
+ViewProfile : exit / move to end
+
+state "Apply for a Certificate" as ApplyCertificate
+ApplyCertificate : entry / apply for a certificate with valid person
+ApplyCertificate : do / send request to apply certificate
+ApplyCertificate : exit / apply for another certificate / move to end
+
+state "Certificate Sent to User" as CertSentUser
+CertSentUser : entry / issue the certificate to user
+CertSentUser : do / provide the certificate
+CertSentUser : exit / update the citizen certificate in the citizen database
+
+state "Registrar asks a Certificate for verification" as RegistrarAskCert
+RegistrarAskCert : entry / registrar requests a certificate for verification
+RegistrarAskCert : do / send request to the digitlocker
+RegistrarAskCert : exit / request to digitlocker or receive the certificate provided by digitlocker or move to end
+
+state "Digitlocker provides the Certificate" as DigitlockerCertificate
+DigitlockerCertificate : entry / issue the certificate request
+DigitlockerCertificate : do / fetch the required certificate from the citizen database
+DigitlockerCertificate : exit / sent the provided certificate
+
+ValidateUserType --> Registration : [Citizen Operation]
+ValidateUserType --> RegistrarAskCert : [Registrar Operation]
+
+Registration --> Login : [valid Registration]
+Registration --> [*] : [Invalid Registration]
+
+Login --> UserOps : [valid Login]
+Login --> Login : [Invalid Login]
+
+UserOps --> UploadDocument : [Uploading Documents]
+UserOps --> ViewProfile : [Profile Viewing]
+UserOps --> ApplyCertificate : [Applying for Certificate]
+
+UploadDocument --> EndJoin : [Move to End]
+UploadDocument --> UploadDocument : [Upload another document]
+ViewProfile --> EndJoin : [Move to End]
+
+ApplyCertificate --> ApplyCertificate : [Apply for another Certificate]
+ApplyCertificate --> CertSentUser : [Send Request to Issuer]
+ApplyCertificate --> EndJoin : [Move to End]
+
+CertSentUser --> ApplyCertificate : [Issue the Applied Certificate]
+
+RegistrarAskCert --> RegistrarAskCert : [Request for another Certificate]
+RegistrarAskCert --> DigitlockerCertificate : [Send request to Digitlocker]
+RegistrarAskCert --> EndJoin : [Move to End]
+
+DigitlockerCertificate --> RegistrarAskCert : [Issue the Certificate for verification]
+
+EndJoin --> [*]
+
+@enduml

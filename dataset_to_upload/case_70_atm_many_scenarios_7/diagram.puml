@@ -1,0 +1,36 @@
+@startuml
+title ATM Control - Processing Customer Input
+
+[*] --> Idle
+
+state Idle
+Idle : entry / Display Welcome
+
+state Ejecting
+state Confiscating
+state "Processing Transaction" as ProcessingTransaction
+
+state "Processing Customer Input" as ProcessingCustomerInput {
+
+  [*] --> WaitingForPIN
+
+  state "Waiting for PIN" as WaitingForPIN
+  state "Validating PIN" as ValidatingPIN
+  state "Waiting for Customer Choice" as WaitingForChoice
+
+  WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+  ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+  ValidatingPIN --> WaitingForChoice : Valid PIN /\nDisplay Menu,\nUpdate Status
+}
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+ProcessingCustomerInput --> Ejecting : Cancel / Eject,\nDisplay Cancel
+ValidatingPIN --> Confiscating : Card Stolen, Card Expired /\nConfiscate, Update Status
+ValidatingPIN --> Confiscating : Third Invalid PIN /\nConfiscate
+
+WaitingForChoice --> ProcessingTransaction : Withdrawal Selected /\nRequest Withdrawal,\nDisplay Wait
+WaitingForChoice --> ProcessingTransaction : Query Selected /\nRequest Query,\nDisplay Wait
+WaitingForChoice --> ProcessingTransaction : Transfer Selected /\nRequest Transfer,\nDisplay Wait
+
+@enduml

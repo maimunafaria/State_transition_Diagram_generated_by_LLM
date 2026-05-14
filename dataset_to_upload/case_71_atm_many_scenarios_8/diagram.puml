@@ -1,0 +1,41 @@
+@startuml
+title ATM Control - Terminating Transaction
+
+state "Closed Down" as ClosedDown
+ClosedDown : entry / Display System Down
+
+state Idle
+Idle : entry / Display Welcome
+
+state "Processing Customer Input" as ProcessingCustomerInput
+state "Processing Transaction" as ProcessingTransaction
+
+state "Terminating Transaction" as TerminatingTransaction {
+
+  state Terminating
+  state Confiscating
+  state Ejecting
+  state Printing
+  state Dispensing
+
+  Confiscating --> Terminating : Card Confiscated /\nDisplay Confiscated
+  Ejecting --> Terminating : Card Ejected /\nDisplay Ejected
+  Printing --> Ejecting : Receipt Printed /\nEject
+  Dispensing --> Printing : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+}
+
+ProcessingCustomerInput --> Confiscating : Stolen Card, Expired Card /\nConfiscate, Update Status
+ProcessingCustomerInput --> Confiscating : Third Invalid PIN /\nConfiscate
+ProcessingCustomerInput --> Ejecting : Cancel / Eject,\nDisplay Cancel
+
+ProcessingTransaction --> Ejecting : Rejected / Eject,\nDisplay Apology
+ProcessingTransaction --> Printing : Transfer Approved /\nPrint Receipt,\nUpdate Status
+ProcessingTransaction --> Printing : Query Approved /\nPrint Receipt,\nUpdate Status
+ProcessingTransaction --> Dispensing : Withdrawal Approved /\nDispense Cash,\nUpdate Status
+
+Dispensing --> ClosedDown : Insufficient Cash /\nEject,\nAbort Cash Dispensed
+
+Terminating --> Idle : After (Elapsed Time) [Closedown Not Requested]
+Terminating --> ClosedDown : After (Elapsed Time) [Closedown Was Requested]
+
+@enduml

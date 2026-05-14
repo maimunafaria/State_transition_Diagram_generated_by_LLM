@@ -1,0 +1,40 @@
+@startuml
+title Initial state machine for StaffMember
+
+[*] --> Employed : /assignNewStaffGrade()
+
+state Employed {
+
+  state "Staff Contact" as StaffContact {
+    [*] --> NotAssigned
+
+    state NotAssigned
+    state AssignedCampaign
+
+    NotAssigned --> AssignedCampaign : assignStaffContact() / client.assignStaffContact()
+    AssignedCampaign --> NotAssigned : removeStaffContact() / client.assignStaffContact()
+
+    AssignedCampaign : exit / removeStaffcontact;
+  }
+
+  --
+
+  state "Campaign Staff" as CampaignStaffRegion {
+    [*] --> NotCampaignStaff
+
+    state NotCampaignStaff
+    state CampaignStaff
+
+    NotCampaignStaff --> CampaignStaff : assignStaff() / campaign.assignStaff()
+    CampaignStaff --> NotCampaignStaff : removeStaff() / campaign.removeStaff()
+
+    CampaignStaff : exit / removeStaff();
+  }
+}
+
+state "Ex-employee" as ExEmployee
+
+Employed --> ExEmployee : leaveEmployment
+ExEmployee --> [*] : after (1 year) / archive()
+
+@enduml

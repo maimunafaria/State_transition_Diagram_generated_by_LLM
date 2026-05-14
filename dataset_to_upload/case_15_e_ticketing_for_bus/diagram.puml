@@ -1,0 +1,77 @@
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state EntryJoin <<choice>>
+state UserActionChoice <<choice>>
+
+[*] --> StartChoice
+
+state Register
+Register : entry / When a passenger is new
+Register : do / Registration process
+Register : exit / Register successfully
+Register : exit / Invalid Registration
+
+state "Login" as Login {
+  Login : entry / Registered the user
+  Login : do / Ticket Booking Transaction
+  Login : exit / After terminating any one of the booking transaction
+
+  state "CheckStatus" as CheckStatus
+  CheckStatus : entry / When the passenger want to check status
+  CheckStatus : do / Check Status process
+  CheckStatus : exit / LogOut
+
+  state "Reservation" as Reservation
+  Reservation : entry / When the passenger want to book a ticket
+  Reservation : do / Reservation Process
+  Reservation : exit / After booking ticket
+
+  state "Confirmation" as Confirmation
+  Confirmation : entry / After reserve the ticket
+  Confirmation : do / Confirmation process
+  Confirmation : exit / Ticket reservation is confirmed
+
+  state "Payment" as Payment
+  Payment : entry / Ticket is confirmed
+  Payment : do / Payment process
+  Payment : exit / Payment is paid for the ticket and Logout
+
+  state "ManageAccount" as ManageAccount
+  ManageAccount : entry / When passenger want to modify their Account
+  ManageAccount : do / Account Edit/Delete process
+  ManageAccount : exit / LogOut
+
+  [*] --> LoginStart
+  
+
+  LoginStart --> CheckStatus : [ user want to check status ]
+  LoginStart --> Reservation : [ user want to reserve the ticket ]
+  LoginStart --> ManageAccount : [ user want to modify ]
+
+  Reservation --> Confirmation
+  Confirmation --> Payment
+
+  CheckStatus --> [*]
+  Payment --> [*]
+  ManageAccount --> [*]
+}
+
+state Logout
+Logout : entry / After terminating any one of the booking transaction
+Logout : do / Logout process
+Logout : exit / The user is Logged out
+
+StartChoice --> Register : [ New user ]
+StartChoice --> EntryJoin : [ Existing user ]
+
+Register --> EntryJoin
+Register --> [*]
+
+EntryJoin --> Login
+Login --> Logout
+Logout --> [*]
+
+
+@enduml

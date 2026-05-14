@@ -1,0 +1,50 @@
+@startuml
+title State diagram of watch with concurrent regions
+
+state "Watch" as Watch {
+
+  [*] --> Display
+
+  state Display
+  state "Change Hour" as ChangeHour
+  state "Change minutes" as ChangeMinutes
+  state "Change alarm hour" as ChangeAlarmHour
+  state "Change alarm minute" as ChangeAlarmMinute
+
+  Display --> ChangeHour : pressMode
+  ChangeHour --> ChangeMinutes : pressMode
+  ChangeMinutes --> ChangeAlarmHour : pressMode
+  ChangeAlarmHour --> ChangeAlarmMinute : pressMode
+  ChangeAlarmMinute --> Display : pressMode
+
+  ChangeHour --> ChangeHour : pressAdvance / currentHour++
+  ChangeMinutes --> ChangeMinutes : pressAdvance / currentMinute++
+  ChangeAlarmHour --> ChangeAlarmHour : pressAdvance / alarmHour++
+  ChangeAlarmMinute --> ChangeAlarmMinute : pressAdvance / alarmMinute++
+
+  --
+  [*] --> Unprepared
+
+  state Unprepared
+  state Prepared
+  state Ringing
+
+  Unprepared --> Prepared : pressAlarm
+  Prepared --> Unprepared : pressAlarm
+
+  Prepared --> Ringing : when(currentHour==alarmHour AND currentMinute==alarmMinute)
+  Ringing --> Unprepared : pressAlarm
+
+  Ringing : do / ring
+
+  --
+  [*] --> TurnedOff
+
+  state TurnedOff
+  state TurnedOn
+
+  TurnedOff --> TurnedOn : pressLight
+  TurnedOn --> TurnedOff : releaseLight
+
+  TurnedOn : do / lightWatchFace
+}

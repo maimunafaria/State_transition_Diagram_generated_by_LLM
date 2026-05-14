@@ -1,0 +1,34 @@
+@startuml
+title Correct solution with history pseudostate
+
+state "Hung up" as HungUp
+[*] --> HungUp
+
+state "Picked up receiver" as PickedUp {
+
+    state H <<history>>
+
+    state "Waiting for coin" as WaitingCoin
+    state "Waiting for number" as WaitingNumber
+    state "Waiting for validity" as WaitingValidity
+    state "Waiting for callee to pick up receiver" as WaitingCallee
+    state Communication
+    state "End communication" as EndCommunication
+
+    HungUp --> WaitingCoin : pickUpReceiver / credit = 0
+    
+
+    WaitingCoin --> WaitingNumber : [credit >= 20]
+    WaitingNumber --> WaitingValidity : dialNumber
+    WaitingValidity --> WaitingCallee : validNumber
+    WaitingCallee --> Communication : startComm / assess
+
+    Communication --> Communication : UT[sufficient credit] / assess
+    Communication --> EndCommunication : UT[insufficient credit] / assess
+}
+
+
+PickedUp --> H : insertCoin(c) / incrementCredit(c)
+PickedUp --> HungUp : replaceReceiver / returnUnusedCoins
+
+@enduml

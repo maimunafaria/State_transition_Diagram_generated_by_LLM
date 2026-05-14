@@ -1,0 +1,29 @@
+@startuml
+title Alert Notifier Component States
+
+[*] --> InitializeComponent : Load Component
+
+state "Initialize\nComponent" as InitializeComponent
+state "Waiting for Update" as WaitingForUpdate
+state "Processing Update" as ProcessingUpdate
+state "Unloading Component" as UnloadingComponent
+
+WaitingForUpdate : do / checkForUpdate
+
+ProcessingUpdate : entry / storeUpdate
+ProcessingUpdate : do / evaluateUpdate
+ProcessingUpdate : exit / [update > delta] Operator.Notify(update)
+
+UnloadingComponent : exit / compMgr.compUnloaded()
+
+InitializeComponent --> WaitingForUpdate : [ init. success ]
+InitializeComponent --> UnloadingComponent : [ init. failure ]
+
+WaitingForUpdate --> ProcessingUpdate : stock update
+ProcessingUpdate --> WaitingForUpdate
+
+WaitingForUpdate --> UnloadingComponent : shutdown
+
+UnloadingComponent --> [*]
+
+@enduml

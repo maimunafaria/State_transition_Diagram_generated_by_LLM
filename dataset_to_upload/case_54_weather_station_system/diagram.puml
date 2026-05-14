@@ -1,0 +1,35 @@
+@startuml
+title State Diagram
+
+[*] --> Shutdown
+
+state Shutdown
+state Configuring
+state Controlled
+
+state Operation {
+  state Running
+  state Testing
+  state Collecting
+  state Summarizing
+  state Transmitting
+
+
+  Running --> Testing : reportStatus()
+  Running --> Collecting : clock
+  Collecting --> Running : collection done
+
+  Running --> Summarizing : reportWeather()
+  Summarizing --> Transmitting : weather summary complete
+  Transmitting --> Running : transmission done
+
+  Testing --> Transmitting : test complete
+}
+
+Shutdown --> Running : restart()
+Shutdown --> Configuring : reconfigure()\npowerSave()
+Configuring --> Running : configuration done
+Running --> Shutdown : shutdown()
+Running --> Controlled : remoteControl()
+
+@enduml

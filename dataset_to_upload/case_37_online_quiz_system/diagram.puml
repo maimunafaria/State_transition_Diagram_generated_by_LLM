@@ -1,0 +1,113 @@
+@startuml
+title UML state chart diagram
+
+state "Teacher profile" as TeacherProfile
+TeacherProfile : entry / valid teacher
+
+state "Registration or login" as RegistrationLogin
+RegistrationLogin : entry / user detail
+RegistrationLogin : do / verify details
+
+state "student profile" as StudentProfile
+StudentProfile : entry / valid student
+
+state "Create quiz/edit quiz by teacher" as TeacherQuiz {
+  state "new quiz" as NewQuiz
+  NewQuiz : entry / valid course
+  NewQuiz : do / enter question,answer and option
+
+  state "edit quiz" as EditQuiz
+  EditQuiz : entry / quiz created already
+  EditQuiz : do / edit quiz
+
+  state "save draft" as SaveDraft
+  SaveDraft : entry / quiz created
+  SaveDraft : do / save draft
+
+  state "post quiz" as PostQuiz
+  PostQuiz : entry / user confirmation
+  PostQuiz : do / alert student
+
+  state "view result" as ViewResult
+  ViewResult : entry / quiz over
+
+  state T1 <<choice>>
+  state T2 <<choice>>
+  state T3 <<choice>>
+  state T4 <<choice>>
+
+  [*] --> T1
+  T1 --> NewQuiz
+  T1 --> EditQuiz
+  T1 --> T3
+  NewQuiz --> T2
+  EditQuiz --> T2
+
+  T2 --> SaveDraft
+  T2 --> PostQuiz
+  SaveDraft --> T2
+
+  T2 --> T3
+  T3 --> T4
+  T4 --> ViewResult
+  ViewResult --> [*]
+}
+
+state "answer quiz by student" as StudentQuiz {
+  state "select quiz" as SelectQuiz
+  SelectQuiz : entry / alert from teacher
+
+  state "answer quiz" as AnswerQuiz
+  AnswerQuiz : entry / valid quiz
+  AnswerQuiz : do / answer quiz
+  AnswerQuiz : exit / time over
+
+  state "quiz answer and result" as QuizResult
+  QuizResult : entry / quiz submitted
+
+  state "submit" as SubmitQuiz
+  SubmitQuiz : entry / quiz completed or time over
+  SubmitQuiz : do / submission
+
+  state "feedback" as Feedback
+  Feedback : entry / quiz completed
+  Feedback : do / feedback
+
+  state S1 <<choice>>
+  state S2 <<choice>>
+  state S3 <<choice>>
+
+  [*] --> SelectQuiz
+  SelectQuiz --> S1
+
+  S1 --> AnswerQuiz
+  S1 --> S2
+  S1 --> [*]
+  S2 --> QuizResult
+  S3 --> S2
+  Feedback -->s2
+  S3 --> Feedback
+  SubmitQuiz --> s3
+  AnswerQuiz --> SubmitQuiz
+}
+
+state TopJoin <<choice>>
+
+[*] --> RegistrationLogin
+
+RegistrationLogin --> TopJoin
+TopJoin  --> TeacherProfile
+TopJoin  --> StudentProfile
+
+
+TopJoin --> TeacherQuiz
+TopJoin --> StudentQuiz
+TopJoin --> [*]
+
+TeacherProfile --> TeacherQuiz
+StudentProfile --> StudentQuiz
+
+TeacherQuiz -->  [*]
+StudentQuiz -->  [*]
+
+@enduml
