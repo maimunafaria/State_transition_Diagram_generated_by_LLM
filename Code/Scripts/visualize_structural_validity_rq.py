@@ -126,6 +126,42 @@ def line_bar_common_svg_start(width: int, height: int, title: str, subtitle: str
     ]
 
 
+def wrap_label(text: str, max_chars: int = 16) -> list[str]:
+    """Wrap snake_case and spaced labels into short SVG text lines."""
+    words = text.replace("_", " ").split()
+    lines: list[str] = []
+    current = ""
+    for word in words:
+        candidate = word if not current else f"{current} {word}"
+        if len(candidate) <= max_chars:
+            current = candidate
+            continue
+        if current:
+            lines.append(current)
+        current = word
+    if current:
+        lines.append(current)
+    return lines or [text]
+
+
+def add_wrapped_text(
+    parts: list[str],
+    text: str,
+    *,
+    x: float,
+    y: float,
+    max_chars: int,
+    class_name: str = "label",
+    anchor: str = "middle",
+    line_h: int = 13,
+) -> None:
+    for idx, line in enumerate(wrap_label(text, max_chars=max_chars)):
+        parts.append(
+            f'<text class="{class_name}" x="{x:.1f}" y="{y + idx * line_h:.1f}" '
+            f'text-anchor="{anchor}">{html.escape(line)}</text>'
+        )
+
+
 def grouped_bar_svg(
     rows: list[dict[str, str]],
     title: str,
@@ -484,12 +520,12 @@ def violation_heatmap_svg(rows: list[dict[str, str]], top_n: int = 8) -> str:
         (row["model"], row["method"], row["violation_type"]): float(row["frequency_percent"])
         for row in rows
     }
-    cell_w = 120
+    cell_w = 122
     cell_h = 44
-    label_w = 260
-    header_h = 120
-    width = label_w + cell_w * len(types) + 50
-    height = header_h + cell_h * len(groups) + 40
+    label_w = 300
+    header_h = 150
+    width = label_w + cell_w * len(types) + 70
+    height = header_h + cell_h * len(groups) + 50
     parts = line_bar_common_svg_start(
         width,
         height,
@@ -498,14 +534,29 @@ def violation_heatmap_svg(rows: list[dict[str, str]], top_n: int = 8) -> str:
     )
     for col, violation in enumerate(types):
         x = label_w + col * cell_w + cell_w / 2
-        parts.append(
-            f'<text class="label" x="{x:.1f}" y="96" text-anchor="end" '
-            f'transform="rotate(-35 {x:.1f} 96)">{html.escape(violation)}</text>'
+        add_wrapped_text(
+            parts,
+            violation,
+            x=x,
+            y=84,
+            max_chars=14,
+            class_name="label",
+            anchor="middle",
+            line_h=13,
         )
     for row_idx, group in enumerate(groups):
         y = header_h + row_idx * cell_h
         label = f"{group[0]} | {group[1]}"
-        parts.append(f'<text class="label" x="{label_w - 12}" y="{y + 28:.1f}" text-anchor="end">{html.escape(label)}</text>')
+        add_wrapped_text(
+            parts,
+            label,
+            x=label_w - 12,
+            y=y + 17,
+            max_chars=36,
+            class_name="label",
+            anchor="end",
+            line_h=13,
+        )
         for col, violation in enumerate(types):
             x = label_w + col * cell_w
             value = lookup.get((group[0], group[1], violation), 0.0)

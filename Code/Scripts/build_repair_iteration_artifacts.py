@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import re
 import shutil
 from collections import defaultdict
@@ -32,6 +33,7 @@ from statistics import median
 
 ROOT = Path(__file__).resolve().parents[2]
 REPAIR_DETAIL = ROOT / "results" / "plantuml_pipeline" / "repair_effectiveness" / "repair_detail.csv"
+PLANTUML_CASES = ROOT / "results" / "plantuml_pipeline" / "metrics" / "plantuml_validity_cases.csv"
 STATE_RULES_CASES = ROOT / "results" / "plantuml_pipeline" / "metrics" / "state_rules_validity_cases.csv"
 HUMAN_EVAL = ROOT / "results" / "evaluation_diagram_responses_long_form.csv"
 OUT_TABLE_DIR = ROOT / "results" / "human_evaluation_likert"
@@ -118,6 +120,38 @@ def median_with_n(values: list[int]) -> str:
     return f"{median(values):g} (n={len(values)})"
 
 
+def repair_attempt_counts(
+    repair_rows: list[dict[str, str]],
+) -> dict[tuple[int, str], dict[str, int]]:
+    counts: dict[tuple[int, str], dict[str, int]] = defaultdict(
+        lambda: {"total": 0, "structural_valid": 0, "plantuml_valid": 0}
+    )
+    for row in repair_rows:
+        meta_path = Path(row["final_path"]).with_name("run_01.meta.json")
+        if not meta_path.exists():
+            continue
+        with meta_path.open(encoding="utf-8") as fh:
+            meta = json.load(fh)
+        for artifact in meta.get("attempt_artifacts", []):
+            stage = artifact.get("stage")
+            if stage not in {"initial", "repair"}:
+                continue
+            try:
+                attempt = int(artifact.get("attempt", -1))
+            except Exception:
+                continue
+            if attempt < 0:
+                continue
+            key = (attempt, row["model"])
+            counts[key]["total"] += 1
+            validation = artifact.get("validation") or {}
+            if validation.get("valid") is True:
+                counts[key]["plantuml_valid"] += 1
+            if artifact.get("strict_state_diagram_valid") is True:
+                counts[key]["structural_valid"] += 1
+    return counts
+
+
 def numeric_scores(
     human_rows: list[dict[str, str]],
     *,
@@ -150,6 +184,14 @@ def structurally_valid_case_keys() -> set[tuple[str, str, str]]:
     return {
         (row["model"], row["method"], row["case_id"])
         for row in read_csv(STATE_RULES_CASES)
+        if row["valid"] == "True"
+    }
+
+
+def valid_case_keys(path: Path) -> set[tuple[str, str, str]]:
+    return {
+        (row["model"], row["method"], row["case_id"])
+        for row in read_csv(path)
         if row["valid"] == "True"
     }
 
@@ -219,7 +261,9 @@ def create_review_folders(repair_rows: list[dict[str, str]], max_iteration: int)
 
 def table_for_iterations(
     repair_rows: list[dict[str, str]],
+    all_repair_rows: list[dict[str, str]],
     human_rows: list[dict[str, str]],
+    automatic_counts: dict[tuple[int, str], dict[str, int]],
     iterations: list[int],
     out_path: Path,
 ) -> None:
@@ -236,13 +280,40 @@ def table_for_iterations(
         if iteration in iterations:
             by_iteration_model[(iteration, row["model"])].append(row)
 
+    plantuml_valid_keys = valid_case_keys(PLANTUML_CASES)
+    structural_valid_keys = valid_case_keys(STATE_RULES_CASES)
+    automatic_valid_by_iteration_model: dict[tuple[int, str], dict[str, int]] = defaultdict(
+        lambda: {"structural_valid": 0, "plantuml_valid": 0}
+    )
+    for row in all_repair_rows:
+        iteration = int(row["attempted_repair_iterations"])
+        key = (row["model"], row["method"], row["case_id"])
+        count_key = (iteration, row["model"])
+        if key in structural_valid_keys:
+            automatic_valid_by_iteration_model[count_key]["structural_valid"] += 1
+        if key in plantuml_valid_keys:
+            automatic_valid_by_iteration_model[count_key]["plantuml_valid"] += 1
+
+    automatic_denominators: dict[tuple[int, str], int] = {}
+    for model in models:
+        automatic_denominators[(0, model)] = automatic_counts[(0, model)]["total"]
+        for iteration in range(1, 6):
+            previous_total = automatic_denominators[(iteration - 1, model)]
+            previous_structural_valid = automatic_valid_by_iteration_model[
+                (iteration - 1, model)
+            ]["structural_valid"]
+            automatic_denominators[(iteration, model)] = max(
+                0,
+                previous_total - previous_structural_valid,
+            )
+
     rows: list[list[str]] = []
     rows.append(
         ["Automatic (accuracy)", "Structural validity"]
         + [
             pct_with_n(
-                sum(r["final_structural_valid"] == "True" for r in by_iteration_model[(iteration, model)]),
-                len(by_iteration_model[(iteration, model)]),
+                automatic_valid_by_iteration_model[(iteration, model)]["structural_valid"],
+                automatic_denominators[(iteration, model)],
             )
             for iteration in iterations
             for model in models
@@ -252,8 +323,12 @@ def table_for_iterations(
         ["Automatic (accuracy)", "Syntactic validity"]
         + [
             pct_with_n(
-                sum(r["final_plantuml_valid"] == "True" for r in by_iteration_model[(iteration, model)]),
-                len(by_iteration_model[(iteration, model)]),
+                (
+                    automatic_valid_by_iteration_model[(iteration, model)]["plantuml_valid"]
+                    if iteration == 5
+                    else automatic_counts[(iteration, model)]["plantuml_valid"]
+                ),
+                automatic_denominators[(iteration, model)],
             )
             for iteration in iterations
             for model in models
@@ -292,61 +367,81 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    repair_rows = structurally_valid_rows(read_csv(REPAIR_DETAIL))
+    all_repair_rows = read_csv(REPAIR_DETAIL)
+    repair_rows = structurally_valid_rows(all_repair_rows)
+    automatic_counts = repair_attempt_counts(all_repair_rows)
     human_rows = read_csv(HUMAN_EVAL)
 
     create_review_folders(repair_rows, args.max_iteration)
     table_for_iterations(
         repair_rows,
+        all_repair_rows,
         human_rows,
+        automatic_counts,
         [0],
         OUT_TABLE_DIR / "exact_repair_iteration_0_table_score_only_with_n.csv",
     )
     table_for_iterations(
         repair_rows,
+        all_repair_rows,
         human_rows,
+        automatic_counts,
         [1],
         OUT_TABLE_DIR / "exact_repair_iteration_1_table_score_only_with_n.csv",
     )
     table_for_iterations(
         repair_rows,
+        all_repair_rows,
         human_rows,
+        automatic_counts,
         [2],
         OUT_TABLE_DIR / "exact_repair_iteration_2_table_score_only_with_n.csv",
     )
     table_for_iterations(
         repair_rows,
+        all_repair_rows,
         human_rows,
+        automatic_counts,
         [3],
         OUT_TABLE_DIR / "exact_repair_iteration_3_table_score_only_with_n.csv",
     )
     table_for_iterations(
         repair_rows,
+        all_repair_rows,
         human_rows,
+        automatic_counts,
         [4],
         OUT_TABLE_DIR / "exact_repair_iteration_4_table_score_only_with_n.csv",
     )
     table_for_iterations(
         repair_rows,
+        all_repair_rows,
         human_rows,
+        automatic_counts,
         [5],
         OUT_TABLE_DIR / "exact_repair_iteration_5_table_score_only_with_n.csv",
     )
     table_for_iterations(
         repair_rows,
+        all_repair_rows,
         human_rows,
+        automatic_counts,
         [0, 1, 2],
         OUT_TABLE_DIR / "exact_repair_iterations_0_1_2_table_score_only_with_n.csv",
     )
     table_for_iterations(
         repair_rows,
+        all_repair_rows,
         human_rows,
+        automatic_counts,
         [0, 1, 2, 3],
         OUT_TABLE_DIR / "exact_repair_iterations_0_1_2_3_table_score_only_with_n.csv",
     )
     table_for_iterations(
         repair_rows,
+        all_repair_rows,
         human_rows,
+        automatic_counts,
         [0, 1, 2, 3, 4, 5],
         OUT_TABLE_DIR / "exact_repair_iterations_0_1_2_3_4_5_table_score_only_with_n.csv",
     )
