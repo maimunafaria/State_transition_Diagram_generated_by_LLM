@@ -1,0 +1,107 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Candidate PlantUML:
+@startuml
+title UML State Transition Diagram - Healthcare Portal
+
+state "Idle" as Idle
+Idle : entry/Welcome
+Idle : do/Waiting for user action
+Idle : exit/Register/Login
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/MainMenu/InvalidRegister
+
+state "InvalidRegister" as InvalidRegister
+InvalidRegister : entry/Invalid registration
+InvalidRegister : do/Cannot register
+InvalidRegister : exit/Abnormal termination
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid credentials
+Login : exit/MainMenu/InvalidLogin
+
+state "InvalidLogin" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state "MainMenu" as MainMenu
+MainMenu : entry/MainMenu
+MainMenu : do/Access facilities
+MainMenu : exit/Waiting for user choice
+
+state "ReadContent" as ReadContent
+ReadContent : entry/ReadContent
+ReadContent : do/View news/expert content
+ReadContent : exit/MainMenu
+
+state "HealthInfo" as HealthInfo
+HealthInfo : entry/HealthInfo
+HealthInfo : do/Check symptoms or fitness
+HealthInfo : exit/MainMenu
+
+state "ViewResult" as ViewResult
+ViewResult : entry/ViewResult
+ViewResult : do/View results
+ViewResult : exit/Continue/Logout
+
+state "ProcessInsurance" as ProcessInsurance
+ProcessInsurance : entry/ProcessInsurance
+ProcessInsurance : do/Validate insurance
+ProcessInsurance : exit/InsuranceApproved/InsuranceRejected
+
+state "PaymentSelection" as PaymentSelection
+PaymentSelection : entry/PaymentSelection
+PaymentSelection : do/Choose payment method
+PaymentSelection : exit/CashPayment/InsurancePayment
+
+state "CashPayment" as CashPayment
+CashPayment : entry/CashPayment
+CashPayment : do/Inform cash details
+CashPayment : exit/CompletePayment
+
+state "InsurancePayment" as InsurancePayment
+@enduml
+
+
+Validation issues to fix:
+- missing_initial_state_transition ([*] --> state)
+- missing_final_state_transition (state --> [*])
+- orphan_states_detected
+- orphan: CashPayment, HealthInfo, Idle, InsurancePayment, InvalidLogin, InvalidRegister, Login, MainMenu, PaymentSelection, ProcessInsurance, ReadContent, Register, ViewResult
+
+Repair guidance for these issues:
+- Add one clear initial transition from [*] to the first lifecycle state.
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
