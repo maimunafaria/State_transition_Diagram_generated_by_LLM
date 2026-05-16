@@ -6,6 +6,7 @@ views from the underlying automatic-validity and human-evaluation CSVs.
 
 Outputs:
   results/human_evaluation_likert/exact_zero_one_few_table_score_only_with_n.csv
+  results/human_evaluation_likert/exact_zero_one_few_rag_table_score_only_with_n.csv
   results/human_evaluation_likert/exact_rag_ablation_table_score_only_with_n.csv
   results/human_evaluation_likert/exact_repair_table_score_only_with_n.csv
 
@@ -296,6 +297,26 @@ def build_zero_one_few() -> None:
     )
 
 
+def build_zero_one_few_rag() -> None:
+    syntactic = valid_index(MAIN_SYNTACTIC)
+    structural = valid_index(MAIN_STRUCTURAL)
+    human_rows = read_csv(MAIN_HUMAN)
+
+    methods = [m for m in ["Zero-shot", "One-shot", "Few-shot", "RAG"] if any(k[0] == m for k in syntactic | structural)]
+    models = models_for_methods(methods, [syntactic, structural], human_rows)
+    build_table(
+        out_path=OUT_DIR / "exact_zero_one_few_rag_table_score_only_with_n.csv",
+        methods=methods,
+        models=models,
+        structural=structural,
+        syntactic=syntactic,
+        human_rows=human_rows,
+        human_method_map=lambda method: method,
+        method_label=lambda method: method,
+        model_label=lambda model: MODEL_SHORT.get(model, model),
+    )
+
+
 def build_rag_ablation() -> None:
     syntactic = valid_index(RAG_SYNTACTIC)
     structural = valid_index(RAG_STRUCTURAL_ON_SYNTAX_VALID)
@@ -355,7 +376,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--table",
-        choices=["all", "zero-one-few", "rag-ablation", "repair"],
+        choices=["all", "zero-one-few", "zero-one-few-rag", "rag-ablation", "repair"],
         default="all",
         help="Which exact table to regenerate.",
     )
@@ -363,6 +384,8 @@ def main() -> None:
 
     if args.table in ("all", "zero-one-few"):
         build_zero_one_few()
+    if args.table in ("all", "zero-one-few-rag"):
+        build_zero_one_few_rag()
     if args.table in ("all", "rag-ablation"):
         build_rag_ablation()
     if args.table in ("all", "repair"):
