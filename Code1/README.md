@@ -208,7 +208,4 @@ python3 code/report_validity_percentages.py
 
 ## Notes
 
-The upload folder contains code only. It does not include generated diagrams,
-evaluation spreadsheets, result tables, vector databases, or raw source PDFs.
-
 The `results/` folder is created when the pipeline is run.
