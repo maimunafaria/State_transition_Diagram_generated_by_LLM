@@ -283,10 +283,10 @@ def extract_json_object(raw: str) -> dict[str, Any]:
         if isinstance(parsed, dict):
             return parsed
 
-    raise RuntimeError(f"Could not parse JSON object from LLM response: {text[:400]}")
+    raise RuntimeError(f"Could not parse JSON object from model response: {text[:400]}")
 
 
-def call_llm_json(
+def call_model_json(
     model_name: str,
     prompt: str,
     ollama_host: str,
@@ -555,13 +555,13 @@ def deterministic_validation(raw_text: str, rewritten: list[str]) -> dict[str, A
 def relaxed_final_assessment(
     rewritten: list[str],
     deterministic: dict[str, Any],
-    llm_validation: dict[str, Any],
+    model_validation: dict[str, Any],
     extraction_error: str,
     rewriting_error: str,
 ) -> str:
     """Use a moderate final gate for dataset validation reports.
 
-    The LLM validator can flag acceptable paraphrases, so a single warning is
+    The model validator can flag acceptable paraphrases, so a single warning is
     not enough to fail a case. Several accumulated warnings, however, should
     push the case into manual review.
     """
@@ -571,11 +571,11 @@ def relaxed_final_assessment(
         return "needs_review"
     if deterministic.get("duplicates"):
         return "needs_review"
-    llm_issue_count = sum(
-        len(llm_validation.get(key) or [])
+    model_issue_count = sum(
+        len(model_validation.get(key) or [])
         for key in ("missing_requirements", "hallucinations", "duplicates", "ambiguities")
     )
-    if llm_issue_count >= 6:
+    if model_issue_count >= 6:
         return "needs_review"
     return "pass"
 
@@ -623,7 +623,7 @@ def process_case(
     top_p: float,
     max_tokens: int,
     timeout: int,
-    disable_llm_validator: bool,
+    disable_model_validator: bool,
 ) -> dict[str, Any]:
     raw_path = case_dir / "raw_requirement.txt"
     out_path = case_dir / output_name
@@ -644,14 +644,14 @@ def process_case(
 
     extracted: list[dict[str, str]] = []
     rewritten: list[str] = []
-    llm_validation: dict[str, Any] = {}
+    model_validation: dict[str, Any] = {}
 
     extraction_response = ""
     rewriting_response = ""
     validator_response = ""
 
     try:
-        extracted_obj, extraction_response = call_llm_json(
+        extracted_obj, extraction_response = call_model_json(
             model_name=extractor_model,
             prompt=extraction_prompt,
             ollama_host=ollama_host,
@@ -669,7 +669,7 @@ def process_case(
 
     rewriting_prompt = build_rewriter_prompt(extracted)
     try:
-        rewritten_obj, rewriting_response = call_llm_json(
+        rewritten_obj, rewriting_response = call_model_json(
             model_name=rewriter_model,
             prompt=rewriting_prompt,
             ollama_host=ollama_host,
@@ -686,10 +686,10 @@ def process_case(
         rewritten = [to_shall(x["requirement"]) for x in extracted if x.get("requirement")]
         rewritten = dedupe_keep_order([x for x in rewritten if x])
 
-    if not disable_llm_validator:
+    if not disable_model_validator:
         validation_prompt = build_validator_prompt(raw_text, rewritten)
         try:
-            llm_obj, validator_response = call_llm_json(
+            validation_obj, validator_response = call_model_json(
                 model_name=validator_model,
                 prompt=validation_prompt,
                 ollama_host=ollama_host,
@@ -698,16 +698,16 @@ def process_case(
                 max_tokens=max_tokens,
                 timeout=timeout,
             )
-            llm_validation = llm_obj
+            model_validation = validation_obj
         except Exception as exc:
             validator_error = str(exc)
-            llm_validation = {"overall_assessment": "needs_review", "error": validator_error}
+            model_validation = {"overall_assessment": "needs_review", "error": validator_error}
 
     deterministic = deterministic_validation(raw_text, rewritten)
     final_status = relaxed_final_assessment(
         rewritten=rewritten,
         deterministic=deterministic,
-        llm_validation=llm_validation,
+        model_validation=model_validation,
         extraction_error=extraction_error,
         rewriting_error=rewriting_error,
     )
@@ -720,9 +720,9 @@ def process_case(
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "model": extractor_model,
         "functional_requirements": extracted,
-        "errors": {"llm_extraction_error": extraction_error},
+        "errors": {"model_extraction_error": extraction_error},
         "prompt": extraction_prompt,
-        "llm_response": extraction_response,
+        "model_response": extraction_response,
     }
     write_json(case_dir / "functional_requirements_extracted.json", extracted_artifact)
 
@@ -732,30 +732,30 @@ def process_case(
         "model": rewriter_model,
         "rewritten_requirements": rewritten,
         "source_extracted_requirements": extracted,
-        "errors": {"llm_rewriting_error": rewriting_error},
+        "errors": {"model_rewriting_error": rewriting_error},
         "prompt": rewriting_prompt,
-        "llm_response": rewriting_response,
+        "model_response": rewriting_response,
     }
     write_json(case_dir / "functional_requirements_rewritten.json", rewritten_artifact)
 
     validation_artifact = {
         "case_id": case_dir.name,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-        "model": validator_model if not disable_llm_validator else "",
-        "disable_llm_validator": disable_llm_validator,
+        "model": validator_model if not disable_model_validator else "",
+        "disable_model_validator": disable_model_validator,
         "deterministic_validation": deterministic,
-        "llm_validation": llm_validation,
+        "model_validation": model_validation,
         "errors": {
-            "llm_extraction_error": extraction_error,
-            "llm_rewriting_error": rewriting_error,
-            "llm_validator_error": validator_error,
+            "model_extraction_error": extraction_error,
+            "model_rewriting_error": rewriting_error,
+            "model_validator_error": validator_error,
         },
         "prompt": validation_prompt,
-        "llm_response": validator_response,
+        "model_response": validator_response,
         "final_assessment_policy": (
             "moderate: needs_review if extraction/rewriting failed, no rewritten "
             "requirements were produced, exact duplicate rewritten requirements were "
-            "detected, or the LLM validator reports 6 or more total issues across "
+            "detected, or the model validator reports 6 or more total issues across "
             "missing requirements, hallucinations, duplicates, and ambiguities"
         ),
         "final_assessment": final_status,
@@ -790,7 +790,7 @@ def find_case_dirs(dataset_root: Path, start_case: int, end_case: int, cases: li
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Hybrid LLM pipeline: extract, rewrite, validate, and build structured requirements."
+        description="Hybrid model pipeline: extract, rewrite, validate, and build structured requirements."
     )
     parser.add_argument("--dataset-root", type=Path, default=DEFAULT_DATASET_ROOT)
     parser.add_argument("--output-name", default="structured_requirement.txt")
@@ -798,11 +798,11 @@ def main() -> None:
     parser.add_argument("--end-case", type=int, default=999)
     parser.add_argument("--cases", nargs="*", default=None)
     parser.add_argument("--overwrite", action="store_true")
-    parser.add_argument("--model", default=DEFAULT_MODEL, help="Default model for all three LLM passes.")
+    parser.add_argument("--model", default=DEFAULT_MODEL, help="Default model for all three model passes.")
     parser.add_argument("--extractor-model", default="", help="Override model for extraction.")
     parser.add_argument("--rewriter-model", default="", help="Override model for rewriting.")
     parser.add_argument("--validator-model", default="", help="Override model for validation.")
-    parser.add_argument("--disable-llm-validator", action="store_true")
+    parser.add_argument("--disable-model-validator", action="store_true")
     parser.add_argument("--ollama-host", default=DEFAULT_OLLAMA_HOST)
     parser.add_argument("--temperature", type=float, default=0.1)
     parser.add_argument("--top-p", type=float, default=0.9)
@@ -823,7 +823,7 @@ def main() -> None:
     print(
         "Pipeline configuration:"
         f" extractor={extractor_model}, rewriter={rewriter_model}, validator={validator_model},"
-        f" llm_validator={'off' if args.disable_llm_validator else 'on'}"
+        f" model_validator={'off' if args.disable_model_validator else 'on'}"
     )
 
     summary = {
@@ -849,7 +849,7 @@ def main() -> None:
                 top_p=args.top_p,
                 max_tokens=args.max_tokens,
                 timeout=args.timeout,
-                disable_llm_validator=args.disable_llm_validator,
+                disable_model_validator=args.disable_model_validator,
             )
             status = str(result.get("status", "error"))
             summary[status] = summary.get(status, 0) + 1

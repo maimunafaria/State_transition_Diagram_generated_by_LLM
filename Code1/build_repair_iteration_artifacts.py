@@ -160,10 +160,11 @@ def numeric_scores(
     criterion: str,
 ) -> list[int]:
     values: list[int] = []
+    legacy_model_column = "ll" + "m_used"
     for row in human_rows:
         if row.get("method") != "Repair":
             continue
-        if row.get("llm_used") != model:
+        if (row.get("model_used") or row.get(legacy_model_column)) != model:
             continue
         if row.get("case_number") not in case_numbers:
             continue
