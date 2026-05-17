@@ -13,7 +13,6 @@ from .constants import (
     DEFAULT_DATASET_ROOT,
     DEFAULT_RAG_COLLECTION_NAME,
     DEFAULT_RAG_DB_DIR,
-    DEFAULT_RAG_DOCS_DIR,
     DEFAULT_RESULTS_ROOT,
 )
 
@@ -63,25 +62,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output root for run artifacts and metrics",
     )
     p_run.add_argument(
-        "--rag-docs-dir",
-        default=str(DEFAULT_RAG_DOCS_DIR),
-        help="RAG documents directory",
-    )
-    p_run.add_argument(
-        "--rag-mode",
-        choices=["lexical", "vector"],
-        default="lexical",
-        help="RAG retrieval mode",
-    )
-    p_run.add_argument(
         "--rag-db-dir",
         default=str(DEFAULT_RAG_DB_DIR),
-        help="Persisted vector database directory for --rag-mode vector",
+        help="Persisted Chroma vector database directory for RAG",
     )
     p_run.add_argument(
         "--rag-collection-name",
         default=DEFAULT_RAG_COLLECTION_NAME,
-        help="Vector collection name for --rag-mode vector",
+        help="Chroma collection name for RAG",
     )
     p_run.add_argument("--runs", type=int, default=3, help="Runs per case/config")
     p_run.add_argument(
@@ -105,11 +93,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path where the generated train/test split metadata is saved",
     )
     p_run.add_argument(
-        "--use-case-rag",
-        action="store_true",
-        help="Use non-test dataset cases as RAG documents in addition to --rag-docs-dir docs",
-    )
-    p_run.add_argument(
         "--requirement-source",
         choices=["raw", "structured"],
         default="structured",
@@ -128,10 +111,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional domain hint to bias RAG retrieval (repeatable)",
     )
     p_run.add_argument(
-        "--rag-ablation-tag",
+        "--rag-analysis-tag",
         default="",
         help=(
-            "Optional tag added to RAG-family run_ids so ablation runs do not overwrite "
+            "Optional tag added to RAG-family run_ids so analysis runs do not overwrite "
             "default RAG outputs, e.g. examples_only or rules_only."
         ),
     )

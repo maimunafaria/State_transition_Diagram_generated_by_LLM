@@ -16,7 +16,6 @@ from .io_utils import read_text, write_json, write_jsonl, write_text
 from .metrics import compute_metrics, summarize_metrics
 from .models import ValidationResult
 from .parser import parse_and_validate_puml_text
-from .prompting import load_rag_docs, tokenize
 
 
 def _resolve_root(path_arg: str, parent: Path | None = None) -> Path:
@@ -26,20 +25,6 @@ def _resolve_root(path_arg: str, parent: Path | None = None) -> Path:
     if parent is None:
         return (PROJECT_ROOT / path).resolve()
     return (parent / path).resolve()
-
-
-def _case_rag_docs(cases: list[Any]) -> list[tuple[str, str, set[str]]]:
-    docs: list[tuple[str, str, set[str]]] = []
-    for case in cases:
-        content = (
-            f"Case ID: {case.case_id}\n"
-            f"Complexity: {case.complexity}\n\n"
-            f"Requirement:\n{case.structured_requirement or case.raw_requirement}\n\n"
-            f"Reference PlantUML:\n{case.gold_puml}\n"
-        )
-        name = f"{case.case_id}.txt"
-        docs.append((name, content, tokenize(content)))
-    return docs
 
 
 def _existing_base_run_for_repair(
@@ -154,10 +139,8 @@ def command_validate(args: argparse.Namespace) -> int:
 def command_run(args: argparse.Namespace) -> int:
     dataset_root = _resolve_root(args.dataset_root)
     results_root = _resolve_root(args.results_root)
-    rag_docs_dir = _resolve_root(args.rag_docs_dir)
     rag_db_dir = _resolve_root(args.rag_db_dir)
     split_output = _resolve_root(args.split_output)
-    rag_mode = str(args.rag_mode).strip().lower()
     rag_domain_hints = {s.strip().lower() for s in (args.rag_domain_hint or []) if s.strip()}
 
     cases = load_cases(dataset_root)
@@ -176,10 +159,6 @@ def command_run(args: argparse.Namespace) -> int:
     )
     write_json(split_output, split_meta)
 
-    rag_docs = load_rag_docs(rag_docs_dir) if rag_mode == "lexical" else []
-    if args.use_case_rag and rag_mode == "lexical":
-        rag_docs.extend(_case_rag_docs(rag_cases))
-
     configs = build_experiment_configs(
         qwen_model=args.qwen_model,
         qwen14_model=args.qwen14_model,
@@ -188,7 +167,7 @@ def command_run(args: argparse.Namespace) -> int:
         llama70_model=args.llama70_model,
         deepseek_model=args.deepseek_model,
         deepseek14_model=args.deepseek14_model,
-        rag_ablation_tag=args.rag_ablation_tag,
+        rag_analysis_tag=args.rag_analysis_tag,
     )
 
     if args.few_shot_count == 1:
@@ -232,18 +211,15 @@ def command_run(args: argparse.Namespace) -> int:
         "generated_at_epoch": time.time(),
         "dataset_root": str(dataset_root),
         "results_root": str(results_root),
-        "rag_docs_dir": str(rag_docs_dir),
-        "rag_mode": rag_mode,
+        "rag_retrieval": "vector",
         "rag_db_dir": str(rag_db_dir),
         "rag_collection_name": args.rag_collection_name,
-        "rag_doc_count": len(rag_docs),
         "split_output": str(split_output),
         "test_size": args.test_size,
         "test_case_count": len(test_cases),
         "rag_case_count": len(rag_cases),
         "test_case_ids": [c.case_id for c in test_cases],
         "rag_case_ids": [c.case_id for c in rag_cases],
-        "use_case_rag": bool(args.use_case_rag),
         "rag_top_k": args.top_k_rag,
         "rag_max_chars_per_doc": args.rag_max_chars_per_doc,
         "rag_domain_hints": sorted(rag_domain_hints),
@@ -297,7 +273,6 @@ def command_run(args: argparse.Namespace) -> int:
                             case=case,
                             cfg=cfg,
                             all_cases=rag_cases,
-                            rag_docs=rag_docs,
                             requirement_source=args.requirement_source,
                             top_k_rag=args.top_k_rag,
                             ollama_host=args.ollama_host,
@@ -307,7 +282,6 @@ def command_run(args: argparse.Namespace) -> int:
                             timeout=args.timeout,
                             rag_max_chars_per_doc=args.rag_max_chars_per_doc,
                             rag_domain_hints=rag_domain_hints,
-                            rag_mode=rag_mode,
                             rag_db_dir=rag_db_dir,
                             rag_collection_name=args.rag_collection_name,
                             few_shot_seed=args.few_shot_seed,

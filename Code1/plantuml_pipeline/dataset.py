@@ -35,7 +35,7 @@ def prompt_requirement_from_structured(text: str) -> str:
 
 
 def load_cases(dataset_root: Path) -> list[Case]:
-    """Load dataset cases, preferring bidirectionally aligned requirements."""
+    """Load dataset cases, preferring the structured requirement used in prompts."""
     case_dirs = sorted(
         [p for p in dataset_root.glob("case_*") if p.is_dir()],
         key=lambda p: p.name,
@@ -46,17 +46,12 @@ def load_cases(dataset_root: Path) -> list[Case]:
     cases: list[Case] = []
     for case_dir in case_dirs:
         raw_path = case_dir / "raw_requirement.txt"
-        aligned_path = case_dir / "bidirectionally_aligned_requirement.txt"
-        structured_path = (
-            aligned_path if aligned_path.exists() else case_dir / "structured_requirement.txt"
-        )
+        structured_path = case_dir / "structured_requirement.txt"
         gold_path = case_dir / "diagram.puml"
         if not raw_path.exists() or not structured_path.exists() or not gold_path.exists():
             raise FileNotFoundError(
                 f"Missing required files in {case_dir}: "
-                "raw_requirement.txt, "
-                "bidirectionally_aligned_requirement.txt or structured_requirement.txt, "
-                "diagram.puml"
+                "raw_requirement.txt, structured_requirement.txt, diagram.puml"
             )
         raw_req = read_text(raw_path).strip()
         structured_req = prompt_requirement_from_structured(read_text(structured_path))
@@ -167,7 +162,7 @@ def build_experiment_configs(
     llama70_model: str,
     deepseek_model: str,
     deepseek14_model: str,
-    rag_ablation_tag: str = "",
+    rag_analysis_tag: str = "",
 ) -> list[ExperimentConfig]:
     configs: list[ExperimentConfig] = []
     open_models = [
@@ -192,7 +187,7 @@ def build_experiment_configs(
     def normalize_tag(tag: str) -> str:
         return re.sub(r"[^a-z0-9]+", "_", tag.strip().lower()).strip("_")
 
-    rag_tag = normalize_tag(rag_ablation_tag)
+    rag_tag = normalize_tag(rag_analysis_tag)
 
     for model_label, model_name, model_tag in open_models:
         for strategy, use_rag, use_validation in strategies:

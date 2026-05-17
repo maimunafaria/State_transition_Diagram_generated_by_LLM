@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any
 
 from .constants import WORD_RE
-from .io_utils import read_text
 from .models import Case, ExperimentConfig, ValidationResult
 
 DOMAIN_TOKEN_HINTS = {
@@ -33,23 +32,6 @@ DOMAIN_TOKEN_HINTS = {
 
 def tokenize(text: str) -> set[str]:
     return {m.group(0).lower() for m in WORD_RE.finditer(text)}
-
-
-def _filename_tokens(name: str) -> set[str]:
-    stem = Path(name).stem
-    normalized = re.sub(r"[^A-Za-z0-9]+", " ", stem)
-    return tokenize(normalized)
-
-
-def _extract_domain_from_name(name: str) -> set[str]:
-    stem = Path(name).stem.lower()
-    domains: set[str] = set()
-    match = re.match(r"domain_(.+?)_rules$", stem)
-    if match:
-        core = match.group(1).strip()
-        if core:
-            domains.add(core)
-    return domains
 
 
 def _rag_doc_source_type(name: str, content: str) -> str:
@@ -152,119 +134,6 @@ def infer_query_domains(query: str, explicit_hints: set[str] | None = None) -> s
     return domains
 
 
-def load_rag_docs(rag_docs_dir: Path) -> list[tuple[str, str, set[str]]]:
-    if not rag_docs_dir.exists():
-        return []
-    docs: list[tuple[str, str, set[str]]] = []
-    for path in sorted(rag_docs_dir.rglob("*.md")):
-        if not path.is_file():
-            continue
-        if path.name.lower().endswith(("_manifest.md", "manifest.md")):
-            continue
-        content = read_text(path)
-        name = str(path.relative_to(rag_docs_dir))
-        docs.append((name, content, tokenize(content)))
-    return docs
-
-
-def retrieve_rag_context(
-    query: str,
-    docs: list[tuple[str, str, set[str]]],
-    top_k: int,
-    max_chars_per_doc: int = 1200,
-    query_domain_hints: set[str] | None = None,
-) -> tuple[str, list[dict[str, Any]]]:
-    if top_k <= 0 or not docs:
-        return "", []
-
-    query_tokens = tokenize(query)
-    query_domains = infer_query_domains(query, explicit_hints=query_domain_hints)
-
-    scored: list[dict[str, Any]] = []
-    for name, content, tokens in docs:
-        name_tokens = _filename_tokens(name)
-        doc_domains = set(_extract_domain_from_name(name))
-        doc_domains.update(tok for tok in tokens if tok in DOMAIN_TOKEN_HINTS)
-        lexical_overlap = len(query_tokens & tokens)
-        title_overlap = len(query_tokens & name_tokens)
-        domain_overlap = len(query_domains & doc_domains)
-
-        score = lexical_overlap + (2 * title_overlap) + (3 * domain_overlap)
-        scored.append(
-            {
-                "name": name,
-                "content": content,
-                "token_count": len(tokens),
-                "score": score,
-                "lexical_overlap": lexical_overlap,
-                "title_overlap": title_overlap,
-                "domain_overlap": domain_overlap,
-                "doc_domains": sorted(doc_domains),
-            }
-        )
-
-    scored.sort(
-        key=lambda item: (
-            item["score"],
-            item["domain_overlap"],
-            item["title_overlap"],
-            item["lexical_overlap"],
-            item["token_count"],
-        ),
-        reverse=True,
-    )
-
-    for item in scored:
-        item["source_type"] = _rag_doc_source_type(item["name"], item["content"])
-
-    source_types = {item["source_type"] for item in scored}
-    if {"dataset_example", "plantuml_rule", "state_diagram_theory"} & source_types:
-        chosen: list[dict[str, Any]] = []
-        seen: set[str] = set()
-        for source_type, limit in [
-            ("plantuml_rule", 2),
-            ("state_diagram_theory", 2),
-            ("dataset_example", top_k),
-        ]:
-            category_items = [item for item in scored if item["source_type"] == source_type]
-            positive_items = [item for item in category_items if item["score"] > 0]
-            for item in (positive_items or category_items)[:limit]:
-                if item["name"] not in seen:
-                    chosen.append(item)
-                    seen.add(item["name"])
-        if not chosen:
-            chosen = scored[:top_k]
-    else:
-        chosen = [item for item in scored if item["score"] > 0][:top_k]
-        if not chosen:
-            chosen = scored[:top_k]
-
-    sections: list[str] = []
-    trace: list[dict[str, Any]] = []
-    for item in chosen:
-        source_type = item.get("source_type") or _rag_doc_source_type(item["name"], item["content"])
-        clipped = _format_rag_doc_for_prompt(
-            item["name"],
-            item["content"],
-            max_chars_per_doc,
-        )
-        sections.append(clipped)
-        trace.append(
-            {
-                "name": item["name"],
-                "source_type": source_type,
-                "score": item["score"],
-                "lexical_overlap": item["lexical_overlap"],
-                "title_overlap": item["title_overlap"],
-                "domain_overlap": item["domain_overlap"],
-                "doc_domains": item["doc_domains"],
-                "clipped_chars": len(clipped),
-            }
-        )
-
-    return "\n\n".join(sections), trace
-
-
 def retrieve_vector_rag_context(
     query: str,
     top_k: int,
@@ -283,7 +152,7 @@ def retrieve_vector_rag_context(
         import chromadb  # type: ignore
     except ModuleNotFoundError as exc:
         raise RuntimeError(
-            "chromadb is not installed. Install it before using --rag-mode vector."
+            "chromadb is not installed. Install it before using vector RAG."
         ) from exc
 
     try:
@@ -382,31 +251,19 @@ def retrieve_vector_rag_context(
 
 def resolve_rag_context(
     query: str,
-    docs: list[tuple[str, str, set[str]]],
     top_k: int,
     max_chars_per_doc: int = 1200,
-    query_domain_hints: set[str] | None = None,
-    rag_mode: str = "lexical",
     rag_db_dir: Path | None = None,
     rag_collection_name: str = "uml_docs",
 ) -> tuple[str, list[dict[str, Any]]]:
-    mode = rag_mode.strip().lower()
-    if mode == "vector":
-        if rag_db_dir is None:
-            raise ValueError("rag_db_dir is required when rag_mode='vector'")
-        return retrieve_vector_rag_context(
-            query=query,
-            top_k=top_k,
-            max_chars_per_doc=max_chars_per_doc,
-            rag_db_dir=rag_db_dir,
-            rag_collection_name=rag_collection_name,
-        )
-    return retrieve_rag_context(
+    if rag_db_dir is None:
+        raise ValueError("rag_db_dir is required for vector RAG")
+    return retrieve_vector_rag_context(
         query=query,
-        docs=docs,
         top_k=top_k,
         max_chars_per_doc=max_chars_per_doc,
-        query_domain_hints=query_domain_hints,
+        rag_db_dir=rag_db_dir,
+        rag_collection_name=rag_collection_name,
     )
 
 
@@ -477,12 +334,10 @@ def build_generation_prompt(
     case: Case,
     cfg: ExperimentConfig,
     all_cases: list[Case],
-    rag_docs: list[tuple[str, str, set[str]]],
     requirement_source: str,
     top_k_rag: int,
     rag_max_chars_per_doc: int = 1200,
     rag_domain_hints: set[str] | None = None,
-    rag_mode: str = "lexical",
     rag_db_dir: Path | None = None,
     rag_collection_name: str = "uml_docs",
     few_shot_seed: int = 42,
@@ -498,7 +353,7 @@ def build_generation_prompt(
         "few_shot_case_ids": [],
         "rag": {
             "enabled": bool(cfg.use_rag),
-            "mode": rag_mode,
+            "mode": "vector",
             "top_k": top_k_rag,
             "max_chars_per_doc": rag_max_chars_per_doc,
             "query_domains": sorted(
@@ -576,11 +431,8 @@ def build_generation_prompt(
     if cfg.use_rag:
         rag_context, rag_trace = resolve_rag_context(
             query=requirement,
-            docs=rag_docs,
             top_k=top_k_rag,
             max_chars_per_doc=rag_max_chars_per_doc,
-            query_domain_hints=rag_domain_hints,
-            rag_mode=rag_mode,
             rag_db_dir=rag_db_dir,
             rag_collection_name=rag_collection_name,
         )
