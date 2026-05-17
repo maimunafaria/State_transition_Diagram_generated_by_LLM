@@ -1,0 +1,134 @@
+---
+source_type: dataset_example
+case_id: case_29_e_med_medical_assistance_tool
+domain: E Med Medical Assistance Tool
+complexity: complex
+split_role: rag_train
+---
+
+# E Med Medical Assistance Tool — Polished Requirement Specification
+
+## Requirement
+
+E Med Medical Assistance Tool — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to fill in their personal medical history if it is missing, and then check and save the information.
+2. The system shall provide users with the ability to view their medical history, receive reminders for medication, receive reminders for medicine restocking, schedule appointments, use an emergency button, write and view medical notes.
+3. The system shall allow users to update their medical history if they choose to do so after viewing it.
+4. The system shall allow users to update their medical notes if they choose to do so after viewing them.
+5. The system shall call emergency contacts if they use the emergency button.
+
+## Reference PlantUML
+
+```plantuml
+@startuml
+title UML State Chart Diagram - Medical System
+
+[*] --> CheckHistory
+
+state CheckHistory <<choice>>
+CheckHistory --> FillHistory : [No]
+CheckHistory --> Hub : [Yes]
+
+state "Fill personal medical history" as FillHistory
+FillHistory : entry / start state
+FillHistory : do / fill details in personal medical history
+FillHistory : exit / verify medical history
+
+state "Validate and store" as ValidateStore
+ValidateStore : entry / verify medical history
+ValidateStore : do / validate and store
+ValidateStore : exit / medical history stored
+
+FillHistory --> ValidateStore
+ValidateStore --> Hub
+
+state Hub <<choice>>
+
+state "View Medical History" as ViewHistory
+ViewHistory : entry / entered the app
+ViewHistory : do / view medical history stored
+ViewHistory : exit / viewed medical history
+
+state "Reminder to have medicines on time" as ReminderTime
+ReminderTime : entry / entered the app
+ReminderTime : do / user is reminded to have medicines
+ReminderTime : exit / notification acknowledged
+
+state "Reminder to buy medicines when not in stock" as ReminderBuy
+ReminderBuy : entry / entered the app
+ReminderBuy : do / user is reminded to buy medicines
+ReminderBuy : exit / notification acknowledged
+
+state "Schedule Appointments Regularly" as Schedule
+Schedule : entry / entered the app
+Schedule : do / schedule the appointment regularly
+Schedule : exit / scheduled appointment
+
+state "Press Emergency Button" as Emergency
+Emergency : entry / entered the app
+Emergency : do / press emergency button
+Emergency : exit / pressed emergency button
+
+state "Write medical notes for reference" as WriteNotes
+WriteNotes : entry / entered the app
+WriteNotes : do / write medical notes
+WriteNotes : exit / store in database
+
+state "View medical notes" as ViewNotes
+ViewNotes : entry / entered the app
+ViewNotes : do / view medical notes stored
+ViewNotes : exit / viewed medical notes
+
+state "Send message to receptionist" as MessageReception
+MessageReception : entry / scheduled appointment
+MessageReception : do / send message to receptionist based on schedule
+MessageReception : exit / message sent
+
+state "Call Emergency Contacts" as CallEmergency
+CallEmergency : entry / pressed emergency button
+CallEmergency : do / call the emergency contacts
+CallEmergency : exit / called emergency contacts
+
+state "Update Medical History" as UpdateHistory
+UpdateHistory : entry / want to update medical history
+UpdateHistory : do / update medical history
+UpdateHistory : exit / updated details are stored in the database
+
+state "Update Medical Notes" as UpdateNotes
+UpdateNotes : entry / want to update medical notes
+UpdateNotes : do / update medical notes
+UpdateNotes : exit / updated details are stored in the database
+
+state UpdateChoice <<choice>>
+state UpdateChoice1 <<choice>>
+Hub --> ViewHistory
+Hub --> ReminderTime
+Hub --> ReminderBuy
+Hub --> Schedule
+Hub --> Emergency
+Hub --> WriteNotes
+Hub --> ViewNotes
+
+Schedule --> MessageReception
+Emergency --> CallEmergency
+
+ViewHistory --> UpdateChoice : [Update ?]
+ViewNotes --> UpdateChoice1 : [Update ?]
+
+UpdateChoice --> UpdateHistory : [Yes]
+UpdateChoice1 --> UpdateNotes : [Yes]
+UpdateChoice --> [*] : [No]
+UpdateChoice1 --> [*] : [No]
+ReminderTime --> [*]
+ReminderBuy --> [*]
+WriteNotes --> [*]
+MessageReception --> [*]
+CallEmergency --> [*]
+UpdateHistory --> [*]
+UpdateNotes --> [*]
+
+@enduml
+
+```

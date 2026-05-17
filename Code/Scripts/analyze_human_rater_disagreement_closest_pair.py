@@ -154,6 +154,71 @@ def cohens_dz(differences: list[float]) -> float:
     return statistics.mean(differences) / sd
 
 
+def cohens_kappa(
+    first_scores: list[float],
+    second_scores: list[float],
+    weighting: str = "quadratic",
+    categories: tuple[int, ...] = (1, 2, 3, 4, 5),
+) -> float:
+    """Compute Cohen's kappa for ordinal Likert scores.
+
+    weighting can be "none", "linear", or "quadratic". For Likert data, the
+    quadratic weighted version is usually the most useful because a 1-point
+    disagreement is less severe than a 3- or 4-point disagreement.
+    """
+    if len(first_scores) != len(second_scores):
+        raise ValueError("Kappa requires paired score lists of equal length.")
+    if not first_scores:
+        return float("nan")
+
+    category_to_idx = {category: idx for idx, category in enumerate(categories)}
+    size = len(categories)
+    observed = [[0.0 for _ in range(size)] for _ in range(size)]
+    first_counts = [0.0 for _ in range(size)]
+    second_counts = [0.0 for _ in range(size)]
+
+    for first, second in zip(first_scores, second_scores, strict=True):
+        first_int = int(first)
+        second_int = int(second)
+        if first_int not in category_to_idx or second_int not in category_to_idx:
+            continue
+        i = category_to_idx[first_int]
+        j = category_to_idx[second_int]
+        observed[i][j] += 1.0
+        first_counts[i] += 1.0
+        second_counts[j] += 1.0
+
+    n = sum(first_counts)
+    if n == 0:
+        return float("nan")
+
+    weights = [[0.0 for _ in range(size)] for _ in range(size)]
+    for i in range(size):
+        for j in range(size):
+            distance = abs(i - j)
+            if weighting == "none":
+                weights[i][j] = 0.0 if i == j else 1.0
+            elif weighting == "linear":
+                weights[i][j] = distance / (size - 1)
+            elif weighting == "quadratic":
+                weights[i][j] = (distance / (size - 1)) ** 2
+            else:
+                raise ValueError(f"Unsupported weighting: {weighting}")
+
+    observed_disagreement = 0.0
+    expected_disagreement = 0.0
+    for i in range(size):
+        for j in range(size):
+            observed_disagreement += weights[i][j] * (observed[i][j] / n)
+            expected_disagreement += weights[i][j] * (
+                (first_counts[i] / n) * (second_counts[j] / n)
+            )
+
+    if expected_disagreement == 0:
+        return 1.0 if observed_disagreement == 0 else float("nan")
+    return 1.0 - (observed_disagreement / expected_disagreement)
+
+
 def report_decimal(value: float) -> str:
     """Match thesis-table rounding: four-decimal intermediate, half-up to three."""
     rounded_four = Decimal(str(round(value, 4)))
@@ -223,6 +288,9 @@ def table_rows(pairs: dict[tuple[str, ...], list[dict[str, str]]]) -> list[dict[
                     cohens_d_independent(second_scores, first_scores)
                 ),
                 "Paired Cohen's dz": report_decimal(cohens_dz(differences)),
+                "Quadratic weighted kappa": report_decimal(
+                    cohens_kappa(first_scores, second_scores, weighting="quadratic")
+                ),
                 ">=2-point difference": f"{count_ge_2} / {n} = {count_ge_2 / n * 100:.1f}%",
             }
         )
@@ -254,6 +322,7 @@ def table_rows(pairs: dict[tuple[str, ...], list[dict[str, str]]]) -> list[dict[
                 cohens_d_independent(second_averages, first_averages)
             ),
             "Paired Cohen's dz": report_decimal(cohens_dz(average_differences)),
+            "Quadratic weighted kappa": "N/A",
             ">=2-point difference": f"{count_average_ge_2} / {n} = {count_average_ge_2 / n * 100:.1f}%",
         }
     )

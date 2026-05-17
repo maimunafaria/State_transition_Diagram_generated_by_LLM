@@ -1,0 +1,180 @@
+---
+source_type: dataset_example
+case_id: case_07_covid
+domain: Covid
+complexity: complex
+split_role: rag_train
+---
+
+# Covid — Polished Requirement Specification
+
+## Requirement
+
+Covid — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to create an account by entering their details.
+2. The system shall allow users to sign in using a correct username and password.
+3. The system shall enable logged-in users to read blogs shared by recovered patients.
+4. The system shall allow users to update the number of infected people in their area, triggering updates on infection statistics and mask demand.
+5. The system shall enable users in home quarantine to share their information.
+6. The system shall allow doctors to view shared information from quarantined users and suggest medicines.
+7. The system shall enable users to view a list of nearby medical shops and purchase medicines online.
+8. The system shall allow assigning workers to clean an area, updating the cleanliness status accordingly.
+
+## Reference PlantUML
+
+```plantuml
+@startuml
+title UML state machine diagram
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Login / Register
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state "Invalid registration" as InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state "Invalid login" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state "Read blog" as ReadBlog
+ReadBlog : entry/To home page
+ReadBlog : entry/Read blogs of recovered patients
+ReadBlog : exit/Idle
+
+state "Update current no. of infected people" as UpdateInfected
+UpdateInfected : entry/To home page
+UpdateInfected : do/Update current no. of infected people in the locality
+UpdateInfected : exit/View
+
+state "View number of infected people in the locality" as ViewInfected
+ViewInfected : entry/View
+ViewInfected : do/View number of infected people in the locality
+ViewInfected : exit/Idle
+
+state "No. of deaths in the locality" as DeathCount
+DeathCount : entry/View
+DeathCount : do/View no. of deaths in the locality
+DeathCount : exit/Idle
+
+state "View mask demand" as ViewMaskDemand
+ViewMaskDemand : entry/View
+ViewMaskDemand : do/View mask demand in the locality
+ViewMaskDemand : exit/Stock
+
+state "Stock up" as StockUp
+StockUp : entry/Stock
+StockUp : do/Stock up masks and gloves by the shops
+StockUp : exit/End
+
+state "Send patient info" as SendPatientInfo
+SendPatientInfo : entry/To home page
+SendPatientInfo : do/Update data by home quarantined patients
+SendPatientInfo : exit/View patient info
+
+state "View patient info" as ViewPatientInfo
+ViewPatientInfo : entry/View patient info
+ViewPatientInfo : do/View patient info by the medical professional
+ViewPatientInfo : exit/Prescribe
+
+state "Prescribe medicines if needed" as PrescribeMedicines
+PrescribeMedicines : entry/Prescribe
+PrescribeMedicines : do/Prescribe medicines if needed
+PrescribeMedicines : exit/View data from doc
+
+state "View data shared by doctor" as ViewDoctorData
+ViewDoctorData : entry/View data from doc
+ViewDoctorData : do/View data shared by doctor
+ViewDoctorData : exit/Buy medicines
+
+state "List all medical shops" as ListMedicalShops
+ListMedicalShops : entry/To home page
+ListMedicalShops : do/List all medical shops in the locality
+ListMedicalShops : exit/Buy medicines
+
+state "Assign corporation worker" as AssignWorker
+AssignWorker : entry/To home page
+AssignWorker : do/Assign workers to disinfect in an area
+AssignWorker : exit/Update status
+
+state "Update status of cleanliness" as CleanlinessStatus
+CleanlinessStatus : entry/Update status
+CleanlinessStatus : do/Update status of cleanliness in the locality
+CleanlinessStatus : exit/End
+
+state "Buy medicines" as BuyMedicines
+BuyMedicines : entry/Buy medicines
+BuyMedicines : do/Buy medicines if needed
+BuyMedicines : exit/End
+
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+state J7 <<choice>>
+[*] --> Idle
+
+Idle --> J1
+J1 --> Register
+J1 --> Login
+
+Register --> J2
+J2 --> Login
+J2 --> InvalidRegistration
+InvalidRegistration --> [*]
+
+Login --> J3
+J3 --> InvalidLogin
+J3 --> ReadBlog
+J3 --> UpdateInfected
+J3 --> SendPatientInfo
+J3 --> ListMedicalShops
+J3 --> AssignWorker
+InvalidLogin --> [*]
+
+ReadBlog --> J7
+UpdateInfected --> J4
+ViewInfected --> J7
+DeathCount --> J7
+J7 --> Idle
+J4 --> ViewInfected
+J4 --> DeathCount
+J4 --> ViewMaskDemand
+
+ViewMaskDemand --> StockUp
+StockUp --> J6
+
+SendPatientInfo --> ViewPatientInfo
+ViewPatientInfo --> PrescribeMedicines
+PrescribeMedicines --> ViewDoctorData
+ViewDoctorData --> J5
+ListMedicalShops --> J5
+J5 --> BuyMedicines
+BuyMedicines --> J6
+
+AssignWorker --> CleanlinessStatus
+CleanlinessStatus --> J6
+
+J6 --> [*]
+
+@enduml
+
+```
