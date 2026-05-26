@@ -106,6 +106,21 @@ def _existing_base_run_for_repair(
     }
 
 
+def _normalize_prompt_structure_tag(prompt_structure: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", prompt_structure.strip().lower()).strip("_")
+
+
+def _apply_few_shot_prompt_structure_tag(configs: list[Any], prompt_structure: str) -> None:
+    prompt_tag = _normalize_prompt_structure_tag(prompt_structure)
+    if not prompt_tag or prompt_tag == "original":
+        return
+
+    suffix = f"__prompt_{prompt_tag}"
+    for cfg in configs:
+        if cfg.strategy in {"few_shot", "few_shot_validation_generator_critic_repair"}:
+            cfg.run_id = f"{cfg.run_id}{suffix}"
+
+
 def command_split(args: argparse.Namespace) -> int:
     dataset_root = _resolve_root(args.dataset_root)
     output_path = _resolve_root(args.output)
@@ -487,8 +502,20 @@ def command_run(args: argparse.Namespace) -> int:
                     "__one_shot_validation_generator_critic_repair",
                 )
 
+    _apply_few_shot_prompt_structure_tag(configs, args.few_shot_prompt_structure)
+
     if args.only_run_id:
         wanted = set(args.only_run_id)
+        prompt_tag = _normalize_prompt_structure_tag(args.few_shot_prompt_structure)
+        if prompt_tag and prompt_tag != "original":
+            wanted |= {
+                f"{run_id}__prompt_{prompt_tag}"
+                for run_id in wanted
+                if "__few_shot" in run_id
+                or "__one_shot" in run_id
+                or "__few_shot_validation_generator_critic_repair" in run_id
+                or "__one_shot_validation_generator_critic_repair" in run_id
+            }
         if args.few_shot_count == 1:
             wanted |= {run_id.replace("__few_shot", "__one_shot") for run_id in wanted}
             wanted |= {
@@ -535,6 +562,7 @@ def command_run(args: argparse.Namespace) -> int:
         "rag_domain_hints": sorted(rag_domain_hints),
         "runs_per_case": args.runs,
         "few_shot_count": args.few_shot_count,
+        "few_shot_prompt_structure": args.few_shot_prompt_structure,
         "repair_attempts": args.repair_attempts,
         "baseline_subset_size_target": args.baseline_subset_size,
         "baseline_subset_size_actual": len(baseline_cases),
@@ -602,6 +630,7 @@ def command_run(args: argparse.Namespace) -> int:
                             rag_collection_name=args.rag_collection_name,
                             few_shot_seed=args.few_shot_seed,
                             few_shot_count=args.few_shot_count,
+                            few_shot_prompt_structure=args.few_shot_prompt_structure,
                             run_index=run_index,
                             repair_attempts=args.repair_attempts,
                             initial_puml=read_text(Path(reused_base["puml_path"]))
