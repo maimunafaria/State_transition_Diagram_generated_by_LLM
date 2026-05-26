@@ -1,0 +1,54 @@
+@startuml
+title ATM State Transition Diagram
+
+[*] --> PromptPIN
+
+state PromptPIN <<choice>>
+PromptPIN --> VerifyPIN : [Enter PIN]
+PromptPIN --> [*] : [Cancel]
+
+state VerifyPIN
+VerifyPIN : entry / verify PIN
+VerifyPIN : do / compare with stored information
+VerifyPIN : exit / verification result
+
+VerifyPIN --> Success : [Verified successfully]
+VerifyPIN --> Failure : [Invalid PIN]
+
+state Success <<choice>>
+Success --> ProcessWithdrawal : [Proceed to withdraw cash]
+Success --> [*] : [Cancel]
+
+state "Process withdrawal" as ProcessWithdrawal
+ProcessWithdrawal : entry / process withdrawal request
+ProcessWithdrawal : do / dispense cash
+ProcessWithdrawal : exit / transaction completed
+
+ProcessWithdrawal --> PrintReceipt : [Dispensing cash]
+
+state PrintReceipt
+PrintReceipt : entry / print receipt
+PrintReceipt : do / print receipt for the transaction
+PrintReceipt : exit / receipt printed
+
+PrintReceipt --> ReturnCard : [Transaction complete]
+
+state ReturnCard
+ReturnCard : entry / return user's card
+ReturnCard : do / return card to user
+ReturnCard : exit / reset ATM
+
+ReturnCard --> ResetATM : [Brief moment later]
+
+state ResetATM
+ResetATM : entry / reset ATM
+ResetATM : do / reset ATM for next user
+ResetATM : exit / ready for next user
+
+ResetATM --> [*] : [Ready for next user]
+
+state Failure <<choice>>
+Failure --> PromptPIN : [Retry PIN]
+Failure --> [*] : [Cancel]
+
+@enduml

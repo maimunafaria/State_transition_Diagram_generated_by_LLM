@@ -1,0 +1,36 @@
+@startuml
+title Digital Watch States
+
+[*] --> ViewTimeAdjust
+
+state "View Time/Adjust" as ViewTimeAdjust
+state "Change Hour" as ChangeHour
+state "Change Minutes" as ChangeMinutes
+state "Alarm Hour" as AlarmHour
+state "Alarm Minutes" as AlarmMinutes
+state "Alarm On/Off" as AlarmOnOff
+state "Light On/Off" as LightOnOff
+
+ViewTimeAdjust : entry / Display time
+ViewTimeAdjust : do / Allow adjustment
+ViewTimeAdjust : exit / [button pressed]
+
+ChangeHour --> ChangeMinutes : [hour changed]
+ChangeMinutes --> ViewTimeAdjust : [minutes changed]
+AlarmHour --> AlarmMinutes : [alarm hour set]
+AlarmMinutes --> AlarmOnOff : [alarm minutes set]
+AlarmOnOff --> AlarmHour : [alarm on/off toggle]
+
+AlarmOnOff --> TriggerAlarm : [alarm time matches current time]
+TriggerAlarm : entry / Play alarm sound
+TriggerAlarm : exit / [alarm stopped]
+
+LightOnOff --> ViewTimeAdjust : [light turned off]
+
+ViewTimeAdjust --> ChangeHour : [hour button pressed]
+ChangeHour --> AlarmHour : [switch to alarm hour]
+AlarmHour --> AlarmMinutes : [switch to alarm minutes]
+AlarmMinutes --> AlarmOnOff : [switch to alarm on/off]
+AlarmOnOff --> LightOnOff : [toggle light]
+
+@enduml

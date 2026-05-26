@@ -1,0 +1,330 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Online Pharmacy Management System Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display a list of available orders to the delivery person.
+2. The system shall allow the delivery person to contact the delivery address for coordination.
+3. The system shall enable the delivery person to update their profile as needed.
+
+Example 1 PlantUML:
+@startuml
+title UML State Machine Diagram - Delivery Man
+
+[*] --> ViewOrders
+
+state "View orders" as ViewOrders
+state "Contact delivery address" as ContactDeliveryAddress
+state "Update profile" as UpdateProfile
+
+ViewOrders --> ContactDeliveryAddress
+ContactDeliveryAddress --> UpdateProfile
+UpdateProfile --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Information System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start a training request upon creation.
+2. The system shall send the request for approval after its creation.
+3. The system shall end the process if the request is rejected.
+4. The system shall look for a suitable session if the request is accepted.
+5. The system shall perform enrolment once a session is chosen.
+6. The system shall satisfy the request if enrolment is confirmed.
+7. The system shall allow completion of the session after enrolment confirmation.
+8. The system shall allow cancellation of a selected session and selection of a new one.
+9. The system shall end the process if the request is cancelled at any point before completion.
+
+Example 2 PlantUML:
+@startuml
+title Complete state diagram of the training request
+
+[*] --> Creation
+
+state Creation
+state "WaitingForAcknowledgement" as WaitingAck
+state SearchForSession
+state "WaitingForEnrolment" as WaitingEnrolment
+state Satisfied
+
+state rejected <<final>>
+state cancelled <<final>>
+state completed <<final>>
+
+Creation --> WaitingAck : validate / send personincharge.self
+Creation --> cancelled : cancel
+
+WaitingAck --> rejected : reject / send employee.rejection
+WaitingAck --> SearchForSession : accept / send employee.agreement
+WaitingAck --> cancelled : cancel
+
+SearchForSession --> WaitingEnrolment : sessionChoice / send body.order
+SearchForSession --> cancelled : cancel
+
+WaitingEnrolment --> Satisfied : enrolment / send employee.confirmation
+WaitingEnrolment --> cancelled : cancel / send body.cancellation
+
+Satisfied --> WaitingEnrolment : cancelSession / send employee.cancellation
+Satisfied --> cancelled : cancel / send body.cancellation
+Satisfied --> completed : endSession
+
+@enduml
+
+Example 3 Requirement:
+For Online College Magazine System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall require a person to either create an account or log in.
+2. The system shall allow admins to add, edit, or remove user profiles.
+3. The system shall enable admins to review articles and decide on their publication or rejection.
+4. The system shall permit content creators to write articles and send them for editing.
+5. The system shall have editors review articles from content creators and pass them for approval.
+6. The system shall restrict access if a login attempt is invalid.
+7. The system shall make published articles available for user reading.
+8. The system shall allow users to search for more articles during their reading session.
+9. The system shall enable users to provide feedback after reading articles.
+10. The system shall end when users complete their search or provide feedback.
+
+Example 3 PlantUML:
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>>
+state EditorChoice <<choice>>
+state ReadFeedbackChoice <<choice>>
+state EndJoin <<choice>>
+
+[*] --> StartChoice
+
+state Register
+Register : do / Fill details
+Register : exit / Registration successful
+
+state Login
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+state "Manage profiles" as ManageProfiles
+ManageProfiles : entry / Admin logged in
+ManageProfiles : do / Manage profile in database
+ManageProfiles : do / Add, delete or edit profiles if necessary
+ManageProfiles : exit / Action completed
+
+state "Invalid user" as InvalidUser
+InvalidUser : entry / Invalid login or invalid registration
+InvalidUser : do / Block entry to system
+InvalidUser : exit / Abnormal termination
+
+state Writing
+Writing : entry / Writer logged in
+Writing : do / Write article
+Writing : exit / Send to editor
+
+state Editing
+Editing : entry / Editor logged in and article to be edited
+Editing : do / Edit article
+Editing : exit / Send to moderator/admin
+
+state Publishing
+Publishing : entry / Admin logged in and article to be approved
+Publishing : do / Choose to approve and publish or reject article
+Publishing : do / Add article to database if approved
+Publishing : exit / Publish article
+
+state Search
+Search : entry / Choose to search for articles
+Search : do / Read searched articles
+Search : exit / Completed reading
+
+state Reading
+Reading : entry / Published article
+Reading : do / Read article
+Reading : exit / Completed reading
+
+state Feedback
+Feedback : entry / Reader chosen to give feedback
+Feedback : do / Get feedback
+Feedback : exit / Feedback entry successful
+
+StartChoice --> Register
+StartChoice --> Login
+
+Register --> AdminChoice
+Login --> EditorChoice
+
+AdminChoice --> ManageProfiles
+AdminChoice --> InvalidUser
+
+EditorChoice --> Writing
+EditorChoice --> Editing
+EditorChoice --> InvalidUser
+
+Writing --> Editing
+Editing --> Publishing
+ManageProfiles --> Publishing
+
+InvalidUser --> [*]
+
+Publishing --> Reading
+Reading --> Reading
+
+Search --> Search
+Reading --> ReadFeedbackChoice
+
+ReadFeedbackChoice --> Search
+ReadFeedbackChoice --> Feedback
+
+Feedback --> EndJoin
+Search --> EndJoin
+
+EndJoin --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- UML State Transition Diagram Elements ---
+
+- State transition diagram: models the lifecycle behavior of one reactive object, system, controller, process, class, subsystem, or use case as it changes state in response to events.
+
+- Reactive object / context: the main object or system whose behavior is being modeled; it responds to events and has a lifecycle.
+
+- State: a meaningful condition, mode, phase, or situation during the object's life that changes how it responds to events.
+
+- Initial state: a pseudostate marking where the state machine begins; it points to the first real lifecycle state.
+
+- Final state: marks completion or termination of the modeled lifecycle.
+
+- Transition: a directed movement from one state to another caused by an event.
+
+- Event / trigger: a noteworthy external or internal occurrence that may trigger a transition.
+
+- Guard condition: a Boolean condition that must be true for a transition to occur.
+
+- Action: instantaneous, uninterruptible behavior performed during a transition or inside a state.
+
+- Activity / do behavior: behavior performed within a state that takes finite time and may be interrupted by an event.
+
+- Entry behavior: an action performed immediately when a state is entered.
+
+- Exit behavior: an action performed immediately before a state is exited.
+
+- Internal transition: handles an event within the current state without moving to another state.
+
+- Composite state: a state that contains one or more nested state machines and groups related substates.
+
+- Substate: a state contained inside a composite state.
+
+- Superstate: a parent state that contains substates and may define shared behavior.
+
+- Sequential composite state: a composite state with one nested state machine where only one substate is active at a time.
+
+- Concurrent composite state: a composite state with two or more nested state machines executing concurrently.
+
+- Fork: a control point where execution splits into multiple concurrent paths.
+
+- Join: a control point where multiple concurrent paths synchronize before continuing.
+
+- History state: remembers the last active substate of a composite state so execution can resume there.
+
+- Shallow history: remembers the last active substate only at the same nesting level.
+
+- Deep history: remembers the last active substate across nested levels.
+
+- Call event: a request to invoke an operation on the modeled object.
+
+- Signal event: receipt of an asynchronous message.
+
+- Change event: occurs when a Boolean condition becomes true.
+
+- Time event: occurs at a specific time or after a specified interval.
+
+
+
+--- Structural Validation Rules ---
+
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+
+
+--- Task ---
+
+Requirement:
+
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.

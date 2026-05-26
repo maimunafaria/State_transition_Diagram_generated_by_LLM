@@ -1,0 +1,40 @@
+@startuml
+title UML State Machine Diagram - Microwave Oven
+
+[*] --> Idle
+
+state "Idle" as Idle
+Idle : entry / Display current time
+Idle : do / Wait for user input
+
+Idle --> WaitingForInput : [User presses a button]
+
+state "Waiting for input" as WaitingForInput
+WaitingForInput : entry / Get power level choice (full or half)
+WaitingForInput : do / Validate power level choice
+WaitingForInput : exit / Power level set, proceed to cooking time entry
+
+WaitingForInput --> CookingTimeEntry : [Power level chosen]
+
+state "Cooking time entry" as CookingTimeEntry
+CookingTimeEntry : entry / Get cooking time from user
+CookingTimeEntry : do / Validate cooking time
+CookingTimeEntry : exit / Cooking time set, proceed to cooking process
+
+CookingTimeEntry --> CookingProcess : [Cooking time entered]
+
+state "Cooking process" as CookingProcess
+CookingProcess : entry / Start cooking with chosen power level and time
+CookingProcess : do / Monitor door status during cooking
+CookingProcess : exit / Door opened, stop cooking or cancel
+
+CookingProcess --> StoppedOrCancelled : [Door opened during cooking]
+
+state "Stopped or cancelled" as StoppedOrCancelled
+StoppedOrCancelled : entry / Stop cooking immediately
+StoppedOrCancelled : do / Return to idle state after stopping or cancelling
+
+StoppedOrCancelled --> Idle : [Return to idle state]
+
+Idle --> [*]
+@enduml

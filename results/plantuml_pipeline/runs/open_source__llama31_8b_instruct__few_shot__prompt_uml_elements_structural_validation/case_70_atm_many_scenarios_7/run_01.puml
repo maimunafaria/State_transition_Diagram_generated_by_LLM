@@ -1,0 +1,50 @@
+@startuml
+title UML State Machine Diagram - ATM System
+
+[*] --> Arrival
+
+state "Arrival" as Arrival
+state "PIN Verification" as PINVerification
+state "Invalid Card or PIN" as InvalidCardOrPin
+state "Options Selection" as OptionsSelection
+state "Request Processing" as RequestProcessing
+state "Cancel Operation" as CancelOperation
+
+Arrival : entry / User arrives at the ATM
+Arrival --> PINVerification
+
+PINVerification : entry / User enters PIN
+PINVerification : do / Verify PIN
+PINVerification : exit / Correct PIN or incorrect PIN
+
+PINVerification -->|1| InvalidCardOrPin : Incorrect PIN
+PINVerification -->|2| OptionsSelection : Correct PIN
+
+InvalidCardOrPin : entry / Card is invalid or too many attempts
+InvalidCardOrPin : do / Keep card for security
+InvalidCardOrPin : exit / Operation cancelled
+
+CancelOperation : entry / User cancels operation
+CancelOperation : do / Return card to user
+CancelOperation : exit / Operation completed
+
+OptionsSelection : entry / User selects option
+OptionsSelection : do / Display available options
+OptionsSelection : exit / Options displayed
+
+RequestProcessing : entry / User makes a choice
+RequestProcessing : do / Process selected request
+RequestProcessing : exit / Request processed
+
+[*] --> CancelOperation
+CancelOperation --> [*]
+
+PINVerification -->|1| InvalidCardOrPin
+PINVerification -->|2| OptionsSelection
+
+OptionsSelection --> RequestProcessing
+
+InvalidCardOrPin --> [*]
+RequestProcessing --> [*]
+
+@enduml

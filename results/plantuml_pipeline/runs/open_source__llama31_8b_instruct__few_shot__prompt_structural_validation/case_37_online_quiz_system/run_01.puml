@@ -1,0 +1,86 @@
+@startuml
+title UML State Machine Diagram (Online Quiz System)
+
+[*] --> UserType
+
+state UserType <<choice>>
+UserType --> Registration : [New user]
+UserType --> Login : [Registered user]
+
+state "Registration" as Registration {
+    [*] --> GettingDetails
+
+    state GettingDetails
+    state ChoiceReg <<choice>>
+    state "Update Database" as UpdateDB
+    state EndInvalid <<choice>>
+
+    GettingDetails --> ChoiceReg : [Registration verification]
+    ChoiceReg --> UpdateDB : [valid]
+    ChoiceReg --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+Registration : entry / New user
+Registration : do / Registration
+Registration : exit / After updation
+
+UpdateDB --> Login : [verified]
+
+state Login
+Login : do / Enter username and password
+Login : exit / After verification
+
+Login --> UserTypeChoice : [Teacher or Student]
+
+state "User Type Choice" as UserTypeChoice {
+    [*] --> TeacherChoice
+    [*] --> StudentChoice
+
+    state TeacherChoice <<choice>>
+    state StudentChoice <<choice>>
+
+    TeacherChoice --> CreateQuiz : [Teacher]
+    StudentChoice --> SelectQuiz : [Student]
+}
+
+TeacherChoice --> CreateQuiz : [Teacher]
+CreateQuiz : entry / Create new quiz
+CreateQuiz : do / Create quiz
+CreateQuiz : exit / Save as draft or post
+
+SaveAsDraft --> EditQuiz : [Save as draft]
+PostForStudents --> ViewResults : [Post for students]
+
+EditQuiz : entry / Edit existing quiz
+EditQuiz : do / Edit quiz
+EditQuiz : exit / Save as draft or post
+
+state "View Results" as ViewResults {
+    [*] --> ViewResultDetails
+
+    state ViewResultDetails
+    state ChoiceReg <<choice>>
+    state "Update Database" as UpdateDB
+    state EndInvalid <<choice>>
+
+    ViewResultDetails --> ChoiceReg : [View result details]
+    ChoiceReg --> UpdateDB : [valid]
+    ChoiceReg --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+ViewResults : entry / View quiz results
+ViewResults : do / View results
+ViewResults : exit / After viewing
+
+SelectQuiz --> AnswerQuiz : [Student]
+AnswerQuiz : entry / Select and answer quiz
+AnswerQuiz : do / Answer quiz
+AnswerQuiz : exit / Submit quiz
+
+SubmitQuiz --> ViewResultDetails : [Submit quiz]
+
+@enduml

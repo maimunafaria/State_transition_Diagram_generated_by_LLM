@@ -1,0 +1,85 @@
+@startuml
+title UML State Machine Diagram (Online Quiz System)
+
+[*] --> UserType
+
+state UserType <<choice>>
+UserType --> Registration : [New user]
+UserType --> Login : [Registered user]
+
+state "Registration" as Registration {
+    [*] --> GettingDetails
+
+    state GettingDetails
+    state ChoiceReg <<choice>>
+    state "Update Database" as UpdateDB
+    state EndInvalid <<choice>>
+
+    GettingDetails --> ChoiceReg : [Registration verification]
+    ChoiceReg --> UpdateDB : [valid]
+    ChoiceReg --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+Registration : entry / New user
+Registration : do / Registration
+Registration : exit / After updation
+
+UpdateDB --> Login : [verified]
+
+state Login
+Login : do / Enter username and password
+Login : exit / After verification
+
+Login --> Profile : [valid uname & pwd]
+
+state "Profile" as Profile {
+    [*] --> ChoiceProfile
+
+    state ChoiceProfile <<choice>>
+    state "Teacher Profile" as TeacherProfile
+    state "Student Profile" as StudentProfile
+
+    ChoiceProfile --> TeacherProfile : [teacher]
+    ChoiceProfile --> StudentProfile : [student]
+
+    TeacherProfile --> CreateQuiz : [create new quiz]
+    TeacherProfile --> EditQuiz : [edit existing quiz]
+    TeacherProfile --> SaveDraft : [save as draft]
+    TeacherProfile --> PostQuiz : [post for students]
+
+    StudentProfile --> SelectQuiz : [select a quiz]
+    StudentProfile --> AnswerQuiz : [answer selected quiz]
+    StudentProfile --> SubmitQuiz : [submit answered quiz]
+}
+
+Profile : entry / View or Edit profile
+Profile : do / Upload or Accept request
+Profile : exit / Logout
+
+TeacherProfile --> CreateQuiz : [create new quiz]
+CreateQuiz : entry / New quiz creation
+CreateQuiz : do / Create quiz
+CreateQuiz : exit / Save draft or post
+
+EditQuiz --> CreateQuiz : [edit existing quiz]
+
+SaveDraft --> [*] : [save as draft]
+PostQuiz --> [*] : [post for students]
+
+StudentProfile --> SelectQuiz : [select a quiz]
+SelectQuiz : entry / Select a quiz
+SelectQuiz : do / View selected quiz
+SelectQuiz : exit / Answer quiz
+
+AnswerQuiz --> SubmitQuiz : [answer selected quiz]
+SubmitQuiz : entry / Submit answered quiz
+SubmitQuiz : do / Submit quiz
+SubmitQuiz : exit / View result
+
+ViewResult --> [*] : [view quiz results]
+
+Logout --> [*]
+
+@enduml

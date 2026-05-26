@@ -1,0 +1,370 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+First Person Shooter Fps Games — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall keep the troll in a calm state with no actions if there is no detected threat.
+2. The system shall determine the troll's reaction based on the perceived strength of the detected opponent.
+3. The system shall make the troll aggressive and start an attack if the opponent appears weak enough to defeat.
+4. The system shall continue the troll's fight while it can see the opponent.
+5. The system shall calm the troll and return it to a normal state if it loses sight of the opponent.
+6. The system shall make the troll scared and panic if the opponent appears too strong.
+7. The system shall calm the troll and return it to a normal state if it gets away from or loses sight of a stronger opponent.
+8. The system shall remove the troll from the game if it takes a fatal hit and its health reaches zero.
+
+Example 1 PlantUML:
+@startuml
+title Troll State Diagram
+
+[*] --> Neutral
+
+state Neutral
+state Attack
+state Panic
+state Die
+
+Neutral --> Attack : see opponent [defeatable]
+Attack --> Neutral : lost opponent
+
+Neutral --> Panic : see opponent [undefeatable]
+Panic --> Neutral : lost opponent
+
+Attack --> Die : receive blow [health = 0] / pray
+Panic --> Die : receive blow [health = 0] / pray
+
+Die --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Petrol Gas Pump — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display a welcome message when not in use.
+2. The system shall read the card details upon card insertion.
+3. The system shall prepare the pump for use if the card is valid.
+4. The system shall show an error message and reset if the card is invalid.
+5. The system shall start fuel delivery when the nozzle is lifted during fueling.
+6. The system shall stop fuel delivery when the nozzle is released.
+7. The system shall process payment and deduct the amount from the account after fueling.
+8. The system shall return to its initial state after completing a transaction.
+9. The system shall automatically reset if there is inactivity for too long.
+
+Example 2 PlantUML:
+@startuml
+title State machine model of a petrol (gas) pump
+
+[*] --> Waiting
+
+state Waiting
+Waiting : do / display welcome
+
+state Reading
+Reading : do / get CC details
+
+state Validating
+Validating : do / validate credit card
+
+state Initializing
+Initializing : do / initialize display
+
+state Ready
+
+state Delivering
+Delivering : do / deliver fuel
+Delivering : do / update display
+
+state Stopped
+
+state Paying
+Paying : do / debit CC account
+
+state Resetting
+Resetting : do / display CC error
+
+Waiting --> Reading : Card Inserted into Reader
+Reading --> Validating : Card Removed
+
+Validating --> Initializing : Card OK
+Validating --> Resetting : Invalid Card
+
+Resetting --> Waiting : Timeout
+Paying --> Waiting : Payment ack.
+Initializing --> Waiting : Timeout
+
+Initializing --> Ready : Hose Out of Holster
+Ready --> Initializing : Hose in Holster
+
+Ready --> Delivering : Nozzle Trigger On
+Delivering --> Stopped : Nozzle Trigger Off
+Stopped --> Delivering : Nozzle Trigger On
+
+Stopped --> Paying : Hose in Holster
+
+@enduml
+
+Example 3 Requirement:
+Advocate Diary — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to explore blogs and news updates.
+2. The system shall permit users to leave at any time after viewing blogs and news updates.
+3. The system shall enable users to create an account by providing their details.
+4. The system shall check the provided details during account creation.
+5. The system shall prevent users from proceeding if the provided details are incorrect during account creation.
+6. The system shall allow users to sign in using a password after creating an account.
+7. The system shall check the entered password during sign-in.
+8. The system shall allow users to add a new case after signing in.
+9. The system shall require users to select a category ( civil or criminal ) when adding a new case.
+10. The system shall allow users to enter details for the selected category when adding a new case.
+11. The system shall enable users to set reminders after entering case details.
+12. The system shall allow users to upload related documents for their cases.
+13. The system shall enable users to file something online after signing in.
+14. The system shall allow users to download model forms after signing in.
+15. The system shall enable users to view references ( quick or book )after signing in.
+16. The system shall allow users to provide feedback after signing in.
+17. The system shall permit users to leave the system after completing their tasks.
+
+Example 3 PlantUML:
+@startuml
+title UML state machine diagram
+
+state "View blogs as news updates" as ViewBlogs
+ViewBlogs : entry/Visit page
+ViewBlogs : do/Shows blogs and news updates
+ViewBlogs : exit/Leave the page
+
+state "Register" as Register
+Register : entry/New user
+Register : do/Verify details
+Register : exit/Verified details
+
+state "Login" as Login
+Login : entry/Registered
+Login : do/Verify password
+Login : exit/View details
+
+state "View details and logs" as ViewDetails
+ViewDetails : entry/Login
+ViewDetails : do/Show details of case and logs
+ViewDetails : exit/Do required function
+
+state "Add case" as AddCase
+AddCase : entry/Wants to add case
+AddCase : do/Show Category
+AddCase : exit/Selects a category
+
+state "Civil" as Civil
+Civil : entry/Selects this category
+Civil : do/update view table
+Civil : exit/Allows to add details
+
+state "Criminal" as Criminal
+Criminal : entry/Selects this category
+Criminal : do/Update the view table
+Criminal : exit/Allows to add details
+
+state "Add details" as AddDetails
+AddDetails : entry/Selects category
+AddDetails : do/Add details about case
+AddDetails : exit/Update view table
+
+state "Add remainder" as AddReminder
+AddReminder : entry/Adds details
+AddReminder : do/Add remainder
+AddReminder : exit/Update calender
+
+state "Upload document" as UploadDocument
+UploadDocument : entry/Add details
+UploadDocument : do/Upload documents
+UploadDocument : exit/leave page
+
+state "File online" as FileOnline
+FileOnline : entry/Prefers online filing
+FileOnline : do/Select category
+FileOnline : exit/Click a link
+
+state "Redirect to page" as RedirectPage
+RedirectPage : entry/Click a link
+RedirectPage : do/Redirects to page
+RedirectPage : exit/Returns to page
+
+state "Download model forms" as DownloadForms
+DownloadForms : entry/wants to download forms
+DownloadForms : do/Select a form
+DownloadForms : exit/Downloads form
+
+state "Reference" as Reference
+Reference : entry/Pefers to refer
+Reference : do/Select a category
+Reference : exit/prefered categoried is showed
+
+state "Quick References" as QuickReferences
+QuickReferences : entry/Selects quick references
+QuickReferences : do/Shows some Quick references
+QuickReferences : exit/Leave the page
+
+state "Books" as Books
+Books : entry/Selects books
+Books : do/Shows books
+Books : exit/Leave page
+
+state "Feedback" as Feedback
+Feedback : entry/Wants to give feedback
+Feedback : do/Add feedback
+Feedback : exit/Exit page
+
+state "Logout" as Logout
+Logout : entry/Wants to leave the site
+Logout : do/The session of logged in user ended
+Logout : exit/Leave the site
+
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+
+state J10 <<choice>>
+
+[*] --> J1
+
+J1 --> ViewBlogs
+J1 --> Register
+
+ViewBlogs --> [*]
+
+Register --> J2
+J2 --> [*] : [Invalid Credentials]
+J2 --> Login : [Valid]
+
+Login --> [*] : [Improper]
+Login --> ViewDetails : [Proper]
+
+ViewDetails --> J3
+
+J3 --> AddCase
+J3 --> FileOnline
+J3 --> DownloadForms
+J3 --> Reference
+J3 --> Feedback
+
+AddCase --> J4
+J4 --> Civil
+J4 --> Criminal
+
+Civil --> J5
+Criminal --> J5
+J5 --> AddDetails
+AddDetails --> AddReminder
+AddReminder --> UploadDocument
+UploadDocument --> J10
+
+FileOnline --> RedirectPage
+RedirectPage --> J10
+
+DownloadForms --> J10
+
+Reference --> J6
+J6 --> QuickReferences
+J6 --> Books
+QuickReferences --> J10
+Books --> J10
+
+Feedback --> J10
+
+J10 --> Logout
+Logout --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Structural Validation Rules ---
+
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+
+
+--- Task ---
+
+Requirement:
+
+Class Campaign Version 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start a campaign after a manager and staff are assigned.
+2. The system shall activate the campaign once everything is approved and the contract is signed.
+3. The system shall prepare adverts during the campaign.
+4. The system shall approve and schedule the adverts.
+5. The system shall run the adverts.
+6. The system shall allow extension or adjustment of the campaign while it is running.
+7. The system shall complete the campaign and prepare a final statement after all adverts have finished.
+8. The system shall handle payment after the campaign completion and generate a refund if the amount paid is less than required.
+9. The system shall wait for the correct balance to be settled if the amount paid exceeds the required amount.
+10. The system shall mark the campaign as paid once the full amount is properly paid.
+11. The system shall archive the campaign and release all assigned staff and managers.

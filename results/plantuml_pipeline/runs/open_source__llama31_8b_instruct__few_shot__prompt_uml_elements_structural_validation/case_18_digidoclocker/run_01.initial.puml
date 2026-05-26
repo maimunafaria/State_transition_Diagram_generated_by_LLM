@@ -1,0 +1,81 @@
+@startuml
+title Digidoclocker System States
+
+[*] --> RegisterCitizen
+
+state "Register Citizen" as RegisterCitizen
+RegisterCitizen : entry / collect user details
+RegisterCitizen : do / validate user details
+RegisterCitizen : exit / register citizen successfully
+
+RegisterCitizen --> LoginCitizen : [register successful]
+
+state "Login Citizen" as LoginCitizen
+LoginCitizen : entry / enter login credentials
+LoginCitizen : do / authenticate login credentials
+LoginCitizen : exit / login successful
+
+LoginCitizen --> UploadDocuments : [login successful]
+LoginCitizen --> ViewProfile : [login successful]
+LoginCitizen --> ApplyForCertificate : [login successful]
+
+state "Upload Documents" as UploadDocuments
+UploadDocuments : entry / upload documents
+UploadDocuments : do / validate uploaded documents
+UploadDocuments : exit / upload documents successfully
+
+UploadDocuments --> ContinueUploading : [upload incomplete]
+
+state "Continue Uploading" as ContinueUploading
+ContinueUploading : entry / continue uploading documents
+ContinueUploading : do / validate continued uploads
+ContinueUploading : exit / continue uploading successfully
+
+ContinueUploading --> UploadDocuments : [continue upload needed]
+
+state "View Profile" as ViewProfile
+ViewProfile : entry / view profile details
+ViewProfile : do / display profile information
+ViewProfile : exit / view profile completed
+
+ViewProfile --> LoginCitizen : [login successful]
+
+state "Apply For Certificate" as ApplyForCertificate
+ApplyForCertificate : entry / apply for certificate
+ApplyForCertificate : do / validate application
+ApplyForCertificate : exit / apply for certificate successfully
+
+ApplyForCertificate --> ReapplyCertificate : [application pending]
+
+state "Reapply Certificate" as ReapplyCertificate
+ReapplyCertificate : entry / reapply for certificate
+ReapplyCertificate : do / validate reapplication
+ReapplyCertificate : exit / reapply for certificate successfully
+
+ReapplyCertificate --> ApplyForCertificate : [reapply needed]
+
+state "Request Certificate" as RequestCertificate
+RequestCertificate : entry / request certificate
+RequestCertificate : do / validate request
+RequestCertificate : exit / request certificate successfully
+
+RequestCertificate --> ContinueRequesting : [request pending]
+
+state "Continue Requesting" as ContinueRequesting
+ContinueRequesting : entry / continue requesting certificates
+ContinueRequesting : do / validate continued requests
+ContinueRequesting : exit / continue requesting successfully
+
+ContinueRequesting --> RequestCertificate : [continue request needed]
+
+state EndSession <<choice>>
+LoginCitizen --> EndSession : [session ended]
+UploadDocuments --> EndSession : [upload completed]
+ViewProfile --> EndSession : [view profile completed]
+ApplyForCertificate --> EndSession : [application submitted]
+ReapplyCertificate --> EndSession : [reapply submitted]
+RequestCertificate --> EndSession : [request submitted]
+
+EndSession --> [*]
+
+@enduml

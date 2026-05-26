@@ -1,0 +1,39 @@
+@startuml
+title Process Sale State Machine
+
+[*] --> WaitingForSale
+
+state WaitingForSale
+WaitingForSale : entry / Display Welcome Message
+
+state AddingItems
+AddingItems : entry / Customer selects item
+AddingItems : do / Add item to sale
+AddingItems : exit / All items added
+
+state Payment
+Payment : entry / Move to payment
+Payment : do / Verify payment method
+Payment : exit / Payment approved or declined
+
+WaitingForSale --> AddingItems : New sale started
+AddingItems --> Payment : All items added
+Payment --> WaitingForSale : Payment approved
+Payment --> WaitingForSale : Payment declined
+
+state CashPayment
+CashPayment : entry / Customer pays with cash
+CashPayment : do / Complete sale immediately
+CashPayment : exit / Sale completed
+
+state CardPayment
+CardPayment : entry / Customer chooses to pay by card or check
+CardPayment : do / Verify payment
+CardPayment : exit / Payment approved
+
+Payment --> CashPayment : Customer pays with cash
+Payment --> CardPayment : Customer chooses to pay by card or check
+CardPayment --> WaitingForSale : Payment approved
+CashPayment --> WaitingForSale : Sale completed
+
+@enduml

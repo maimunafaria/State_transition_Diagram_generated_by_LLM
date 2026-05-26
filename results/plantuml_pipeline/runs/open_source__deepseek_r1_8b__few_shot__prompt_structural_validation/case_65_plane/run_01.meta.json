@@ -1,0 +1,132 @@
+{
+  "run_id": "open_source__deepseek_r1_8b__few_shot__prompt_structural_validation",
+  "case_id": "case_65_plane",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nCd Player — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start in a stopped state.\n2. The system shall begin playing music when a disc is inserted and the user presses play.\n3. The system shall allow the user to pause the music at any time while it is playing.\n4. The system shall stop the music temporarily when paused but allow resuming from the same point.\n5. The system shall allow the user to stop the player at any time, regardless of whether the music is playing or paused.\n6. The system shall return to a stopped state when the player is stopped.\n7. The system shall allow switching to another disc and continuing playback if multiple discs are available.\n8. The system shall remain in a stopped state when no more discs are left.\n\nExample 1 PlantUML:\n@startuml\ntitle CD Player State Machine\n\n[*] --> Stopped\n\nstate Playing\nPlaying : do / read disc\n\nstate Stopped\nstate Paused\n\nStopped --> Playing : press play [disc in tray]\nPlaying --> Stopped : press stop\nPlaying --> Stopped : [no more discs]\n\nPlaying --> Paused : press pause\nPaused --> Playing : press play\nPaused --> Stopped : press stop\n\nPlaying --> Playing : [another disc] / change disc\n\n@enduml\n\nExample 2 Requirement:\nMy Helper — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow new users or users who have forgotten their password to create a new password.\n2. The system shall enable the user to continue using the app after setting a correct password.\n3. The system shall allow users to send messages from another mobile phone if they cannot use their own phone.\n4. The system shall read incoming messages to understand the user's needs.\n5. The system shall check the user’s password for correctness and inform the user if it is wrong.\n6. The system shall ensure that if the user's password is correct, the system shall check the user’s request.\n7. The system shall support for valid requests, the system shall complete them and send back required details to the user.\n8. The system shall support for invalid requests, the system shall inform the user that the request cannot be accepted.\n\nExample 2 PlantUML:\n@startuml\n\n[*] --> LoginSignup\n\nLoginSignup : entry / Download app\nLoginSignup : do / Enables the user to use app\nLoginSignup : exit / Verifies details\n\nLoginSignup --> SetPassword : signup / forgot password\nSetPassword : entry / Signup\nSetPassword : do / Set password\nSetPassword : exit / Validate password\n\nSetPassword --> LoginSignup : password set\n\nLoginSignup --> SendSMS : forgot phone\nSendSMS : entry / Forgot phone\nSendSMS : do / Send SMS from any other mobile\nSendSMS : exit / NIL\n\nSendSMS --> ReadsSMS : SMS sent\nReadsSMS : entry / SMS received\nReadsSMS : do / Scans SMS\nReadsSMS : exit / Performs required action\n\nReadsSMS --> VerifyPassword : verify request\nVerifyPassword : entry / Read SMS\nVerifyPassword : do / Check whether password is correct\nVerifyPassword : exit / Password is correct\n\nVerifyPassword --> ChecksRequirement : password correct\nVerifyPassword --> PasswordError : incorrect password\n\nPasswordError : entry / Incorrect password\nPasswordError : do / Send SMS stating incorrect password\nPasswordError : exit / SMS sent\nPasswordError --> [*]\n\nChecksRequirement : entry / Password is correct\nChecksRequirement : do / Check for requirement\nChecksRequirement : exit / Requirement is valid\n\nChecksRequirement --> FulfilRequirements : requirement valid\nChecksRequirement --> RequirementError : invalid requirement\n\nFulfilRequirements : entry / Requirement is valid\nFulfilRequirements : do / Fulfils requirement\nFulfilRequirements : exit / NIL\n\nFulfilRequirements --> SendRequestedDetails : fulfil completed\nSendRequestedDetails : entry / Requirement is fulfilled\nSendRequestedDetails : do / Send requested details back in form of SMS\nSendRequestedDetails : exit / SMS has been sent\nSendRequestedDetails --> [*]\n\nRequirementError : entry / Invalid requirement\nRequirementError : do / Send SMS stating invalid requirement\nRequirementError : exit / SMS sent\nRequirementError --> [*]\n\n@enduml\n\nExample 3 Requirement:\nFor Online College Magazine System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall require a person to either create an account or log in.\n2. The system shall allow admins to add, edit, or remove user profiles.\n3. The system shall enable admins to review articles and decide on their publication or rejection.\n4. The system shall permit content creators to write articles and send them for editing.\n5. The system shall have editors review articles from content creators and pass them for approval.\n6. The system shall restrict access if a login attempt is invalid.\n7. The system shall make published articles available for user reading.\n8. The system shall allow users to search for more articles during their reading session.\n9. The system shall enable users to provide feedback after reading articles.\n10. The system shall end when users complete their search or provide feedback.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Machine Diagram\n\nstate StartChoice <<choice>>\nstate AdminChoice <<choice>>\nstate EditorChoice <<choice>>\nstate ReadFeedbackChoice <<choice>>\nstate EndJoin <<choice>>\n\n[*] --> StartChoice\n\nstate Register\nRegister : do / Fill details\nRegister : exit / Registration successful\n\nstate Login\nLogin : entry / Registered user\nLogin : do / Enter login credentials\nLogin : exit / Valid username and password\n\nstate \"Manage profiles\" as ManageProfiles\nManageProfiles : entry / Admin logged in\nManageProfiles : do / Manage profile in database\nManageProfiles : do / Add, delete or edit profiles if necessary\nManageProfiles : exit / Action completed\n\nstate \"Invalid user\" as InvalidUser\nInvalidUser : entry / Invalid login or invalid registration\nInvalidUser : do / Block entry to system\nInvalidUser : exit / Abnormal termination\n\nstate Writing\nWriting : entry / Writer logged in\nWriting : do / Write article\nWriting : exit / Send to editor\n\nstate Editing\nEditing : entry / Editor logged in and article to be edited\nEditing : do / Edit article\nEditing : exit / Send to moderator/admin\n\nstate Publishing\nPublishing : entry / Admin logged in and article to be approved\nPublishing : do / Choose to approve and publish or reject article\nPublishing : do / Add article to database if approved\nPublishing : exit / Publish article\n\nstate Search\nSearch : entry / Choose to search for articles\nSearch : do / Read searched articles\nSearch : exit / Completed reading\n\nstate Reading\nReading : entry / Published article\nReading : do / Read article\nReading : exit / Completed reading\n\nstate Feedback\nFeedback : entry / Reader chosen to give feedback\nFeedback : do / Get feedback\nFeedback : exit / Feedback entry successful\n\nStartChoice --> Register\nStartChoice --> Login\n\nRegister --> AdminChoice\nLogin --> EditorChoice\n\nAdminChoice --> ManageProfiles\nAdminChoice --> InvalidUser\n\nEditorChoice --> Writing\nEditorChoice --> Editing\nEditorChoice --> InvalidUser\n\nWriting --> Editing\nEditing --> Publishing\nManageProfiles --> Publishing\n\nInvalidUser --> [*]\n\nPublishing --> Reading\nReading --> Reading\n\nSearch --> Search\nReading --> ReadFeedbackChoice\n\nReadFeedbackChoice --> Search\nReadFeedbackChoice --> Feedback\n\nFeedback --> EndJoin\nSearch --> EndJoin\n\nEndJoin --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Structural Validation Rules ---\n\n- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].\n\n- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.\n\n- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.\n\n- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].\n\n- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.\n\n- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.\n\n- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.\n\n- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.\n\n- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].\n\n- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.\n\n- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.\n\n- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.\n\n- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.\n\n\n\n--- Task ---\n\nRequirement:\n\nPlane — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall place a newly acquired plane in an 'Order' state until it is delivered.\n2. The system shall transition a plane from 'Arrival' to 'Preparation' upon its arrival.\n3. The system shall assign a prepared plane to either 'Operations' or 'Maintenance' based on its condition and schedule.\n4. The system shall keep a plane in the 'Operations' state if it still has scheduled flights.\n5. The system shall send a plane to 'Maintenance' when there are no more scheduled flights or maintenance is required.\n6. The system shall transition a plane from 'Maintenance' to 'Preparation' after checking and servicing it until it is ready for operations.\n7. The system shall take a plane out of service if it is no longer available for use.\n8. The system shall remove a plane from its operations when it is permanently withdrawn from service.\n",
+  "requirement_used": "Plane — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall place a newly acquired plane in an 'Order' state until it is delivered.\n2. The system shall transition a plane from 'Arrival' to 'Preparation' upon its arrival.\n3. The system shall assign a prepared plane to either 'Operations' or 'Maintenance' based on its condition and schedule.\n4. The system shall keep a plane in the 'Operations' state if it still has scheduled flights.\n5. The system shall send a plane to 'Maintenance' when there are no more scheduled flights or maintenance is required.\n6. The system shall transition a plane from 'Maintenance' to 'Preparation' after checking and servicing it until it is ready for operations.\n7. The system shall take a plane out of service if it is no longer available for use.\n8. The system shall remove a plane from its operations when it is permanently withdrawn from service.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_8b__few_shot__prompt_structural_validation\\case_65_plane\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 0,
+    "transition_count": 0
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_57_cd_player",
+        "case_06_my_helper",
+        "case_21_for_online_college_magazine_system"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_initial_state_transition ([*] --> state)",
+        "missing_final_state_transition (state --> [*])"
+      ],
+      "strict_issues": [
+        "missing_initial_state_transition ([*] --> state)",
+        "missing_final_state_transition (state --> [*])"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_initial_state_transition ([*] --> state)",
+          "missing_final_state_transition (state --> [*])"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 0,
+        "transition_count": 0
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_8b__few_shot__prompt_structural_validation\\case_65_plane\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 0,
+    "state_fn": 4,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 0,
+    "transition_fn": 5,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 0,
+    "state_fn_relaxed": 4,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 0,
+    "transition_fn_relaxed": 5,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 0,
+    "transition_fn_semantic": 5,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])"
+    ],
+    "hallucination_state_rate": 0.0,
+    "hallucination_transition_rate": 0.0,
+    "hallucination_state_rate_relaxed": 0.0,
+    "hallucination_transition_rate_relaxed": 0.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])"
+    ]
+  }
+}

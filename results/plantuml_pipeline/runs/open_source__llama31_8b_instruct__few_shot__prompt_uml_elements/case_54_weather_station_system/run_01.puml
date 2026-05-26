@@ -1,0 +1,44 @@
+@startuml
+[*] --> ShutDown : [system restarts]
+
+state "ShutDown" as ShutDown {
+  entry / nil
+  do / system starts up from shut down condition
+}
+
+ShutDown --> ConfigurationMode : [configuration mode required]
+ConfigurationMode : entry / configuration mode started
+ConfigurationMode : do / user configures settings
+ConfigurationMode : exit / configuration completed
+
+ConfigurationMode --> RunningState : [configuration complete]
+
+state "RunningState" as RunningState {
+  entry / system starts collecting data
+  do / collect weather data at regular intervals
+}
+
+RunningState --> DataCollection : [data collection triggered]
+DataCollection : entry / data collection started
+DataCollection : do / prepare and send out weather summary upon request
+DataCollection : exit / data collection completed
+
+DataCollection --> RunningState : [data collection complete]
+
+RunningState --> StatusChecking : [status checking requested]
+StatusChecking : entry / system checks its own status
+StatusChecking : do / transmit result upon request
+StatusChecking : exit / status checking complete
+
+StatusChecking --> RunningState : [status checking complete]
+
+state "ControlledMode" as ControlledMode {
+  entry / remote control enabled
+  do / user controls the system remotely
+}
+
+RunningState --> ControlledMode : [remote control activated]
+ControlledMode --> ShutDown : [shutdown command given while running]
+
+ShutDown --> [*] : [system shut down]
+@enduml

@@ -1,0 +1,24 @@
+@startuml
+title Graderate State Transition Diagram
+
+[*] --> WaitingState : [Start Date Not Arrived]
+
+state "Waiting State" as WaitingState
+WaitingState : entry / nil
+WaitingState : do / wait for start date to arrive
+WaitingState : exit / start date arrived or rate expired
+
+WaitingState --> ActiveState : [Current Date >= Start Date]
+ActiveState : entry / activate the rate
+ActiveState : do / maintain active state until end of validity period
+ActiveState : exit / finish date reached
+
+ActiveState --> ExpiredState : [Finish Date Reached]
+
+state "Expired State" as ExpiredState
+ExpiredState : entry / mark rate as expired
+ExpiredState : do / remove or archive the rate after one year from expiration date
+ExpiredState : exit / rate removed or archived
+
+ExpiredState --> [*] : [Rate Removed or Archived]
+@enduml

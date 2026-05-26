@@ -1,0 +1,48 @@
+@startuml
+title Inventory State Machine
+
+[*] --> Idle
+
+state Idle
+state AddingGoods
+state UpdatingPrice
+state RemovingGoods
+state ExpiredGoods
+state PlacingOrder
+state GeneratingInvoice
+state SearchingItems
+state CalculatingDiscountTax
+state GeneratingReceipt
+state ReplacingItem
+state CancelingReceipt
+state RecordingRequests
+state ViewingSummaryReport
+
+Idle --> AddingGoods : addNewGoods
+AddingGoods --> Idle : saveGoods
+Idle --> UpdatingPrice : updateExistingPrice
+UpdatingPrice --> Idle : saveUpdatedPrice
+Idle --> RemovingGoods : removeUnrequiredGoods
+RemovingGoods --> ExpiredGoods : identifyExpiredGoods
+ExpiredGoods --> Idle : notifyUserRemoval
+
+Idle --> PlacingOrder : placeOrderToSupplier
+PlacingOrder --> GeneratingInvoice : generateInvoiceForOrder
+GeneratingInvoice --> CalculatingDiscountTax : calculateApplicableDiscountTax
+CalculatingDiscountTax --> GeneratingReceipt : generateReceiptForCustomer
+GeneratingReceipt --> ReplacingItem : replaceItemDuringBillingProcess
+ReplacingItem --> CancelingReceipt : cancelReceiptDuringBillingProcess
+
+Idle --> SearchingItems : searchAvailableItems
+SearchingItems --> SelectingItemsForPurchase : selectItemsForPurchase
+
+SelectingItemsForPurchase --> CalculatingDiscountTax : calculateApplicableDiscountTax
+CalculatingDiscountTax --> GeneratingReceipt : generateReceiptForCustomer
+
+CancelingReceipt --> Idle : cancelReceipt
+ReplacingItem --> Idle : replaceItem
+RecordingRequests --> ViewingSummaryReport : recordCustomerRequest
+
+ViewingSummaryReport --> [*] : viewSummaryReport
+
+@enduml

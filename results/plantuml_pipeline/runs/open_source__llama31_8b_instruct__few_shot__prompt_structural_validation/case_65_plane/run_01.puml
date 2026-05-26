@@ -1,0 +1,54 @@
+@startuml
+title UML State Machine Diagram (Plane Management)
+
+[*] --> Order : New Plane Acquisition
+
+state "Order" as Order
+Order : entry / Place in order until delivery
+Order : do / Wait for delivery
+Order : exit / Transition to Arrival
+
+Order --> Arrival : Delivery received
+
+
+state "Arrival" as Arrival
+Arrival : entry / Plane arrives
+Arrival : do / Check condition and schedule
+Arrival : exit / Transition to Preparation or Operations
+
+Arrival --> Preparation : Condition good, scheduled flights available
+Arrival --> Maintenance : No scheduled flights or maintenance required
+
+state "Preparation" as Preparation
+Preparation : entry / Prepare plane for operations
+Preparation : do / Assign to Operations or Maintenance
+Preparation : exit / Transition to Operations or Maintenance
+
+Preparation --> Operations : Assigned to Operations
+Preparation --> Maintenance : Assigned to Maintenance
+
+
+state "Operations" as Operations
+Operations : entry / Plane in scheduled flights
+Operations : do / Monitor condition and schedule
+Operations : exit / Transition to Maintenance when no more scheduled flights
+
+Operations --> Maintenance : No more scheduled flights or maintenance required
+
+
+state "Maintenance" as Maintenance
+Maintenance : entry / Plane sent for maintenance
+Maintenance : do / Check and service plane
+Maintenance : exit / Transition to Preparation after servicing
+
+Maintenance --> Preparation : Ready for operations
+
+
+state "Withdrawn from Service" as WithdrawnFromService
+WithdrawnFromService : entry / Plane no longer available for use
+WithdrawnFromService : do / Remove from operations
+WithdrawnFromService : exit / End of lifecycle
+
+WithdrawnFromService --> [*]
+
+@enduml

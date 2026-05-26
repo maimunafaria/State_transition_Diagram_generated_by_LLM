@@ -1,0 +1,75 @@
+@startuml
+title Inventory State Machine
+
+[*] --> Idle
+
+state Idle
+state Active
+state Expired
+state Removed
+state Ordered
+state Billed
+state SummaryReport
+
+Idle --> Active : addGoods
+Active --> Expired : expiredGoods
+Expired --> Removed : notifyUser
+Removed --> Active : removeGoods
+Active --> Ordered : placeOrder
+Ordered --> Billed : generateInvoice
+Billed --> Active : searchItems
+Active --> Billed : selectItems
+Billed --> SummaryReport : calculateDiscountTax
+SummaryReport --> [*] : viewTransactions
+
+state "Add new goods" as AddGoods {
+  Idle --> AddGoods : addNewGoods
+  AddGoods --> Active : updateInventory
+}
+
+state "Update price of existing items" as UpdatePrice {
+  Active --> UpdatePrice : updateExistingItems
+  UpdatePrice --> Active : updateInventory
+}
+
+state "Remove expired goods" as RemoveExpired {
+  Expired --> RemoveExpired : notifyUser
+  RemoveExpired --> Removed : removeGoods
+}
+
+state "Place order to supplier" as PlaceOrder {
+  Active --> PlaceOrder : placeOrder
+  PlaceOrder --> Ordered : generateInvoice
+}
+
+state "Search for items available in inventory" as SearchItems {
+  Active --> SearchItems : searchItems
+  SearchItems --> Billed : selectItems
+}
+
+state "Calculate discount and tax" as CalculateDiscountTax {
+  Billed --> CalculateDiscountTax : calculateDiscountTax
+  CalculateDiscountTax --> SummaryReport : viewTransactions
+}
+
+state "Generate receipt for customer" as GenerateReceipt {
+  Billed --> GenerateReceipt : generateReceipt
+  GenerateReceipt --> Active : updateInventory
+}
+
+state "Replace item or cancel receipt" as ReplaceItemCancelReceipt {
+  Billed --> ReplaceItemCancelReceipt : replaceItemOrCancelReceipt
+  ReplaceItemCancelReceipt --> Active : updateInventory
+}
+
+state "Record customer requests for items not available" as RecordCustomerRequests {
+  Active --> RecordCustomerRequests : recordCustomerRequests
+  RecordCustomerRequests --> SummaryReport : viewTransactions
+}
+
+state "View summary report of all transactions" as ViewSummaryReport {
+  SummaryReport --> ViewSummaryReport : viewTransactions
+  ViewSummaryReport --> [*] : exitSystem
+}
+
+@enduml

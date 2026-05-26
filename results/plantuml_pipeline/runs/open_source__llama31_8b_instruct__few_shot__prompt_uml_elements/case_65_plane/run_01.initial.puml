@@ -1,0 +1,59 @@
+@startuml
+title State Diagram - Plane Management
+
+
+[*] --> Order : New acquisition
+
+state "Order" as Order
+Order : entry / Wait for delivery
+Order : do / Monitor delivery status
+Order : exit / Delivery received
+
+Order --> Arrival : Delivery received
+
+
+state "Arrival" as Arrival
+Arrival : entry / Prepare plane
+Arrival : do / Transition to Preparation
+Arrival : exit / Plane prepared
+
+Arrival --> Preparation : Plane prepared
+
+
+state "Preparation" as Preparation
+Preparation : entry / Check condition and schedule
+Preparation : do / Assign to Operations or Maintenance
+Preparation : exit / Plane assigned
+
+Preparation --> Operations : Scheduled flights available
+Preparation --> Maintenance : No scheduled flights or maintenance required
+
+
+state "Operations" as Operations
+Operations : entry / Monitor flight schedule
+Operations : do / Continue operations if scheduled flights
+Operations : exit / No more scheduled flights
+
+Operations --> Maintenance : No more scheduled flights
+
+
+state "Maintenance" as Maintenance
+Maintenance : entry / Check and service plane
+Maintenance : do / Transition to Preparation after servicing
+Maintenance : exit / Plane serviced
+
+Maintenance --> Preparation : Plane serviced
+
+
+state "Withdrawn from Service" as WithdrawnFromService
+WithdrawnFromService : entry / Remove plane from operations
+WithdrawnFromService : do / Permanently withdraw plane
+WithdrawnFromService : exit / Plane removed
+
+WithdrawnFromService --> [*] : Plane permanently withdrawn
+
+
+state End <<choice>>
+End --> [*]
+
+@enduml

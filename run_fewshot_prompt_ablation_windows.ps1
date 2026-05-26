@@ -19,7 +19,7 @@ foreach ($structure in $structures) {
     --only-run-id open_source__deepseek_r1_8b__few_shot `
     --few-shot-count 3 `
     --few-shot-prompt-structure $structure `
-    --runs 3 `
+    --runs 1 `
     --save-prompts `
     --skip-existing
 }

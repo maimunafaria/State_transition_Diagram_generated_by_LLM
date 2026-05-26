@@ -1,0 +1,55 @@
+@startuml
+title Weather Station System State Machine Diagram
+
+[*] --> ShutDown : [system restart]
+state "ShutDown" as ShutDown {
+  ShutDown : entry / system restarted
+  ShutDown : do / wait for configuration or power-saving settings
+}
+
+state "ConfigMode" as ConfigMode {
+  ConfigMode : entry / user requests configuration or power-saving settings
+  ConfigMode : do / configure system
+  ConfigMode : exit / configuration complete, return to Running state
+}
+
+state "Running" as Running {
+  Running : entry / system running normally
+  Running : do / collect data at regular intervals
+  Running : on / request for weather summary or status check
+  Running : do / prepare and send out weather summary
+  Running : do / check own status and transmit result
+}
+
+state "Controlled" as Controlled {
+  Controlled : entry / remote control enabled
+  Controlled : do / system controlled remotely
+}
+
+ShutDown --> ConfigMode : [configuration or power-saving settings required]
+ConfigMode --> Running : [configuration complete]
+Running --> ShutDown : [shutdown command received]
+
+[*] --> Controlled : [remote control enabled]
+
+state "SummaryPreparation" as SummaryPreparation {
+  SummaryPreparation : entry / request for weather summary
+  SummaryPreparation : do / prepare and send out weather summary
+  SummaryPreparation : exit / return to Running state
+}
+
+state "StatusChecking" as StatusChecking {
+  StatusChecking : entry / request for status check
+  StatusChecking : do / check own status and transmit result
+  StatusChecking : exit / return to Running state
+}
+
+Running --> SummaryPreparation : [request for weather summary]
+SummaryPreparation --> Running
+
+Running --> StatusChecking : [request for status check]
+StatusChecking --> Running
+
+Controlled --> Running : [remote control disabled]
+
+@enduml

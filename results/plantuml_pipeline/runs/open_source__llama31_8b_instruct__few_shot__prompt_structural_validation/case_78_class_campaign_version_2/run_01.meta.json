@@ -1,0 +1,111 @@
+{
+  "run_id": "open_source__llama31_8b_instruct__few_shot__prompt_structural_validation",
+  "case_id": "case_78_class_campaign_version_2",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nAtm Many Scenarios Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the entered PIN is correct.\n2. The system shall ask the user to try again if the entered PIN is incorrect.\n3. The system shall keep the card for security reasons if the PIN is entered incorrectly too many times or if the card is invalid.\n4. The system shall show available options and wait for the user's choice if the entered PIN is correct.\n5. The system shall allow the user to cancel the operation at any point during this process.\n6. The system shall return the card when the user cancels the operation.\n\nExample 1 PlantUML:\n@startuml\ntitle Same Event and Action on Different Transitions\n\n[*] --> Idle\n\nstate Idle\nstate \"Waiting for PIN\" as WaitingForPIN\nstate \"Validating PIN\" as ValidatingPIN\nstate \"Waiting for Customer Choice\" as WaitingForChoice\nstate Confiscating\nstate Ejecting\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu\nValidatingPIN --> Confiscating : Third Invalid PIN,\\nCard Stolen, Card Expired /\\nConfiscate\n\nWaitingForPIN --> Ejecting : Cancel / Eject\nValidatingPIN --> Ejecting : Cancel / Eject\nWaitingForChoice --> Ejecting : Cancel / Eject\n\n@enduml\n\nExample 2 Requirement:\nCrime Bureau — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to log in by entering their username and password.\n2. The system shall allow the user to try again if the login details are incorrect until successful login.\n3. The system shall allow the user to choose between requesting an FIR, requesting a petition, or viewing the list of wanted and missing persons after login.\n4. The system shall display the requested information once the user selects an option.\n5. The system shall allow a police user to log in by entering their username and password.\n6. The system shall allow the police user to try again if the login details are incorrect until successful login.\n7. The system shall allow the police user to view the list of wanted and missing persons or perform major activities such as adding station details and crime records after login.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\n\nstate \"Login Verification\" as LV\nLV : entry / Enters username and password\nLV : do / Verification of login credentials of users\nLV : exit / Enters the website if login is correct\n\nstate \"Requests FIR\" as RF\nRF : entry / Verified login\nRF : do / FIR Request\nRF : exit / Displays FIR\n\nstate \"Requests Petition\" as RP\nRP : entry / Verified login\nRP : do / Requests Petition\nRP : exit / Displays Petition\n\nstate \"Requests Wanted person and missing list\" as RW\nRW : entry / Verified login\nRW : do / Requests Wanted persons\nRW : do / Requests Missing list\nRW : exit / Saving changes\n\nstate Choice1 <<choice>>\n\nLV --> LV : Repeats until login credentials are correct\nLV --> Choice1 : Chooses any one\n\nChoice1 --> RF\nChoice1 --> RP\nChoice1 --> RW\n\nRF --> [*]\nRP --> [*]\nRW --> [*]\n\n\n\nstate \"Login Verification-Police\" as LVP\nLVP : entry / Enters username and password\nLVP : do / Verification of login credentials\nLVP : exit / Enters the website if login is correct\n\nstate \"Requests Wanted person and missing list\" as RWP\nRWP : entry / Verified login\nRWP : do / Requests Wanted persons\nRWP : do / Requests Missing list\nRWP : exit / Saving changes\n\nstate \"Performs Major Activities\" as PMA\nPMA : entry / EntryAction1\nPMA : do / Add station details\nPMA : do / Add crimes\nPMA : exit / Saving changes\n\nstate Choice2 <<choice>>\n\nLVP --> LVP : Repeats until login credentials are correct\nLVP --> Choice2 : Chooses any one\n\nChoice2 --> RWP\nChoice2 --> PMA\n\nRWP --> [*]\nPMA --> [*]\n\n@enduml\n\nExample 3 Requirement:\nCovid — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to create an account by entering their details.\n2. The system shall allow users to sign in using a correct username and password.\n3. The system shall enable logged-in users to read blogs shared by recovered patients.\n4. The system shall allow users to update the number of infected people in their area, triggering updates on infection statistics and mask demand.\n5. The system shall enable users in home quarantine to share their information.\n6. The system shall allow doctors to view shared information from quarantined users and suggest medicines.\n7. The system shall enable users to view a list of nearby medical shops and purchase medicines online.\n8. The system shall allow assigning workers to clean an area, updating the cleanliness status accordingly.\n\nExample 3 PlantUML:\n@startuml\ntitle UML state machine diagram\n\nstate \"Idle\" as Idle\nIdle : entry/To action\nIdle : do/Remain in same state\nIdle : exit/Login / Register\n\nstate \"Register\" as Register\nRegister : entry/Register\nRegister : do/Register after validating\nRegister : exit/Login/Invalid registration\n\nstate \"Invalid registration\" as InvalidRegistration\nInvalidRegistration : entry/Invalid registration\nInvalidRegistration : do/Cannot register\nInvalidRegistration : exit/Abnormal termination\n\nstate \"Login\" as Login\nLogin : entry/Login\nLogin : do/Login using valid username and password\nLogin : exit/Invalid login/To home page\n\nstate \"Invalid login\" as InvalidLogin\nInvalidLogin : entry/Invalid login\nInvalidLogin : do/Cannot login\nInvalidLogin : exit/Abnormal termination\n\nstate \"Read blog\" as ReadBlog\nReadBlog : entry/To home page\nReadBlog : entry/Read blogs of recovered patients\nReadBlog : exit/Idle\n\nstate \"Update current no. of infected people\" as UpdateInfected\nUpdateInfected : entry/To home page\nUpdateInfected : do/Update current no. of infected people in the locality\nUpdateInfected : exit/View\n\nstate \"View number of infected people in the locality\" as ViewInfected\nViewInfected : entry/View\nViewInfected : do/View number of infected people in the locality\nViewInfected : exit/Idle\n\nstate \"No. of deaths in the locality\" as DeathCount\nDeathCount : entry/View\nDeathCount : do/View no. of deaths in the locality\nDeathCount : exit/Idle\n\nstate \"View mask demand\" as ViewMaskDemand\nViewMaskDemand : entry/View\nViewMaskDemand : do/View mask demand in the locality\nViewMaskDemand : exit/Stock\n\nstate \"Stock up\" as StockUp\nStockUp : entry/Stock\nStockUp : do/Stock up masks and gloves by the shops\nStockUp : exit/End\n\nstate \"Send patient info\" as SendPatientInfo\nSendPatientInfo : entry/To home page\nSendPatientInfo : do/Update data by home quarantined patients\nSendPatientInfo : exit/View patient info\n\nstate \"View patient info\" as ViewPatientInfo\nViewPatientInfo : entry/View patient info\nViewPatientInfo : do/View patient info by the medical professional\nViewPatientInfo : exit/Prescribe\n\nstate \"Prescribe medicines if needed\" as PrescribeMedicines\nPrescribeMedicines : entry/Prescribe\nPrescribeMedicines : do/Prescribe medicines if needed\nPrescribeMedicines : exit/View data from doc\n\nstate \"View data shared by doctor\" as ViewDoctorData\nViewDoctorData : entry/View data from doc\nViewDoctorData : do/View data shared by doctor\nViewDoctorData : exit/Buy medicines\n\nstate \"List all medical shops\" as ListMedicalShops\nListMedicalShops : entry/To home page\nListMedicalShops : do/List all medical shops in the locality\nListMedicalShops : exit/Buy medicines\n\nstate \"Assign corporation worker\" as AssignWorker\nAssignWorker : entry/To home page\nAssignWorker : do/Assign workers to disinfect in an area\nAssignWorker : exit/Update status\n\nstate \"Update status of cleanliness\" as CleanlinessStatus\nCleanlinessStatus : entry/Update status\nCleanlinessStatus : do/Update status of cleanliness in the locality\nCleanlinessStatus : exit/End\n\nstate \"Buy medicines\" as BuyMedicines\nBuyMedicines : entry/Buy medicines\nBuyMedicines : do/Buy medicines if needed\nBuyMedicines : exit/End\n\nstate J1 <<choice>>\nstate J2 <<choice>>\nstate J3 <<choice>>\nstate J4 <<choice>>\nstate J5 <<choice>>\nstate J6 <<choice>>\nstate J7 <<choice>>\n[*] --> Idle\n\nIdle --> J1\nJ1 --> Register\nJ1 --> Login\n\nRegister --> J2\nJ2 --> Login\nJ2 --> InvalidRegistration\nInvalidRegistration --> [*]\n\nLogin --> J3\nJ3 --> InvalidLogin\nJ3 --> ReadBlog\nJ3 --> UpdateInfected\nJ3 --> SendPatientInfo\nJ3 --> ListMedicalShops\nJ3 --> AssignWorker\nInvalidLogin --> [*]\n\nReadBlog --> J7\nUpdateInfected --> J4\nViewInfected --> J7\nDeathCount --> J7\nJ7 --> Idle\nJ4 --> ViewInfected\nJ4 --> DeathCount\nJ4 --> ViewMaskDemand\n\nViewMaskDemand --> StockUp\nStockUp --> J6\n\nSendPatientInfo --> ViewPatientInfo\nViewPatientInfo --> PrescribeMedicines\nPrescribeMedicines --> ViewDoctorData\nViewDoctorData --> J5\nListMedicalShops --> J5\nJ5 --> BuyMedicines\nBuyMedicines --> J6\n\nAssignWorker --> CleanlinessStatus\nCleanlinessStatus --> J6\n\nJ6 --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Structural Validation Rules ---\n\n- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].\n\n- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.\n\n- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.\n\n- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].\n\n- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.\n\n- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.\n\n- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.\n\n- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.\n\n- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].\n\n- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.\n\n- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.\n\n- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.\n\n- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.\n\n\n\n--- Task ---\n\nRequirement:\n\nClass Campaign Version 2 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start a campaign after a manager and staff are assigned.\n2. The system shall activate the campaign once everything is approved and the contract is signed.\n3. The system shall prepare adverts during the campaign.\n4. The system shall approve and schedule the adverts.\n5. The system shall run the adverts.\n6. The system shall allow extension or adjustment of the campaign while it is running.\n7. The system shall complete the campaign and prepare a final statement after all adverts have finished.\n8. The system shall handle payment after the campaign completion and generate a refund if the amount paid is less than required.\n9. The system shall wait for the correct balance to be settled if the amount paid exceeds the required amount.\n10. The system shall mark the campaign as paid once the full amount is properly paid.\n11. The system shall archive the campaign and release all assigned staff and managers.\n",
+  "requirement_used": "Class Campaign Version 2 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start a campaign after a manager and staff are assigned.\n2. The system shall activate the campaign once everything is approved and the contract is signed.\n3. The system shall prepare adverts during the campaign.\n4. The system shall approve and schedule the adverts.\n5. The system shall run the adverts.\n6. The system shall allow extension or adjustment of the campaign while it is running.\n7. The system shall complete the campaign and prepare a final statement after all adverts have finished.\n8. The system shall handle payment after the campaign completion and generate a refund if the amount paid is less than required.\n9. The system shall wait for the correct balance to be settled if the amount paid exceeds the required amount.\n10. The system shall mark the campaign as paid once the full amount is properly paid.\n11. The system shall archive the campaign and release all assigned staff and managers.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot__prompt_structural_validation\\case_78_class_campaign_version_2\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "Idle",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 11,
+    "transition_count": 10
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_68_atm_many_scenarios_3",
+        "case_22_crime_bureau",
+        "case_07_covid"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "Idle",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 11,
+        "transition_count": 10
+      },
+      "strict_state_diagram_valid": true,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot__prompt_structural_validation\\case_78_class_campaign_version_2\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.09090909090909091,
+    "state_recall": 0.14285714285714285,
+    "state_f1": 0.1111111111111111,
+    "state_tp": 1,
+    "state_fp": 10,
+    "state_fn": 6,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 10,
+    "transition_fn": 8,
+    "state_precision_relaxed": 0.09090909090909091,
+    "state_recall_relaxed": 0.14285714285714285,
+    "state_f1_relaxed": 0.1111111111111111,
+    "state_tp_relaxed": 1,
+    "state_fp_relaxed": 10,
+    "state_fn_relaxed": 6,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 10,
+    "transition_fn_relaxed": 7,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 10,
+    "transition_fn_semantic": 8,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 0.9090909090909091,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.9090909090909091,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.05555555555555555,
+    "overall_f1_relaxed": 0.05555555555555555,
+    "weighted_f1_relaxed_70_30": 0.07777777777777777,
+    "overall_f1_semantic": 0.05555555555555555,
+    "weighted_f1_semantic_70_30": 0.07777777777777777,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  }
+}

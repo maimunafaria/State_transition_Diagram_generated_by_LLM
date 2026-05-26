@@ -1,0 +1,38 @@
+@startuml
+title Staff Member Class State Machine Diagram
+
+state "Unassigned" as Unassigned {
+  [*] --> AssignToClient : [staff member assigned to client]
+  AssignToClient --> AssignedToClient : [client assignment successful]
+
+  state "Assigned to Client" as AssignedToClient {
+    AssignedToClient --> SwitchAssignments : [staff member switches assignments]
+    SwitchAssignments --> Unassigned : [new assignment accepted]
+    SwitchAssignments --> AssignedToCampaign : [campaign assignment successful]
+
+    state "Switch Assignments" as SwitchAssignments
+  }
+
+  state "Assigned to Campaign" as AssignedToCampaign {
+    AssignedToCampaign --> RemoveAssignment : [staff member removed from campaign]
+    RemoveAssignment --> Unassigned : [assignment removed successfully]
+  }
+}
+
+state "Unemployed" as Unemployed {
+  Unemployed --> ArchiveRecord : [archive record after some time has passed]
+  ArchiveRecord --> [*] : [record archived]
+}
+
+Unassigned : entry / staff member not assigned
+AssignedToClient : entry / client assignment successful
+AssignedToCampaign : entry / campaign assignment successful
+SwitchAssignments : entry / new assignment accepted
+RemoveAssignment : entry / assignment removed successfully
+ArchiveRecord : entry / archive record after some time has passed
+
+state "Archived" as Archived {
+  [*] --> Unassigned : [new staff member added]
+}
+
+@enduml
