@@ -44,6 +44,7 @@ def run_single_generation(
     rag_collection_name: str = "uml_docs",
     few_shot_seed: int = 42,
     few_shot_count: int = 3,
+    few_shot_prompt_structure: str = "original",
     run_index: int = 1,
     repair_attempts: int = DEFAULT_REPAIR_ATTEMPTS,
     initial_puml: str | None = None,
@@ -70,6 +71,7 @@ def run_single_generation(
             rag_collection_name=rag_collection_name,
             few_shot_seed=few_shot_seed,
             few_shot_count=few_shot_count,
+            few_shot_prompt_structure=few_shot_prompt_structure,
             run_index=run_index,
         )
         if prompt_meta.get("few_shot_case_ids"):

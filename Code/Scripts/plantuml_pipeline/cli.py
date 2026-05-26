@@ -156,6 +156,20 @@ def build_parser() -> argparse.ArgumentParser:
         default=3,
         help="Number of few-shot examples to include",
     )
+    p_run.add_argument(
+        "--few-shot-prompt-structure",
+        choices=[
+            "original",
+            "structural_validation",
+            "uml_elements",
+            "uml_elements_structural_validation",
+        ],
+        default="original",
+        help=(
+            "Few-shot prompt structure for ablation. Non-original structures add a "
+            "prompt_* suffix to few-shot run IDs."
+        ),
+    )
     p_run.add_argument("--temperature", type=float, default=0.2)
     p_run.add_argument("--top-p", type=float, default=0.9)
     p_run.add_argument("--max-tokens", type=int, default=1024)

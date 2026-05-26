@@ -44,6 +44,10 @@ METHOD_COLORS = {
 }
 
 
+def is_ablation_method(method: str) -> bool:
+    return method.startswith("RAG [") or method.startswith("RAG + Validation [") or method.startswith("RAG + Repair [")
+
+
 def is_ensemble_row(row: dict[str, object]) -> bool:
     model = str(row.get("model", ""))
     method = str(row.get("method", ""))
@@ -68,7 +72,7 @@ def read_summary(path: Path) -> list[dict[str, object]]:
                 "invalid": int(row["invalid"]),
                 "validity_percent": float(row["validity_percent"]),
             }
-            if not is_ensemble_row(parsed):
+            if not is_ensemble_row(parsed) and not is_ablation_method(parsed["method"]):
                 rows.append(parsed)
     return rows
 
@@ -85,7 +89,7 @@ def read_case_rows(path: Path) -> list[dict[str, object]]:
                 "case_id": row["case_id"],
                 "valid": row["valid"].strip().lower() == "true",
             }
-            if not is_ensemble_row(parsed):
+            if not is_ensemble_row(parsed) and not is_ablation_method(parsed["method"]):
                 rows.append(parsed)
     return rows
 

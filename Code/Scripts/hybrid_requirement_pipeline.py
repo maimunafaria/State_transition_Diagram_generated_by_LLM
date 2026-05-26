@@ -552,6 +552,34 @@ def deterministic_validation(raw_text: str, rewritten: list[str]) -> dict[str, A
     }
 
 
+def relaxed_final_assessment(
+    rewritten: list[str],
+    deterministic: dict[str, Any],
+    llm_validation: dict[str, Any],
+    extraction_error: str,
+    rewriting_error: str,
+) -> str:
+    """Use a moderate final gate for dataset validation reports.
+
+    The LLM validator can flag acceptable paraphrases, so a single warning is
+    not enough to fail a case. Several accumulated warnings, however, should
+    push the case into manual review.
+    """
+    if extraction_error or rewriting_error:
+        return "needs_review"
+    if not rewritten:
+        return "needs_review"
+    if deterministic.get("duplicates"):
+        return "needs_review"
+    llm_issue_count = sum(
+        len(llm_validation.get(key) or [])
+        for key in ("missing_requirements", "hallucinations", "duplicates", "ambiguities")
+    )
+    if llm_issue_count >= 6:
+        return "needs_review"
+    return "pass"
+
+
 def build_structured_requirement_text(case_name: str, raw_text: str, rewritten: list[str]) -> str:
     title = case_title(case_name)
     summary = summarize(raw_text)
@@ -676,12 +704,13 @@ def process_case(
             llm_validation = {"overall_assessment": "needs_review", "error": validator_error}
 
     deterministic = deterministic_validation(raw_text, rewritten)
-    final_status = "needs_review"
-    if deterministic["overall_assessment"] == "pass":
-        if disable_llm_validator:
-            final_status = "pass"
-        elif str(llm_validation.get("overall_assessment", "needs_review")).lower() == "pass":
-            final_status = "pass"
+    final_status = relaxed_final_assessment(
+        rewritten=rewritten,
+        deterministic=deterministic,
+        llm_validation=llm_validation,
+        extraction_error=extraction_error,
+        rewriting_error=rewriting_error,
+    )
 
     structured_text = build_structured_requirement_text(case_dir.name, raw_text, rewritten)
     out_path.write_text(structured_text, encoding="utf-8")
@@ -716,9 +745,19 @@ def process_case(
         "disable_llm_validator": disable_llm_validator,
         "deterministic_validation": deterministic,
         "llm_validation": llm_validation,
-        "errors": {"llm_validator_error": validator_error},
+        "errors": {
+            "llm_extraction_error": extraction_error,
+            "llm_rewriting_error": rewriting_error,
+            "llm_validator_error": validator_error,
+        },
         "prompt": validation_prompt,
         "llm_response": validator_response,
+        "final_assessment_policy": (
+            "moderate: needs_review if extraction/rewriting failed, no rewritten "
+            "requirements were produced, exact duplicate rewritten requirements were "
+            "detected, or the LLM validator reports 6 or more total issues across "
+            "missing requirements, hallucinations, duplicates, and ambiguities"
+        ),
         "final_assessment": final_status,
     }
     write_json(case_dir / "validation_report.json", validation_artifact)

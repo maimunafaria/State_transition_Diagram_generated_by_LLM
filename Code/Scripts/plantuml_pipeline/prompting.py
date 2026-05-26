@@ -473,6 +473,56 @@ def build_zero_shot_prompt(requirement: str) -> str:
     )
 
 
+def _repair_rules_for_generation_prompt() -> list[str]:
+    return [
+        "Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].",
+        "Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.",
+        "Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.",
+        "Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].",
+        "Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.",
+        "Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.",
+        "Avoid duplicate transitions: remove duplicates or merge their labels into one transition.",
+        "Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.",
+        "Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].",
+        "Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.",
+        "Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.",
+        "Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.",
+        "If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.",
+    ]
+
+
+def _uml_elements_for_generation_prompt() -> list[str]:
+    return [
+        "State transition diagram: models the lifecycle behavior of one reactive object, system, controller, process, class, subsystem, or use case as it changes state in response to events.",
+        "Reactive object / context: the main object or system whose behavior is being modeled; it responds to events and has a lifecycle.",
+        "State: a meaningful condition, mode, phase, or situation during the object's life that changes how it responds to events.",
+        "Initial state: a pseudostate marking where the state machine begins; it points to the first real lifecycle state.",
+        "Final state: marks completion or termination of the modeled lifecycle.",
+        "Transition: a directed movement from one state to another caused by an event.",
+        "Event / trigger: a noteworthy external or internal occurrence that may trigger a transition.",
+        "Guard condition: a Boolean condition that must be true for a transition to occur.",
+        "Action: instantaneous, uninterruptible behavior performed during a transition or inside a state.",
+        "Activity / do behavior: behavior performed within a state that takes finite time and may be interrupted by an event.",
+        "Entry behavior: an action performed immediately when a state is entered.",
+        "Exit behavior: an action performed immediately before a state is exited.",
+        "Internal transition: handles an event within the current state without moving to another state.",
+        "Composite state: a state that contains one or more nested state machines and groups related substates.",
+        "Substate: a state contained inside a composite state.",
+        "Superstate: a parent state that contains substates and may define shared behavior.",
+        "Sequential composite state: a composite state with one nested state machine where only one substate is active at a time.",
+        "Concurrent composite state: a composite state with two or more nested state machines executing concurrently.",
+        "Fork: a control point where execution splits into multiple concurrent paths.",
+        "Join: a control point where multiple concurrent paths synchronize before continuing.",
+        "History state: remembers the last active substate of a composite state so execution can resume there.",
+        "Shallow history: remembers the last active substate only at the same nesting level.",
+        "Deep history: remembers the last active substate across nested levels.",
+        "Call event: a request to invoke an operation on the modeled object.",
+        "Signal event: receipt of an asynchronous message.",
+        "Change event: occurs when a Boolean condition becomes true.",
+        "Time event: occurs at a specific time or after a specified interval.",
+    ]
+
+
 def build_generation_prompt(
     case: Case,
     cfg: ExperimentConfig,
@@ -487,6 +537,7 @@ def build_generation_prompt(
     rag_collection_name: str = "uml_docs",
     few_shot_seed: int = 42,
     few_shot_count: int = 3,
+    few_shot_prompt_structure: str = "original",
     run_index: int = 1,
 ) -> tuple[str, dict[str, Any]]:
     requirement = case.structured_requirement if requirement_source == "structured" else case.raw_requirement
@@ -496,6 +547,7 @@ def build_generation_prompt(
     prompt_meta: dict[str, Any] = {
         "requirement_source": requirement_source,
         "few_shot_case_ids": [],
+        "few_shot_prompt_structure": few_shot_prompt_structure,
         "rag": {
             "enabled": bool(cfg.use_rag),
             "mode": rag_mode,
@@ -512,7 +564,9 @@ def build_generation_prompt(
         return build_zero_shot_prompt(requirement), prompt_meta
 
     if cfg.strategy == "few_shot":
-        rng = random.Random(f"{few_shot_seed}:{cfg.run_id}:{case.case_id}:{run_index}")
+        prompt_structure = few_shot_prompt_structure.strip().lower() or "original"
+        selection_run_id = re.sub(r"__prompt_[a-z0-9_]+$", "", cfg.run_id)
+        rng = random.Random(f"{few_shot_seed}:{selection_run_id}:{case.case_id}:{run_index}")
         examples = select_fewshot_examples(
             all_cases,
             case.case_id,
@@ -522,6 +576,7 @@ def build_generation_prompt(
         prompt_meta["few_shot_case_ids"] = [ex.case_id for ex in examples]
         prompt_meta["few_shot_seed"] = few_shot_seed
         prompt_meta["few_shot_count"] = few_shot_count
+        prompt_meta["few_shot_selection_run_id"] = selection_run_id
         prompt_meta["few_shot_run_index"] = run_index
         example_texts: list[str] = []
         if examples:
@@ -556,10 +611,30 @@ def build_generation_prompt(
             "- Use proper UML state diagram syntax.",
             "- Do not include explanations or extra text.",
             "",
-            "--- Task ---",
-            "Requirement:",
-            requirement,
         ]
+        if prompt_structure in {"uml_elements", "uml_elements_structural_validation"}:
+            parts.extend(
+                [
+                    "--- UML State Transition Diagram Elements ---",
+                    *[f"- {element}" for element in _uml_elements_for_generation_prompt()],
+                    "",
+                ]
+            )
+        if prompt_structure in {"structural_validation", "uml_elements_structural_validation"}:
+            parts.extend(
+                [
+                    "--- Structural Validation Rules ---",
+                    *[f"- {rule}" for rule in _repair_rules_for_generation_prompt()],
+                    "",
+                ]
+            )
+        parts.extend(
+            [
+                "--- Task ---",
+                "Requirement:",
+                requirement,
+            ]
+        )
     else:
         parts = [
             "You convert natural language software requirements into UML state machine diagrams in PlantUML format.",
