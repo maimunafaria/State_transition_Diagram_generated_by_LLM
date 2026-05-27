@@ -1,0 +1,47 @@
+@startuml
+title ATM State Transition Diagram
+
+[*] --> Greeting : "User Arrives"
+
+state Greeting {
+    state CardInserted
+    state PINCheck {
+        [*] --> IncorrectPIN : [Invalid PIN]
+        state RetryPIN : "Retry PIN"
+        RetryPIN --> CorrectPIN : [Correct PIN]
+        CorrectPIN --> Options : "Card Inserted and PIN Correct"
+    }
+    state InvalidCard : "Invalid Card"
+}
+
+state Options {
+    state WithdrawMoney
+    state CheckInfo
+    state MakeTransfer
+
+    Options --> WithdrawMoney : "Withdraw Money"
+    Options --> CheckInfo : "Check Information"
+    Options --> MakeTransfer : "Make Transfer"
+}
+
+state ProcessRequest {
+    ProcessRequest --> [*] : "Transaction Completed"
+}
+
+state CardHeld : "Card Held for Security"
+
+Greeting --> CardInserted
+CardInserted --> PINCheck
+
+PINCheck --> InvalidCard : [Invalid Card]
+PINCheck --> CorrectPIN : [Correct PIN]
+
+CorrectPIN --> Options
+
+Options --> ProcessRequest
+
+CardInserted --> CardHeld : [Too Many Incorrect Attempts or Invalid Card]
+CardHeld --> [*] : "Card Returned"
+
+ProcessRequest --> [*] : "Transaction Completed"
+@enduml

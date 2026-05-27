@@ -1,0 +1,51 @@
+@startuml
+title ATM Control - PIN Processing and Transaction Completion
+
+state "Waiting for Card" as WaitingForCard
+state InsertedCard {
+  entry / Display Insert Card
+}
+state EnterPIN {
+  entry / Display Enter PIN
+}
+state PINVerified {
+  entry / PIN Matched
+}
+state SelectOption {
+  entry / Show Options
+}
+state ProcessingWithdrawal {
+  entry / Process Withdrawal
+}
+state PrintingReceipt {
+  entry / Print Receipt
+}
+state ReturningCard {
+  entry / Return Card
+}
+state ResettingSystem {
+  entry / System Reset
+}
+
+[*] --> WaitingForCard
+
+InsertedCard: entry / Card Inserted
+InsertedCard --> EnterPIN : [Enter PIN]
+
+EnterPIN: entry / User Entering PIN
+EnterPIN --> PINVerified : [Valid PIN]
+EnterPIN --> SelectOption : [Invalid PIN] -- not applicable per requirements
+
+PINVerified --> SelectOption : [Provide Options]
+
+SelectOption --> ProcessingWithdrawal : [Withdrawal Selected]
+
+ProcessingWithdrawal --> PrintingReceipt : [Cash Dispensed]
+
+PrintingReceipt --> ReturningCard : [Receipt Printed]
+
+ReturningCard --> ResettingSystem : [Card Returned]
+
+ResettingSystem --> WaitingForCard : [System Ready for Next User]
+
+@enduml

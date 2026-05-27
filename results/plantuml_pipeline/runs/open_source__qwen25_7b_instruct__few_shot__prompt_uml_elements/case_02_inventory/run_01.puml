@@ -1,0 +1,45 @@
+@startuml
+title Inventory State Machine
+
+[*] --> AddGoods : [Add new goods]
+
+state "Inventory Management" as InventoryManagement {
+  state "Goods Available" as GoodsAvailable
+  state "Order Placed" as OrderPlaced
+  state "Invoice Generated" as InvoiceGenerated
+  state "Receipt Generated" as ReceiptGenerated
+  state "Summary Report" as SummaryReport
+
+  GoodsAvailable --> UpdatePrice : [Update price]
+  GoodsAvailable --> RemoveGoods : [Remove goods]
+
+  GoodsAvailable --> ExpireCheck : [Check for expired goods]
+  ExpireCheck --> NotifyUser : [Notify user about removal]
+  NotifyUser --> GoodsAvailable
+
+  GoodsAvailable --> PlaceOrder : [Place order with supplier]
+  PlaceOrder --> InvoiceGenerated : [Generate invoice]
+  InvoiceGenerated --> ReceiptGeneration : [Generate receipt]
+
+  ReceiptGeneration --> ReplaceItem : [Replace item or cancel receipt]
+  ReceiptGeneration --> SummaryReport : [View summary report]
+
+  state "Goods Search" as GoodsSearch
+  GoodsAvailable --> GoodsSearch : [Search for items in inventory]
+}
+
+state GoodsSearch {
+  state "Item Found" as ItemFound
+  state "Item Not Found" as ItemNotFound
+
+  ItemFound --> SelectForPurchase : [Select item for purchase]
+  ItemFound --> SummaryReport : [View summary report]
+
+  ItemNotFound --> SummaryReport : [View summary report]
+}
+
+state SummaryReport <<choice>>
+
+GoodsAvailable --> [*] : [View summary report]
+
+@enduml

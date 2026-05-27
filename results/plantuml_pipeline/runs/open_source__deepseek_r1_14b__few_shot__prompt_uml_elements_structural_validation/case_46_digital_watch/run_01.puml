@@ -1,0 +1,72 @@
+@startuml
+title Digital Watch State Transition Diagram
+
+state "Idle" as Idle
+state "Adjusting Time" as AdjustTime
+state "Setting Alarm" as SetAlarm
+state "Alarm Active" as AlarmActive
+state "Alarm Ringing" as AlarmRinging
+state "Light On" as LightOn
+state "Light Off" as LightOff
+
+[*] --> Idle
+
+Idle:
+  entry / Watch starts in idle mode
+  do / Display current time and date
+  exit / Button pressed to adjust time or set alarm
+
+Idle --> AdjustTime : Press button (A)
+Idle --> SetAlarm : Press button (B)
+
+AdjustTime:
+  entry / User selects hour or minute setting
+  do / Allow increasing/decreasing values
+  exit / Button pressed to switch settings or save
+
+AdjustTime --> AdjustTime : Increase/Decrease value
+AdjustTime --> AdjustTime : Next/Previous selection
+AdjustTime --> Idle : Press button (A/B)
+AdjustTime --> SetAlarm : Press button (C)
+
+SetAlarm:
+  entry / User selects alarm hour or minute setting
+  do / Allow increasing/decreasing values
+  exit / Button pressed to switch settings or save
+
+SetAlarm --> SetAlarm : Increase/Decrease value
+SetAlarm --> SetAlarm : Next/Previous selection
+SetAlarm --> Idle : Press button (A/B)
+SetAlarm --> AdjustTime : Press button (C)
+
+Idle --> AlarmActive : Check alarm time condition met
+
+AlarmActive:
+  entry / Alarm is turned on
+  do / Wait for alarm time to match current time
+  exit / Button pressed to stop alarm
+
+AlarmActive --> AlarmRinging : Current time matches alarm time
+AlarmActive --> Idle : Press button (A/B)
+
+AlarmRinging:
+  entry / Alarm sounds
+  do / Ringing sound plays
+  exit / Button pressed to stop alarm
+
+AlarmRinging --> Idle : Press button (A/B)
+
+Idle --> LightOn : Press light button (D)
+LightOn:
+  entry / Light feature activated
+  do / Backlight turns on
+  exit / Button released or turned off
+
+LightOn --> LightOff : Release button (D) or press again
+
+LightOff:
+  entry / Light feature deactivated
+  do / Backlight turns off
+  exit /
+
+@enduml

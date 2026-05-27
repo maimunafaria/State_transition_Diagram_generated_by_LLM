@@ -1,0 +1,61 @@
+@startuml
+title UML State Chart Diagram for Campaign Lifecycle
+
+state "Initial" as Initial {
+  [*] --> AssignStaffAndManager : [Campaign Assigned]
+}
+
+state "Assigned" as Assigned
+Assigned --> ApproveAll : [Everything Approved, Contract Signed]
+
+state "Preparation" as Preparation
+Preparation --> ApproveAdverts : [Adverts Prepared]
+
+state "Scheduled" as Scheduled
+Scheduled --> RunAdverts : [Adverts Approved and Scheduled]
+
+state "Running" as Running {
+  state "AdjustCampaign" as AdjustCampaign
+  state "ExtendCampaign" as ExtendCampaign
+
+  Running --> AdjustCampaign : [Campaign Needs Adjustment]
+  Running --> ExtendCampaign : [Campaign Needs Extension]
+}
+
+state "Completed" as Completed
+Completed --> FinalStatement : [All Adverts Finished]
+
+state "PaymentHandling" as PaymentHandling {
+  state "WaitingForBalance" as WaitingForBalance
+  state "PaidFully" as PaidFully
+
+  Completed --> WaitingForBalance : [Amount Paid Exceeds Required]
+  WaitingForBalance --> PaidFully : [Correct Balance Settled]
+}
+
+state "Finalized" as Finalized
+Finalized --> [*] : [Campaign Marked As Paid]
+
+state "Archived" as Archived {
+  state "ReleaseStaffAndManager" as ReleaseStaffAndManager
+
+  Finalized --> ReleaseStaffAndManager : [Campaign Finalized]
+}
+
+Initial --> Assigned
+Assigned --> Preparation
+Preparation --> Scheduled
+Scheduled --> Running
+Running --> AdjustCampaign
+Running --> ExtendCampaign
+ExtendCampaign --> Running
+AdjustCampaign --> Running
+Running --> Completed
+Completed --> PaymentHandling
+PaymentHandling --> PaidFully
+PaidFully --> Finalized
+Finalized --> Archived
+
+Archived --> [*]
+
+@enduml

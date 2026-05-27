@@ -1,0 +1,42 @@
+@startuml
+title UML State Machine Diagram - Digital Watch
+
+[*] --> ViewTime : view time
+
+state "View Time" as ViewTime {
+  state "Adjust Hour" as AdjustHour
+  state "Adjust Minute" as AdjustMinute
+  state "Set Alarm Hour" as SetAlarmHour
+  state "Set Alarm Minute" as SetAlarmMinute
+}
+
+state "On" as On
+state "Off" as Off
+
+ViewTime --> AdjustHour : press button
+AdjustHour --> ViewTime : release button
+AdjustHour --> AdjustMinute : press button
+AdjustMinute --> ViewTime : release button
+AdjustMinute --> SetAlarmHour : press button
+SetAlarmHour --> ViewTime : release button
+SetAlarmHour --> SetAlarmMinute : press button
+SetAlarmMinute --> ViewTime : release button
+
+ViewTime --> On : turn on light
+On --> Off : press button
+Off --> On : press button
+
+state "Alarm" as Alarm {
+  state "Active" as Active
+  state "Inactive" as Inactive
+}
+
+Alarm --> Inactive : alarm off
+Alarm --> Active : alarm time matches current time
+
+Active --> Inactive : stop alarm
+Inactive --> Active : set alarm
+
+[*] --> Off : turn off light
+
+@enduml

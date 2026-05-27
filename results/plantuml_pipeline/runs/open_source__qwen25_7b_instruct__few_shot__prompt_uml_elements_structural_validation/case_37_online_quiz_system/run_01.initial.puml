@@ -1,0 +1,89 @@
+@startuml
+title UML state machine diagram for Online Quiz System
+
+state "Unregistered" as Unregistered
+Unregistered : entry/No User Logged In
+Unregistered : do/Register or Login
+Unregistered --> Registered : Register/Login
+
+state "Registered" as Registered
+Registered : entry/User Logged In
+Registered : do/Continue as Teacher / Student
+Registered --> Teacher : Continue as Teacher
+Registered --> Student : Continue as Student
+
+state "Teacher Home" as TeacherHome
+TeacherHome : entry/Logged in as Teacher
+TeacherHome : do/Create Quiz
+TeacherHome : exit/Edit Quiz
+TeacherHome : exit/Save Draft
+TeacherHome : exit/Post Quiz
+TeacherHome : exit/View Results
+TeacherHome --> CreateQuiz : [Create Quiz]
+TeacherHome --> EditQuiz : [Edit Quiz]
+TeacherHome --> SaveDraft : [Save as Draft]
+TeacherHome --> PostQuiz : [Post Quiz]
+TeacherHome --> ViewResults : [View Results]
+
+state "Student Home" as StudentHome
+StudentHome : entry/Logged in as Student
+StudentHome : do/Select Quiz
+StudentHome : exit/Answer Quiz
+StudentHome : exit/Submit Quiz
+StudentHome : exit/View Result
+StudentHome --> SelectQuiz : [Select Quiz]
+StudentHome --> AnswerQuiz : [Answer Quiz]
+StudentHome --> SubmitQuiz : [Submit Quiz]
+StudentHome --> ViewResult : [View Result]
+
+state "Create Quiz" as CreateQuiz
+CreateQuiz : entry/Creating New Quiz
+CreateQuiz : do/Configure Quiz Details
+CreateQuiz : exit/Saved
+
+state "Edit Quiz" as EditQuiz
+EditQuiz : entry/Editing Existing Quiz
+EditQuiz : do/Modify Quiz Questions
+EditQuiz : exit/Saved
+
+state "Save Draft" as SaveDraft
+SaveDraft : entry/Draft Saved
+SaveDraft : do/Save Changes
+SaveDraft : exit/Draft Saved
+
+state "Post Quiz" as PostQuiz
+PostQuiz : entry/Quiz Posted
+PostQuiz : do/Publish Quiz
+PostQuiz : exit/Quiz Published
+
+state "View Results" as ViewResults
+ViewResults : entry/Viewing Quiz Results
+ViewResults : do/Review Student Answers
+ViewResults : exit/Results Reviewed
+
+state "Answer Quiz" as AnswerQuiz
+AnswerQuiz : entry/Answering Questions
+AnswerQuiz : do/Submit Answers
+AnswerQuiz : exit/Answers Submitted
+
+state "Submit Quiz" as SubmitQuiz
+SubmitQuiz : entry/Submitting Quiz
+SubmitQuiz : do/Finalize Submission
+SubmitQuiz : exit/Submitted
+
+state "View Result" as ViewResult
+ViewResult : entry/Viewing Results
+ViewResult : do/Review Scores
+ViewResult : exit/Scores Reviewed
+
+[*] --> Unregistered
+
+state FinalState <<final>> {
+  state "Logged Out" as LoggedOut
+  state "Quiz Ended" as QuizEnded
+}
+
+TeacherHome --> LoggedOut : [Logout]
+StudentHome --> QuizEnded : [End of Quiz]
+
+@enduml

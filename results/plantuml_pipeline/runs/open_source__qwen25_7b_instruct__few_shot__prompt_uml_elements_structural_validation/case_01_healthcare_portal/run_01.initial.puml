@@ -1,0 +1,96 @@
+@startuml
+title UML State Machine Diagram - Healthcare Portal
+
+[*] --> Registration : [New User]
+
+state "Registration" as Registration
+state "Login" as Login
+state "Home" as Home
+state "Read Content" as ReadContent
+state "Check Symptoms" as CheckSymptoms
+state "Use Fitness Options" as UseFitnessOptions
+state "View Result" as ViewResult
+state "Insurance Validation" as InsuranceValidation
+state "Payment Process - Cash" as PaymentProcessCash
+state "Payment Process - Insurance" as PaymentProcessInsurance
+state "Feedback Collection" as FeedbackCollection
+state "Logout" as Logout
+
+Registration : entry/Start Registration
+Registration : exit/Register Failed
+Login : entry/User Not Registered
+Login : do/Login Attempt
+Login : exit/Login Successful
+
+Home : entry/User Logged In
+Home : do/Access Facilities
+Home : exit/View Content
+Home : exit/Check Symptoms
+Home : exit/Use Fitness Options
+Home : exit/View Result
+Home : exit/Payment Process - Cash
+Home : exit/Payment Process - Insurance
+Home : exit/Feedback Collection
+
+ReadContent : entry/Read News or Expert Content
+ReadContent : do/Read and Navigate
+ReadContent : exit/Home
+
+CheckSymptoms : entry/Check Symptoms
+CheckSymptoms : do/Check Symptom
+CheckSymptoms : exit/Home
+
+UseFitnessOptions : entry/Use Fitness Options
+UseFitnessOptions : do/Use Option
+UseFitnessOptions : exit/Home
+
+ViewResult : entry/View Result
+ViewResult : do/View and Navigate
+ViewResult : exit/Home
+
+InsuranceValidation : entry/Validate Insurance
+InsuranceValidation : do/Process Validation
+InsuranceValidation : exit/Payment Process - Cash
+InsuranceValidation : exit/Payment Process - Insurance
+
+PaymentProcessCash : entry/Pay with Cash
+PaymentProcessCash : do/Collect Payment Details
+PaymentProcessCash : exit/Home
+
+PaymentProcessInsurance : entry/Pay with Insurance
+PaymentProcessInsurance : do/Check Payment with Insurance
+PaymentProcessInsurance : exit/Home
+
+FeedbackCollection : entry/Gather Feedback
+FeedbackCollection : do/Capture Feedback
+FeedbackCollection : exit/Home
+
+Logout : entry/User Session Ends
+Logout : do/Log Out User
+Logout : exit/User Logged Out
+
+Registration --> Login : [Registration Successful]
+Login --> Home : [Login Successful]
+
+Home --> ReadContent : [Read Content]
+Home --> CheckSymptoms : [Check Symptoms]
+Home --> UseFitnessOptions : [Use Fitness Options]
+Home --> ViewResult : [View Result]
+Home --> InsuranceValidation : [Insurance Validation Required]
+
+ReadContent --> Home
+CheckSymptoms --> Home
+UseFitnessOptions --> Home
+ViewResult --> Home
+
+InsuranceValidation --> PaymentProcessCash : [Payment Method - Cash]
+InsuranceValidation --> PaymentProcessInsurance : [Payment Method - Insurance]
+
+PaymentProcessCash --> FeedbackCollection : [Session Ends]
+PaymentProcessInsurance --> FeedbackCollection : [Session Ends]
+
+FeedbackCollection --> Logout
+
+Logout --> [*] : [End of Session]
+
+@enduml

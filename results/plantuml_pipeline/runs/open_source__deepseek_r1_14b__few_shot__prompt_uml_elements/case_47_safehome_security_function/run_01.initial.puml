@@ -1,0 +1,59 @@
+@startuml
+title Safehome Security Function State Machine
+
+state Initial {
+  [*] --> PowerOnCheck
+}
+
+state PowerOnCheck <<final>> {
+  entry / check system on startup
+  do / perform power-on checks
+  exit / stop if problem or proceed if okay
+}
+
+state ProblemDetected <<final>> {
+  entry / handle startup failure
+  do / stop operations
+  exit / remain stopped
+}
+
+state ReadyToUse {
+  entry / become operational
+  do / wait for user input
+  exit / prepare to transition on action
+}
+
+state Monitoring {
+  entry / start monitoring sensors
+  do / continuously watch for triggers
+  exit / pause monitoring
+}
+
+state AlarmRaised <<final>> {
+  entry / trigger alarm and alerts
+  do / notify of security event
+  exit / wait for password input
+}
+
+ReadyToUse --> Reset : reset system
+Reset --> ReadyToUse
+
+ReadyToUse --> Activate : activate system
+Activate --> Monitoring
+
+Monitoring --> ProblemDetected : sensor issue
+Monitoring --> AlarmRaised : sensor triggered
+
+AlarmRaised --> NormalState : password entered
+ProblemDetected --> NormalState : power cycle performed
+
+state TurnOff {
+  entry / prepare to shut down
+  do / perform shutdown sequence
+  exit / system off
+}
+
+ReadyToUse --> TurnOff : turn off system
+TurnOff --> [*] : power off completed
+
+@enduml

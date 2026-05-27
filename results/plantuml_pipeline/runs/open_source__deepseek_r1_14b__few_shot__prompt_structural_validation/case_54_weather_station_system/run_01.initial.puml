@@ -1,0 +1,52 @@
+@startuml
+title Weather Station State Transition Diagram
+
+state Shutdown {
+    [*] --> Shutdown : entry / Initial state
+}
+
+state Running {
+    -- On startup --
+    Shutdown --> Running : powerOn()
+
+    -- Configuration mode --
+    Running --> ConfigurationMode : changesRequired()
+    Running --> ControlledMode : remoteControlCommand()
+
+    -- Shutdown command --
+    Running --> Shutdown : shutdownCommand()
+
+    -- Data collection --
+    Running --> PreparingData : clockTriggered()
+
+    -- Activities upon request --
+    Running --> SendingSummary : sendRequest()
+    Running --> CheckingStatus : statusRequest()
+
+}
+
+state ConfigurationMode {
+    ConfigurationMode --> Running : configurationComplete()
+}
+
+state ControlledMode {
+    ControlledMode --> Running : remoteControlReleased()  # Assuming it returns to Running when control is released
+}
+
+state PreparingData {
+    PreparingData --> Running : dataCollectionComplete()
+}
+
+state SendingSummary {
+    SendingSummary --> Running : summarySent()
+}
+
+state CheckingStatus {
+    CheckingStatus --> Running : statusChecked()
+}
+
+# Final states are Shutdown and any terminal state, but according to requirements, most return to Running
+Shutdown --> [*]  # Terminate on shutdown
+
+Running --> [*] : systemTermination()  # Optional termination from Running
+@enduml

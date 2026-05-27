@@ -1,0 +1,46 @@
+@startuml
+
+title UML State Machine Diagram - Microwave Oven
+
+[*] --> DisplayTime
+
+state "Display Time" as DisplayTime {
+  [*] --> DisplayTime : [Initial]
+}
+
+state "Waiting For Input" as WaitingForInput {
+  state "Full Power" as FullPower
+  state "Half Power" as HalfPower
+  state "Set Cooking Time" as SetCookingTime
+  state "Inactive Due to Open Door" as InactiveDueToOpenDoor
+  state "Stopped" as Stopped
+  state "Cancelled" as Cancelled
+
+  DisplayTime --> WaitingForInput : [Initial Transition]
+}
+
+state "Waiting For Input" {
+  [*] --> FullPower : [Choose Full Power]
+  FullPower --> HalfPower : [Change to Half Power]
+  FullPower --> SetCookingTime : [Set Cooking Time]
+
+  state "Half Power" {
+    [*] --> SetCookingTime : [Change to Set Cooking Time]
+    SetCookingTime --> Stopped : [Stop Cooking Process]
+    SetCookingTime --> Cancelled : [Cancel Cooking Process]
+  }
+
+  HalfPower --> SetCookingTime
+  HalfPower --> Stopped : [Stop Cooking Process]
+  HalfPower --> Cancelled : [Cancel Cooking Process]
+
+  WaitingForInput --> InactiveDueToOpenDoor : [Door Open During Operation]
+}
+
+InactiveDueToOpenDoor --> Stopped : [Door Closed After Opening]
+Stopped --> DisplayTime : [Return to Display Time]
+Cancelled --> DisplayTime : [Return to Display Time]
+
+DisplayTime --> [*] : [Final State]
+
+@enduml

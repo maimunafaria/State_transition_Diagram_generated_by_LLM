@@ -1,0 +1,40 @@
+@startuml
+title Digidoclocker State Diagram
+
+[*] --> registration
+
+state registration
+state login
+state "document upload" as documentUpload
+state profile
+state certificateApplication
+state "multiple certificates" as multipleCertificates
+state registrarRequest
+state "multiple registrar requests" as multipleRegistrarRequests
+state sessionEnd <<final>>
+
+registration --> login : register
+login --> documentUpload : correctLoginDetails
+login --> profile : correctLoginDetails
+login --> certificateApplication : correctLoginDetails
+
+documentUpload --> documentUpload : continueUpload
+documentUpload --> certificateApplication : applyForCertificate
+
+profile --> certificateApplication : applyForCertificate
+
+certificateApplication --> multipleCertificates : requestMoreCertificates
+multipleCertificates --> certificateApplication : reapplyAfterRequest
+
+registrarRequest --> multipleRegistrarRequests : requestMoreCertificates
+multipleRegistrarRequests --> registrarRequest : reapplyAfterRequest
+
+login --> sessionEnd : logout
+documentUpload --> sessionEnd : completeActions
+profile --> sessionEnd : completeActions
+certificateApplication --> sessionEnd : completeActions
+multipleCertificates --> sessionEnd : completeActions
+registrarRequest --> sessionEnd : completeActions
+multipleRegistrarRequests --> sessionEnd : completeActions
+
+@enduml

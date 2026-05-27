@@ -1,0 +1,37 @@
+@startuml
+title ATM State Diagram
+
+[*] --> InsertCard
+
+state InsertCard {
+    entry / Insert card into machine
+}
+
+InsertCard --> InvalidCard : invalidCard()
+InvalidCard --> [*]
+
+InsertCard --> MenuSelection : validCard()
+
+state MenuSelection {
+    do / Display menu options
+}
+
+MenuSelection --> SelectAmount : selectOption()
+SelectAmount --> VerifyTransaction : enterValue(amount)
+VerifyTransaction --> DispenseCash : transactionApproved()
+DispenseCash --> TransactionComplete : dispenseMoney()
+
+SelectAmount --> CustomAmount : selectCustom()
+CustomAmount --> VerifyTransaction : enterValue(custom)
+
+VerifyTransaction --> ReEnterAmount : invalidTransaction()
+ReEnterAmount --> SelectAmount
+ReEnterAmount --> CustomAmount
+
+DispenseCash --> [*]
+
+state InvalidCard {
+    entry / Card rejected
+}
+
+@enduml

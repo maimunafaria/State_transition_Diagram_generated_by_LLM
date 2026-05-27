@@ -1,0 +1,58 @@
+@startuml
+title State diagram for ATM Withdrawal Process
+
+state "Initial" as Initial {
+  entry / Display welcome message
+}
+
+Initial --> ChooseAmount : User selects withdrawal amount
+
+state "ChooseAmount" as ChooseAmount {
+  state "SelectPredefinedAmount" as SelectPredefinedAmount
+  state "EnterCustomAmount" as EnterCustomAmount
+  state "CancelTransaction" as CancelTransaction
+
+  entry / Display predefined amounts and custom input option
+}
+
+SelectPredefinedAmount --> ProcessWithdrawal : User confirms withdrawal amount
+EnterCustomAmount --> ProcessWithdrawal : User confirms custom withdrawal amount
+CancelTransaction --> ReturnCard : User cancels transaction
+
+state "ProcessWithdrawal" as ProcessWithdrawal {
+  state "VerifyFunds" as VerifyFunds
+  state "AuthorizeTransaction" as AuthorizeTransaction
+  state "DispenseCash" as DispenseCash
+  state "ReturnCard" as ReturnCard
+
+  entry / Verify user's account balance and authorization
+  do / Dispense cash to the user
+}
+
+VerifyFunds --> AuthorizeTransaction : Funds verification successful
+VerifyFunds --> InsufficientFunds : Funds verification failed
+
+state "InsufficientFunds" as InsufficientFunds {
+  state "DisplayError" as DisplayError
+  entry / Display insufficient funds error message
+  exit / Wait for user to cancel or retry
+}
+
+DisplayError --> CancelTransaction : User cancels transaction after seeing error
+
+AuthorizeTransaction --> DispenseCash : Transaction authorized successfully
+AuthorizeTransaction --> AuthorizationFailed : Transaction authorization failed
+
+state "AuthorizationFailed" as AuthorizationFailed {
+  state "DisplayError" as DisplayError
+  entry / Display authorization failure message
+  exit / Wait for user to cancel or retry
+}
+
+DisplayError --> CancelTransaction : User cancels transaction after seeing error
+
+DispenseCash --> ReturnCard : Dispensing cash and returning card
+
+ReturnCard --> [*] : Transaction completed, return to initial state
+
+@enduml

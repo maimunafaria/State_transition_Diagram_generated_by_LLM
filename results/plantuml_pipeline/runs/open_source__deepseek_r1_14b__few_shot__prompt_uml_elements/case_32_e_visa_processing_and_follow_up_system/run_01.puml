@@ -1,0 +1,51 @@
+@startuml
+title UML State Chart Diagram - E Visa Processing System
+
+state "Unauthenticated" as Unauthenticated
+state Authenticated
+state CreateAccount
+state LoginAttempt
+state ApplyVisa
+state PaymentProcessing
+state ViewStatus
+state CheckStatus
+state CancelApplication
+state ModifyDetails
+state ViewDetails
+state GiveFeedback
+state Approved
+state Rejected
+
+[*] --> Unauthenticated
+
+Unauthenticated --> CreateAccount : create account
+CreateAccount --> Authenticated : successful creation
+
+Unauthenticated --> LoginAttempt : login attempt
+LoginAttempt --> Authenticated : successful login
+LoginAttempt --> Unauthenticated : failed login
+
+Authenticated --> ApplyVisa : apply for visa
+ApplyVisa --> PaymentProcessing : payment initiated
+PaymentProcessing --> ViewStatus : payment processed
+
+ViewStatus --> CheckStatus : check status
+CheckStatus --> GiveFeedback : give feedback
+GiveFeedback --> ViewStatus : continue checking
+
+ViewStatus --> CancelApplication : cancel application
+CancelApplication --> Authenticated : application canceled
+
+Authenticated --> ModifyDetails : modify details
+ModifyDetails --> Authenticated : details updated
+
+Authenticated --> ViewDetails : view details
+ViewDetails --> Authenticated : details viewed
+
+CheckStatus --> Approved : document check passed
+Approved --> [*] : process completed
+
+CheckStatus --> Rejected : document check failed
+Rejected --> [*] : process completed
+
+@enduml

@@ -1,0 +1,87 @@
+@startuml
+title UML State Machine Diagram - Healthcare Portal
+
+[*] --> Register : [New User]
+
+state "Register" as Register
+Register : entry/Start Registration Process
+Register : exit/Register Complete
+
+state "Registration Failed" as RegistrationFailed
+RegistrationFailed : entry/End Access
+
+state "Login" as Login
+Login : entry/User Not Logged In
+Login : do/Authenticate User
+Login : exit/Login Successful
+
+state "Home" as Home
+Home : entry/User Logged In
+Home : do/Access Facilities
+Home : exit/View News and Content
+Home : exit/Check Symptoms or Fitness
+Home : exit/Pay for Services
+Home : exit/Give Feedback
+Home : exit/Logout
+
+state "Read News and Content" as ReadNewsContent
+ReadNewsContent : entry/User Reads News and Content
+ReadNewsContent : do/Read News and Content
+ReadNewsContent : exit/Return to Home
+
+state "Check Symptoms or Fitness" as CheckSymptomsFitness
+CheckSymptomsFitness : entry/User Checks Symptoms or Fitness
+CheckSymptomsFitness : do/Check Symptoms or Fitness
+CheckSymptomsFitness : exit/Return to Home
+
+state "Process Insurance" as ProcessInsurance
+ProcessInsurance : entry/Start Processing Insurance
+ProcessInsurance : do/Validate and Process Insurance
+ProcessInsurance : exit/Insurance Validated
+
+state "Doctor Consultation Payment" as DoctorConsultationPayment
+DoctorConsultationPayment : entry/Pay for Doctor Consultation
+DoctorConsultationPayment : do/Check with Insurance
+DoctorConsultationPayment : exit/Payment Complete
+
+state "Drug and Supplement Purchase" as DrugSupplementPurchase
+DrugSupplementPurchase : entry/Buy Drugs or Supplements
+DrugSupplementPurchase : do/Select Payment Method
+DrugSupplementPurchase : exit/Cash Payment Details Given
+DrugSupplementPurchase : exit/Insurance Payment Processed
+
+state "Cash Payment Details" as CashPaymentDetails
+CashPaymentDetails : entry/Give Cash Payment Details
+CashPaymentDetails : do/Gather and Confirm Cash Payment Details
+CashPaymentDetails : exit/Payment Complete
+
+state "Feedback Collection" as FeedbackCollection
+FeedbackCollection : entry/Collect User Feedback
+FeedbackCollection : do/Collect and Store Feedback
+FeedbackCollection : exit/Feedback Collected
+
+state "Logout" as Logout
+Logout : entry/User Ends Session
+Logout : do/Log Out User
+Logout : exit/User Logged Out
+
+Register --> Login
+Login --> Home : [User Logs In]
+Home --> ReadNewsContent : [Read News and Content]
+Home --> CheckSymptomsFitness : [Check Symptoms or Fitness]
+Home --> ProcessInsurance : [Process Insurance]
+Home --> DoctorConsultationPayment : [Pay for Doctor Consultation]
+DoctorConsultationPayment --> ProcessInsurance
+ProcessInsurance --> Home
+Home --> DrugSupplementPurchase : [Buy Drugs or Supplements]
+DrugSupplementPurchase --> CashPaymentDetails : [Cash Payment Method Chosen]
+DrugSupplementPurchase --> ProcessInsurance : [Insurance Payment Method Chosen]
+CashPaymentDetails --> Home
+Home --> FeedbackCollection : [Give Feedback]
+FeedbackCollection --> Logout
+
+Login --> RegistrationFailed : [Registration Failed]
+
+Home --> [*] : [Logout User]
+
+@enduml

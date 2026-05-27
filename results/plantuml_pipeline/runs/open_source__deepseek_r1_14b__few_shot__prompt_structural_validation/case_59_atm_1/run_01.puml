@@ -1,0 +1,71 @@
+@startuml
+title UML State Chart Diagram
+
+state "Insert Card" as InsertCard
+InsertCard : entry / Insert card into ATM
+InsertCard : do / Verify card details
+InsertCard : exit / Proceed if verified
+
+state "Card Verified" as CardVerified
+CardVerified : entry / Valid card inserted
+CardVerified : do / Greeting message displayed
+CardVerified : exit / Ready for transaction selection
+
+state "Select Predefined Amount" as SelectPredefinedAmount
+SelectPredefinedAmount : entry / User selects predefined amount option
+SelectPredefinedAmount : do / Display predefined amounts
+SelectPredefinedAmount : exit / Amount selected
+
+state "Enter Custom Amount" as EnterCustomAmount
+EnterCustomAmount : entry / User selects custom amount option
+EnterCustomAmount : do / Input field displayed for custom amount
+EnterCustomAmount : exit / Custom amount entered
+
+state "Check Balance" as CheckBalance
+CheckBalance : entry / Amount selection complete
+CheckBalance : do / Verify sufficient balance
+CheckBalance : exit / Proceed if funds are available
+
+state "Dispense Cash" as DispenseCash
+DispenseCash : entry / Sufficient balance confirmed
+DispenseCash : do / Dispense the requested amount
+DispenseCash : exit / Transaction completed
+
+state "Insufficient Funds" as InsufficientFunds
+InsufficientFunds : entry / Insufficient balance detected
+InsufficientFunds : do / Display error message
+InsufficientFunds : exit / Return to previous state
+
+state "Cancel Transaction" as CancelTransaction
+CancelTransaction : entry / User chooses to cancel
+CancelTransaction : do / Stop transaction process
+CancelTransaction : exit / Return card to user
+
+InsertCard --> CardVerified : successful verification
+
+state Choice1 <<choice>>
+CardVerified --> Choice1 : [select predefined amount]
+CardVerified --> Choice1 : [enter custom amount]
+
+Choice1 --> SelectPredefinedAmount
+Choice1 --> EnterCustomAmount
+
+SelectPredefinedAmount --> CheckBalance
+EnterCustomAmount --> CheckBalance
+
+CheckBalance --> DispenseCash : sufficient funds
+CheckBalance --> InsufficientFunds : insufficient funds
+
+DispenseCash --> [*] : transaction complete
+InsufficientFunds --> CardVerified : return to previous state
+
+state Choice2 <<choice>>
+SelectPredefinedAmount --> Choice2 : [cancel]
+EnterCustomAmount --> Choice2 : [cancel]
+
+Choice2 --> CancelTransaction
+
+CancelTransaction --> InsertCard : return card and end transaction
+
+EnterCustomAmount --> [*] : exit without further action
+@enduml

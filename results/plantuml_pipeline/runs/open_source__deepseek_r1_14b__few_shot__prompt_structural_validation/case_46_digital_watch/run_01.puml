@@ -1,0 +1,54 @@
+@startuml
+title State diagram of Digital Watch operations
+
+state "Idle" as Idle
+state "Adjusting Time Settings" as AdjustingTime
+state "Adjusting Alarm Settings" as AdjustingAlarm
+state "Alarm Ringing" as AlarmOn
+state "Light Activated" as LightOn
+
+[*] --> Idle
+
+Idle : entry/Watch starts in idle mode
+Idle : do/Display current time and date
+Idle : exit/Button pressed to adjust settings
+
+Idle --> AdjustingTime : button press
+
+AdjustingTime : entry/User selects time adjustment
+AdjustingTime : do/Increase values when adjusting
+AdjustingTime : exit/Button released or setting complete
+
+AdjustingTime --> Choice1 <<choice>>
+AdjustingTime --> AdjustingAlarm : switch to alarm settings
+
+Choice1 --> AlarmOn : enable alarm
+Choice1 --> AdjustingTime : continue adjusting time
+
+AdjustingAlarm : entry/User selects alarm adjustment
+AdjustingAlarm : do/Set or change alarm time
+AdjustingAlarm : exit/Save changes or cancel
+
+AdjustingAlarm --> Choice2 <<choice>>
+AdjustingAlarm --> AlarmOn : turn on alarm
+
+Choice2 --> Idle : disable alarm
+Choice2 --> AdjustingAlarm : continue adjusting
+
+AlarmOn : entry/Alarm time matches current time
+AlarmOn : do/Ring the alarm sound
+AlarmOn : exit/Button pressed to stop alarm
+
+AlarmOn --> Choice3 <<choice>>
+AlarmOn --> LightOn : button press during alarm
+
+Choice3 --> Idle : alarm stopped
+Choice3 --> AlarmOn : continue ringing
+
+LightOn : entry/Light activated by button press
+LightOn : do/Illuminate display
+LightOn : exit/Button released to turn off
+
+LightOn --> Idle : light deactivated
+
+@enduml

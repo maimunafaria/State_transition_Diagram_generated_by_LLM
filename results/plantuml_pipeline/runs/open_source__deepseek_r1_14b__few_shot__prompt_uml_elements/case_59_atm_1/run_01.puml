@@ -1,0 +1,52 @@
+@startuml
+title UML State Chart Diagram
+
+state "Insert Card" as InsertCard
+InsertCard : entry/insert card into ATM
+InsertCard : do/authenticate user
+InsertCard : exit/authenticated or rejected
+
+state "Select Predefined Amount" as SelectPredefAmount
+SelectPredefAmount : entry/select predefined option
+SelectPredefAmount : do/display available amounts
+SelectPredefAmount : exit/user selects amount
+
+state "Enter Custom Amount" as EnterCustomAmount
+EnterCustomAmount : entry/select custom option
+EnterCustomAmount : do/input custom amount
+EnterCustomAmount : exit/amount entered or invalid input
+
+state "Cancel" as Cancel
+Cancel : entry/cancel transaction
+Cancel : do/end current operation
+Cancel : exit/return card to user
+
+state "End Transaction" as EndTransaction
+EndTransaction : entry/process complete
+EndTransaction : do/dispense cash and receipt
+EndTransaction : exit/user takes items
+
+InsertCard --> SelectPredefAmount : select predefined amount
+InsertCard --> EnterCustomAmount : select custom amount
+
+SelectPredefAmount --> EndTransaction : process selected amount
+SelectPredefAmount --> Cancel : cancel transaction
+
+EnterCustomAmount --> EndTransaction : validate and process
+EnterCustomAmount --> Cancel : cancel transaction
+
+Cancel --> [*] : return card
+
+EndTransaction --> [*] : transaction complete
+
+state J0 <<choice>>
+InsertCard --> J0 : [cancel]
+
+J0 --> Cancel
+
+SelectPredefAmount --> J0 : [cancel]
+EnterCustomAmount --> J0 : [cancel]
+
+Cancel --> [*]
+
+@enduml

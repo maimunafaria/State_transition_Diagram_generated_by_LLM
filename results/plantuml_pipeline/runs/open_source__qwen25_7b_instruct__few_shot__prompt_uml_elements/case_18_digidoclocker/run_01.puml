@@ -1,0 +1,61 @@
+@startuml
+title Digidoclocker State Diagram
+
+state "Initial" as Initial
+Initial : entry/no user interaction
+
+state Registering as Registering
+Registering : do/register citizen
+Registering : exit/register complete
+
+state LoggingIn as LoggingIn
+LoggingIn : do/login attempt
+LoggingIn : exit/login successful
+
+state DocumentUploading as DocumentUploading
+DocumentUploading : do/upload document
+DocumentUploading : exit/document upload complete
+
+state ProfileViewing as ProfileViewing
+ProfileViewing : do/view profile
+ProfileViewing : exit/profile view complete
+
+state CertificateApplying as CertificateApplying
+CertificateApplying : do/apply for certificate
+CertificateApplying : exit/certificate application complete
+
+state ReapplyingForCertificates as ReapplyingForCertificates
+ReapplyingForCertificates : do/reapply for certificate
+ReapplyingForCertificates : exit/certificate reapplication complete
+
+state RegistrarRequestingCertificates as RegistrarRequestingCertificates
+RegistrarRequestingCertificates : do/request certificate
+RegistrarRequestingCertificates : exit/certificate request complete
+
+state ContinuingDocumentUploads as ContinuingDocumentUploads
+ContinuingDocumentUploads : do/continue upload
+ContinuingDocumentUploads : exit/upload session ongoing
+
+state SessionEnding as SessionEnding
+SessionEnding : do/end session
+SessionEnding : exit/session ended
+
+[*] --> Initial
+
+Initial --> Registering : user enters details
+Registering --> LoggingIn : citizen registers
+LoggingIn --> DocumentUploading : login successful
+LoggingIn --> ProfileViewing : login successful
+LoggingIn --> CertificateApplying : login successful
+
+DocumentUploading --> ContinuingDocumentUploads : need to upload more documents
+ProfileViewing --> CertificateApplying : user wants to apply for a certificate
+CertificateApplying --> ReapplyingForCertificates : user wants to reapply for another certificate
+ReapplyingForCertificates --> CertificateApplying : user wants to apply again
+
+RegistrarRequestingCertificates --> LoggingIn : registrar logs in
+LoggingIn --> RegistrarRequestingCertificates : login successful
+
+SessionEnding --> [*]
+
+@enduml

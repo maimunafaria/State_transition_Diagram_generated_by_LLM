@@ -1,0 +1,54 @@
+@startuml
+title Plane State Transition Diagram
+
+[*] --> Order
+
+state Order
+Order : entry/Place in order state
+Order : do/Wait for delivery
+Order : exit/Delivered
+
+state Delivered
+Delivered : entry/Plane delivered
+Delivered : do/Transition to Arrival
+Delivered : exit/Arrival
+
+state Arrival
+Arrival : entry/Plane arrives
+Arrival : do/Assign to Preparation
+Arrival : exit/Preparation
+
+state Preparation
+Preparation : entry/Prepare plane
+Preparation : do/Check and service plane
+Preparation : exit/Ready for operations or maintenance
+
+state Operations
+Operations : entry/In operation
+Operations : do/Keep in operation if flights are scheduled
+Operations : exit/Maintenance required or no more flights
+
+state Maintenance
+Maintenance : entry/Plane needs maintenance
+Maintenance : do/Service and check plane
+Maintenance : exit/Preparation
+
+state OutOfService
+OutOfService : entry/Plane is out of service
+OutOfService : do/Remove from operations permanently
+OutOfService : exit/Final state
+
+state RemovedFromOperations
+RemovedFromOperations : entry/Plane removed from operations
+RemovedFromOperations : do/No more use for the plane
+RemovedFromOperations : exit/End
+
+Delivered --> Arrival
+Arrival --> Preparation
+Preparation --> Operations
+Operations --> Maintenance
+Maintenance --> Preparation
+Preparation --> OutOfService
+OutOfService --> RemovedFromOperations
+
+@enduml

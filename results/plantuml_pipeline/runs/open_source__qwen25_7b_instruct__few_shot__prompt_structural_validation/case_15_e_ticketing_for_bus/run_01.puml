@@ -1,0 +1,73 @@
+@startuml
+title E-Ticketing for Bus State Diagram
+
+[*] --> CreateAccount
+
+state "Create Account" as CreateAccount {
+  [*] --> ValidateRegistration
+}
+
+state "Validate Registration" as ValidateRegistration {
+  state "Validated" as Validated
+  state "Invalidated" as Invalidated
+
+  ValidateRegistration --> Validated : [Valid]
+  ValidateRegistration --> Invalidated : [Invalid]
+}
+
+state "Login" as Login {
+  [*] --> EnterMemberID
+  state "Enter Member_ID" as EnterMemberID
+  state "Enter Password" as EnterPassword
+  state "Successful Login" as SuccessfulLogin
+  state "Invalid Credentials" as InvalidCredentials
+
+  EnterMemberID --> EnterPassword : [Valid]
+  EnterPassword --> SuccessfulLogin : [Valid]
+  EnterPassword --> InvalidCredentials : [Invalid]
+}
+
+state "Check Ticket Status" as CheckTicketStatus {
+  [*] --> ViewTicketStatus
+}
+
+state "Book Ticket" as BookTicket {
+  [*] --> ConfirmBooking
+  state "Confirm Booking" as ConfirmBooking
+  state "Make Payment" as MakePayment
+
+  ConfirmBooking --> MakePayment : [Paid]
+  ConfirmBooking --> [*] : [Not Paid]
+}
+
+state "Manage Account" as ManageAccount {
+  [*] --> EditDeleteAccount
+  state "Edit/Delete Account" as EditDeleteAccount
+}
+
+state "Logout" as Logout {
+  [*] --> [*]
+}
+
+CreateAccount --> ValidateRegistration
+
+Validated --> Login
+Invalidated --> [*]
+
+SuccessfulLogin --> CheckTicketStatus
+SuccessfulLogin --> BookTicket
+SuccessfulLogin --> ManageAccount
+SuccessfulLogin --> Logout
+
+CheckTicketStatus --> [*]
+
+BookTicket --> ConfirmBooking
+ConfirmBooking --> MakePayment
+MakePayment --> [*]
+
+ManageAccount --> EditDeleteAccount
+EditDeleteAccount --> [*]
+
+Logout --> [*]
+
+@enduml

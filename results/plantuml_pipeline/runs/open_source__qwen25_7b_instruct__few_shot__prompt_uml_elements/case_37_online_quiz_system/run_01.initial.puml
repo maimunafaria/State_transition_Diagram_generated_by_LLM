@@ -1,0 +1,51 @@
+@startuml
+title State diagram for the Online Quiz System
+
+state "Unregistered" as Unregistered
+state "Logged In - Student" as LoggedInStudent
+state "Logged In - Teacher" as LoggedInTeacher
+state "Quiz Not Started" as QuizNotStarted
+state "Answering Quiz" as AnsweringQuiz
+state "Submitted Quiz" as SubmittedQuiz
+state "Viewing Results" as ViewingResults
+
+[*] --> Unregistered : Register or Login
+
+Unregistered --> LoggedInStudent : Login - Student
+Unregistered --> LoggedInTeacher : Login - Teacher
+
+LoggedInTeacher : entry/Logged In - Teacher
+LoggedInTeacher : do/Create New Quiz
+LoggedInTeacher : do/Edit Existing Quiz
+LoggedInTeacher : do/Save as Draft
+LoggedInTeacher : do/Post for Students
+LoggedInTeacher : exit/View Results
+
+LoggedInStudent : entry/Logged In - Student
+LoggedInStudent : do/Select Quiz
+LoggedInStudent : do/Answer Quiz
+LoggedInStudent : do/Submit Quiz
+LoggedInStudent : exit/View Result
+
+QuizNotStarted --> AnsweringQuiz : Select and Start Quiz
+AnsweringQuiz --> SubmittedQuiz : Submit Quiz
+SubmittedQuiz --> ViewingResults : View Results
+
+state "Logged Out" as LoggedOut <<final>>
+state "Quiz Created" as QuizCreated
+state "Quiz Edited" as QuizEdited
+state "Quiz Draft Saved" as QuizDraftSaved
+state "Quiz Posted" as QuizPosted
+state "Result Viewed" as ResultViewed
+
+LoggedInTeacher --> QuizCreated : Create New Quiz
+QuizCreated --> QuizEdited : Edit Existing Quiz
+QuizEdited --> QuizDraftSaved : Save as Draft
+QuizDraftSaved --> QuizPosted : Post for Students
+QuizPosted --> ViewingResults : View Results
+
+AnsweringQuiz --> LoggedOut : Logout
+SubmittedQuiz --> LoggedOut : Logout
+ViewingResults --> LoggedOut : Logout
+
+@enduml

@@ -1,0 +1,69 @@
+@startuml
+title Safehome Security System State Transition Diagram
+
+state PowerOnCheck {
+    [*] --> PowerOnCheck : powerOn
+    PowerOnCheck : entry / Initial check on startup
+    PowerOnCheck : do / Perform system checks
+    PowerOnCheck : exit / Check results
+}
+
+state ProblemDetected <<final>> as ProblemDetected
+state ReadyToUse
+
+PowerOnCheck --> ProblemDetected : problem detected
+PowerOnCheck --> ReadyToUse : all systems operational
+
+ReadyToUse {
+    [*] --> ChoiceAction
+    ChoiceAction : entry / User actions available
+    ChoiceAction : do / Process user input
+    ChoiceAction : exit / Action completed
+}
+
+state ChoiceAction <<choice>>
+ChoiceAction --> ResetSystem : reset button pressed
+ChoiceAction --> ActivateSystem : activate button pressed
+ChoiceAction --> TurnOffSystem : turn off button pressed
+
+state ResetSystem <<final>> as ResetSystem
+state ActivateSystem
+state TurnOffSystem
+
+TurnOffSystem --> Shutdown : system turned off
+ActivateSystem --> Monitoring : activation successful
+ResetSystem --> ReadyToUse : reset completed
+
+state Monitoring {
+    [*] --> SensorCheck
+    SensorCheck : entry / Begin monitoring
+    SensorCheck : do / Monitor sensors and environment
+    SensorCheck : exit / Monitoring status updated
+}
+
+state SensorCheck <<choice>>
+SensorCheck --> AlarmRaised : sensor triggered
+SensorCheck --> ContinueMonitoring : no issues detected
+
+state AlarmRaised {
+    [*] --> RaiseAlarm
+    RaiseAlarm : entry / Alarm conditions met
+    RaiseAlarm : do / Trigger alarm and send alerts
+    RaiseAlarm : exit / Alarm state acknowledged
+}
+
+AlarmRaised --> ProblemDetected : user acknowledges alarm
+AlarmRaised --> Monitoring : false alarm or time ends
+
+state ContinueMonitoring {
+    [*] --> Monitoring
+    Monitoring : entry / Continue normal monitoring
+    Monitoring : do / Maintain active watch
+    Monitoring : exit / Monitoring status updated
+}
+
+state Shutdown <<final>> as Shutdown
+state NormalMode <<final>> as NormalMode
+
+TurnOffSystem --> NormalMode : system turned off
+@enduml

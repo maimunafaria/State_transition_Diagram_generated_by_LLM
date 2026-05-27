@@ -1,0 +1,57 @@
+@startuml
+title UML State Transition Diagram for ATM Transaction
+
+[*] --> InsertCard : [Card Inserted]
+
+state InsertCard {
+    state "Waiting for PIN" as WaitForPIN
+    state "PIN Verified" as PINVerified
+    state "Transaction Complete" as TransactionComplete
+}
+
+WaitForPIN : entry / Prompt user to enter PIN
+WaitForPIN : do / Wait for PIN input
+
+PINVerified : entry / Verify entered PIN
+PINVerified : do / Check if PIN is correct
+PINVerified --> TransactionOptions : [PIN Correct]
+PINVerified --> WaitForPIN : [PIN Incorrect]
+
+state "Transaction Options" as TransactionOptions {
+    state Withdrawal
+    state Deposit
+    state BalanceEnquiry
+}
+
+TransactionOptions --> Withdrawal : [Withdraw Cash]
+TransactionOptions --> Deposit : [Deposit Money]
+TransactionOptions --> BalanceEnquiry : [Check Balance]
+
+Withdrawal : entry / Process withdrawal request
+Withdrawal : do / Dispense cash
+Withdrawal : exit / Print receipt
+
+state "Cash Dispensed" as CashDispensed {
+    state "Receipt Printed" as ReceiptPrinted
+}
+
+CashDispensed --> ReceiptPrinted : [Print Receipt]
+ReceiptPrinted : entry / Print transaction receipt
+ReceiptPrinted : do / Generate and print receipt
+ReceiptPrinted : exit / Return card
+
+state CardReturned as CardReturned
+CardReturned : entry / Return user's card
+CardReturned : do / Return the card to the slot
+
+TransactionComplete --> CardReturned : [Return Card]
+TransactionComplete --> ResetSystem : [Reset System]
+
+state "System Reset" as ResetSystem {
+    state Idle
+}
+
+ResetSystem --> Idle : [Idle State]
+Idle : entry / System is ready for next user
+
+@enduml

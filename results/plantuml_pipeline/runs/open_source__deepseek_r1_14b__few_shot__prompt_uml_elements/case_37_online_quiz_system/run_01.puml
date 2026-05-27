@@ -1,0 +1,74 @@
+@startuml
+title Online Quiz System State Diagram
+
+[*] --> Unauthenticated
+
+state Unauthenticated {
+  [*] --> RegisterOrLogin : register/login
+}
+
+state RegisterOrLogin {
+  RegisterOrLogin --> RoleSelection : successfulLogin/registration
+}
+
+state RoleSelection {
+  RoleSelection --> TeacherMenu : chooseTeacherRole
+  RoleSelection --> StudentMenu : chooseStudentRole
+}
+
+state TeacherMenu {
+  TeacherMenu --> CreateQuiz : createNewQuiz
+  TeacherMenu --> ViewResults : viewExistingQuizResults
+}
+
+state CreateQuiz {
+  CreateQuiz --> EditingQuiz : startEditing
+}
+
+state EditingQuiz {
+  EditingQuiz --> DraftState : saveAsDraft
+  EditingQuiz --> PublishedQuiz : publishQuiz
+}
+
+state DraftState {
+  DraftState --> EditingQuiz : editAgain
+}
+
+state PublishedQuiz {
+  PublishedQuiz --> ViewResults : viewResults
+}
+
+state StudentMenu {
+  StudentMenu --> ReceiveNotifications : receiveQuizNotification
+  StudentMenu --> BrowseQuizzes : selectAvailableQuiz
+}
+
+state ReceiveNotifications {
+  ReceiveNotifications --> SelectQuiz : chooseAQuiz
+}
+
+state SelectQuiz {
+  SelectQuiz --> AnsweringQuiz : startAnswering
+}
+
+state AnsweringQuiz {
+  AnsweringQuiz --> SubmittedQuiz : submitAnswers
+}
+
+state SubmittedQuiz {
+  SubmittedQuiz --> ViewResults : viewResult
+}
+
+state ViewResults {
+  // State where results are displayed; can transition back to respective menus or end
+}
+
+// Additional transitions and states as needed for complete flow
+
+Unauthenticated --> RoleSelection : successfulLogin/registration
+TeacherMenu --> EditingQuiz : createNewQuiz
+StudentMenu --> AnsweringQuiz : selectAvailableQuiz
+SubmittedQuiz --> [*] : exitSystem
+ViewResults --> [*] : exitSystem
+
+@enduml

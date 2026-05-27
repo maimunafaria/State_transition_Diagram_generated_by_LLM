@@ -1,0 +1,87 @@
+@startuml
+title UML State Machine Diagram - Healthcare Portal
+
+[*] --> Registration : [New User]
+
+state "Registration" as Registration
+Registration : entry/Start Registration Process
+Registration : exit/Register Failed
+
+state "Login" as Login
+Login : entry/User Not Logged In
+Login : do/Login Attempt
+Login : exit/Login Successful
+
+state "Home" as Home
+Home : entry/User Logged In
+Home : do/Access Facilities
+Home : exit/View News and Content
+Home : exit/Check Symptoms or Fitness
+Home : exit/Payment Process
+Home : exit/Feedback Collection
+Home : exit/Logout
+
+state "View News and Content" as ViewContent
+ViewContent : entry/To Read Content
+ViewContent : do/Read News and Expert Content
+ViewContent : exit/Return to Home
+
+state "Check Symptoms or Fitness" as CheckSymptoms
+CheckSymptoms : entry/To Check Symptoms/Fitness
+CheckSymptoms : do/Use Symptom Checker/Fitness Options
+CheckSymptoms : exit/Return to Home
+
+state "Facility Access" as FacilityAccess
+FacilityAccess : entry/To Use Facilities
+FacilityAccess : do/Access Health Services
+FacilityAccess : exit/Return to Home
+
+state "Payment Process" as PaymentProcess
+PaymentProcess : entry/Payment Required
+PaymentProcess : do/Select Payment Method
+PaymentProcess : exit/Cash Payment Details
+PaymentProcess : exit/Insurance Payment Completed
+
+state "Cash Payment Details" as CashDetails
+CashDetails : entry/Show Cash Payment Options
+CashDetails : do/Collect Cash Payment Details
+CashDetails : exit/Return to Home
+
+state "Feedback Collection" as FeedbackCollection
+FeedbackCollection : entry/Service Complete
+FeedbackCollection : do/Capture User Feedback
+FeedbackCollection : exit/Return to Home
+
+state J0 <<choice>>
+state J1 <<choice>>
+
+[*] --> Registration
+Registration --> Login : [Complete Registration]
+Login --> Home : [Login Successful]
+
+Home --> ViewContent : [Read Content]
+ViewContent --> Home
+
+Home --> CheckSymptoms : [Check Symptoms/Fitness]
+CheckSymptoms --> Home
+
+Home --> FacilityAccess : [Use Facilities]
+FacilityAccess --> Home
+
+Home --> PaymentProcess : [Payment Required]
+PaymentProcess --> CashDetails : [Cash Payment]
+PaymentProcess --> FeedbackCollection : [Insurance Payment]
+
+CashDetails --> Home
+FeedbackCollection --> Home
+
+PaymentProcess --> J0 : [Insurance Payment]
+J0 --> FeedbackCollection : [Complete Insurance Payment]
+
+PaymentProcess --> J1 : [Cash Payment]
+J1 --> CashDetails : [Collect Details]
+
+Home --> Logout : [End Session]
+Logout --> [*]
+
+@enduml

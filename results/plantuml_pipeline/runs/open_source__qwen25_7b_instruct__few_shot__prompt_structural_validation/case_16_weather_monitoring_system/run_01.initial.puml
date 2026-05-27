@@ -1,0 +1,76 @@
+@startuml
+title Weather Monitoring System State Diagram
+
+[*] --> Register
+
+state "Register" as Register
+Register : entry / start state
+Register : do / create an account
+Register : exit / registration success or failure
+
+state "Login" as Login
+Login : entry / user logs in with credentials
+Login : do / login process
+Login : exit / login successful or failure
+
+state "Invalid Registration" as InvalidReg
+InvalidReg : entry / registration not successful
+InvalidReg : do / show error message
+InvalidReg : exit / end state
+
+state "Invalid Location" as InvalidLoc
+InvalidLoc : entry / location entered is invalid
+InvalidLoc : do / show error message
+InvalidLoc : exit / end state
+
+Login --> CheckWeather
+Register --> Login
+
+state "Check Weather" as CheckWeather
+CheckWeather : entry / user selects a location to check weather
+CheckWeather : do / validate location and fetch weather data
+CheckWeather : exit / valid or invalid location
+
+CheckWeather --> InvalidLoc : [invalid]
+CheckWeather --> ChooseMetric : [valid]
+
+state "Choose Metric" as ChooseMetric
+ChooseMetric : entry / select what metric to check
+ChooseMetric : do / user selects a metric
+ChooseMetric : exit / selected metric shown
+
+ChooseMetric --> ShowInfo : [temperature]
+ChooseMetric --> ShowInfo : [humidity]
+ChooseMetric --> ShowInfo : [rainfall]
+ChooseMetric --> ShowInfo : [pressure]
+ChooseMetric --> ShowInfo : [dew point]
+
+state "Show Info" as ShowInfo
+ShowInfo : entry / show selected weather information
+ShowInfo : do / display the data
+ShowInfo : exit / end state
+
+CheckWeather --> ShowInfo : [valid]
+
+state "View Additional Details" as ViewDetails
+ViewDetails : entry / user selects additional details to view
+ViewDetails : do / fetch and display additional details
+ViewDetails : exit / end state
+
+CheckWeather --> ViewDetails : [alerts]
+CheckWeather --> ViewDetails : [weekly analysis]
+CheckWeather --> ViewDetails : [future prediction]
+CheckWeather --> ViewDetails : [graph]
+
+state "Logout" as Logout
+Logout : entry / user logs out
+Logout : do / logout process
+Logout : exit / end state
+
+Login --> Logout
+ShowInfo --> Logout
+ViewDetails --> Logout
+InvalidReg --> [*]
+InvalidLoc --> [*]
+
+@enduml

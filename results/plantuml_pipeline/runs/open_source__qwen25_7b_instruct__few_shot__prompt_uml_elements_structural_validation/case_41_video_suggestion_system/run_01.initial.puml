@@ -1,0 +1,50 @@
+@startuml
+title Video Suggestion System State Machine
+
+[*] --> Idle
+
+state "Idle" as Idle {
+  entry { "Wait for video suggestion request" }
+}
+
+state "Processing Request" as ProcessingRequest {
+  entry { "Identify user and gather videos" }
+  [*] --> GatherVideos
+}
+
+state "Gathering Videos" as GatheringVideos {
+  state "Profile-Based" as ProfileBased
+  state "Trending Based" as TrendingBased
+  state "Tag-Based" as TagBased
+  state "Genre-Based" as GenreBased
+  state "Promoted" as Promoted
+
+  entry { "Start gathering videos based on criteria" }
+}
+
+state "Adding Details" as AddingDetails {
+  entry { "Add thumbnails and view counts to videos" }
+}
+
+state "Sending Suggestions" as SendingSuggestions {
+  entry { "Send suggested videos to user" }
+}
+
+state "Finalized" as Finalized <<final>>
+entry { "System completes operation" }
+
+GatheringVideos --> ProfileBased : ProfileBased
+GatheringVideos --> TrendingBased : TrendingBased
+GatheringVideos --> TagBased : TagBased
+GatheringVideos --> GenreBased : GenreBased
+GatheringVideos --> Promoted : Promoted
+
+SendingSuggestions --> Finalized : SuggestionSent
+
+ProcessingRequest --> GatheringVideos : GatherVideos
+GatheringVideos --> AddingDetails : AddDetails
+AddingDetails --> SendingSuggestions : SendSuggestions
+
+Idle --> ProcessingRequest : VideoSuggestionRequestReceived
+
+@enduml

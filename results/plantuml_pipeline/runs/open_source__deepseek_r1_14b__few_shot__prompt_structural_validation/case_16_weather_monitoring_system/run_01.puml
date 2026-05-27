@@ -1,0 +1,109 @@
+@startuml
+title UML State Chart Diagram
+
+[*] --> CreateUser
+
+state CreateUser
+CreateUser : entry / start registration
+CreateUser : do / validate inputs
+CreateUser : exit / account created or failed
+
+state CreateDecision <<choice>>
+CreateUser --> CreateDecision
+
+state "Account Created" as AccountCreated
+AccountCreated : entry / successful creation
+AccountCreated : do / proceed to login
+AccountCreated : exit / ready for next step
+
+state "Registration Failed" as RegistrationFailed
+RegistrationFailed : entry / failure details
+RegistrationFailed : do / end process
+RegistrationFailed : exit / [*]
+
+CreateDecision --> AccountCreated
+CreateDecision --> RegistrationFailed
+
+state Login
+Login : entry / start login
+Login : do / validate credentials
+Login : exit / logged in or failed
+
+AccountCreated --> Login
+
+state LoginDecision <<choice>>
+Login --> LoginDecision
+
+state "Logged In" as LoggedIn
+LoggedIn : entry / successful login
+LoggedIn : do / access granted
+LoggedIn : exit / ready for weather check
+
+state "Login Failed" as LoginFailed
+LoginFailed : entry / invalid credentials
+LoginFailed : do / end process
+LoginFailed : exit / [*]
+
+LoginDecision --> LoggedIn
+LoginDecision --> LoginFailed
+
+state CheckLocation
+CheckLocation : entry / enter location details
+CheckLocation : do / validate location
+CheckLocation : exit / proceed or failed
+
+LoggedIn --> CheckLocation
+
+state LocationDecision <<choice>>
+CheckLocation --> LocationDecision
+
+state "Valid Location" as ValidLocation
+ValidLocation : entry / valid input
+ValidLocation : do / proceed to weather options
+ValidLocation : exit / ready for selection
+
+state InvalidLocation
+InvalidLocation : entry / invalid details
+InvalidLocation : do / end process
+InvalidLocation : exit / [*]
+
+LocationDecision --> ValidLocation
+LocationDecision --> InvalidLocation
+
+state ChooseWeatherInfo
+ChooseWeatherInfo : entry / select parameters
+ChooseWeatherInfo : do / gather data
+ChooseWeatherInfo : exit / display info
+
+ValidLocation --> ChooseWeatherInfo
+
+state DisplayWeatherInfo
+DisplayWeatherInfo : entry / show selected data
+DisplayWeatherInfo : do / update and present
+DisplayWeatherInfo : exit / ready for next action
+
+ChooseWeatherInfo --> DisplayWeatherInfo
+
+state AdditionalDetails <<choice>>
+DisplayWeatherInfo --> AdditionalDetails
+
+state ViewAdditional
+ViewAdditional : entry / select details type
+ViewAdditional : do / retrieve and show
+ViewAdditional : exit / ready for more actions
+
+state LogoutFinal as [*]
+
+AdditionalDetails --> ViewAdditional
+AdditionalDetails --> LogoutFinal
+
+state Logout
+Logout : entry / start logout process
+Logout : do / terminate session
+Logout : exit / end of process
+
+LoggedIn --> Logout
+ViewAdditional --> Logout
+
+Logout --> LogoutFinal
+@enduml

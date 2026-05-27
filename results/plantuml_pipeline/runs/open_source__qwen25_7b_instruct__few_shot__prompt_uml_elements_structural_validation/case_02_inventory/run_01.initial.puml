@@ -1,0 +1,85 @@
+@startuml
+title Inventory State Machine
+
+[*] --> InitialState : /start
+
+state InitialState <<choice>>
+InitialState --> AddGoods : [Add new goods]
+InitialState --> UpdatePrice : [Update existing item price]
+InitialState --> RemoveGoods : [Remove goods]
+InitialState --> ExpireNotification : [Check for expired goods]
+
+state AddGoods
+AddGoods : entry / start adding goods
+AddGoods : do / add new goods to inventory
+AddGoods : exit / goods added
+
+state UpdatePrice
+UpdatePrice : entry / start updating price
+UpdatePrice : do / update existing item price
+UpdatePrice : exit / price updated
+
+state RemoveGoods
+RemoveGoods : entry / start removing goods
+RemoveGoods : do / remove goods from inventory
+RemoveGoods : exit / goods removed
+
+state ExpireNotification
+ExpireNotification : entry / check for expired goods
+ExpireNotification : do / notify user about removal of expired goods
+ExpireNotification : exit / notification sent
+
+state "Place Order" as PlaceOrder
+PlaceOrder : entry / start placing order
+PlaceOrder : do / place an order with supplier
+PlaceOrder : exit / order placed
+
+state InvoiceGeneration
+InvoiceGeneration : entry / generate invoice
+InvoiceGeneration : do / generate invoice for the order
+InvoiceGeneration : exit / invoice generated
+
+state SearchItems
+SearchItems : entry / search items in inventory
+SearchItems : do / select items for purchase
+SearchItems : exit / items selected
+
+state CalculateDiscountTax
+CalculateDiscountTax : entry / calculate discount and tax
+CalculateDiscountTax : do / apply discount and tax based on selected items
+CalculateDiscountTax : exit / discount and tax applied
+
+state ReceiptGeneration
+ReceiptGeneration : entry / generate receipt
+ReceiptGeneration : do / generate receipt for the purchase
+ReceiptGeneration : exit / receipt generated
+
+state ReplaceOrCancel
+ReplaceOrCancel : entry / replace or cancel receipt
+ReplaceOrCancel : do / replace item or cancel receipt during billing process
+ReplaceOrCancel : exit / action completed
+
+state SummaryReport
+SummaryReport : entry / view transaction summary report
+SummaryReport : do / generate and display transaction summary report
+SummaryReport : exit / report generated
+
+InitialState --> AddGoods
+InitialState --> UpdatePrice
+InitialState --> RemoveGoods
+InitialState --> ExpireNotification
+InitialState --> PlaceOrder
+InitialState --> SearchItems
+InitialState --> CalculateDiscountTax
+InitialState --> ReceiptGeneration
+InitialState --> ReplaceOrCancel
+InitialState --> SummaryReport
+
+PlaceOrder --> InvoiceGeneration
+SearchItems --> CalculateDiscountTax
+CalculateDiscountTax --> ReceiptGeneration
+ReceiptGeneration --> ReplaceOrCancel
+ReplaceOrCancel --> [*]
+SummaryReport --> [*]
+
+@enduml

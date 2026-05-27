@@ -1,0 +1,43 @@
+@startuml
+title ATM State Diagram
+
+state "User Arrives" as UserArrives
+state GreetingDisplayed
+state CardInserted
+state PINChecked
+state IncorrectPIN
+state TooManyWrongAttempts
+state MenuDisplayed
+state ProcessingRequest
+state CardReturned
+state FinalState
+
+[*] --> UserArrives
+
+UserArrives --> GreetingDisplayed : greeting
+
+GreetingDisplayed --> CardInserted : insert card
+CardInserted --> GreetingDisplayed : no card detected
+
+CardInserted --> PINChecked : enter PIN
+PINChecked --> MenuDisplayed : correct PIN
+PINChecked --> IncorrectPIN : incorrect PIN
+
+IncorrectPIN --> PINChecked : try again
+IncorrectPIN --> TooManyWrongAttempts : too many attempts
+
+TooManyWrongAttempts --> CardReturned : card retained for security
+
+MenuDisplayed --> ProcessingRequest : select option
+ProcessingRequest --> MenuDisplayed : return to menu
+ProcessingRequest --> FinalState : exit
+
+CardInserted --> CardReturned : cancel operation
+PINChecked --> CardReturned : cancel operation
+
+MenuDisplayed --> FinalState : exit after processing
+ProcessingRequest --> FinalState : finish transaction
+
+FinalState --> [*] : terminate
+
+@enduml

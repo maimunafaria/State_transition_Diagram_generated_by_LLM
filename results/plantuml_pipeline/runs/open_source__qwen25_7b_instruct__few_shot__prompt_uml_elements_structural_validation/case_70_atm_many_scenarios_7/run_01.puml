@@ -1,0 +1,74 @@
+@startuml
+title UML state machine diagram for ATM scenario
+
+[*] --> Greeting
+
+state Greeting {
+  entry : "User arrives"
+}
+
+Greeting --> CardInserted
+
+state CardInserted {
+  entry : "Card inserted"
+  do : "Check PIN"
+  [*] --> IncorrectPIN
+  [*] --> CorrectPIN
+}
+
+state IncorrectPIN {
+  entry : "Incorrect PIN entered"
+  do : "Allow user to try again"
+  [*] --> CardKept
+  [*] --> CorrectPIN
+}
+
+state CorrectPIN {
+  entry : "Correct PIN entered"
+  do : "Display options"
+  [*] --> WithdrawMoney
+  [*] --> CheckInfo
+  [*] --> Transfer
+}
+
+state CardKept {
+  entry : "Card kept for security"
+  exit : "User cannot proceed further"
+}
+
+state WithdrawMoney {
+  entry : "Withdraw money selected"
+  do : "Process withdrawal request"
+  exit : "Transaction completed or canceled"
+}
+
+state CheckInfo {
+  entry : "Check information selected"
+  do : "Process information check request"
+  exit : "Information displayed or transaction canceled"
+}
+
+state Transfer {
+  entry : "Transfer selected"
+  do : "Process transfer request"
+  exit : "Transaction completed or canceled"
+}
+
+state Cancelled {
+  entry : "User cancels operation"
+  exit : "Card returned to user"
+}
+
+Cancelled --> CardReturned
+
+CardInserted --> IncorrectPIN
+IncorrectPIN --> CardKept
+CardInserted --> CorrectPIN
+
+CorrectPIN --> WithdrawMoney
+CorrectPIN --> CheckInfo
+CorrectPIN --> Transfer
+
+CardKept --> [*]
+
+@enduml

@@ -1,0 +1,86 @@
+@startuml
+title UML State Chart Diagram for Farm Management System
+
+state "Logged Out" as LoggedOut {
+  [*] --> Login
+}
+
+state "Login" as Login {
+  state "Enter Credentials" as EnterCredentials
+  state "Successful Login" as SuccessfulLogin
+  state "Invalid Credentials" as InvalidCredentials
+
+  EnterCredentials --> SuccessfulLogin : [Valid]
+  EnterCredentials --> InvalidCredentials : [Invalid]
+}
+
+state "Main Area" as MainArea {
+  state "Market Conditions" as MarketConditions
+  state "Pest Control Help" as PestControlHelp
+  state "Soil Suggestions" as SoilSuggestions
+  state "Weather Insights" as WeatherInsights
+  state "Labour Availability" as LabourAvailability
+
+  Login --> SuccessfulLogin : [Valid]
+  SuccessfulLogin --> MainArea
+}
+
+state "Market Conditions" as MarketConditions {
+  state "Display Market Report" as DisplayMarketReport
+  state "Back to Main Area" as BackToMainArea
+
+  MainArea --> MarketConditions : selectMarketCondition
+  MarketConditions --> DisplayMarketReport : [Valid]
+  DisplayMarketReport --> BackToMainArea : back
+}
+
+state "Pest Control Help" as PestControlHelp {
+  state "Request Photo" as RequestPhoto
+  state "Display Techniques" as DisplayTechniques
+
+  MainArea --> PestControlHelp : selectPestControlHelp
+  PestControlHelp --> RequestPhoto : [Valid]
+  RequestPhoto --> DisplayTechniques : submitPhoto
+}
+
+state "Soil Suggestions" as SoilSuggestions {
+  state "Receive Soil Info" as ReceiveSoilInfo
+  state "Display Suggestions" as DisplaySuggestions
+
+  MainArea --> SoilSuggestions : selectSoilSuggestions
+  SoilSuggestions --> ReceiveSoilInfo : [Valid]
+  ReceiveSoilInfo --> DisplaySuggestions : submitInfo
+}
+
+state "Weather Insights" as WeatherInsights {
+  state "Receive Location Info" as ReceiveLocationInfo
+  state "Display Insights" as DisplayInsights
+
+  MainArea --> WeatherInsights : selectWeatherInsights
+  WeatherInsights --> ReceiveLocationInfo : [Valid]
+  ReceiveLocationInfo --> DisplayInsights : submitLocation
+}
+
+state "Labour Availability" as LabourAvailability {
+  state "Receive Location Info" as ReceiveLocationInfo
+  state "Display Details" as DisplayDetails
+
+  MainArea --> LabourAvailability : selectLabourAvailability
+  LabourAvailability --> ReceiveLocationInfo : [Valid]
+  ReceiveLocationInfo --> DisplayDetails : submitLocation
+}
+
+state "Logged In" as LoggedIn {
+  Login --> LoggedIn : [Valid]
+  SuccessfulLogin --> LoggedIn
+  BackToMainArea --> MainArea
+  DisplayMarketReport --> MainArea
+  DisplayTechniques --> MainArea
+  DisplaySuggestions --> MainArea
+  DisplayInsights --> MainArea
+  DisplayDetails --> MainArea
+
+  [*] --> LoggedOut : logout
+}
+
+@enduml

@@ -1,0 +1,94 @@
+@startuml
+title Online Quiz System State Diagram
+
+[*] --> Start
+
+state Start {
+  [*] --> RegisterOrLogin : start / go to registration/login page
+}
+
+state RegisterOrLogin {
+  RegisterOrLogin --> LoggedInState : successful login/register
+  RegisterOrLogin --> Start : cancel registration/login
+}
+
+state LoggedInState {
+  LoggedInState --> TeacherMenu : select teacher role
+  LoggedInState --> StudentMenu : select student role
+}
+
+state TeacherMenu {
+  TeacherMenu --> CreatingQuiz : create new quiz
+  TeacherMenu --> EditingQuiz : edit existing quiz
+  TeacherMenu --> PostingQuiz : post a quiz
+  TeacherMenu --> ViewingResults : view results
+  TeacherMenu --> LoggedInState : back to main menu
+}
+
+state CreatingQuiz {
+  CreatingQuiz --> TeacherMenu : cancel creation
+  CreatingQuiz --> SavingDraft : save as draft
+  CreatingQuiz --> EditingQuiz : edit during creation
+}
+
+state EditingQuiz {
+  EditingQuiz --> CreatingQuiz : return to create
+  EditingQuiz --> SavingDraft : save changes
+  EditingQuiz --> TeacherMenu : back to menu
+}
+
+state SavingDraft {
+  SavingDraft --> CreatingQuiz : continue creating
+  SavingDraft --> EditingQuiz : continue editing
+  SavingDraft --> TeacherMenu : go back
+}
+
+state PostingQuiz {
+  PostingQuiz --> TeacherMenu : post and return
+  PostingQuiz --> EditingQuiz : edit after posting
+}
+
+state ViewingResults {
+  ViewingResults --> TeacherMenu : back to menu
+}
+
+state StudentMenu {
+  StudentMenu --> SelectingQuiz : select quiz
+  StudentMenu --> LoggedInState : back to main menu
+}
+
+state SelectingQuiz {
+  SelectingQuiz --> AnsweringQuiz : choose a quiz
+  SelectingQuiz --> StudentMenu : cancel selection
+}
+
+state AnsweringQuiz {
+  AnsweringQuiz --> SubmittingQuiz : submit answers
+  AnsweringQuiz --> SelectingQuiz : go back
+}
+
+state SubmittingQuiz {
+  SubmittingQuiz --> ViewingFinalResult : submission complete
+  SubmittingQuiz --> AnsweringQuiz : review and resubmit
+}
+
+state ViewingFinalResult {
+  ViewingFinalResult --> StudentMenu : return to menu
+}
+
+[*] <-- Start
+[*] <-- RegisterOrLogin
+[*] <-- LoggedInState
+[*] <-- TeacherMenu
+[*] <-- StudentMenu
+[*] <-- CreatingQuiz
+[*] <-- EditingQuiz
+[*] <-- SavingDraft
+[*] <-- PostingQuiz
+[*] <-- ViewingResults
+[*] <-- SelectingQuiz
+[*] <-- AnsweringQuiz
+[*] <-- SubmittingQuiz
+[*] <-- ViewingFinalResult
+
+@enduml

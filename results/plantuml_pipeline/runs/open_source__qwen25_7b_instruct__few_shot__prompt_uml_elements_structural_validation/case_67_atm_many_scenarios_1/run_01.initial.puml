@@ -1,0 +1,29 @@
+@startuml
+title ATM State Transition Diagram
+
+[*] --> InsertCard : [Card Inserted]
+
+state InsertCard {
+    state "PIN Entry" as PINEntry
+    state "Verification" as Verification
+}
+
+PINEntry --> Verification : [Enter PIN]
+Verification --> PINEntry : [Invalid PIN, Retry]
+
+Verification --> WithdrawalOptions : [Valid PIN, Proceed to Options]
+
+state WithdrawalOptions {
+    state "Withdraw Cash" as WithdrawCash
+    state "Cancel Transaction" as CancelTransaction
+}
+
+WithdrawCash --> DispensingCash : [Request Cash Withdrawn]
+DispensingCash --> ReceiptPrinting : [Cash Dispensed, Print Receipt]
+
+ReceiptPrinting --> CardReturn : [Receipt Printed, Return Card]
+CardReturn --> ResetMachine : [Card Returned, Reset Machine]
+ResetMachine --> [*] : [Machine Reset, Ready for Next User]
+}
+
+@enduml

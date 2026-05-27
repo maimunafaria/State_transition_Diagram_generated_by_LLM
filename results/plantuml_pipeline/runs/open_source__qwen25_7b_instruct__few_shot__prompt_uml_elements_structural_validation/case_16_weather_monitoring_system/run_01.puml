@@ -1,0 +1,67 @@
+@startuml
+title Weather Monitoring System State Diagram
+
+[*] --> Register
+
+state "Register" as Register
+Register : entry / start state
+Register : do / create an account
+Register : exit / registration success or failure
+
+state Login <<choice>>
+Login --> ValidLogin : [valid]
+Login --> InvalidLogin : [invalid]
+
+state "Valid Login" as ValidLogin
+ValidLogin : entry / user logs in successfully
+ValidLogin : do / check weather for location
+ValidLogin : exit / transition to CheckWeather
+
+state "Invalid Login" as InvalidLogin
+InvalidLogin : entry / login failure
+InvalidLogin : do / retry or end process
+InvalidLogin : exit / end process
+
+state "Check Weather" as CheckWeather
+CheckWeather : entry / user checks weather for location
+CheckWeather : do / validate location and show weather details
+CheckWeather : exit / transition to ViewDetails or EndSession
+
+state "End Session" as EndSession
+EndSession : entry / user logs out
+EndSession : do / end the session
+EndSession : exit / final state
+
+state "View Details" as ViewDetails <<choice>>
+ViewDetails --> Alerts : [alerts]
+ViewDetails --> WeeklyAnalysis : [weekly analysis]
+ViewDetails --> FuturePrediction : [future prediction]
+ViewDetails --> Graph : [graph]
+
+state Alerts
+Alerts : entry / show weather alerts
+Alerts : do / display alerts
+Alerts : exit / transition to EndSession
+
+state WeeklyAnalysis
+WeeklyAnalysis : entry / show weekly analysis
+WeeklyAnalysis : do / display weekly analysis
+WeeklyAnalysis : exit / transition to EndSession
+
+state FuturePrediction
+FuturePrediction : entry / show future prediction
+FuturePrediction : do / display future prediction
+FuturePrediction : exit / transition to EndSession
+
+state Graph
+Graph : entry / show graph
+Graph : do / display graph
+Graph : exit / transition to EndSession
+
+CheckWeather --> ViewDetails : [select details]
+ViewDetails --> EndSession : [end session]
+
+Register --> InvalidLogin
+InvalidLogin --> [*]
+
+@enduml

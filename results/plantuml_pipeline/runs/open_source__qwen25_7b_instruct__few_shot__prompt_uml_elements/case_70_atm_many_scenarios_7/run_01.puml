@@ -1,0 +1,61 @@
+@startuml
+title UML State Transition Diagram for ATM Scenario 7
+
+[*] --> InsertCard
+
+state InsertCard {
+    state Greeting
+    state InvalidPIN
+    state CorrectPIN
+}
+
+Greeting : entry/Greet User
+Greeting : do/Display Greeting Message
+Greeting : exit/Set PIN Check
+
+InvalidPIN : entry/Card Kept For Security
+InvalidPIN : do/Keep Card Secure
+InvalidPIN : exit/End Session
+
+CorrectPIN : entry/Options Available
+CorrectPIN : do/Display Options
+CorrectPIN : exit/Process Request
+
+InsertCard --> Greeting : [Card Inserted]
+Greeting --> InvalidPIN : [Incorrect PIN]
+Greeting --> CorrectPIN : [Correct PIN]
+
+InvalidPIN --> [*] : [Cancel Operation]
+InvalidPIN --> InvalidPIN : [Try Again]
+
+CorrectPIN --> WithdrawMoney
+CorrectPIN --> CheckInfo
+CorrectPIN --> MakeTransfer
+
+state WithdrawMoney {
+    state ProcessWithdrawal
+}
+
+state CheckInfo {
+    state ProcessCheckInfo
+}
+
+state MakeTransfer {
+    state ProcessTransfer
+}
+
+ProcessWithdrawal : entry/Process Withdrawal Request
+ProcessWithdrawal : do/Withdraw Money
+ProcessWithdrawal : exit/Return Card
+
+ProcessCheckInfo : entry/Process Information Request
+ProcessCheckInfo : do/Display Account Info
+ProcessCheckInfo : exit/Return Card
+
+ProcessTransfer : entry/Process Transfer Request
+ProcessTransfer : do/Initiate Transfer
+ProcessTransfer : exit/Return Card
+
+[*] --> [*] : [Card Returned]
+
+@enduml

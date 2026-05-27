@@ -1,0 +1,41 @@
+@startuml
+title UML State Machine Diagram
+
+state "Display journey details" as DisplayJourneyDetails
+DisplayJourneyDetails : entry / login and select destination
+DisplayJourneyDetails : do / show journey details
+
+state J1 <<choice>>
+DisplayJourneyDetails --> J1
+
+state DrivingMode
+DrivingMode : entry / activate driving mode
+DrivingMode : do / monitor for accident or send notifications
+
+state "Eat place options" as EatPlaceOptions
+EatPlaceOptions : entry / select eat place
+EatPlaceOptions : do / view menu and order
+
+state AccidentReported
+AccidentReported : entry / detect accident
+AccidentReported : do / notify authorities
+
+state ProvideFeedback
+ProvideFeedback : entry / complete journey
+ProvideFeedback : do / provide feedback
+
+J1 --> DrivingMode : [activate driving mode]
+J1 --> DisplayJourneyDetails : [choose other options]
+
+DrivingMode --> AccidentReported : [accident detected]
+AccidentReported --> [*] : [authorities notified]
+
+EatPlaceOptions --> [*] : [order placed or leave]
+
+DisplayJourneyDetails --> EatPlaceOptions
+
+DrivingMode --> ProvideFeedback : [no accident, end journey]
+
+ProvideFeedback --> [*]
+
+@enduml

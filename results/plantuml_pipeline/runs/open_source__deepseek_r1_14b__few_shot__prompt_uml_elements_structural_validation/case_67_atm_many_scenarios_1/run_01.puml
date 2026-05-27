@@ -1,0 +1,72 @@
+@startuml
+title ATM Control - PIN Processing and Transaction Completion
+
+state InsertCard {
+  [*] --> EnterPIN : Card Inserted
+}
+
+state EnterPIN {
+  entry / Display "Enter PIN"
+  do / wait for PIN input
+}
+
+state VerifyPIN <<choice>> {
+  transition [Valid PIN] to OptionsMenu
+  transition [Invalid PIN] to SessionEnd
+}
+
+state OptionsMenu {
+  entry / Display Menu
+  do / wait for user selection
+}
+
+state SelectTransaction {
+  entry / Process selected transaction
+  do / execute transaction
+}
+
+state ProcessTransaction <<choice>> {
+  transition [Success] to DispenseCash
+  transition [Failure] to SessionEnd
+}
+
+state DispenseCash {
+  entry / Dispense cash
+  exit / Cash dispensed
+}
+
+state PrintReceipt {
+  entry / Print receipt
+  exit / Receipt printed
+}
+
+state ReturnCard {
+  entry / Return card
+  exit / Card returned
+}
+
+state Resetting {
+  entry / Reset system
+  exit / System ready for next user
+}
+
+EnterPIN --> VerifyPIN : PIN entered
+
+VerifyPIN --> OptionsMenu : Valid PIN
+
+OptionsMenu --> SelectTransaction : Transaction selected
+
+SelectTransaction --> ProcessTransaction : Transaction processing complete
+
+ProcessTransaction --> DispenseCash : Success
+
+DispenseCash --> PrintReceipt : Cash dispensed
+
+PrintReceipt --> ReturnCard : Receipt printed
+
+ReturnCard --> Resetting : Card returned
+
+Resetting --> ReadyForNextUser : System reset
+
+ReadyForNextUser --> [*] : Next user ready
+@enduml

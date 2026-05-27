@@ -1,0 +1,25 @@
+@startuml
+title Weather Station State Transition Diagram
+
+[*] --> Shutdown : startup
+
+state Shutdown
+state Running
+state ConfigurationMode
+state ControlledMode
+
+Shutdown --> Running : startup / beginOperation
+
+Running --> ConfigurationMode : changeSettings or powerSavingRequired
+ConfigurationMode --> Running : configurationCompleted
+
+Running --> Running : clockTriggered / collectData
+Running --> Running : requestSummary / prepareAndSendSummary
+Running --> Running : checkStatus / transmitResult
+
+Running --> ControlledMode : remoteControlCommand
+Running --> Shutdown : shutdownCommand
+
+ControlledMode --> [*] : powerOff or resetCommand
+
+@enduml

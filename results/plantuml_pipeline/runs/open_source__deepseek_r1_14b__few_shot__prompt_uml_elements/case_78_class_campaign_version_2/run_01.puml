@@ -1,0 +1,83 @@
+@startuml
+title UML State Chart Diagram (Campaign Management)
+
+[*] --> CampaignInitialized
+
+state "Campaign Initialized" as CampaignInitialized {
+    do / Assign manager and staff
+}
+
+CampaignInitialized --> PendingActivation : [approve and sign contract]
+
+state "Pending Activation" as PendingActivation {
+    do / Approve campaign
+}
+
+PendingActivation --> Active : [activate]
+
+state Active {
+    do / Prepare adverts
+}
+
+Active --> AdvertsApproved : [approve]
+Active --> AdjustmentsNeeded : [adjust or extend]
+
+state "Adverts Approved" as AdvertsApproved {
+    do / Schedule adverts
+}
+
+AdvertsApproved --> RunningAdverts : [schedule]
+
+state "Running Adverts" as RunningAdverts {
+    do / Run adverts
+}
+
+RunningAdverts --> ExtendedAdjustedCampaign : [extend/adjust]
+RunningAdverts --> CampaignCompletion : [all adverts finished]
+
+state "Extended/Adjusted Campaign" as ExtendedAdjustedCampaign {
+    do / Update campaign details
+}
+
+ExtendedAdjustedCampaign --> RunningAdverts : [reactivate]
+
+state "Campaign Completion" as CampaignCompletion {
+    do / Prepare final statement
+}
+
+CampaignCompletion --> PaymentHandling : [handle payment]
+
+state "Payment Handling" as PaymentHandling {
+    do / Process payments
+}
+
+PaymentHandling --> PaymentAdjustmentNeeded : [underpaid]
+PaymentHandling --> OverpaymentHandling : [overpaid]
+PaymentHandling --> FullyPaid : [exact amount paid]
+
+state "Payment Adjustment Needed" as PaymentAdjustmentNeeded {
+    do / Adjust payment
+}
+
+PaymentAdjustmentNeeded --> PaymentHandling : [adjust]
+
+state "Overpayment Handling" as OverpaymentHandling {
+    do / Handle overpayment
+}
+
+OverpaymentHandling --> CampaignCompletion : [refund processed]
+OverpaymentHandling --> PaymentHandling : [additional payment needed]
+
+state FullyPaid {
+    do / Mark campaign as paid
+}
+
+FullyPaid --> Archived : [archive campaign]
+
+state Archived {
+    do / Release staff and manager
+}
+
+Archived --> [*]
+
+@enduml

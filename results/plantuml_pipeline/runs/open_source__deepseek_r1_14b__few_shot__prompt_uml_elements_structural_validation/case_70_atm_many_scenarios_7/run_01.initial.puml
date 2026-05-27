@@ -1,0 +1,31 @@
+@startuml
+title ATM State Diagram
+
+state "User Arrives" as InitialState
+state InsertCard
+state EnterPIN
+state IncorrectPIN
+state DisplayOptions
+state ProcessRequest
+state FinalState
+
+InitialState --> InsertCard : insert card
+
+InsertCard --> EnterPIN : enter PIN
+
+EnterPIN --> DisplayOptions : correct PIN
+EnterPIN --> IncorrectPIN : incorrect PIN
+
+IncorrectPIN --> EnterPIN : retry [<=3 attempts]
+IncorrectPIN --> InsertCard : too many attempts / keep card
+
+DisplayOptions --> ProcessRequest : select option
+
+ProcessRequest --> FinalState : complete transaction
+ProcessRequest --> DisplayOptions : return to options
+
+FinalState --> [*] : exit
+
+[*] --> InitialState : start
+
+@enduml

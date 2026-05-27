@@ -1,0 +1,73 @@
+@startuml
+
+title E-Ticketing for Bus State Diagram
+
+state "Start" as Start {
+  [*] --> RegisterAccount
+}
+
+state "RegisterAccount" as RegisterAccount {
+  state "Enter Details" as EnterDetails
+  state "Validation" as Validation
+  state "Successful Registration" as SuccessfulRegistration
+  state "Invalid Details" as InvalidDetails
+
+  EnterDetails --> Validation : [Valid]
+  EnterDetails --> InvalidDetails : [Invalid]
+}
+
+state "Login" as Login {
+  state "Enter Member_ID and Password" as EnterMemberIDPassword
+  state "Successful Login" as SuccessfulLogin
+  state "Invalid Credentials" as InvalidCredentials
+
+  RegisterAccount --> EnterMemberIDPassword : registration complete
+  EnterMemberIDPassword --> SuccessfulLogin : [Valid]
+  EnterMemberIDPassword --> InvalidCredentials : [Invalid]
+}
+
+state "CheckTicketStatus" as CheckTicketStatus {
+  [*] --> CheckTicketStatus
+  state "View Ticket Status" as ViewTicketStatus
+  state "No Tickets Booked" as NoTicketsBooked
+
+  Login --> ViewTicketStatus : login successful
+  ViewTicketStatus --> NoTicketsBooked : [No Tickets]
+}
+
+state "BookTicket" as BookTicket {
+  [*] --> BookTicket
+  state "Select Journey Details" as SelectJourneyDetails
+  state "Confirm Booking" as ConfirmBooking
+  state "Payment" as Payment
+
+  Login --> SelectJourneyDetails : login successful
+  SelectJourneyDetails --> ConfirmBooking : [Confirmed]
+  ConfirmBooking --> Payment : [Paid]
+}
+
+state "ManageAccount" as ManageAccount {
+  [*] --> ManageAccount
+  state "Edit Details" as EditDetails
+  state "Delete Account" as DeleteAccount
+
+  Login --> EditDetails : login successful
+  Login --> DeleteAccount : login successful
+}
+
+state "Logout" as Logout {
+  [*] --> Logout
+  state "Log Out" as LogOutAction
+
+  RegisterAccount --> LogOutAction : [Complete]
+  Login --> LogOutAction : [Complete]
+  CheckTicketStatus --> LogOutAction : [Complete]
+  BookTicket --> LogOutAction : [Complete]
+  ManageAccount --> LogOutAction : [Complete]
+
+  LogOutAction --> [*]
+}
+
+Start --> RegisterAccount
+
+@enduml

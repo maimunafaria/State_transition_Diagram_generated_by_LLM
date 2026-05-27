@@ -1,0 +1,69 @@
+@startuml
+title UML State Machine Diagram - Digital Watch
+
+[*] --> Idle : [initial state]
+
+state "Idle" as Idle {
+    [*] --> TimeAdjustment : pressButton
+}
+
+state "TimeAdjustment" as TimeAdjustment {
+    entry { setMode("hour") }
+    state "Hour Adjustment" as HourAdjustment {
+        entry { display("Hour Mode") }
+        state "Increase Hour" as IncreaseHour {
+            entry { incrementHour() }
+            exit { display("Idle") }
+            [*] --> Idle : pressButton
+        }
+        state "Decrease Hour" as DecreaseHour {
+            entry { decrementHour() }
+            exit { display("Idle") }
+            [*] --> Idle : pressButton
+        }
+    }
+
+    state "Minute Adjustment" as MinuteAdjustment {
+        entry { setMode("minute") }
+        state "Increase Minute" as IncreaseMinute {
+            entry { incrementMinute() }
+            exit { display("Idle") }
+            [*] --> Idle : pressButton
+        }
+        state "Decrease Minute" as DecreaseMinute {
+            entry { decrementMinute() }
+            exit { display("Idle") }
+            [*] --> Idle : pressButton
+        }
+    }
+
+    state "Alarm Adjustment" as AlarmAdjustment {
+        entry { setMode("alarm") }
+        state "Set Alarm Hour" as SetAlarmHour {
+            entry { setAlarmHour() }
+            exit { display("Idle") }
+            [*] --> Idle : pressButton
+        }
+        state "Set Alarm Minute" as SetAlarmMinute {
+            entry { setAlarmMinute() }
+            exit { display("Idle") }
+            [*] --> Idle : pressButton
+        }
+    }
+
+    state "Light On" as LightOn {
+        entry { turnOnLight() }
+        exit { turnOffLight() }
+        [*] --> Idle : releaseButton
+    }
+}
+
+state "Alarm Triggered" as AlarmTriggered {
+    entry { triggerAlarm() }
+    exit { stopAlarm() }
+    [*] --> Idle : pressStopButton
+}
+
+Idle --> AlarmTriggered : alarmTimeMatchesCurrentTime
+
+@enduml

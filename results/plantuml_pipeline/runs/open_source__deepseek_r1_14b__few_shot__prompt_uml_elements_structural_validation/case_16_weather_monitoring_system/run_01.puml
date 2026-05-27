@@ -1,0 +1,71 @@
+@startuml
+title UML State Chart Diagram
+
+[*] --> CreateUser
+[*] --> Login
+
+state CreateUser
+CreateUser : entry / start registration
+CreateUser : do / verify information
+CreateUser : exit / account created or invalid
+
+state Login
+Login : entry / start login
+Login : do / validate credentials
+Login : exit / logged in or invalid
+
+CreateUser --> CheckLocation : [Registration Successful]
+CreateUser --> InvalidRegistration : [Registration Failed]
+
+Login --> CheckLocation : [Login Successful]
+Login --> [*] : [Login Failed]
+
+state CheckLocation
+CheckLocation : entry / enter location details
+CheckLocation : do / validate location
+CheckLocation : exit / location validated or invalid
+
+CheckLocation --> ChooseWeatherInfo : [Valid Location]
+CheckLocation --> InvalidLocation : [Invalid Location]
+
+state ChooseWeatherInfo
+ChooseWeatherInfo : entry / select weather parameters
+ChooseWeatherInfo : do / retrieve selected data
+ChooseWeatherInfo : exit / display information
+
+ChooseWeatherInfo --> DisplayWeatherInfo
+
+state DisplayWeatherInfo
+DisplayWeatherInfo : entry / show weather info
+DisplayWeatherInfo : do / allow additional actions
+DisplayWeatherInfo : exit /
+
+DisplayWeatherInfo --> ViewAdditionalDetails : [View Additional Details]
+DisplayWeatherInfo --> Logout : [Logout]
+
+state ViewAdditionalDetails
+ViewAdditionalDetails : entry / display details
+ViewAdditionalDetails : do / allow navigation or logout
+ViewAdditionalDetails : exit /
+
+ViewAdditionalDetails --> DisplayWeatherInfo : [Back to Weather Info]
+ViewAdditionalDetails --> Logout : [Logout]
+
+state InvalidRegistration
+InvalidRegistration : entry / registration failed
+InvalidRegistration : do / notify user
+InvalidRegistration : exit / end process
+
+state InvalidLocation
+InvalidLocation : entry / invalid location entered
+InvalidLocation : do / notify user
+InvalidLocation : exit / end process
+
+state Logout
+Logout : entry / initiate logout
+Logout : do / close session
+Logout : exit / end process
+
+DisplayWeatherInfo --> [*] : [Logout]
+ViewAdditionalDetails --> [*] : [Logout]
+@enduml

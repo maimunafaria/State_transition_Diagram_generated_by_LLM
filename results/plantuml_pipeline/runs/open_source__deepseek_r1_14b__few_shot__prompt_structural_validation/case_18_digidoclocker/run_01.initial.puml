@@ -1,0 +1,54 @@
+@startuml
+title Digidoclocker State Diagram
+
+[*] --> Start
+
+state Start
+Start --> UserTypeCheck : enter details
+
+state UserTypeCheck <<choice>>
+UserTypeCheck --> CitizenRegister : citizen
+UserTypeCheck --> RegistrarMainMenu : registrar
+
+state CitizenRegister
+CitizenRegister --> LoginAttempt : register
+
+state LoginAttempt <<choice>>
+LoginAttempt --> MainMenu : correct credentials
+LoginAttempt --> [*] : invalid credentials
+
+state MainMenu
+MainMenu --> UploadDocuments : upload documents
+MainMenu --> ViewProfile : view profile
+MainMenu --> ApplyCertificate : apply for certificate
+MainMenu --> EndSession : done with actions
+
+state UploadDocuments
+UploadDocuments --> MainMenu : continue
+UploadDocuments --> RequestMoreDocs : need more uploads
+
+state RequestMoreDocs
+RequestMoreDocs --> UploadDocuments : upload more
+
+state ViewProfile
+ViewProfile --> MainMenu : back to main menu
+
+state ApplyCertificate
+ApplyCertificate --> MainMenu : certificate applied
+ApplyCertificate --> ReapplyCertificate : reapply
+
+state ReapplyCertificate
+ReapplyCertificate --> MainMenu : request sent
+
+state RegistrarMainMenu
+RegistrarMainMenu --> RequestVerification : request verification
+RegistrarMainMenu --> EndSession : done with actions
+
+state RequestVerification
+RequestVerification --> RegistrarMainMenu : more requests
+RequestVerification --> [*] : no more requests
+
+state EndSession
+EndSession --> [*]
+
+@enduml

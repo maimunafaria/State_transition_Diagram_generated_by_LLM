@@ -1,0 +1,94 @@
+@startuml
+title Inventory State Machine
+
+[*] --> AddGoods : [Add new goods]
+
+state "Inventory Management" as InventoryManagement {
+  state "Add Goods" as AddGoodsState
+  AddGoodsState : entry / start adding goods
+  AddGoodsState : do / add new goods
+  AddGoodsState : exit / goods added
+
+  AddGoodsState --> UpdatePrice : [Update price]
+
+  state "Update Price" as UpdatePriceState
+  UpdatePriceState : entry / update price
+  UpdatePriceState : do / update the price of existing items
+  UpdatePriceState : exit / price updated
+
+  UpdatePriceState --> RemoveGoods : [Remove goods]
+
+  state "Remove Goods" as RemoveGoodsState
+  RemoveGoodsState : entry / remove goods
+  RemoveGoodsState : do / remove goods from inventory
+  RemoveGoodsState : exit / goods removed
+
+  RemoveGoodsState --> ExpireCheck : [Check for expired goods]
+}
+
+state "Supplier Management" as SupplierManagement {
+  state "Place Order" as PlaceOrder
+  PlaceOrder : entry / place order
+  PlaceOrder : do / place an order with a supplier
+  PlaceOrder : exit / order placed
+
+  PlaceOrder --> GenerateInvoice : [Generate invoice]
+
+  state "Generate Invoice" as GenerateInvoiceState
+  GenerateInvoiceState : entry / generate invoice
+  GenerateInvoiceState : do / generate invoice for the order
+  GenerateInvoiceState : exit / invoice generated
+}
+
+state "Customer Management" as CustomerManagement {
+  state "Search and Select Items" as SearchSelectItems
+  SearchSelectItems : entry / search items in inventory
+  SearchSelectItems : do / select items for purchase
+  SearchSelectItems : exit / items selected
+
+  SearchSelectItems --> CalculateDiscountTax : [Calculate discount and tax]
+
+  state "Calculate Discount Tax" as CalculateDiscountTaxState
+  CalculateDiscountTaxState : entry / calculate applicable discounts and taxes
+  CalculateDiscountTaxState : do / apply discounts and calculate taxes
+  CalculateDiscountTaxState : exit / discount and tax calculated
+
+  CalculateDiscountTaxState --> GenerateReceipt : [Generate receipt]
+
+  state "Generate Receipt" as GenerateReceiptState
+  GenerateReceiptState : entry / generate receipt for the customer
+  GenerateReceiptState : do / create a receipt after purchase
+  GenerateReceiptState : exit / receipt generated
+
+  GenerateReceiptState --> ReplaceOrCancel : [Replace or cancel receipt]
+
+  state "Replace Or Cancel Receipt" as ReplaceOrCancelState
+  ReplaceOrCancelState : entry / replace item or cancel receipt
+  ReplaceOrCancelState : do / handle replacement or cancellation of the receipt
+  ReplaceOrCancelState : exit / action completed
+
+  ReplaceOrCancelState --> [*] : [Return to main menu]
+}
+
+state "Transaction Summary" as TransactionSummary {
+  state "View Summary Report" as ViewSummaryReport
+  ViewSummaryReport : entry / view summary report
+  ViewSummaryReport : do / generate and display transaction summary
+  ViewSummaryReport : exit / summary reported
+
+  ViewSummaryReport --> [*] : [Return to main menu]
+}
+
+state "Inventory Management" --> SupplierManagement
+SupplierManagement --> CustomerManagement
+CustomerManagement --> TransactionSummary
+
+[*] --> ExpireCheck : [Check for expired goods]
+
+ExpireCheck : entry / check for expired goods
+ExpireCheck : do / identify and notify removal of expired goods
+ExpireCheck : exit / expired goods handled
+
+ExpireCheck --> [*] : [Return to main menu]
+
+@enduml

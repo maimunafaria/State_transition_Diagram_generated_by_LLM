@@ -1,0 +1,53 @@
+@startuml
+title ATM Withdrawal State Transition Diagram
+
+state "Initial" as InitialState
+InitialState : entry / User approaches ATM
+InitialState : do / Ready for transaction
+InitialState : exit / Waiting for user action
+
+state "Select Amount" as SelectAmount
+SelectAmount : entry / Display predefined options and custom input
+SelectAmount : do / Choose predefined or enter custom amount
+SelectAmount : exit / Selected an amount or decided to cancel
+
+state "Predefined Selection" as PredefinedSelection
+PredefinedSelection : entry / User selects predefined amount
+PredefinedSelection : do / Capture selected amount
+PredefinedSelection : exit / Proceed to processing
+
+state "Custom Amount Entry" as CustomEntry
+CustomEntry : entry / User chooses custom input
+CustomEntry : do / Enter and validate custom amount
+CustomEntry : exit / Proceed to processing
+
+state "Processing Withdrawal" as Processing
+Processing : entry / System processes withdrawal request
+Processing : do / Deduct funds and dispense cash
+Processing : exit / Transaction complete or error occurs
+
+state "Cancel Transaction" as CancelTransaction
+CancelTransaction : entry / User decides to cancel
+CancelTransaction : do / Abort transaction
+CancelTransaction : exit / Return card to user
+
+state J0 <<choice>>
+state Merge1 <<merge>>
+
+InitialState --> SelectAmount : [User selects amount option]
+
+SelectAmount --> PredefinedSelection : [Predefined amount selected]
+SelectAmount --> CustomEntry : [Custom amount chosen]
+SelectAmount --> CancelTransaction : [User cancels transaction]
+
+PredefinedSelection --> Processing
+CustomEntry --> Processing
+
+Processing --> [*] : [Withdrawal successful]
+Processing --> CancelTransaction : [Error occurs or user cancels]
+
+CancelTransaction --> InitialState : [Return card and exit]
+
+InitialState --> Merge1 : [Any point during processing]
+Merge1 --> [*] : [User returns without completing transaction]
+@enduml

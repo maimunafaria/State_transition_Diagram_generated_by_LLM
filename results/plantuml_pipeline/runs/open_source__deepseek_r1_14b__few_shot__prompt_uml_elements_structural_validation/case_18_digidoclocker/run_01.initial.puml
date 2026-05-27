@@ -1,0 +1,81 @@
+@startuml
+title Digidoclocker State Diagram
+
+[*] --> IdentifyUserType
+
+state IdentifyUserType <<choice>>
+IdentifyUserType --> CitizenRegister : citizen
+IdentifyUserType --> RegistrarLogin : registrar
+
+state "Citizen Registration" as CitizenRegister
+CitizenRegister --> LoginPage
+
+state LoginPage
+LoginPage --> CitizenLoggedIn
+
+state "Citizen Logged In" as CitizenLoggedIn
+CitizenLoggedIn --> UploadDocuments
+CitizenLoggedIn --> ViewProfile
+CitizenLoggedIn --> ApplicationForCertificate
+
+state "Upload Documents" as UploadDocuments
+UploadDocuments --> CitizenLoggedIn
+
+state "View Profile" as ViewProfile
+ViewProfile --> CitizenLoggedIn
+
+state "Application for Certificate" as ApplicationForCertificate
+ApplicationForCertificate --> SendRequest
+SendRequest --> CitizenLoggedIn
+
+state "Registrar Logged In" as RegistrarLoggedIn
+RegistrarLoggedIn --> RequestCertificates
+
+state "Request Certificates" as RequestCertificates
+RequestCertificates --> MoreRequests : continue
+RequestCertificates --> EndSession
+
+state EndSession
+EndSession --> [*]
+
+state SendRequest
+SendRequest --> ReapplyApplication
+ReapplyApplication --> CitizenLoggedIn
+
+state MoreRequests
+MoreRequests --> RegistrarLoggedIn
+
+state UploadDocuments2
+UploadDocuments2 --> ContinueUploading
+ContinueUploading --> CitizenLoggedIn
+
+state ViewProfile2
+ViewProfile2 --> BackToMenu
+BackToMenu --> CitizenLoggedIn
+
+state ApplicationForCertificate2
+ApplicationForCertificate2 --> SubmitApplication
+SubmitApplication --> SendRequest
+
+state RequestCertificates2
+RequestCertificates2 --> RegistrarLoggedIn
+
+state ReapplyApplication
+ReapplyApplication --> CitizenLoggedIn
+
+state ContinueUploading
+ContinueUploading --> UploadDocuments2
+
+state BackToMenu
+BackToMenu --> ViewProfile2
+
+state SubmitApplication
+SubmitApplication --> ApplicationForCertificate2
+
+state SendRequest2
+SendRequest2 --> EndSession
+
+state MoreRequests2
+MoreRequests2 --> RegistrarLoggedIn
+
+@enduml

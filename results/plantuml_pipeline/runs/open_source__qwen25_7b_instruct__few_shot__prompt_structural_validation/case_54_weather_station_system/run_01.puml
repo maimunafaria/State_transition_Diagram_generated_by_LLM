@@ -1,0 +1,42 @@
+@startuml
+title Weather Station System State Diagram
+
+[*] --> Running
+
+state Running <<composite>>
+    state Idle
+    state ConfigMode
+    state DataCollection
+    state SummaryPreparation
+    state StatusChecking
+    state ControlledMode
+
+Running --> ConfigMode : enter config mode
+ConfigMode --> Running : exit config mode
+
+Running --> DataCollection : collect data
+DataCollection --> Running : complete collection
+
+Running --> SummaryPreparation : prepare summary
+SummaryPreparation --> Running : send summary
+
+Running --> StatusChecking : check status
+StatusChecking --> Running : transmit result
+
+Running --> ControlledMode : enter controlled mode
+ControlledMode --> Running : exit controlled mode
+
+ConfigMode --> Idle : exit config mode
+
+DataCollection --> Idle : complete collection
+
+SummaryPreparation --> Idle : send summary
+
+StatusChecking --> Idle : transmit result
+
+ControlledMode --> Idle : exit controlled mode
+
+Running --> Shutdown : shutdown command
+Shutdown --> [*]
+
+@enduml
