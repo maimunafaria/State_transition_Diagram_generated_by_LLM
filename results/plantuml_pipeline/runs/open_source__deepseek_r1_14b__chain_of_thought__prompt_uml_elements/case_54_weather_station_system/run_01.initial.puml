@@ -1,0 +1,27 @@
+@startuml
+state Shutdown {
+  [*] --> Shutdown
+}
+state Running {
+  transition
+  on RestartCommand -> Running
+  on ChangeSettings -> ConfigurationMode
+  on RemoteCommand -> ControlledMode
+  on ShutdownCommand -> Shutdown
+  do data collection when ClockTrigger
+  do summary preparation when PrepareSummaryRequest
+  do status check when CheckStatusRequest
+}
+state ConfigurationMode {
+  on completion of configuration -> Running
+}
+state ControlledMode {
+  on exit command from remote control -> Running
+}
+Shutdown --> Running : RestartCommand
+Running --> ConfigurationMode : ChangeSettings
+ConfigurationMode --> Running
+Running --> ControlledMode : RemoteCommand
+ControlledMode --> Running
+Running --> Shutdown : ShutdownCommand
+@enduml

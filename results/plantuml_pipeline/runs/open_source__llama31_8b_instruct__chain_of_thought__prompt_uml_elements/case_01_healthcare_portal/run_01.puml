@@ -1,0 +1,36 @@
+@startuml
+[*] as InitialState
+note right: New users start here
+Unregistered as UnregisteredState
+Access Denied as AccessDeniedState
+Registered as RegisteredState
+Signed In as SignedInState
+Session Active as SessionActiveState
+Session Finished as SessionFinishedState
+Payment Processing as PaymentProcessingState
+Service Completed as ServiceCompletedState
+
+User registration attempt ->> UnregisteredState: Attempt to register
+UnregisteredState ->* RegisteredState: Successful registration
+UnregisteredState ->* AccessDeniedState: Failed registration
+
+RegisteredState ->> SignedInState: Sign in
+SignedInState ->* SessionActiveState: Access available facilities
+SessionActiveState ->* SessionFinishedState: Finish session
+SessionActiveState ->* PaymentProcessingState: Payment processing for finance-related services
+PaymentProcessingState ->* ServiceCompletedState: Insurance-based payment completion
+
+note right: User can read news and expert content in any state
+note right: User can check symptoms or fitness options in any state
+note right: User can view result (symptoms or fitness check) in any state
+
+SessionActiveState ->> PaymentProcessingState: Payment processing for finance-related services
+PaymentProcessingState ->* ServiceCompletedState: Insurance-based payment completion
+
+note right: System logs out users at the end of their session
+SessionFinishedState ->> AccessDeniedState: Log out user
+
+finalstate SessionFinishedState
+finalstate ServiceCompletedState
+
+@enduml

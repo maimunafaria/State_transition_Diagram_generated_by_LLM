@@ -1,0 +1,50 @@
+@startuml
+state PowerOnCheck {
+  entry: Perform startup check
+}
+state Ready {
+  entry: System is operational
+}
+state Monitoring {
+  entry: Start monitoring sensors
+}
+state AlarmTriggered {
+  entry: Start alarm and send alerts
+}
+state NormalState {
+  entry: Return to normal operation
+}
+
+start -> PowerOnCheck
+
+PowerOnCheck:
+if (Startup successful) then
+  --> Ready
+else
+  --> [*] #red
+end
+
+Ready:
+on UserActivate:
+  --> Monitoring
+on UserReset:
+  --> Ready
+on UserTurnOff:
+  --> OffState
+
+Monitoring:
+on SensorTriggered:
+  --> AlarmTriggered
+
+AlarmTriggered:
+after (TimeElapsed || FalseAlarm):
+  --> Monitoring
+
+any state on PasswordEntered:
+  --> NormalState
+
+NormalState:
+on UserActivate:
+  --> Monitoring
+on UserReset:
+@enduml

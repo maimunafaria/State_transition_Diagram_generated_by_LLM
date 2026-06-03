@@ -1,0 +1,38 @@
+@startuml
+state Initial {
+  [*] -> Ready : Start
+}
+
+state Ready {
+  when Selecting predefined amount:
+    --> $20 : "Select $20"
+    --> $40 : "Select $40"
+  when Entering custom amount:
+    --> CustomAmountInput : "Enter Amount"
+  when Cancelling transaction:
+    --> TransactionCancelled : "Cancel"
+}
+
+state $20 {
+  --> TransactionCompleted : "Process" with "Dispense $20 cash"
+}
+
+state $40 {
+  --> TransactionCompleted : "Process" with "Dispense $40 cash"
+}
+
+state CustomAmountInput {
+  when Processing custom amount:
+    --> TransactionCompleted : "Process" with "Dispense custom cash"
+  when Cancelling transaction:
+    --> TransactionCancelled : "Cancel"
+}
+
+state TransactionCompleted {
+  --> [*] : End
+}
+
+state TransactionCancelled {
+  --> [*] : End with "Return card"
+}
+@enduml

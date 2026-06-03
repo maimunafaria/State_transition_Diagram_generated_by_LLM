@@ -1,0 +1,35 @@
+@startuml
+
+[*] : Initial state; WaitingForInput
+
+state WaitingForInput {
+    entry -> DisplayCurrentTime {}
+}
+
+state FullPowerCooking {
+    entry -> StartFullPowerCooking {}
+    exit  -> StopCooking {}
+}
+
+state HalfPowerCooking {
+    entry -> StartHalfPowerCooking {}
+    exit  -> StopCooking {}
+}
+
+state CookingPaused {
+    entry -> PauseCooking {}
+}
+
+WaitingForInput --> FullPowerCooking : PowerSelected(FullPower) && CookTimeEntered
+WaitingForInput --> HalfPowerCooking : PowerSelected(HalfPower) && CookTimeEntered
+FullPowerCooking --> CookingPaused : DoorOpen
+HalfPowerCooking --> CookingPaused : DoorOpen
+CookingPaused --> WaitingForInput : CancelCooking
+
+state CookingComplete {
+    entry -> StopCooking {}
+}
+
+WaitingForInput --> [*] : TimeSet || PowerSelected(*) || CookTimeEntered || CancelCooking || DoorOpen
+
+@enduml

@@ -1,0 +1,44 @@
+@startuml
+state NormalTimeDisplay {
+  [*] --> NormalTimeDisplay : Initial state
+}
+
+state AdjustingTime(composite) {
+  state AdjustHour
+  state AdjustMinute
+  state AdjustAlarmHour
+  state AdjustAlarmMinute
+
+  AdjustHour --> AdjustMinute : Adjust button press
+  AdjustMinute --> AdjustAlarmHour : Adjust button press
+  AdjustAlarmHour --> AdjustAlarmMinute : Adjust button press
+  AdjustAlarmMinute --> AdjustHour : Adjust button press
+}
+
+AdjustingTime -[>NormalTimeDisplay]--> NormalTimeDisplay : Increase button press
+
+state AlarmOn {
+  AlarmOn --> AlarmOff : Stop button press
+  AlarmOn --> AlarmOff : Time does not match and no stop (eventually)
+}
+
+state AlarmOff {
+  AlarmOff --> AlarmOn : Enable alarm (button press)
+}
+
+NormalTimeDisplay -[>AlarmOn]--> AlarmOn : Enable alarm (button press)
+
+state LightOn {
+  LightOn --> LightOff : Button release
+}
+
+state LightOff {
+  LightOff --> LightOn : Button press
+}
+
+// Transitions for Time Match triggering Alarm
+AlarmOff --> AlarmOn : Time matches alarm time
+
+// Final state transition to [*]
+NormalTimeDisplay -[> [*]] : Termination
+@enduml

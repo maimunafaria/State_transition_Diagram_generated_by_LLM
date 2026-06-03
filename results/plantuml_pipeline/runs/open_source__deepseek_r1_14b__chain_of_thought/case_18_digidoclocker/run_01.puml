@@ -1,0 +1,93 @@
+@startuml
+start
+:Identify user type;
+if (Citizen) then
+    transition to Registered
+else if (Registrar)
+    transition to Requesting Certificates
+endif
+
+state Unregistered {
+    when Registration attempt {
+        if success then
+            transition to Registered
+        else
+            stay in Unregistered
+        endif
+    }
+}
+
+state Registered {
+    when Login attempt {
+        if success then
+            transition to Logged-in
+        else
+            stay in Registered
+        endif
+    }
+}
+
+state Logged-in {
+    when Upload document or View profile or Apply for certificate {
+        if Upload document then
+            transition to Uploading Documents
+        elif View profile then
+            transition to Profile Viewed
+        else
+            transition to Applying for Certificates
+        endif
+    }
+}
+
+state Uploading Documents {
+    when Continue upload {
+        if yes then
+            transition to Uploading Documents
+        else
+            transition to Applied for Certificates
+        endif
+    }
+}
+
+state Applying for Certificates {
+    when Reapply after request {
+        if yes then
+            transition to Request Sent
+        else
+            stay in Applying for Certificates
+        endif
+    }
+}
+
+state Requesting Certificates {
+    when Continue requesting {
+        if yes then
+            transition to Requesting Certificates
+        else
+            transition to Applied for Certificates
+        endif
+    }
+}
+
+state Profile Viewed {
+    when Logout or Inactivity {
+        transition to [*]
+    }
+}
+
+state Request Sent {
+    when More requests needed {
+        if yes then
+            transition to Requesting Certificates
+        else
+            transition to [*]
+        endif
+    }
+}
+
+state Applied for Certificates {
+    when Done with actions {
+        transition to [*]
+    }
+}
+@enduml
