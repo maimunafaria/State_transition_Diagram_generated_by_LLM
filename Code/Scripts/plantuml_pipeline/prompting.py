@@ -473,6 +473,86 @@ def build_zero_shot_prompt(requirement: str) -> str:
     )
 
 
+def build_chain_of_thought_analysis_prompt(
+    requirement: str,
+    prompt_structure: str = "original",
+) -> str:
+    parts = [
+        "You are a software requirements analyst preparing a UML state machine model.",
+        "",
+        "Analyze the requirement and extract only the modeling facts needed for a state "
+        "transition diagram. Keep the analysis concise and evidence-based.",
+        "",
+    ]
+    if prompt_structure.strip().lower() == "uml_elements":
+        parts.extend(
+            [
+                "--- UML State Transition Diagram Elements ---",
+                *[f"- {element}" for element in _uml_elements_for_generation_prompt()],
+                "",
+            ]
+        )
+    parts.extend(
+        [
+            "Return the analysis using exactly these headings:",
+            "States:",
+            "Initial state:",
+            "Final states:",
+            "Events or conditions:",
+            "Transitions:",
+            "Missing or ambiguous details:",
+            "",
+            "Do not write PlantUML in this step.",
+            "",
+            "Requirement:",
+            requirement,
+        ]
+    )
+    return "\n".join(parts).strip() + "\n"
+
+
+def build_chain_of_thought_generation_prompt(
+    requirement: str,
+    analysis: str,
+    prompt_structure: str = "original",
+) -> str:
+    parts = [
+        "You are a UML modeling expert.",
+        "",
+        "Convert the requirement and the structured analysis into one UML state transition "
+        "diagram in PlantUML format.",
+        "",
+    ]
+    if prompt_structure.strip().lower() == "uml_elements":
+        parts.extend(
+            [
+                "--- UML State Transition Diagram Elements ---",
+                *[f"- {element}" for element in _uml_elements_for_generation_prompt()],
+                "",
+            ]
+        )
+    parts.extend(
+        [
+            "Output Rules:",
+            "- Generate ONLY valid PlantUML code.",
+            "- Start with @startuml and end with @enduml.",
+            "- Use [*] for exactly one initial transition.",
+            "- Include at least one final transition to [*].",
+            "- Use clear transition labels when requirement evidence exists.",
+            "- Do not include explanations, analysis, or markdown fences.",
+            "",
+            "Requirement:",
+            requirement,
+            "",
+            "Structured analysis from step 1:",
+            analysis.strip(),
+            "",
+            "Now return only the final PlantUML.",
+        ]
+    )
+    return "\n".join(parts).strip() + "\n"
+
+
 def _repair_rules_for_generation_prompt() -> list[str]:
     return [
         "Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].",
@@ -562,6 +642,13 @@ def build_generation_prompt(
 
     if cfg.strategy == "zero_shot":
         return build_zero_shot_prompt(requirement), prompt_meta
+
+    if cfg.strategy == "chain_of_thought":
+        return build_chain_of_thought_generation_prompt(
+            requirement,
+            "",
+            prompt_structure=few_shot_prompt_structure,
+        ), prompt_meta
 
     if cfg.strategy == "few_shot":
         prompt_structure = few_shot_prompt_structure.strip().lower() or "original"

@@ -171,8 +171,8 @@ python3 code/plantuml_experiment_pipeline.py run \
   --save-prompts
 ```
 
-This includes zero-shot, few-shot, RAG, validation, and repair-enabled
-strategies.
+This includes zero-shot, few-shot, chain-of-thought, RAG, validation, and
+repair-enabled strategies.
 
 ## Validation Flow
 
@@ -243,7 +243,20 @@ python3 code/plantuml_experiment_pipeline.py run \
 ```
 
 For few-shot, replace `zero_shot` with `few_shot` and set
-`--few-shot-count` if needed. For RAG, replace `zero_shot` with `rag`.
+`--few-shot-count` if needed. For chain-of-thought, replace `zero_shot` with
+`chain_of_thought`. For RAG, replace `zero_shot` with `rag`.
+
+The `chain_of_thought` strategy uses two model calls. First, the model writes a
+concise structured analysis of states, initial/final states, events or
+conditions, transitions, and ambiguities. Second, the model converts that
+analysis and the original requirement into final PlantUML. When `--save-prompts`
+is enabled, both prompts and the intermediate analysis are saved in the run
+prompt file.
+
+To run the chain-of-thought variant with UML state-machine element knowledge,
+use the same run IDs with `--few-shot-prompt-structure uml_elements`. Outputs are
+written with a `__prompt_uml_elements` suffix, for example
+`open_source__qwen25_7b_instruct__chain_of_thought__prompt_uml_elements`.
 
 Run only the RAG repair strategy:
 

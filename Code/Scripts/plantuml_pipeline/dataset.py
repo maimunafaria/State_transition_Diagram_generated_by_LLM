@@ -189,6 +189,7 @@ def build_experiment_configs(
     strategies = [
         ("zero_shot", False, False, False),
         ("few_shot", False, False, False),
+        ("chain_of_thought", False, False, False),
         ("zero_shot_validation_generator_critic_repair", False, True, True),
         ("few_shot_validation_generator_critic_repair", False, True, True),
         ("rag", True, False, False),
@@ -203,6 +204,12 @@ def build_experiment_configs(
 
     for model_label, model_name, model_tag in open_models:
         for strategy, use_rag, use_validation, use_ensemble in strategies:
+            if strategy == "chain_of_thought" and model_tag in {
+                "qwen25_14b_instruct",
+                "llama31_70b_instruct",
+                "deepseek_r1_8b",
+            }:
+                continue
             run_id = f"open_source__{model_tag}__{strategy}"
             if use_rag and rag_tag:
                 run_id = f"{run_id}__{rag_tag}"

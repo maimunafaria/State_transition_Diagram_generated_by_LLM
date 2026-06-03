@@ -6,7 +6,12 @@ from typing import Any
 from .model_client import call_model
 from .models import Case, ExperimentConfig, ValidationResult
 from .parser import normalize_puml_text, parse_and_validate_puml_text
-from .prompting import build_generation_prompt, build_repair_prompt
+from .prompting import (
+    build_chain_of_thought_analysis_prompt,
+    build_chain_of_thought_generation_prompt,
+    build_generation_prompt,
+    build_repair_prompt,
+)
 
 DEFAULT_REPAIR_ATTEMPTS = 3
 
@@ -57,23 +62,73 @@ def run_single_generation(
 
     steps: list[dict[str, Any]] = []
     if initial_puml is None:
-        prompt, prompt_meta = build_generation_prompt(
-            case=case,
-            cfg=cfg,
-            all_cases=all_cases,
-            rag_docs=rag_docs,
-            requirement_source=requirement_source,
-            top_k_rag=top_k_rag,
-            rag_max_chars_per_doc=rag_max_chars_per_doc,
-            rag_domain_hints=rag_domain_hints,
-            rag_mode=rag_mode,
-            rag_db_dir=rag_db_dir,
-            rag_collection_name=rag_collection_name,
-            few_shot_seed=few_shot_seed,
-            few_shot_count=few_shot_count,
-            few_shot_prompt_structure=few_shot_prompt_structure,
-            run_index=run_index,
-        )
+        if cfg.strategy == "chain_of_thought":
+            cot_prompt_structure = few_shot_prompt_structure.strip().lower() or "original"
+            analysis_prompt = build_chain_of_thought_analysis_prompt(
+                requirement,
+                prompt_structure=cot_prompt_structure,
+            )
+            analysis = call_model(
+                model_name=cfg.model_name,
+                prompt=analysis_prompt,
+                ollama_host=ollama_host,
+                temperature=temperature,
+                top_p=top_p,
+                max_tokens=max_tokens,
+                timeout=timeout,
+            )
+            generation_prompt = build_chain_of_thought_generation_prompt(
+                requirement,
+                analysis,
+                prompt_structure=cot_prompt_structure,
+            )
+            prompt_meta = {
+                "requirement_source": requirement_source,
+                "few_shot_case_ids": [],
+                "few_shot_prompt_structure": few_shot_prompt_structure,
+                "rag": {
+                    "enabled": False,
+                    "mode": rag_mode,
+                    "top_k": top_k_rag,
+                    "max_chars_per_doc": rag_max_chars_per_doc,
+                    "query_domains": [],
+                    "retrieved_docs": [],
+                },
+            }
+            steps.append(
+                {
+                    "stage": "chain_of_thought_analysis",
+                    "analysis_chars": len(analysis),
+                    "prompt_structure": cot_prompt_structure,
+                }
+            )
+            prompt = (
+                "=== Chain-of-thought analysis prompt ===\n"
+                f"{analysis_prompt.strip()}\n\n"
+                "=== Chain-of-thought analysis response ===\n"
+                f"{analysis.strip()}\n\n"
+                "=== PlantUML generation prompt ===\n"
+                f"{generation_prompt.strip()}\n"
+            )
+        else:
+            generation_prompt, prompt_meta = build_generation_prompt(
+                case=case,
+                cfg=cfg,
+                all_cases=all_cases,
+                rag_docs=rag_docs,
+                requirement_source=requirement_source,
+                top_k_rag=top_k_rag,
+                rag_max_chars_per_doc=rag_max_chars_per_doc,
+                rag_domain_hints=rag_domain_hints,
+                rag_mode=rag_mode,
+                rag_db_dir=rag_db_dir,
+                rag_collection_name=rag_collection_name,
+                few_shot_seed=few_shot_seed,
+                few_shot_count=few_shot_count,
+                few_shot_prompt_structure=few_shot_prompt_structure,
+                run_index=run_index,
+            )
+            prompt = generation_prompt
         if prompt_meta.get("few_shot_case_ids"):
             steps.append(
                 {
@@ -97,7 +152,7 @@ def run_single_generation(
 
         generated = call_model(
             model_name=cfg.model_name,
-            prompt=prompt,
+            prompt=generation_prompt,
             ollama_host=ollama_host,
             temperature=temperature,
             top_p=top_p,

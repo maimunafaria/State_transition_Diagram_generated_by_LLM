@@ -110,14 +110,18 @@ def _normalize_prompt_structure_tag(prompt_structure: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", prompt_structure.strip().lower()).strip("_")
 
 
-def _apply_few_shot_prompt_structure_tag(configs: list[Any], prompt_structure: str) -> None:
+def _apply_prompt_structure_tag(configs: list[Any], prompt_structure: str) -> None:
     prompt_tag = _normalize_prompt_structure_tag(prompt_structure)
     if not prompt_tag or prompt_tag == "original":
         return
 
     suffix = f"__prompt_{prompt_tag}"
     for cfg in configs:
-        if cfg.strategy in {"few_shot", "few_shot_validation_generator_critic_repair"}:
+        if cfg.strategy in {
+            "few_shot",
+            "few_shot_validation_generator_critic_repair",
+            "chain_of_thought",
+        }:
             cfg.run_id = f"{cfg.run_id}{suffix}"
 
 
@@ -161,6 +165,7 @@ def command_ensemble(args: argparse.Namespace) -> int:
         "zero_shot",
         "one_shot",
         "few_shot",
+        "chain_of_thought",
         "rag",
         "rag_validation_generator_critic_repair",
     ]
@@ -502,7 +507,7 @@ def command_run(args: argparse.Namespace) -> int:
                     "__one_shot_validation_generator_critic_repair",
                 )
 
-    _apply_few_shot_prompt_structure_tag(configs, args.few_shot_prompt_structure)
+    _apply_prompt_structure_tag(configs, args.few_shot_prompt_structure)
 
     if args.only_run_id:
         wanted = set(args.only_run_id)
@@ -515,6 +520,7 @@ def command_run(args: argparse.Namespace) -> int:
                 or "__one_shot" in run_id
                 or "__few_shot_validation_generator_critic_repair" in run_id
                 or "__one_shot_validation_generator_critic_repair" in run_id
+                or "__chain_of_thought" in run_id
             }
         if args.few_shot_count == 1:
             wanted |= {run_id.replace("__few_shot", "__one_shot") for run_id in wanted}

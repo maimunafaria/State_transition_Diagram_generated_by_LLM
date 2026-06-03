@@ -166,8 +166,8 @@ def build_parser() -> argparse.ArgumentParser:
         ],
         default="original",
         help=(
-            "Few-shot prompt structure for ablation. Non-original structures add a "
-            "prompt_* suffix to few-shot run IDs."
+            "Prompt structure for few-shot and chain-of-thought ablations. Non-original "
+            "structures add a prompt_* suffix to affected run IDs."
         ),
     )
     p_run.add_argument("--temperature", type=float, default=0.2)
