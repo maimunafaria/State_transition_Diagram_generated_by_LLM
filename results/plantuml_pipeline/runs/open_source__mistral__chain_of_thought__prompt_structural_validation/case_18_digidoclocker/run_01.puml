@@ -1,0 +1,23 @@
+@startuml
+
+state UnregisteredState [*]
+state RegisteredState
+state LoginFailedState
+state LoggedInState
+state DocumentUploadState
+state CertificateAppliedState
+state VerificationRequestedState [Final]
+state SessionEndedState [Final]
+
+UnregisteredState -- UserRegistrationEvent:> RegisteredState
+RegisteredState -- LoginEvent:> LoginFailedState : invalid
+RegisteredState -- LoginEvent:> LoggedInState : valid
+LoggedInState -- DocumentUploadEvent:> DocumentUploadState
+LoggedInState -- CertificateApplicationEvent:> CertificateAppliedState
+CertificateAppliedState -- RegistrarVerificationRequestEvent:> VerificationRequestedState
+
+DocumentUploadState -- BackToLoggedInState:> LoggedInState : user continues uploading documents
+LoggedInState -- SessionEndEvent:> SessionEndedState : user is done with actions
+SessionEndedState -- BackToUnregisteredState:> UnregisteredState : user logs out or session times out
+
+@enduml

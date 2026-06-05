@@ -1,0 +1,215 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Atm Many Scenarios Scenario 7 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall greet the user when they arrive.
+2. The system shall check the PIN after the card is inserted.
+3. The system shall allow the user to try again if the entered PIN is incorrect.
+4. The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times.
+5. The system shall return the card if the user cancels the operation.
+6. The system shall display available options (withdrawing money, checking information, or making a transfer) for the user to choose from if the PIN is correct.
+7. The system shall process the selected request after the user makes a choice.
+
+=== Chain-of-thought analysis response ===
+States:
+1. Arrival State: This state represents when the user arrives at the ATM and the system greets them.
+2. PIN Input State: This state starts once the card is inserted, and the user enters their PIN.
+3. Incorrect PIN State: If the entered PIN is incorrect, this state is activated. The user can try again or the card may be kept for security if attempts exceed a certain limit.
+4. Card Security State: This state occurs when the card is kept for security due to multiple incorrect PIN entries or an invalid card.
+5. Cancellation State: If the user cancels the operation, this state is activated and the card is returned.
+6. Option Selection State: Once the PIN is correct, this state allows the user to choose from available options (withdrawing money, checking information, or making a transfer).
+7. Request Processing State: After the user makes a choice, this state starts, and the system processes the selected request.
+8. Final State: Not explicitly mentioned in the requirement, but it can be assumed that once the requested operation is completed or an error occurs, the ATM returns to the Arrival State, ready for the next user interaction.
+
+Initial state: Arrival State
+
+Final states: Final State (implied)
+
+Events or conditions:
+1. Card Insertion
+2. PIN Entry
+3. Correct PIN Entry
+4. Incorrect PIN Entry
+5. Multiple incorrect PIN entries
+6. Invalid card
+7. User cancellation
+8. Request selection
+9. Request processing completion or error
+
+Transitions:
+1. From Arrival State to PIN Input State upon card insertion.
+2. From PIN Input State to Incorrect PIN State if the entered PIN is incorrect.
+3. From PIN Input State to Correct PIN State if the entered PIN is correct.
+4. From Correct PIN State to Option Selection State upon successful validation.
+5. From Incorrect PIN State to Incorrect PIN State or Card Security State based on the number of incorrect attempts.
+6. From Card Security State to Arrival State after a certain period or manual intervention.
+7. From Cancellation State to Arrival State upon user cancellation and card return.
+8. From Option Selection State to Request Processing State upon request selection.
+9. From Request Processing State to Final State upon request completion or error.
+
+Missing or ambiguous details:
+1. The requirement does not specify the number of incorrect PIN attempts allowed before moving to the Card Security State.
+2. The requirement does not mention any specific conditions for returning the card after cancellation (e.g., time limit, manual intervention).
+3. The requirement does not provide information on how the system handles errors during request processing.
+4. The requirement does not specify the time period for moving from Card Security State to Arrival State.
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Device Handout — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall collect personal details from a donor during registration.
+2. The system shall check the entered personal details after registration.
+3. The system shall collect contact information from a donor after verifying their personal details.
+4. The system shall allow donors to share details about the device they want to donate.
+5. The system shall review the shared device details.
+6. The system shall support if a device meets the requirements, the system shall accept it.
+7. The system shall assign an executive to handle the accepted device.
+8. The system shall confirm the status of the accepted device by the executive.
+9. The system shall support if a device does not meet the requirements, the system shall inform the donor that it cannot be accepted.
+
+Example PlantUML:
+@startuml
+title UML State Machine Diagram
+
+[*] --> DonorRegistration
+
+state "donor registration" as DonorRegistration
+DonorRegistration : entry / enter personal details
+DonorRegistration : do / verify details
+DonorRegistration : exit / request contact details
+
+state "get contacts" as GetContacts
+GetContacts : entry / registered donor
+GetContacts : do / receive contact details
+GetContacts : exit / donate a device
+
+state "device details" as DeviceDetails
+DeviceDetails : entry / gave contacts
+DeviceDetails : do / receive details
+DeviceDetails : exit / request approval
+
+state "device verification" as DeviceVerification
+DeviceVerification : entry / provided device details
+DeviceVerification : do / check details
+DeviceVerification : exit / acknowledge donor
+
+state Decision <<choice>>
+
+state approved
+approved : entry / device verified
+approved : do / choose an executive
+approved : exit / send details to executive
+
+state rejected
+rejected : entry / fails verification
+rejected : do / notify donor
+rejected : exit / device not accepted
+
+state "picked up" as PickedUp
+PickedUp : entry / executive receives details
+PickedUp : do / executive picks product
+PickedUp : exit / acknowledges status of product
+
+DonorRegistration --> GetContacts
+GetContacts --> DeviceDetails
+DeviceDetails --> DeviceVerification
+DeviceVerification --> Decision
+
+Decision --> approved : [passes verification]
+Decision --> rejected : [fails verification]
+
+approved --> PickedUp
+
+PickedUp --> [*]
+rejected --> [*]
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Atm Many Scenarios Scenario 7 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall greet the user when they arrive.
+2. The system shall check the PIN after the card is inserted.
+3. The system shall allow the user to try again if the entered PIN is incorrect.
+4. The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times.
+5. The system shall return the card if the user cancels the operation.
+6. The system shall display available options (withdrawing money, checking information, or making a transfer) for the user to choose from if the PIN is correct.
+7. The system shall process the selected request after the user makes a choice.
+
+Structured analysis from step 1:
+States:
+1. Arrival State: This state represents when the user arrives at the ATM and the system greets them.
+2. PIN Input State: This state starts once the card is inserted, and the user enters their PIN.
+3. Incorrect PIN State: If the entered PIN is incorrect, this state is activated. The user can try again or the card may be kept for security if attempts exceed a certain limit.
+4. Card Security State: This state occurs when the card is kept for security due to multiple incorrect PIN entries or an invalid card.
+5. Cancellation State: If the user cancels the operation, this state is activated and the card is returned.
+6. Option Selection State: Once the PIN is correct, this state allows the user to choose from available options (withdrawing money, checking information, or making a transfer).
+7. Request Processing State: After the user makes a choice, this state starts, and the system processes the selected request.
+8. Final State: Not explicitly mentioned in the requirement, but it can be assumed that once the requested operation is completed or an error occurs, the ATM returns to the Arrival State, ready for the next user interaction.
+
+Initial state: Arrival State
+
+Final states: Final State (implied)
+
+Events or conditions:
+1. Card Insertion
+2. PIN Entry
+3. Correct PIN Entry
+4. Incorrect PIN Entry
+5. Multiple incorrect PIN entries
+6. Invalid card
+7. User cancellation
+8. Request selection
+9. Request processing completion or error
+
+Transitions:
+1. From Arrival State to PIN Input State upon card insertion.
+2. From PIN Input State to Incorrect PIN State if the entered PIN is incorrect.
+3. From PIN Input State to Correct PIN State if the entered PIN is correct.
+4. From Correct PIN State to Option Selection State upon successful validation.
+5. From Incorrect PIN State to Incorrect PIN State or Card Security State based on the number of incorrect attempts.
+6. From Card Security State to Arrival State after a certain period or manual intervention.
+7. From Cancellation State to Arrival State upon user cancellation and card return.
+8. From Option Selection State to Request Processing State upon request selection.
+9. From Request Processing State to Final State upon request completion or error.
+
+Missing or ambiguous details:
+1. The requirement does not specify the number of incorrect PIN attempts allowed before moving to the Card Security State.
+2. The requirement does not mention any specific conditions for returning the card after cancellation (e.g., time limit, manual intervention).
+3. The requirement does not provide information on how the system handles errors during request processing.
+4. The requirement does not specify the time period for moving from Card Security State to Arrival State.
+
+Now return only the final PlantUML.

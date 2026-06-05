@@ -1,0 +1,33 @@
+@startuml
+!define UNREGISTERED_STATE UnregisteredState
+!define REGISTERED_STATE RegisteredState
+!define LOGGEDOUT_STATE LoggedOutState
+!define LOGGEDIN_STATE LoggedInState
+!define DOCUMENTUPLOADING_STATE DocumentUploadingState
+!define CERTIFICATEREQUESTED_STATE CertificateRequestedState
+!define CERTIFICATEISSUED_STATE CertificateIssuedState
+!define CERTIFICATEREJECTED_STATE CertificateRejectedState
+!define REGISTRARREQUEST_STATE RegistrarRequestState
+!define VERIFICATIONINPROGRESS_STATE VerificationInProgressState
+!define VERIFICATIONCOMPLETED_STATE VerificationCompletedState
+
+[*] --> UNREGISTERED_STATE: RegisterEvent
+UNREGISTERED_STATE -- RegisterEvent: Register
+REGISTERED_STATE -- LoginEvent: LoginEvent
+REGISTERED_STATE --> LOGGEDIN_STATE: LoginEvent
+LOGGEDIN_STATE -- LogoutEvent: LogoutEvent
+LOGGEDIN_STATE -- UploadDocumentEvent: UploadDocumentEvent
+LOGGEDIN_STATE --> DOCUMENTUPLOADING_STATE: UploadDocumentEvent
+DOCUMENTUPLOADING_STATE -- ContinueUploadEvent: ContinueUploadEvent
+DOCUMENTUPLOADING_STATE --> LOGGEDIN_STATE: ContinueUploadEvent
+LOGGEDIN_STATE -- ApplyCertificateEvent: ApplyCertificateEvent
+LOGGEDIN_STATE --> CERTIFICATEREQUESTED_STATE: ApplyCertificateEvent
+CERTIFICATEREQUESTED_STATE -- CertificateIssuedEvent: CertificateIssuedEvent
+CERTIFICATEREQUESTED_STATE --> CERTIFICATEISSUED_STATE: CertificateIssuedEvent
+CERTIFICATEREQUESTED_STATE -- CertificateRejectedEvent: CertificateRejectedEvent
+CERTIFICATEREQUESTED_STATE --> CERTIFICATEREJECTED_STATE: CertificateRejectedEvent
+LOGGEDIN_STATE -- RegistrarRequestEvent: RegistrarRequestEvent
+REGISTERED_STATE, LOGGEDOUT_STATE, CERTIFICATEISSUED_STATE, CERTIFICATEREJECTED_STATE, REGISTRARREQUEST_STATE --> VERIFICATIONINPROGRESS_STATE: RegistrarRequestEvent
+VERIFICATIONINPROGRESS_STATE -- VerificationCompletedEvent: VerificationCompletedEvent
+VERIFICATIONINPROGRESS_STATE --> VERIFICATIONCOMPLETED_STATE: VerificationCompletedEvent
+@enduml

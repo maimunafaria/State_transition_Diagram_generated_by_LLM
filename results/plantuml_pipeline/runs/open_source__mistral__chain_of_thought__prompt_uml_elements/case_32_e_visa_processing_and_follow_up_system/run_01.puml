@@ -1,0 +1,20 @@
+@startuml
+hide empty state
+
+AccountCreationState -- CreateAccountEvent:1 >> LoginState
+LoginState -- LoginEvent:2 >> ApplicationState
+ApplicationState -- ApplyForVisaEvent:3 >> PaymentState
+PaymentState -- PaymentMadeEvent:4 >> ApplicationSubmittedState
+ApplicationSubmittedState -- ApplicationStatusViewEvent:5 |or| CancelApplicationEvent:6 >> StatusCheckState
+StatusCheckState -- ApprovalRejectionEvent:7 >> ApprovalRejectionState
+ApprovalRejectionState -- Exit behavior of ApprovalRejectionState:8 >> LoginState
+LoginState -- ViewDetailsEvent:9 >> ModificationState
+LoginState -- GiveFeedbackEvent:10 >> ModificationState
+LoginState -- StatusUpdateEvent:11 >> ModificationState
+ModificationState -- LogoutEvent:12 >> AccountCreationState
+ModificationState -- ViewDetailsEvent:9 >> ViewDetailsState
+ModificationState -- GiveFeedbackEvent:10 >> FeedbackState
+StatusCheckState -- StatusCheckEvent:13 >> StatusViewState
+StatusViewState -- CheckStatusEvent:14 |or| LogoutEvent:12 >> LoginState
+
+@enduml

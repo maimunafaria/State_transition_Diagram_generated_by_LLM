@@ -1,0 +1,36 @@
+@startuml
+
+State UnregisteredState {
+  [*] -> UserRegistrationEvent: UserRegistrationEvent
+}
+
+State RegisteringState {}
+RegisteringState -- SuccessfulLoginEvent: SuccessfulLoginEvent --> LoginState
+RegisteringState -- !failure: UserRegistrationFailureEvent: UserRegistrationFailureEvent
+
+State LoginState {
+  SuccessfulLoginEvent --> [*]
+  UserLogoutEvent --> LoggedOutState
+  SelectionOfAdditionalDetailsEvent --> AdditionalDetailsState
+}
+
+State InvalidLocationState {}
+InvalidLocationEvent --> InvalidLocationState
+
+State ValidLocationState {
+  InvalidLocationEvent --> InvalidLocationState
+  ValidLocationEvent --> WeatherInfoState
+}
+
+State WeatherInfoState {
+  UserLogoutEvent --> LoggedOutState
+  SelectionOfAdditionalDetailsEvent --> AdditionalDetailsState
+}
+
+State AdditionalDetailsState {}
+
+State LoggedOutState {
+  [*] <-- UserLogoutEvent
+}
+
+@enduml

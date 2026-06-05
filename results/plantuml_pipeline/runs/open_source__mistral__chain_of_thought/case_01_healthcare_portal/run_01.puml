@@ -1,0 +1,31 @@
+@startuml
+!define REGISTRATION_EVENT "NewUserRegistrationEvent"
+!define SUCCESS_EVENT "RegistrationSuccessEvent"
+!define FAILURE_EVENT "RegistrationFailureEvent"
+!define SIGNIN_EVENT "SignInEvent"
+!define SIGNOUT_EVENT "SignOutEvent"
+!define HEALTHCHECK_EVENT "HealthCheckEvent"
+!define NEWSCONTENT_EVENT "NewsContentReadEvent"
+!define INSURANCEVALIDATION_EVENT "InsuranceValidationEvent"
+!define DOCTORCONSULTATION_EVENT "DoctorConsultationRequestEvent"
+!define DRUGORSUPPLEMENT_EVENT "DrugOrSupplementPurchaseEvent"
+!define CASHPAYMENT_EVENT "CashPaymentSelectionEvent"
+!define INSURANCEPAYMENT_EVENT "InsurancePaymentSelectionEvent"
+!define SERVICECOMPLETION_EVENT "ServiceCompletionEvent"
+!define FEEDBACKSUBMISSION_EVENT "FeedbackSubmissionEvent"
+
+UnregisteredUserState --|> RegisteringUserState: REGISTRATION_EVENT
+RegisteringUserState --|> RegistrationFailedState: FAILURE_EVENT
+RegisteringUserState --|> RegisteredUserState: SUCCESS_EVENT
+RegisteredUserState --|> SignInState: SIGNIN_EVENT
+SignInState --|> UserAccessState: SIGNIN_EVENT
+UserAccessState --|> NewsAndContentState: NEWSCONTENT_EVENT
+UserAccessState --|> HealthInformationState: HEALTHCHECK_EVENT
+UserAccessState --|> PaymentState: DOCTORCONSULTATION_EVENT or DRUGORSUPPLEMENT_EVENT
+PaymentState --|> CashPaymentState: CASHPAYMENT_EVENT
+PaymentState --|> InsurancePaymentState: INSURANCEPAYMENT_EVENT
+CashPaymentState --|> ResultViewingState: SIGNOUT_EVENT
+InsurancePaymentState --|> ResultViewingState: SIGNOUT_EVENT
+ResultViewingState --|> FeedbackCollectionState: SERVICECOMPLETION_EVENT
+UserAccessState --|> LogoutState: SIGNOUT_EVENT
+@enduml

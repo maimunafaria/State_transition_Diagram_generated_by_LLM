@@ -1,0 +1,42 @@
+@startuml
+hide empty package
+
+package ATM {
+  state Idle {
+    [*] -> AmountSelection: User Interaction
+    Error -> Idle
+    Rejection -> Idle
+    Completed -> Idle
+  }
+
+  state AmountSelection {
+    UserSelectsAmount -> Verification: Valid Input
+    CustomValue -> Verification: User Enters Custom Value
+    Error -> Idle
+    Rejection -> Idle
+    Completed -> Completed
+  }
+
+  state Verification {
+    VerifiedTransaction -> Completed: Successful Transaction
+    RejectedTransaction -> Retry: Transaction Rejected
+    Error -> Error
+  }
+
+  state Retry {
+    UserReentersAmount -> Verification: User Re-enters Amount
+    Error -> Error
+    Completed -> Completed
+    Rejection -> Rejection
+  }
+
+  state Completed {
+    [*] -> Idle: Transaction Completed
+  }
+
+  state Error {
+    [*] -> Idle: System Malfunction or Communication Issue
+    Error -> Error
+  }
+}
+@enduml

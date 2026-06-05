@@ -1,0 +1,69 @@
+@startuml
+state Idle {
+    [*] -> AddGoodsEvent: AddGoodsEvent
+}
+
+state AddGoodsState {
+    AddGoodsEvent -> UpdatePriceEvent: UpdatePriceEvent
+}
+
+state UpdatePriceState {
+    UpdatePriceEvent -> RemoveGoodsEvent: RemoveGoodsEvent
+}
+
+state RemoveGoodsState {
+    RemoveGoodsEvent -> ExpiryEvent: ExpiryEvent
+}
+
+state ExpiredGoodsState {
+    [*] -> ItemRemoved: ItemRemoved
+}
+
+state OrderPlacementState {
+    OrderEvent -> OrderPlacedEvent: OrderPlacedEvent
+}
+
+state OrderPlacedState {
+    OrderPlacedEvent -> SearchEvent: SearchEvent
+}
+
+state SearchState {
+    SearchEvent -> SelectPurchaseEvent: SelectPurchaseEvent
+}
+
+state SelectionState {
+    SelectPurchaseEvent -> DiscountCalculationEvent: DiscountCalculationEvent
+}
+
+state DiscountCalculationState {
+    DiscountCalculationEvent -> TaxCalculationEvent: TaxCalculationEvent
+}
+
+state TaxCalculationState {
+    TaxCalculationEvent -> PurchaseEvent: PurchaseEvent
+}
+
+state BillingState {
+    PurchaseEvent -> ReplaceItemEvent: ReplaceItemEvent ? optional
+    PurchaseEvent -> CancelReceiptEvent: CancelReceiptEvent
+    PurchaseEvent -> RecordRequestEvent: RecordRequestEvent
+}
+
+state ReplacementState {
+    // behavior details not specified, further analysis required
+}
+
+state CancelledReceiptState {
+    [*] -> CancelledReceipt: CancelledReceipt
+}
+
+state RequestRecordedState {
+    [*] -> RequestRecorded: RequestRecorded
+}
+
+state SummaryReportViewedState {
+    SummaryReportViewedEvent -> [*]: SummaryReportViewedEvent
+}
+
+SummaryReportViewedState -- SummaryReportViewed
+@enduml

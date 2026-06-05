@@ -1,0 +1,39 @@
+@startuml
+hide empty package
+
+package "Online Quiz System" {
+  state UserLogin {
+    [*] -> TeacherDashboard: Successful Login (Teacher)
+    [*] -> StudentDashboard: Successful Login (Student)
+  }
+
+  state TeacherDashboard {
+    TeacherDashboard --> QuizCreation: Create New Quiz
+    TeacherDashboard --> QuizEditing: Edit Existing Quiz
+    QuizCreation -->|Quiz Saving| QuizSaving: Save as Draft or Publish
+    QuizEditing -->|Quiz Saving| QuizSaving: Save as Draft or Publish
+  }
+
+  state StudentDashboard {
+    StudentDashboard -->|Quiz Selection| QuizSelection: Receive Notification (Missing details)
+    QuizSelection --> QuizInProgress: Start Quiz
+  }
+
+  state QuizInProgress {
+    QuizInProgress --> QuizSubmission: Submit Quiz
+  }
+
+  state QuizSubmission {
+    QuizSubmission -->|Quiz Result Viewing| QuizResultViewing (for Students)
+    QuizSubmission -->|Quiz Result Viewing| QuizResultViewing (for Teachers)
+  }
+
+  state QuizResultViewing {
+    QuizResultViewing --> FinalUserLogout: Logout Event
+  }
+
+  state FinalUserLogout {
+    FinalUserLogout --> [*]
+  }
+}
+@enduml

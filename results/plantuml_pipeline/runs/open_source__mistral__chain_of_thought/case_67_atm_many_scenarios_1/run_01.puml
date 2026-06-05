@@ -1,0 +1,34 @@
+@startuml
+state InsertedCardState {
+    [*] -> CardInsertionEvent : CardInserted
+}
+
+state PINEnteredState
+PINEntryEvent -> PINVerificationEvent : PINEntered
+
+state VerificationState
+note left of VerificationState: PINVerificationEvent (success)
+VerificationState -> AuthenticatedState : PINVerified
+note right of VerificationState: PINVerificationEvent (failure)
+VerificationState <-- InvalidPINState : InvalidPIN
+
+state AuthenticatedState
+ApprovalEvent -> WithdrawalRequestState : Approved
+
+state WithdrawalRequestState
+WithdrawalRequestEvent -> CashDispensedState : Withdrawn
+
+state CashDispensedState
+CashDispensationEvent -> ReceiptPrintedState : CashDispensed
+
+state ReceiptPrintedState
+TransactionCompletionEvent -> TransactionCompletedState : Completed
+
+state TransactionCompletedState
+note right of TransactionCompletedState: TimeoutEvent (after brief moment)
+TransactionCompletedState -> ReadyState : Reset
+
+state ReadyState {
+    [*] -> TimeoutEvent : Ready
+}
+@enduml

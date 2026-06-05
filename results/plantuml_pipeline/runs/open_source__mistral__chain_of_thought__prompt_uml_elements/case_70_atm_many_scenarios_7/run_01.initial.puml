@@ -1,0 +1,37 @@
+@startuml
+state ArrivalState {
+    [*] -> CardInsertedState: ArrivalEvent
+}
+
+state CardInsertedState {
+    CardInsertedState --> InvalidCardState if InvalidCardCondition
+    CardInsertedState --> IncorrectPINState if IncorrectPINCondition
+    CardInsertedState --> CorrectPINState if CorrectPINCondition
+}
+
+state IncorrectPINState {
+    IncorrectPINState --> MultipleIncorrectPINState if multiple incorrect PIN attempts
+    MultipleIncorrectPINState --> FinalState upon TimeoutEvent or system intervention
+    MultipleIncorrectPINState --> CardInsertedState: Card reinserted
+}
+
+state CorrectPINState {
+    CorrectPINState --> AvailableOptionsState upon RequestSelectionEvent
+    CorrectPINState --> CancelOperationState upon CancelOperationCondition
+}
+
+state AvailableOptionsState {
+    AvailableOptionsState --> ProcessingRequestState upon RequestProcessingCompleteEvent
+}
+
+state CancelOperationState {
+    CancelOperationState --> CardInsertedState: Card returned
+}
+
+state ProcessingRequestState {}
+
+state FinalState {
+    [*] --> FinalState upon system shutdown or emergency conditions
+    FinalState --> ArrivalState upon system restart or user request
+}
+@enduml

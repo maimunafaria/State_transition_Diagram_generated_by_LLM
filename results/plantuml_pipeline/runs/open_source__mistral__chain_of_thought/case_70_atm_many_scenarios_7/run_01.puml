@@ -1,0 +1,56 @@
+@startuml
+!define PI = PinEnteredEvent
+!define CI = CorrectPINCondition
+!define IC = IncorrectPINCondition
+!define CC = CardInsertedEvent
+!define ICC = InvalidCardCondition
+!define CO = CancelOperationEvent
+!define RP = RequestProcessedEvent
+!define TC = TransactionCompletedEvent
+!define CH = CompletedTransaction
+!define SH = SecurityHold
+!define AO = AvailableOptions
+!define PO = ProcessingRequest
+
+state Arrival {
+    [*] -> CC : Arrival
+}
+
+state CardInserted {
+    CC -> CardInserted : CardInserted
+    CardInserted -->|IC| InvalidCard : InvalidCard
+    CardInserted -->|CI| CorrectPIN : CorrectPIN
+}
+
+state IncorrectPIN {
+    CorrectPIN -->|PI| FirstIncorrect : PINEnteredEvent
+    state FirstIncorrect {
+        FirstIncorrect -->|PI| MultipleIncorrect : PINEnteredEvent
+        MultipleIncorrect --> SH : SecurityHold
+    }
+}
+
+state MultipleIncorrect {
+    [*] -> FirstIncorrect : IncorrectPIN
+}
+
+state CorrectPIN {
+    CorrectPIN --> AO : AvailableOptions
+}
+
+state AvailableOptions {
+    AO --> PO : ProcessingRequest
+    PO --> CH : CompletedTransaction
+    PO --> SH : SecurityHold
+}
+
+state CancelledOperation {
+    [*] -> CO : CancelOperationEvent
+    CancelledOperation --> Arrival : CancelledOperation
+}
+
+state SecurityHold {
+    [*] -> SH : InvalidCard or MultipleIncorrect
+    SH --> CardInserted : Card released
+}
+@enduml

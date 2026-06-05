@@ -1,0 +1,47 @@
+@startuml
+
+state WaitingForNewSale {
+  [*] -> WaitingForNewSale: NewCustomerArrives
+}
+
+state AddingItems {
+  WaitingForNewSale --> AddingItems: ItemAdded
+  AddingItems -- ItemAdded: ItemAdded
+  AddingItems --> Payment: AllItemsAdded
+}
+
+state Payment {
+  AddingItems --> Payment: AllItemsAdded
+  Payment -- CashPaymentReceived: CashPaymentReceived
+  Payment -- CardOrCheckChosen: CardOrCheckChosen
+  Payment --> CardOrCheckPayment: CardOrCheckChosen
+  CardOrCheckPayment --> PaymentApproved: PaymentVerified
+  PaymentApproved --> CompletedSale: PaymentFinished
+}
+
+state CashPayment {
+  Payment -- CashPaymentReceived: CashPaymentReceived
+  CashPayment --> CompletedSale: PaymentFinished
+}
+
+state CardOrCheckPayment {
+  Payment -- CardOrCheckChosen: CardOrCheckChosen
+  CardOrCheckPayment --> PaymentApproved: PaymentVerified
+}
+
+state PaymentApproved {
+  Payment --> PaymentApproved: PaymentVerified
+  PaymentApproved --> CompletedSale: PaymentFinished
+}
+
+state CompletedSale {
+  PaymentApproved --> CompletedSale: PaymentFinished
+  CompletedSale -- NextCustomerArrives: NextCustomerArrives
+  CompletedSale --> ReturnToWaiting: NextCustomerArrives
+}
+
+state ReturnToWaiting {
+  [*] <-- ReturnToWaiting: NextCustomerArrives
+}
+
+@enduml

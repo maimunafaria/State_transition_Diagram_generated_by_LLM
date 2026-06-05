@@ -1,0 +1,46 @@
+@startuml
+state InsertedCardState {
+    [*] -> PINEnteredState: CardInsertedEvent
+}
+
+state PINEnteredState {
+    PINEnteredEvent -> VerifiedPINState if ValidPINCondition
+    PINEnteredEvent -> InvalidPINState if InvalidPINCondition
+}
+
+state InvalidPINState {
+    // User action triggers transition back to PINEnteredState (e.g., re-entering the PIN)
+    PINEnteredEvent -> PINEnteredState
+}
+
+state VerifiedPINState {
+    TransactionApprovalEvent -> WithdrawalProcessingState
+}
+
+state WithdrawalProcessingState {
+    CashDispensedEvent -> CashDispensedState
+}
+
+state CashDispensedState {
+    ReceiptPrintingEvent -> ReceiptPrintingState
+}
+
+state ReceiptPrintingState {
+    // TimeElapsedEvent triggers transition to TransactionCompletedState after completing the transaction
+    TimeElapsedEvent -> TransactionCompletedState
+}
+
+state TransactionCompletedState {
+    TransactionCompletedEvent -> CardReturnedState
+}
+
+state CardReturnedState {
+    // Implicit CardReturnedEvent triggers transition to ReadyState
+    CardReturnedEvent -> ReadyState
+}
+
+state ReadyState {
+    // User action triggers transition from ReadyState to InsertedCardState (e.g., inserting a new card)
+    [*] -> InsertedCardState
+}
+@enduml

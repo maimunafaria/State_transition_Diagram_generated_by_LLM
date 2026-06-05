@@ -1,0 +1,31 @@
+@startuml
+hide empty package
+
+package WatchSystem {
+  state TimeViewingState {
+    [*] -> TimeViewingState: TimeAdjustmentEvent
+    TimeViewingState -- SwitchSettingEvent > AlarmSettingState
+    TimeViewingState -- AlarmOnEvent > AlarmSettingState
+    TimeViewingState -- AlarmOffEvent > TimeViewingState
+    TimeViewingState -- AlarmMatchEvent & alarm_on: AlarmRingEvent
+  }
+
+  state AlarmSettingState {
+    AlarmSettingState -- AlarmOnEvent > AlarmSettingState
+    AlarmSettingState -- AlarmOffEvent > TimeViewingState
+    AlarmSettingState -- AlarmMatchEvent & alarm_on: FinalAlarmSettingState
+    FinalAlarmSettingState -- AlarmStopEvent > TimeViewingState
+  }
+
+  state LightOnState {
+    [*] -> LightOnState: LightOnEvent
+    LightOnState -- LightOffEvent > LightOffState
+  }
+
+  state LightOffState {}
+
+  FinalTimeViewingState -- no event > TimeViewingState
+  FinalAlarmSettingState -- no event > AlarmSettingState
+
+}
+@enduml

@@ -1,0 +1,59 @@
+@startuml
+hide empty package
+
+package Campaign {
+  state Assigned {
+    [*]->Assigned: Assigned
+    Assigned -approval and contract signing-> PendingApproval
+  }
+
+  state PendingApproval {
+    PendingApproval -preparation of adverts-> Preparation
+    PendingApproval -contract expiration-> Assigned
+  }
+
+  state Preparation {
+    Preparation -approval and scheduling of adverts-> Scheduled
+    Preparation -cancellation-> Assigned
+  }
+
+  state Scheduled {
+    Scheduled -running of adverts-> Running
+    Scheduled -cancellation-> Assigned
+  }
+
+  state Running {
+    Running -campaign adjustment-> Adjustment
+    Running -all adverts finished-> Completed
+  }
+
+  state Adjustment {
+    Adjustment -running of adverts-> Running
+    Adjustment -cancellation-> Assigned
+  }
+
+  state Completed {
+    Completed -payment completion-> PaymentPending
+    Completed -cancellation-> Assigned
+  }
+
+  state PaymentPending {
+    PaymentPending -balance exceeds required amount-> Overpaid
+    PaymentPending -payment received-> Paid
+  }
+
+  state Overpaid {
+    Overpaid -balance settlement-> Paid
+    Overpaid -cancellation-> Assigned
+  }
+
+  state Paid {
+    Paid -marking as paid-> Archived
+    Paid -cancellation-> Assigned
+  }
+
+  state Archived {
+    Archived -release staff and managers-> Assigned
+  }
+}
+@enduml

@@ -1,0 +1,35 @@
+@startuml
+!define PI #ff6347
+!define PG #27ae60
+!define PR #f1c40f
+!define PD #e74c3c
+!define PB #9b59b6
+!define PC #34495e
+
+AccountCreationState([*] CreateAccountEvent)
+LoginState(AccountCreationState:CreateAccountEvent)
+ApplicationState(LoginState:ApplyForVisaEvent, LoginState:ModifyDetailsEvent, LoginState:ViewDetailsEvent, LoginState:GiveFeedbackEvent, LoginState:LogoutEvent)
+PaymentState(ApplicationState:MakePaymentEvent)
+AcceptedState(PaymentState:ApplicationAcceptedEvent)
+RejectedState(PaymentState:ApplicationRejectedEvent)
+StatusViewState(AcceptedState:ViewStatusEvent, RejectedState:ViewStatusEvent)
+CheckStatusState(StatusViewState:CheckStatusEvent, StatusViewState:GiveFeedbackEvent)
+CancellationState(ApplicationState:CancelApplicationEvent)
+ModificationState(LoginState:ModifyDetailsEvent)
+DetailViewState(LoginState:ViewDetailsEvent)
+FeedbackState(CheckStatusState:GiveFeedbackEvent)
+LogoutState(AcceptedState:LogoutEvent, RejectedState:LogoutEvent, ApplicationState:LogoutEvent, ModificationState:LogoutEvent, DetailViewState:LogoutEvent, CheckStatusState:LogoutEvent, LoginState:LogoutEvent)
+
+ApplicationState --|> AcceptedState:ApplicationAcceptedEvent
+ApplicationState --|> RejectedState:ApplicationRejectedEvent
+StatusViewState --|> CheckStatusState:CheckStatusEvent
+LoginState --|> ModificationState:ModifyDetailsEvent
+LoginState --|> DetailViewState:ViewDetailsEvent
+LoginState --|> FeedbackState:GiveFeedbackEvent
+ApplicationState --|> CancellationState:CancelApplicationEvent
+LoginState --|> LogoutState:LogoutEvent
+StatusViewState --|> LogoutState:LogoutEvent
+CheckStatusState --|> LogoutState:LogoutEvent
+ModificationState --|> LogoutState:LogoutEvent
+DetailViewState --|> LogoutState:LogoutEvent
+@enduml

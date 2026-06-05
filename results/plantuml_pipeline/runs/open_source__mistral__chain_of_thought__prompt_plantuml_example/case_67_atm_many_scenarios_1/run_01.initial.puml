@@ -1,0 +1,51 @@
+@startuml
+title UML State Chart Diagram
+
+state "InsertedCardState" as IC
+IC : entry / Waiting for card insertion
+IC : CardInsertedEvent / Card inserted
+IC --> PINEnteredState
+
+state "PINEnteredState" as PE
+PE : entry / User enters PIN
+PE : PINEnteredEvent / PIN entered
+PE --> VerificationState
+
+state "VerificationState" as VS
+VS : entry / Verify entered PIN
+VS : PINVerificationEvent / Verify PIN against stored information
+VS : ApprovedState / If PIN is correct
+VS : RejectedState / If PIN is incorrect (not specified in the requirement)
+
+state "ApprovedState" as AS
+AS : entry / User approved for options
+AS : ApprovalEvent / User approves withdrawal request
+AS --> WithdrawalRequestState
+
+state "WithdrawalRequestState" as WR
+WR : entry / Processing withdrawal request
+WR : WithdrawalRequestEvent / Dispense cash
+WR --> CashDispensedState
+
+state "CashDispensedState" as CD
+CD : entry / Cash dispensed to user
+CD : CashDispensedEvent / Print receipt for transaction
+CD --> ReceiptPrintedState
+
+state "ReceiptPrintedState" as RP
+RP : entry / Receipt printed for transaction
+RP : ReceiptPrintedEvent / Complete transaction
+RP --> TransactionCompletedState
+
+state "TransactionCompletedState" as TC
+TC : entry / Transaction completed, return card and reset
+TC : TransactionCompletedEvent / Return user's card
+TC : ResetEvent / Reset after a brief moment
+TC --> ReadyState
+
+state "ReadyState" as RD
+RD : entry / ATM ready for the next user
+RD : Waiting for next user / Wait for card insertion
+RD --> InsertedCardState
+
+@enduml

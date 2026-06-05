@@ -1,0 +1,80 @@
+@startuml
+title State machine model of a healthcare portal
+
+[*] --> UnregisteredUserState
+
+state UnregisteredUserState
+UnregisteredUserState : do / display login screen
+
+state RegisteringUserState
+RegisteringUserState : do / register new user
+RegisteringUserState : do / validate registration
+RegisteringUserState : do / handle RegistrationFailureEvent
+RegisteringUserState --> SignInFailedState : RegistrationFailureEvent
+RegisteringUserState --> RegisteredUserState : NewUserRegistrationEvent
+
+state RegisteredUserState
+RegisteredUserState : do / display login screen
+RegisteredUserState : do / authenticate user
+RegisteredUserState : do / handle SessionEndEvent
+RegisteredUserState --> SignedInUserState : successful authentication
+RegisteredUserState --> SignInFailedState : failed authentication
+
+state SignedInUserState
+SignedInUserState : do / display available facilities
+SignedInUserState : do / allow user to read news and expert content
+SignedInUserState : do / handle UserSignInEvent
+SignedInUserState --> NewsAndContentUserState : UserSignInEvent
+SignedInUserState --> HealthInfoUserState : UserSignInEvent
+SignedInUserState --> ResultViewedUserState : UserSignInEvent and ResultViewedEvent
+
+state NewsAndContentUserState
+NewsAndContentUserState : do / display news and expert content
+NewsAndContentUserState : do / allow user to continue using the system or finish session
+NewsAndContentUserState --> SignedInUserState : user action
+
+state HealthInfoUserState
+HealthInfoUserState : do / provide health-related information options
+HealthInfoUserState : do / allow user to continue using the system or finish session
+HealthInfoUserState --> ResultViewedUserState : result viewed
+
+state ResultViewedUserState
+ResultViewedUserState : do / display result
+ResultViewedUserState : do / handle ResultViewedEvent
+ResultViewedUserState --> PaymentUserState : ResultViewedEvent and CashPaymentEvent or InsurancePaymentEvent
+
+state PaymentUserState
+PaymentUserState : do / allow user to select payment methods (cash or insurance)
+PaymentUserState : do / handle CashPaymentEvent
+PaymentUserState : do / handle InsurancePaymentEvent
+PaymentUserState : do / complete the payment process
+PaymentUserState --> CashPaymentUserState : CashPaymentEvent
+PaymentUserState --> InsurancePaymentUserState : InsurancePaymentEvent
+PaymentUserState : do / handle FeedbackCollectionEvent
+PaymentUserState --> LoggedOutState : successful payment
+
+state CashPaymentUserState
+CashPaymentUserState : do / inform user about cash payment details
+CashPaymentUserState : do / complete the payment process
+CashPaymentUserState --> LoggedOutState : successful cash payment
+
+state InsurancePaymentUserState
+InsurancePaymentUserState : do / check payment with insurance
+InsurancePaymentUserState : do / complete the payment process
+InsurancePaymentUserState --> LoggedOutState : successful insurance-based payment
+
+state FeedbackCollectionState
+FeedbackCollectionState : do / collect user feedback
+FeedbackCollectionState : do / handle FeedbackCollectionEvent
+FeedbackCollectionState --> SignedInUserState : user feedback collected
+
+state SignInFailedState
+SignInFailedState : do / display error message and return to UnregisteredUserState
+SignInFailedState : do / handle SessionEndEvent
+SignInFailedState --> LoggedOutState : SessionEndEvent
+
+state LoggedOutState
+LoggedOutState : do / log out user
+LoggedOutState : do / return to UnregisteredUserState
+LoggedOutState : do / handle FeedbackCollectionEvent
+@enduml

@@ -1,0 +1,53 @@
+@startuml
+title UML State Machine Diagram (Campaign Management)
+
+state "Assigned" as Assigned {
+    [*] --> Approved
+}
+
+state "Approved" as Approved {
+    Approved : ContractSigned --> PreparingAdverts
+}
+
+state "Preparing Adverts" as PreparingAdverts {
+    PreparingAdverts : AdvertApproval --> ScheduledAdverts
+    PreparingAdverts : CampaignAdjustment --> PreparingAdverts
+}
+
+state "Scheduled Adverts" as ScheduledAdverts {
+    ScheduledAdverts : CampaignStart --> RunningAdverts
+}
+
+state "Running Adverts" as RunningAdverts {
+    RunningAdverts : AdvertFinish --> AdjustingCampaign
+    RunningAdverts : AdvertFinish --> Completed
+    RunningAdverts : PaymentReceived --> Paid
+    RunningAdverts : RefundRequested --> PaymentPending
+    RunningAdverts : BalanceSettlement --> PaymentWaiting
+}
+
+state "Adjusting Campaign" as AdjustingCampaign {
+    AdjustingCampaign : CampaignAdjustment --> PreparingAdverts
+}
+
+state "Completed" as Completed {
+    Completed : FullPayment --> Paid
+    Completed : NotFullPayment --> PaymentPending
+}
+
+state "Paid" as Paid {
+    [*] --> Archived
+}
+
+state "Payment Pending" as PaymentPending {
+    [*] --> Archived
+}
+
+state "Payment Waiting" as PaymentWaiting {
+    [*] --> Archived
+}
+
+state "Archived" as Archived {
+    [*] --> End
+}
+@enduml

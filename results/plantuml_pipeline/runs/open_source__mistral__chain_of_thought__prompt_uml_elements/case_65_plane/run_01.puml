@@ -1,0 +1,46 @@
+@startuml
+hide empty
+
+skinparam backgroundColor #fff
+skinparam fontName "Helvetica"
+skinparam fontSize 12
+
+title Plane Lifecycle Diagram
+
+state Order {
+    [*] -> Order: Delivery
+}
+
+state Arrival {
+    Order -> Arrival: Arrival
+    Arrival -> Preparation: Ready for operations event
+}
+
+state Preparation {
+    Arrival -> Preparation: Arrival event
+    Preparation --> Operations: Condition and Schedule
+    Preparation --> Maintenance: Maintenance required event
+}
+
+state Operations {
+    Preparation < Operations: Scheduled flight event
+    Operations --> Maintenance: No more scheduled flights or maintenance is required
+    Operations --> OutOfService: Unavailability event
+    Operations --> Removed: Permanent withdrawal event
+}
+
+state Maintenance {
+    Preparation < Maintenance: Ready for operations event
+    Maintenance --> Preparation: Ready for operations event
+    Maintenance --> OutOfService: If not ready for operations
+}
+
+state OutOfService {
+    Operations -> OutOfService: Unavailability event
+    Operations -> Removed: Permanent withdrawal event
+}
+
+state Removed {
+    Operations -> Removed: Permanent withdrawal event
+}
+@enduml

@@ -1,0 +1,33 @@
+@startuml
+title ATM State Machine
+
+[*] --> Idle
+
+Idle --> AmountSelection : UserInputAmountEvent
+
+state AmountSelection {
+    [*] --> PredefinedAmountSelection
+    PredefinedAmountSelection --> CustomAmountInput
+    CustomAmountInput --> ErrorState : InvalidInputEvent
+    CustomAmountInput --> TransactionCompletion : sufficient balance and valid amount
+    CustomAmountInput --> ErrorState : insufficient balance or invalid amount
+    AmountSelection --> Cancellation : CancelTransactionEvent
+}
+
+Cancellation --> TransactionCompletion : system confirmation and card return
+
+state PredefinedAmountSelection {
+    [*] --> PredefinedAmountSelection_1
+    PredefinedAmountSelection_1 --> CustomAmountInput
+    PredefinedAmountSelection_1 --> ErrorState : InvalidInputEvent
+    PredefinedAmountSelection_1 --> AmountSelection : no selection made
+}
+
+state TransactionCompletion {
+    [*]
+}
+
+state ErrorState {
+    [*]
+}
+@enduml

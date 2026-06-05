@@ -1,0 +1,43 @@
+@startuml
+!define PI #ff6347
+!define PG #27ae60
+!define PS #f1c40f
+!define PC #e74c3c
+!define PM #9B59B6
+
+state PowerOn {
+    [*] -> PowerOn: PowerOn
+}
+
+state StartupCheck {
+    PowerOn --> StartupCheck: StartupCheckComplete
+    StartupCheck --> ReadyToUse: StartupCheckComplete
+}
+
+state ReadyToUse [
+    ReadyToUse --> Reset: ResetRequested
+    ReadyToUse --> Activated: ActivationRequested
+    ReadyToUse --> Normal: DeactivationRequested
+]
+
+state Activated {
+    ReadyToUse --> Activated: ActivationRequested
+    Activated --> Monitoring: ActivationEvent
+}
+
+state Monitoring [
+    Activated --> Monitoring: SensorTriggered
+    Monitoring --> AlarmTriggered: SensorTriggered
+]
+
+state AlarmTriggered [
+    Monitoring --> FalseAlarm or TimeEnd: FalseAlarm or TimeEndCondition
+    FalseAlarm or TimeEnd --> Monitoring: FalseAlarm or TimeEnd
+]
+
+state Normal [
+    Activated --> Normal: PasswordEntered
+    Monitoring --> Normal: PasswordEntered
+    ReadyToUse --> Normal: PasswordEntered
+]
+@enduml

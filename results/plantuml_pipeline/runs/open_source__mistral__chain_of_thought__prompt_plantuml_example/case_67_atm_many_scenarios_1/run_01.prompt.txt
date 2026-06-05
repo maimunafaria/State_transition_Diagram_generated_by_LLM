@@ -1,0 +1,228 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Atm Many Scenarios Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall prompt the user to enter their PIN after the card is inserted.
+2. The system shall verify the entered PIN against the stored information.
+3. The system shall ensure that if the PIN is verified successfully, the system shall provide options to the user.
+4. The system shall support upon user approval, the system shall process the withdrawal request.
+5. The system shall support after dispensing cash, the system shall print a receipt for the transaction.
+6. The system shall support after completing the transaction, the system shall return the user's card.
+7. The system shall support after a brief moment, the system shall reset itself and become ready for the next user.
+
+=== Chain-of-thought analysis response ===
+States:
+1. InsertedCardState (Initial state) - Represents the state where the ATM is waiting for a card to be inserted.
+2. PINEnteredState - Represents the state where the user has entered their PIN.
+3. VerificationState - Represents the state where the system verifies the entered PIN against the stored information.
+4. ApprovedState (Final state) - Represents the state where the PIN verification is successful and the user is provided with options.
+5. WithdrawalRequestState - Represents the state where the user approves the withdrawal request.
+6. CashDispensedState - Represents the state where cash has been dispensed to the user.
+7. ReceiptPrintedState - Represents the state where a receipt for the transaction is printed.
+8. TransactionCompletedState (Final state) - Represents the state after completing the transaction, where the user's card is returned and the ATM resets itself.
+9. ReadyState (Final state) - Represents the state after a brief moment, where the ATM is ready for the next user.
+
+Initial state: InsertedCardState
+
+Final states: ApprovedState, TransactionCompletedState, ReadyState
+
+Events or conditions:
+1. CardInsertedEvent
+2. PINEnteredEvent
+3. PINVerificationEvent
+4. ApprovalEvent
+5. WithdrawalRequestEvent
+6. CashDispensedEvent
+7. ReceiptPrintedEvent
+8. TransactionCompletedEvent
+9. ResetEvent
+
+Transitions:
+1. CardInsertedEvent (InsertedCardState) -> PINEnteredState
+2. PINEnteredEvent (PINEnteredState) -> VerificationState
+3. PINVerificationEvent (VerificationState) -> ApprovedState or RejectedState (if PIN is incorrect, not specified in the requirement)
+4. ApprovalEvent (ApprovedState) -> WithdrawalRequestState
+5. WithdrawalRequestEvent (WithdrawalRequestState) -> CashDispensedState
+6. CashDispensedEvent (CashDispensedState) -> ReceiptPrintedState
+7. ReceiptPrintedEvent (ReceiptPrintedState) -> TransactionCompletedState
+8. TransactionCompletedEvent (TransactionCompletedState) -> ReadyState
+9. ResetEvent (ReadyState) -> InsertedCardState (after a brief moment)
+
+Missing or ambiguous details:
+1. The requirement does not specify the behavior for an incorrect PIN entry, which could lead to additional states and transitions.
+2. The requirement does not specify the conditions for cash withdrawal, such as maximum amount per transaction, minimum balance, etc., which may require additional states and transitions.
+3. The requirement does not specify how the system handles multiple card insertions before a successful PIN entry, which could lead to additional states and transitions.
+4. The requirement does not specify how the system handles errors such as paper jams or system malfunctions, which would require additional states and transitions.
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Crime Bureau — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to log in by entering their username and password.
+2. The system shall allow the user to try again if the login details are incorrect until successful login.
+3. The system shall allow the user to choose between requesting an FIR, requesting a petition, or viewing the list of wanted and missing persons after login.
+4. The system shall display the requested information once the user selects an option.
+5. The system shall allow a police user to log in by entering their username and password.
+6. The system shall allow the police user to try again if the login details are incorrect until successful login.
+7. The system shall allow the police user to view the list of wanted and missing persons or perform major activities such as adding station details and crime records after login.
+
+Example PlantUML:
+@startuml
+title UML State Chart Diagram
+
+
+state "Login Verification" as LV
+LV : entry / Enters username and password
+LV : do / Verification of login credentials of users
+LV : exit / Enters the website if login is correct
+
+state "Requests FIR" as RF
+RF : entry / Verified login
+RF : do / FIR Request
+RF : exit / Displays FIR
+
+state "Requests Petition" as RP
+RP : entry / Verified login
+RP : do / Requests Petition
+RP : exit / Displays Petition
+
+state "Requests Wanted person and missing list" as RW
+RW : entry / Verified login
+RW : do / Requests Wanted persons
+RW : do / Requests Missing list
+RW : exit / Saving changes
+
+state Choice1 <<choice>>
+
+LV --> LV : Repeats until login credentials are correct
+LV --> Choice1 : Chooses any one
+
+Choice1 --> RF
+Choice1 --> RP
+Choice1 --> RW
+
+RF --> [*]
+RP --> [*]
+RW --> [*]
+
+
+
+state "Login Verification-Police" as LVP
+LVP : entry / Enters username and password
+LVP : do / Verification of login credentials
+LVP : exit / Enters the website if login is correct
+
+state "Requests Wanted person and missing list" as RWP
+RWP : entry / Verified login
+RWP : do / Requests Wanted persons
+RWP : do / Requests Missing list
+RWP : exit / Saving changes
+
+state "Performs Major Activities" as PMA
+PMA : entry / EntryAction1
+PMA : do / Add station details
+PMA : do / Add crimes
+PMA : exit / Saving changes
+
+state Choice2 <<choice>>
+
+LVP --> LVP : Repeats until login credentials are correct
+LVP --> Choice2 : Chooses any one
+
+Choice2 --> RWP
+Choice2 --> PMA
+
+RWP --> [*]
+PMA --> [*]
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Atm Many Scenarios Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall prompt the user to enter their PIN after the card is inserted.
+2. The system shall verify the entered PIN against the stored information.
+3. The system shall ensure that if the PIN is verified successfully, the system shall provide options to the user.
+4. The system shall support upon user approval, the system shall process the withdrawal request.
+5. The system shall support after dispensing cash, the system shall print a receipt for the transaction.
+6. The system shall support after completing the transaction, the system shall return the user's card.
+7. The system shall support after a brief moment, the system shall reset itself and become ready for the next user.
+
+Structured analysis from step 1:
+States:
+1. InsertedCardState (Initial state) - Represents the state where the ATM is waiting for a card to be inserted.
+2. PINEnteredState - Represents the state where the user has entered their PIN.
+3. VerificationState - Represents the state where the system verifies the entered PIN against the stored information.
+4. ApprovedState (Final state) - Represents the state where the PIN verification is successful and the user is provided with options.
+5. WithdrawalRequestState - Represents the state where the user approves the withdrawal request.
+6. CashDispensedState - Represents the state where cash has been dispensed to the user.
+7. ReceiptPrintedState - Represents the state where a receipt for the transaction is printed.
+8. TransactionCompletedState (Final state) - Represents the state after completing the transaction, where the user's card is returned and the ATM resets itself.
+9. ReadyState (Final state) - Represents the state after a brief moment, where the ATM is ready for the next user.
+
+Initial state: InsertedCardState
+
+Final states: ApprovedState, TransactionCompletedState, ReadyState
+
+Events or conditions:
+1. CardInsertedEvent
+2. PINEnteredEvent
+3. PINVerificationEvent
+4. ApprovalEvent
+5. WithdrawalRequestEvent
+6. CashDispensedEvent
+7. ReceiptPrintedEvent
+8. TransactionCompletedEvent
+9. ResetEvent
+
+Transitions:
+1. CardInsertedEvent (InsertedCardState) -> PINEnteredState
+2. PINEnteredEvent (PINEnteredState) -> VerificationState
+3. PINVerificationEvent (VerificationState) -> ApprovedState or RejectedState (if PIN is incorrect, not specified in the requirement)
+4. ApprovalEvent (ApprovedState) -> WithdrawalRequestState
+5. WithdrawalRequestEvent (WithdrawalRequestState) -> CashDispensedState
+6. CashDispensedEvent (CashDispensedState) -> ReceiptPrintedState
+7. ReceiptPrintedEvent (ReceiptPrintedState) -> TransactionCompletedState
+8. TransactionCompletedEvent (TransactionCompletedState) -> ReadyState
+9. ResetEvent (ReadyState) -> InsertedCardState (after a brief moment)
+
+Missing or ambiguous details:
+1. The requirement does not specify the behavior for an incorrect PIN entry, which could lead to additional states and transitions.
+2. The requirement does not specify the conditions for cash withdrawal, such as maximum amount per transaction, minimum balance, etc., which may require additional states and transitions.
+3. The requirement does not specify how the system handles multiple card insertions before a successful PIN entry, which could lead to additional states and transitions.
+4. The requirement does not specify how the system handles errors such as paper jams or system malfunctions, which would require additional states and transitions.
+
+Now return only the final PlantUML.

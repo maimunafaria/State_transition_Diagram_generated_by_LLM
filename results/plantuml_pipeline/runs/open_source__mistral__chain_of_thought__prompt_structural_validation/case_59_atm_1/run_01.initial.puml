@@ -1,0 +1,25 @@
+@startuml
+state Idle [*]
+state AmountSelection
+state PredefinedAmountSelection
+state CustomAmountInput
+state Cancellation
+state TransactionCompletion
+state CardReturn
+state ReceiptPrinting
+state Error
+
+AmountSelection -- UserInputAmountEvent > AmountSelection:UserInputAmountEvent
+PredefinedAmountSelection < PredefinedAmountSelectedEvent: PredefinedAmountSelectedEvent : PredefinedAmountSelection
+CustomAmountInput < CustomAmountInputEvent: CustomAmountInputEvent : CustomAmountInput
+Cancellation < CancelTransactionEvent: CancelTransactionEvent : Cancellation
+
+AmountSelection -- PredefinedAmountSelection:PredefinedAmountSelectedEvent
+AmountSelection -- CustomAmountInput:CustomAmountInputEvent
+AmountSelection -- Cancellation:CancelTransactionEvent
+
+TransactionCompletion -- SuccessfulTransactionEvent > CardReturn:SuccessfulTransactionEvent
+CardReturn -- ReceiptPrinting:SuccessfulTransactionEvent : ReceiptPrinting
+TransactionCompletion -- Error:ErrorEvent
+Error -- Idle:ErrorEvent
+@enduml

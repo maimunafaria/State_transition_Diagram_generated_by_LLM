@@ -1,0 +1,53 @@
+@startuml
+title UML State Machine Diagram
+
+[*] --> UnregisteredState
+
+state "UnregisteredState" as UnregisteredState
+UnregisteredState : entry / user is not logged in and has not registered yet
+
+state RegisteringState
+RegisteringState : entry / user is registering a new account
+RegisteringState : do / collect personal details
+RegisteringState : exit / [SuccessfulRegistrationEvent, InvalidRegistrationEvent]
+
+state LoginState
+LoginState : entry / user is logging into their existing account or starting fresh after failure
+LoginState : do / check credentials
+LoginState : exit / [ValidLocationEvent, InvalidLocationEvent]
+
+state "InvalidLocationState" as InvalidLocationState
+InvalidLocationState : entry / entered location is invalid
+InvalidLocationState : do / inform user of error
+InvalidLocationState : exit / back to LoginState
+
+state "ValidLocationState" as ValidLocationState
+ValidLocationState : entry / entered location is valid
+ValidLocationState : do / allow user to choose what weather information to check
+ValidLocationState : exit / WeatherSelectionEvent
+
+state WeatherSelectionState
+WeatherSelectionState : entry / user has chosen what weather information to check
+WeatherSelectionState : do / update and show the selected weather information to the user
+WeatherSelectionState : exit / AdditionalDetailsEvent, LogoutEvent
+
+state "AdditionalDetailsState" as AdditionalDetailsState
+AdditionalDetailsState : entry / user wants to view additional weather details
+AdditionalDetailsState : do / display additional weather details (alerts, a weekly analysis, a future prediction, or a graph)
+AdditionalDetailsState : exit / back to WeatherSelectionState
+
+state LoggedOutState
+LoggedOutState : entry / user logs out and ends the session
+LoggedOutState : do / logout process
+LoggedOutState : exit / [*]
+
+UnregisteredState --> RegisteringState
+RegisteringState --> LoginState
+LoginState --> InvalidLocationState
+InvalidLocationState --> LoginState
+LoginState --> ValidLocationState
+ValidLocationState --> WeatherSelectionState
+WeatherSelectionState --> AdditionalDetailsState
+AdditionalDetailsState --> WeatherSelectionState
+LoggedOutState --> [*]
+@enduml

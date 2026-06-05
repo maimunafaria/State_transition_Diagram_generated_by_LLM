@@ -1,0 +1,53 @@
+@startuml
+state Assigned {
+    [*] --> Assigned: Manager and staff assignment
+}
+
+state Approved {
+    Assigned -- Approved: Approval of campaign
+}
+
+state PreparingAdverts {
+    Approved -- PreparingAdverts: Preparation of adverts
+    PreparingAdverts -- ScheduledAdverts: Approval and scheduling of adverts
+}
+
+state ScheduledAdverts {
+    PreparingAdverts -- ScheduledAdverts: Start of adverts
+    ScheduledAdverts -- RunningAdverts: [unspecified trigger for campaign adjustment]
+}
+
+state RunningAdverts {
+    ScheduledAdverts -- RunningAdverts: Start of adverts
+    RunningAdverts -- AdjustingCampaign: Campaign is adjusted
+    RunningAdverts -- Completed: Finish of adverts
+}
+
+state AdjustingCampaign {
+    RunningAdverts -- AdjustingCampaign: [unspecified trigger for campaign adjustment]
+}
+
+state Completed {
+    RunningAdverts -- Completed: Finish of adverts
+    Completed -- PaymentPending: Amount paid is less than required
+}
+
+state PaymentPending {
+    Completed -- PaymentWaiting: Correct balance not yet settled
+    PaymentWaiting -- Paid: Correct balance settled
+}
+
+state PaymentWaiting {
+    Completed -- PaymentWaiting: Amount paid exceeds the required amount
+    PaymentWaiting -- Paid: Correct balance settled
+}
+
+state Paid {
+    PaymentPending -- Paid: Correct balance settled
+    Paid -- Archived: Full amount properly paid and release of staff and managers
+}
+
+state Archived {
+    Paid -- Archived: [unspecified trigger for archiving]
+}
+@enduml

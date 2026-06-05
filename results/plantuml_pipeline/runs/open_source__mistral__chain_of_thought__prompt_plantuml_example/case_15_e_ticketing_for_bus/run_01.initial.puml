@@ -1,0 +1,33 @@
+@startuml
+title ETicketingForBus State Machine
+
+[*] --> Unregistered
+
+Unregistered --> Registered : UserRegistration
+Registered --> LoggedIn : SuccessfulLogin
+
+state LoggedIn {
+    [*] --> TicketStatusCheck
+    TicketStatusCheck --> [*] : LogoutEvent
+
+    state BookingTicket {
+        [*] --> PaymentConfirmation
+        PaymentConfirmation --> [*] : LogoutEvent
+
+        state AccountManagement {
+            [*] --> [*] : LogoutEvent
+        }
+    }
+}
+
+LoggedIn --> Unregistered : InvalidUserRegistration
+LoggedIn --> Unregistered : FailedLogin
+
+state Registered {
+    [*] --> LoggedIn : ValidUserRegistration
+    InvalidUserRegistration : do / play message
+    FailedLogin : do / play message
+}
+
+LoggedOut --> [*] : LoginAttempt
+@enduml

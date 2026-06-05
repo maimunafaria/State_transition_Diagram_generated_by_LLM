@@ -1,0 +1,40 @@
+@startuml
+hide empty package
+
+package "E Ticketing For Bus" {
+  state UnregisteredUserState {
+    [*] -> RegisteringUserState: NewAccountCreationEvent
+  }
+
+  state RegisteringUserState {
+    RegisteringUserState --> RegisteredUserState: RegistrationValidationEvent
+  }
+
+  state RegisteredUserState {
+    RegisteredUserState -- LoggedOutState: LoginEvent
+    LoggedOutState -- * : LogoutEvent
+    LoggedInUserState [*]
+  }
+
+  state LoggedInUserState {
+    LoggedInUserState -- TicketStatusCheckState: TicketStatusCheckEvent
+    LoggedInUserState -- BookingTicketState: BookingTicketEvent
+  }
+
+  state BookingTicketState {
+    BookingTicketState -- PaymentConfirmationState: PaymentEvent
+  }
+
+  state PaymentConfirmationState {
+    PaymentConfirmationState -- ManagingAccountDetailsState: AccountManagementEvent
+  }
+
+  state ManagingAccountDetailsState {
+    ManagingAccountDetailsState -- LoggedOutState: AccountDeletionEvent or AccountEditingEvent
+  }
+
+  state LoggedOutState {
+    [*] --> UnregisteredUserState: NewAccountCreationEvent
+  }
+}
+@enduml

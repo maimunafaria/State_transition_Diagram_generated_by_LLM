@@ -1,0 +1,41 @@
+@startuml
+!define PURPLE #9C27B0
+!define GREEN #4CAF50
+!define RED #F44336
+
+state Idle {
+    [*] -> Idle: UserInitiatesTransaction
+}
+
+state AmountSelection {
+    Idle --> AmountSelection: UserInitiatesTransaction
+    AmountSelection -- PredefinedAmountSelection: SelectPredefinedAmount
+    AmountSelection -- CustomAmountInput: InputCustomAmount
+    AmountSelection -- Cancellation: CancelTransaction
+    PredefinedAmountSelection -- Error: insufficient balance|other errors
+    CustomAmountInput -- Error: insufficient balance|other errors
+}
+
+state PredefinedAmountSelection {
+    AmountSelection --> PredefinedAmountSelection: SelectPredefinedAmount
+}
+
+state CustomAmountInput {
+    AmountSelection --> CustomAmountInput: InputCustomAmount
+}
+
+state Cancellation {
+    AmountSelection --> Cancellation: CancelTransaction
+    Cancellation -- Idle: SystemAcknowledgesCancellation
+    Cancellation -- Error: insufficient balance|other errors
+}
+
+state TransactionCompletion {
+    Cancellation --> TransactionCompletion: SuccessfulTransactionCompletion
+}
+
+state Error {
+    AmountSelection --> Error: insufficient balance|other errors
+    Error -- Idle: ErrorResolution
+}
+@enduml

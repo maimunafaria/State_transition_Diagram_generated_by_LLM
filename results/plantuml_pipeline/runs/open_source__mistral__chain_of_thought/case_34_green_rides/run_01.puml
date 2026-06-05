@@ -1,0 +1,25 @@
+@startuml
+hide empty package
+
+package System {
+  State LoginState
+  State JourneyDetailsState
+  State ModeSelectionState
+  State DrivingState
+  State AccidentState
+  State NotificationState
+  State FeedbackState
+  State FoodSelectionState(optional)
+  State LogoutState
+
+  LoginState -up-> JourneyDetailsState: User login event & Destination selection event
+  JourneyDetailsState -->> ModeSelectionState: View journey details
+  ModeSelectionState -down-> DrivingState: Activation of driving mode event
+  ModeSelectionState -down FoodSelectionState(optional): Detection of hunger event (optional)
+  DrivingState -down AccidentState: Accident detection event
+  DrivingState -->> NotificationState: Accident or during driving
+  DrivingState -up-> JourneyDetailsState: Switch to non-driving mode
+  CompletionOfJourneyEvent -->> FeedbackState
+  anyState -->> LogoutState: Logout event
+}
+@enduml

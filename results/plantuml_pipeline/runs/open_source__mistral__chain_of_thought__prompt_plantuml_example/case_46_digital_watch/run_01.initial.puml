@@ -1,0 +1,59 @@
+@startuml
+title UML State Machine Diagram (Digital Watch)
+
+[*] --> TimeViewingState
+
+state TimeViewingState {
+    state HourAdjustment
+    state MinuteAdjustment
+    state AlarmHourAdjustment
+    state AlarmMinuteAdjustment
+
+    HourAdjustment --> TimeViewingState : TimeAdjustmentEvent
+    MinuteAdjustment --> TimeViewingState : TimeAdjustmentEvent
+    AlarmHourAdjustment --> TimeViewingState : TimeAdjustmentEvent
+    AlarmMinuteAdjustment --> TimeViewingState : TimeAdjustmentEvent
+}
+
+state SettingSwitchState {
+    state SwitchToAlarmSetting
+    state SwitchBackToTimeSetting
+
+    SwitchToAlarmSetting --> AlarmSettingState : SettingSwitchEvent
+    SwitchBackToTimeSetting --> TimeViewingState : SettingSwitchEvent
+}
+
+state AlarmSettingState {
+    state AlarmOn
+    state AlarmOff
+
+    AlarmOn --> AlarmOnState : AlarmToggleEvent
+    AlarmOff --> AlarmOffState : AlarmToggleEvent
+}
+
+state AlarmOnState {
+    state AlarmMatch
+    state AlarmNotMatch
+
+    AlarmMatch --> AlarmRingingState : AlarmMatchEvent
+    AlarmNotMatch --> AlarmOffState : any event other than AlarmMatchEvent or AlarmStopEvent
+}
+
+state AlarmOffState {
+    state AlarmOn : AlarmToggleEvent
+    state AlarmRingingState : AlarmStopEvent
+}
+
+state LightControl {
+    state LightOn
+    state LightOff
+
+    LightOn --> LightOnState : LightOnEvent
+    LightOff --> LightOffState : LightOffEvent
+}
+
+TimeViewingState : entry / Initial state upon power-up or button press
+AlarmSettingState : exit / Any event other than SettingSwitchEvent or AlarmToggleEvent
+AlarmOnState : exit / AlarmStopEvent or when the set alarm time no longer matches the current time
+LightControl : exit / LightOffEvent
+@enduml

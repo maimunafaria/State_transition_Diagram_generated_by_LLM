@@ -1,0 +1,30 @@
+@startuml
+state WaitingForSale {
+    [*] -> WaitingForSale: NewSaleEvent
+}
+
+state AddingItems {
+    WaitingForSale:ItemAddedEvent -> AddingItems
+    AddingItems: ItemAddedEvent -> AddingItems
+    AddingItems: (count(ItemAddedEvent) = total_items) -> Payment
+}
+
+state Payment {
+    AddingItems:PaymentMethodChosenEvent -> CardPayment | CheckPayment
+    state CashPayment {
+        Payment:CashPaidEvent -> FinishedPaymentEvent
+        FinishedPaymentEvent -> WaitingForSale:FinishedPaymentEvent
+    }
+    state CardPayment {
+        Payment:PaymentApprovedEvent -> FinishedPaymentEvent
+        FinishedPaymentEvent -> WaitingForSale:FinishedPaymentEvent
+    }
+    state CheckPayment {
+        // Add verification logic here
+        Payment:PaymentApprovedEvent -> FinishedPaymentEvent
+        FinishedPaymentEvent -> WaitingForSale:FinishedPaymentEvent
+    }
+}
+WaitingForSale:ItemAddedEvent -> AddingItems
+AddingItems: (count(ItemAddedEvent) = total_items) -> Payment
+@enduml

@@ -1,0 +1,50 @@
+@startuml
+
+state Login {
+    [*] -> Login: User login event
+}
+
+state DestinationSelection {
+    Login --> DestinationSelection: User selects destination
+}
+
+state JourneyDetailsDisplay {
+    DestinationSelection --> JourneyDetailsDisplay: Journey details view event
+}
+
+state DrivingModeActivation [or OtherOptions] {
+    JourneyDetailsDisplay --> [DrivingModeActivation or OtherOptions]: Driving mode activation event / Other options selection event
+}
+
+state HungerDetection {
+    [*] --> |dashed| HungerDetection: Hunger detection event
+    HungerDetection --> PlaceToEatSelection: User is hungry
+}
+
+state PlaceToEatSelection {
+    HungerDetection --> PlaceToEatSelection: Place to eat selection event
+}
+
+state MenuViewing {
+    PlaceToEatSelection --> MenuViewing: Menu viewing event
+}
+
+state OrderPlacement {
+    MenuViewing --> OrderPlacement: Order placement event
+}
+
+state AccidentDetection [or Final] {
+    [*] --> |dashed| AccidentDetection: Accident detection event
+    AccidentDetection --> NotificationSending: Notification sending event during driving
+    AccidentDetection --> Final: Accident during journey
+}
+
+state FeedbackProvision {
+    JourneyDetailsDisplay *-- FeedbackProvision: Journey completion event
+    OrderPlacement --> FeedbackProvision: User provides feedback
+}
+
+Final --> FeedbackProvision: User completes journey
+FeebackProvision --> Final: User submits feedback
+
+@enduml

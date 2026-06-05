@@ -1,0 +1,39 @@
+@startuml
+
+State TimeViewingState {
+    [*] -> TimeViewingState: Button press event
+    TimeViewingState --> AdjustHourState: Button press event for hour adjustment
+    TimeViewingState --> AdjustMinuteState: Button press event for minute adjustment
+    TimeViewingState --> AdjustAlarmHourState: Button press event for alarm hour adjustment
+    TimeViewingState --> AdjustAlarmMinuteState: Button press event for alarm minute adjustment
+    TimeViewingState --> AlarmOnState: Set alarm time and turn it on
+    TimeViewingState --> LightOnState: Light button press event
+    TimeViewingState --> TimeViewingState: Stop adjusting time settings
+    TimeViewingState --> TimeViewingState: Alarm ringing (requires clarification)
+    TimeViewingState --> AlarmOffState: Alarm stop event or specific time interval
+    TimeViewingState --> LightOffState: Light button release event
+    TimeViewingState --> TimeViewingState: Exit watch
+}
+
+State AlarmOnState {
+    TimeViewingState --> AlarmOnState: Set alarm time and turn it on
+    AlarmOnState --> AlarmOffState: Alarm stop event or specific time interval
+    AlarmOnState --> TimeViewingState: Set alarm time matches current time (requires clarification)
+}
+
+State AlarmOffState {
+    TimeViewingState --> AlarmOffState: Alarm off initially
+    AlarmOffState --> AlarmOnState: User turns on the alarm
+}
+
+State LightOnState {
+    TimeViewingState --> LightOnState: Light button press event
+    LightOnState --> LightOffState: Light button release event
+}
+
+State LightOffState {
+    TimeViewingState --> LightOffState: Light off initially
+    LightOffState --> LightOnState: User turns on the light
+}
+
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+title Weather Station System - State Transition Diagram
+
+state "Shut Down State" as ShutDownState
+state "Running State" as RunningState
+state "Configuration Mode" as ConfigurationMode
+state "Controlled Mode" as ControlledMode
+state "Activity State" as ActivityState
+
+[*] ShutDownState --> RunningState : Power On
+RunningState --> ShutDownState : Power Off /\nShutdown Command
+RunningState --> ConfigurationMode : Configuration Request
+ConfigurationMode --> RunningState : Configuration Completion
+RunningState --> ActivityState : Clock Trigger /\nData Collection, Summary Preparation, Status Checking
+ActivityState --> RunningState : Activity Completion
+RunningState --> ControlledMode : Remote Control Command
+ControlledMode --> RunningState : Unspecified Condition for Return to Running State
+RunningState --> ShutDownState : Unspecified Condition for Return to Shut Down State
+
+@enduml

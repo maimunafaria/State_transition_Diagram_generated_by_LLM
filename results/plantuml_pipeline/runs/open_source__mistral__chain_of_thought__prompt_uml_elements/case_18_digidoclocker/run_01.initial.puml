@@ -1,0 +1,61 @@
+@startuml
+hide empty description
+
+skinparam backgroundColor #f2f2f2
+skinparam fontName Arial
+skinparam fontSize 16
+
+title Digidoclocker State Transition Diagram
+
+state UnregisteredState {
+    [*] -> UnregisteredState: UserDetailsEnteredEvent
+}
+
+state RegisteringState {
+    UnregisteredState -> RegisteringState: RegistrationCompletedEvent
+}
+
+state RegisteredState {
+    LoggedOutState -> RegisteredState: LoginAttemptEvent
+    RegisteredState -> FinalState: SessionEndedEvent
+    RegisteredState -- LoginSuccessEvent: LoginSuccessEvent
+    RegisteredState -- DocumentUploadEvent: DocumentUploadEvent
+    RegisteredState -- ProfileViewEvent: ProfileViewEvent
+    RegisteredState -- CertificateApplicationEvent: CertificateApplicationEvent
+    RegisteredState -- RegistrarRequestEvent: RegistrarRequestEvent
+}
+
+state LoggedOutState {
+    RegisteredState -> LoggedOutState: LoginAttemptEvent
+}
+
+state LoggingInState {
+    LoggedOutState -> LoggingInState: LoginAttemptEvent
+    LoggingInState -- LoginSuccessEvent: LoginSuccessEvent
+}
+
+state UploadingDocumentsState {
+    RegisteredState -> UploadingDocumentsState: DocumentUploadEvent
+    UploadingDocumentsState -- DocumentUploadEvent: DocumentUploadEvent
+}
+
+state ProfileViewState {
+    RegisteredState -> ProfileViewState: ProfileViewEvent
+}
+
+state CertificateApplicationState {
+    RegisteredState -> CertificateApplicationState: CertificateApplicationEvent
+}
+
+state MultipleCertificateApplicationState {
+    CertificateApplicationState -- MultipleCertificateApplicationEvent: MultipleCertificateApplicationEvent
+}
+
+state RegistrarRequestState {
+    RegisteredState -> RegistrarRequestState: RegistrarRequestEvent
+}
+
+state FinalState {
+    [*] --> FinalState: SessionEndedEvent
+}
+@enduml

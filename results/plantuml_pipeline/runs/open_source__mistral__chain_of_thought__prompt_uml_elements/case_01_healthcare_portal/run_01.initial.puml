@@ -1,0 +1,58 @@
+@startuml
+state UnregisteredUserState {
+    [*] -> RegisteringUserState: NewUserRegistrationEvent
+}
+
+state RegisteringUserState {
+    RegisteredUserState: RegistrationSuccessEvent
+    RegisteredUserState: RegistrationFailureEvent
+    UnregisteredUserState: BackToUnregistered
+}
+
+state RegisteredUserState {
+    LoggedInUserState: UserSignInEvent
+}
+
+state LoggedInUserState {
+    HomeScreenState: SignInSuccessEvent
+    InsuranceProcessingState: InsuranceValidationEvent
+    FeedbackCollectionState: ServiceCompletionEvent
+    LoggedOutUserState: LogoutEvent [*]
+}
+
+state HomeScreenState {
+    HealthInformationState: HealthInformationRequestEvent
+    LoggedInUserState: BackToLoggedIn
+}
+
+state HealthInformationState {
+    ResultViewState: ResultViewEvent
+    HomeScreenState: BackToHomeScreen
+}
+
+state ResultViewState {
+    HomeScreenState: SessionContinuationEvent
+    LoggedInUserState: SessionEndEvent
+}
+
+state InsuranceProcessingState {
+    DoctorConsultationPaymentState: DoctorConsultationPaymentEvent
+}
+
+state DoctorConsultationPaymentState {
+    PaymentSelectionState: PaymentSelectionEvent
+}
+
+state PaymentSelectionState {
+    CashPaymentDetailsState: CashPaymentMethodSelectedEvent
+    InsuranceBasedPaymentState: InsuranceBasedPaymentMethodSelectedEvent
+}
+
+state CashPaymentDetailsState {}
+
+state InsuranceBasedPaymentState {}
+
+state FeedbackCollectionState {}
+
+state LoggedOutUserState {}
+@enduml

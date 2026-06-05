@@ -1,0 +1,47 @@
+@startuml
+state Arrival {
+    [*] --> Arrival: Card Inserted Event
+}
+
+state CardInserted {
+    Arrival --> CardInserted: Card Inserted Event
+    CardInserted -- PINEntered: PIN Entered Event
+}
+
+state PINEntered {
+    CardInserted -- PINEntered
+    PINEntered -- IncorrectPIN : Incorrect PIN Condition
+    PINEntered -- ValidPIN : Valid PIN Condition
+}
+
+state IncorrectPIN {
+    PINEntered --> IncorrectPIN: Incorrect PIN Condition
+    IncorrectPIN -- IncorrectPIN: Multiple incorrect PIN attempts or invalid card leads to Security Lock State
+}
+
+state ValidPIN {
+    PINEntered --> ValidPIN: Valid PIN Condition
+    ValidPIN -- MenuSelection : Menu Selection Event
+}
+
+state MenuSelection {
+    ValidPIN --> MenuSelection: Menu Selection Event
+    MenuSelection -- RequestProcessing : Request Processing Event
+}
+
+state RequestProcessing {
+    MenuSelection --> RequestProcessing: Request Processing Event
+    RequestProcessing -- Final : Successful processing of request
+}
+
+state CancelledOperation {
+    ValidPIN --> CancelledOperation: Cancelled Operation Event
+    CancelledOperation -- Final : User cancels operation
+}
+
+state SecurityLock {
+    IncorrectPIN --> SecurityLock
+    RequestProcessing --> Final
+    CancelledOperation --> Final
+    Final --> * : End of transaction or user leaves ATM
+@enduml
