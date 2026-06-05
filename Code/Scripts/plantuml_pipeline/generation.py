@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +12,7 @@ from .prompting import (
     build_chain_of_thought_generation_prompt,
     build_generation_prompt,
     build_repair_prompt,
+    select_fewshot_examples,
 )
 
 DEFAULT_REPAIR_ATTEMPTS = 3
@@ -77,10 +79,33 @@ def run_single_generation(
                 max_tokens=max_tokens,
                 timeout=timeout,
             )
+            example_requirement = ""
+            example_puml = ""
+            example_case_id = ""
+            if cot_prompt_structure == "plantuml_example":
+                selection_run_id = cfg.run_id.replace("__prompt_plantuml_example", "")
+                rng = random.Random(f"{few_shot_seed}:{selection_run_id}:{case.case_id}:{run_index}")
+                examples = select_fewshot_examples(
+                    all_cases,
+                    case.case_id,
+                    max_examples=1,
+                    rng=rng,
+                )
+                if examples:
+                    example = examples[0]
+                    example_case_id = example.case_id
+                    example_requirement = (
+                        example.structured_requirement.strip()
+                        or example.raw_requirement.strip()
+                    )
+                    example_puml = example.gold_puml.strip()
+
             generation_prompt = build_chain_of_thought_generation_prompt(
                 requirement,
                 analysis,
                 prompt_structure=cot_prompt_structure,
+                example_requirement=example_requirement,
+                example_puml=example_puml,
             )
             prompt_meta = {
                 "requirement_source": requirement_source,
@@ -100,6 +125,7 @@ def run_single_generation(
                     "stage": "chain_of_thought_analysis",
                     "analysis_chars": len(analysis),
                     "prompt_structure": cot_prompt_structure,
+                    "example_case_id": example_case_id,
                 }
             )
             prompt = (

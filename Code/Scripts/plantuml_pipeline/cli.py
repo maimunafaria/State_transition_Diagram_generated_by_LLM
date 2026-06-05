@@ -163,6 +163,7 @@ def build_parser() -> argparse.ArgumentParser:
             "structural_validation",
             "uml_elements",
             "uml_elements_structural_validation",
+            "plantuml_example",
         ],
         default="original",
         help=(

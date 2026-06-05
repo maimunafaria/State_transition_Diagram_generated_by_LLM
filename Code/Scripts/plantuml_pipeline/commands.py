@@ -117,11 +117,15 @@ def _apply_prompt_structure_tag(configs: list[Any], prompt_structure: str) -> No
 
     suffix = f"__prompt_{prompt_tag}"
     for cfg in configs:
-        if cfg.strategy in {
-            "few_shot",
-            "few_shot_validation_generator_critic_repair",
-            "chain_of_thought",
-        }:
+        if prompt_tag == "plantuml_example":
+            should_tag = cfg.strategy == "chain_of_thought"
+        else:
+            should_tag = cfg.strategy in {
+                "few_shot",
+                "few_shot_validation_generator_critic_repair",
+                "chain_of_thought",
+            }
+        if should_tag:
             cfg.run_id = f"{cfg.run_id}{suffix}"
 
 
@@ -513,15 +517,22 @@ def command_run(args: argparse.Namespace) -> int:
         wanted = set(args.only_run_id)
         prompt_tag = _normalize_prompt_structure_tag(args.few_shot_prompt_structure)
         if prompt_tag and prompt_tag != "original":
-            wanted |= {
-                f"{run_id}__prompt_{prompt_tag}"
-                for run_id in wanted
-                if "__few_shot" in run_id
-                or "__one_shot" in run_id
-                or "__few_shot_validation_generator_critic_repair" in run_id
-                or "__one_shot_validation_generator_critic_repair" in run_id
-                or "__chain_of_thought" in run_id
-            }
+            if prompt_tag == "plantuml_example":
+                wanted |= {
+                    f"{run_id}__prompt_{prompt_tag}"
+                    for run_id in wanted
+                    if "__chain_of_thought" in run_id
+                }
+            else:
+                wanted |= {
+                    f"{run_id}__prompt_{prompt_tag}"
+                    for run_id in wanted
+                    if "__few_shot" in run_id
+                    or "__one_shot" in run_id
+                    or "__few_shot_validation_generator_critic_repair" in run_id
+                    or "__one_shot_validation_generator_critic_repair" in run_id
+                    or "__chain_of_thought" in run_id
+                }
         if args.few_shot_count == 1:
             wanted |= {run_id.replace("__few_shot", "__one_shot") for run_id in wanted}
             wanted |= {

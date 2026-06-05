@@ -258,6 +258,11 @@ use the same run IDs with `--few-shot-prompt-structure uml_elements`. Outputs ar
 written with a `__prompt_uml_elements` suffix, for example
 `open_source__qwen25_7b_instruct__chain_of_thought__prompt_uml_elements`.
 
+To run the chain-of-thought variant where the second PlantUML-generation prompt
+includes one training example, use `--few-shot-prompt-structure plantuml_example`.
+Outputs are written with a `__prompt_plantuml_example` suffix, for example
+`open_source__qwen25_7b_instruct__chain_of_thought__prompt_plantuml_example`.
+
 Run only the RAG repair strategy:
 
 ```bash

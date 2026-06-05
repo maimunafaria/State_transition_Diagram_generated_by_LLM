@@ -515,6 +515,8 @@ def build_chain_of_thought_generation_prompt(
     requirement: str,
     analysis: str,
     prompt_structure: str = "original",
+    example_requirement: str = "",
+    example_puml: str = "",
 ) -> str:
     parts = [
         "You are a UML modeling expert.",
@@ -523,12 +525,29 @@ def build_chain_of_thought_generation_prompt(
         "diagram in PlantUML format.",
         "",
     ]
-    if prompt_structure.strip().lower() == "uml_elements":
+    prompt_structure = prompt_structure.strip().lower() or "original"
+    if prompt_structure == "uml_elements":
         parts.extend(
             [
                 "--- UML State Transition Diagram Elements ---",
                 *[f"- {element}" for element in _uml_elements_for_generation_prompt()],
                 "",
+            ]
+        )
+    if prompt_structure == "plantuml_example" and example_requirement.strip() and example_puml.strip():
+        parts.extend(
+            [
+                "--- Example PlantUML Structure ---",
+                "Use this training example only to understand PlantUML state diagram structure. "
+                "Do not copy its domain states or transitions into the target answer.",
+                "",
+                "Example requirement:",
+                example_requirement.strip(),
+                "",
+                "Example PlantUML:",
+                example_puml.strip(),
+                "",
+                "--- Target Task ---",
             ]
         )
     parts.extend(
