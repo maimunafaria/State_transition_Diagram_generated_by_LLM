@@ -1,0 +1,65 @@
+@startuml
+title Microwave Oven State Machine Diagram
+
+[*] --> WaitingForUserInput
+
+state WaitingForUserInput <<choice>>
+WaitingForUserInput --> ChoosePowerLevel : [Full power or half power]
+WaitingForUserInput --> SetCookingTime : [Enter cooking time]
+
+state "Choose Power Level" as ChoosePowerLevel {
+    [*] --> FullPower
+    [*] --> HalfPower
+
+    state "Display full power options" as FullPower
+    state "Display half power options" as HalfPower
+
+    FullPower --> SetCookingTime : [Full power selected]
+    HalfPower --> SetCookingTime : [Half power selected]
+
+}
+
+ChoosePowerLevel : entry / Choose power level
+ChoosePowerLevel : exit / Set cooking time
+
+state "Set Cooking Time" as SetCookingTime {
+    [*] --> EnterNumber
+
+    state "Enter number" as EnterNumber
+
+    EnterNumber --> Operating : [Valid number entered]
+    EnterNumber --> WaitingForUserInput : [Invalid number or cancel]
+
+}
+
+SetCookingTime : entry / Enter cooking time
+SetCookingTime : exit / Cooking process started
+
+state Operating {
+    [*] --> DoorOpenDuringOperation
+    [*] --> CancelRequest
+
+    state "Door open during operation" as DoorOpenDuringOperation
+    state "Cancel request" as CancelRequest
+
+    DoorOpenDuringOperation --> Inactive : [Door open]
+    CancelRequest --> StoppedOrCancelled : [Cancel]
+
+}
+
+Operating : entry / Cooking process started
+Operating : exit / Stop or cancel
+
+state "Inactive" as Inactive {
+    [*] --> WaitingForUserInput
+
+    Inactive --> WaitingForUserInput : [Return to idle state]
+}
+
+state "Stopped Or Cancelled" as StoppedOrCancelled {
+    [*] --> WaitingForUserInput
+
+    StoppedOrCancelled --> WaitingForUserInput : [Return to idle state]
+}
+
+@enduml

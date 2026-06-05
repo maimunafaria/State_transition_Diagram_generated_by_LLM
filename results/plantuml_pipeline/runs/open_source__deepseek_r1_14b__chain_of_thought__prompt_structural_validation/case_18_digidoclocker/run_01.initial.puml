@@ -1,0 +1,30 @@
+@startuml
+state Unregistered Citizen {
+  [*] --> Unregistered Citizen
+}
+state Registered Citizen
+state LoggedIn Citizen
+state LoggedIn Registrar
+state Certificate Request Completed
+state UnloggedIn
+
+Unregistered Citizen -> Registered Citizen : registration success
+Registered Citizen -> choice : login success
+choice.split
+  true : [citizen] --> LoggedIn Citizen
+  false : [registrar] --> LoggedIn Registrar
+end split
+
+LoggedIn Citizen:
+  LoggedIn Citizen --> UnloggedIn : end session
+  LoggedIn Citizen --> Certificate Request Completed : apply for certificate
+  LoggedIn Citizen --> self : continue actions
+
+LoggedIn Registrar:
+  LoggedIn Registrar --> UnloggedIn : end session
+  LoggedIn Registrar --> Certificate Request Completed : request certificate
+  LoggedIn Registrar --> self : continue requests
+
+Certificate Request Completed --> [*] : done
+UnloggedIn --> [*] : done
+@enduml

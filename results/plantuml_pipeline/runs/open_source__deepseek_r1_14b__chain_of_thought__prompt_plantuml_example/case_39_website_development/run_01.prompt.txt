@@ -1,0 +1,175 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Website Development — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to navigate from the homepage using a navigation bar.
+2. The system shall display information about projects when selected by the user.
+3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.
+4. The system shall display information about career opportunities when selected by the user.
+5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.
+6. The system shall check submitted job applications after they are submitted.
+
+=== Chain-of-thought analysis response ===
+### States:
+- Homepage
+- Projects Page
+- Project Details
+- Career Opportunities
+- Application Form
+- Job Application Check
+
+### Initial state:
+- Homepage
+
+### Final states:
+- Application Form (after submission)
+- Job Application Check (after checking)
+
+### Events or conditions:
+- Menu click (e.g., projectSelection, careerSelection)
+- User choice (viewPhotos, viewVideos, viewUpdates, openApplication)
+
+### Transitions:
+1. From Homepage to Projects Page: triggered by clicking on "Projects" in the navigation bar.
+2. From Projects Page to Project Details: triggered by selecting a specific project.
+3. From Project Details to Photos View or Videos View: triggered by user choice (viewPhotos or viewVideos).
+4. From Projects Page to Career Opportunities: triggered by clicking on "Career" in the navigation bar.
+5. From Career Opportunities to Application Form: triggered by selecting "Open Application Form."
+6. From Application Form to Job Application Check: triggered by submitting the application.
+
+### Missing or ambiguous details:
+- How users navigate back to previous states (e.g., from Project Details back to Projects Page).
+- Whether there are multiple projects or career opportunities and how they are managed.
+- The exact conditions for transitioning from Job Application Check to other states.
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Atm Many Scenarios Scenario 8 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall keep the card if it is invalid, expired, or the PIN was entered incorrectly too many times.
+2. The system shall return the card with a message if the user cancels the operation or the request is rejected.
+3. The system shall print a receipt and dispense cash if needed before returning the card to the user after a successful transaction.
+4. The system shall consider the session finished once the card is ejected.
+5. The system shall move into a short ending phase before resetting itself after completing the transaction or cancellation process.
+6. The system shall return to its normal waiting condition or shut down depending on the situation.
+
+Example PlantUML:
+@startuml
+title ATM Control - Terminating Transaction
+
+state "Closed Down" as ClosedDown
+ClosedDown : entry / Display System Down
+
+state Idle
+Idle : entry / Display Welcome
+
+state "Processing Customer Input" as ProcessingCustomerInput
+state "Processing Transaction" as ProcessingTransaction
+
+state "Terminating Transaction" as TerminatingTransaction {
+
+  state Terminating
+  state Confiscating
+  state Ejecting
+  state Printing
+  state Dispensing
+
+  Confiscating --> Terminating : Card Confiscated /\nDisplay Confiscated
+  Ejecting --> Terminating : Card Ejected /\nDisplay Ejected
+  Printing --> Ejecting : Receipt Printed /\nEject
+  Dispensing --> Printing : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+}
+
+ProcessingCustomerInput --> Confiscating : Stolen Card, Expired Card /\nConfiscate, Update Status
+ProcessingCustomerInput --> Confiscating : Third Invalid PIN /\nConfiscate
+ProcessingCustomerInput --> Ejecting : Cancel / Eject,\nDisplay Cancel
+
+ProcessingTransaction --> Ejecting : Rejected / Eject,\nDisplay Apology
+ProcessingTransaction --> Printing : Transfer Approved /\nPrint Receipt,\nUpdate Status
+ProcessingTransaction --> Printing : Query Approved /\nPrint Receipt,\nUpdate Status
+ProcessingTransaction --> Dispensing : Withdrawal Approved /\nDispense Cash,\nUpdate Status
+
+Dispensing --> ClosedDown : Insufficient Cash /\nEject,\nAbort Cash Dispensed
+
+Terminating --> Idle : After (Elapsed Time) [Closedown Not Requested]
+Terminating --> ClosedDown : After (Elapsed Time) [Closedown Was Requested]
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Website Development — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to navigate from the homepage using a navigation bar.
+2. The system shall display information about projects when selected by the user.
+3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.
+4. The system shall display information about career opportunities when selected by the user.
+5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.
+6. The system shall check submitted job applications after they are submitted.
+
+Structured analysis from step 1:
+### States:
+- Homepage
+- Projects Page
+- Project Details
+- Career Opportunities
+- Application Form
+- Job Application Check
+
+### Initial state:
+- Homepage
+
+### Final states:
+- Application Form (after submission)
+- Job Application Check (after checking)
+
+### Events or conditions:
+- Menu click (e.g., projectSelection, careerSelection)
+- User choice (viewPhotos, viewVideos, viewUpdates, openApplication)
+
+### Transitions:
+1. From Homepage to Projects Page: triggered by clicking on "Projects" in the navigation bar.
+2. From Projects Page to Project Details: triggered by selecting a specific project.
+3. From Project Details to Photos View or Videos View: triggered by user choice (viewPhotos or viewVideos).
+4. From Projects Page to Career Opportunities: triggered by clicking on "Career" in the navigation bar.
+5. From Career Opportunities to Application Form: triggered by selecting "Open Application Form."
+6. From Application Form to Job Application Check: triggered by submitting the application.
+
+### Missing or ambiguous details:
+- How users navigate back to previous states (e.g., from Project Details back to Projects Page).
+- Whether there are multiple projects or career opportunities and how they are managed.
+- The exact conditions for transitioning from Job Application Check to other states.
+
+Now return only the final PlantUML.

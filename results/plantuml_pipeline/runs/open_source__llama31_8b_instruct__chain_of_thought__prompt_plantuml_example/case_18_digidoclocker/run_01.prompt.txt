@@ -1,0 +1,181 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
+
+=== Chain-of-thought analysis response ===
+Here's the analysis of the requirement:
+
+**States:**
+
+* Unregistered (initial state)
+* Registered
+* Logged In
+* Done (final state)
+
+**Initial State:**
+Unregistered
+
+**Final States:**
+Done
+
+**Events or Conditions:**
+
+* User enters details to register
+* Login details are correct
+* User is done with their actions
+
+**Transitions:**
+
+1. Unregistered → Registered: User enters details to register
+2. Unregistered → Logged In: Login details are correct
+3. Registered → Logged In: User logs in
+4. Logged In → Done: User is done with their actions
+5. Logged In → Registered (optional): User continues uploading documents or applying for certificates
+
+**Missing or Ambiguous Details:**
+
+* How does the system determine if a user's login details are correct?
+* What triggers the transition from Logged In to Done? Is it an explicit action by the user, or is it timed-based?
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Coin Operated Pay Phone — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start when it is not in use.
+2. The system shall require inserting coins when the user picks up the receiver.
+3. The system shall allow dialing a number only after sufficient credit has been added.
+4. The system shall start the call when the dialed number is valid and the other party answers.
+5. The system shall continue the call as long as there is sufficient credit.
+6. The system shall end the call if the credit runs out during the call.
+7. The system shall allow adding more coins to continue the call.
+8. The system shall return any unused coins when the user hangs up.
+9. The system shall return to an unused state after a call ends.
+
+Example PlantUML:
+@startuml
+title Correct solution with history pseudostate
+
+state "Hung up" as HungUp
+[*] --> HungUp
+
+state "Picked up receiver" as PickedUp {
+
+    state H <<history>>
+
+    state "Waiting for coin" as WaitingCoin
+    state "Waiting for number" as WaitingNumber
+    state "Waiting for validity" as WaitingValidity
+    state "Waiting for callee to pick up receiver" as WaitingCallee
+    state Communication
+    state "End communication" as EndCommunication
+
+    HungUp --> WaitingCoin : pickUpReceiver / credit = 0
+
+
+    WaitingCoin --> WaitingNumber : [credit >= 20]
+    WaitingNumber --> WaitingValidity : dialNumber
+    WaitingValidity --> WaitingCallee : validNumber
+    WaitingCallee --> Communication : startComm / assess
+
+    Communication --> Communication : UT[sufficient credit] / assess
+    Communication --> EndCommunication : UT[insufficient credit] / assess
+}
+
+
+PickedUp --> H : insertCoin(c) / incrementCredit(c)
+PickedUp --> HungUp : replaceReceiver / returnUnusedCoins
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
+
+Structured analysis from step 1:
+Here's the analysis of the requirement:
+
+**States:**
+
+* Unregistered (initial state)
+* Registered
+* Logged In
+* Done (final state)
+
+**Initial State:**
+Unregistered
+
+**Final States:**
+Done
+
+**Events or Conditions:**
+
+* User enters details to register
+* Login details are correct
+* User is done with their actions
+
+**Transitions:**
+
+1. Unregistered → Registered: User enters details to register
+2. Unregistered → Logged In: Login details are correct
+3. Registered → Logged In: User logs in
+4. Logged In → Done: User is done with their actions
+5. Logged In → Registered (optional): User continues uploading documents or applying for certificates
+
+**Missing or Ambiguous Details:**
+
+* How does the system determine if a user's login details are correct?
+* What triggers the transition from Logged In to Done? Is it an explicit action by the user, or is it timed-based?
+
+Now return only the final PlantUML.

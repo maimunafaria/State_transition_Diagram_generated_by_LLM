@@ -1,0 +1,35 @@
+@startuml
+[*] --> Inserted : card inserted
+Inserted : entry / nil
+Inserted : do / prompt user to enter PIN / PIN_Entered
+
+PIN_Entered : entry / login
+PIN_Entered : do / verify PIN against stored information / PIN_Validated
+PIN_Validated : entry / login
+PIN_Validated : do / provide options to user / Options_Displayed
+Options_Displayed : entry / login
+Options_Displayed : do / process withdrawal request / Withdrawal_Processing
+Withdrawal_Processing : entry / login
+Withdrawal_Processing : do / dispense cash / Cash_Dispensed
+Cash_Dispensed : entry / login
+Cash_Dispensed : do / print receipt for transaction / Receipt_Printed
+Receipt_Printed : entry / login
+Receipt_Printed : do / return user's card / Card_Returned
+
+Card_Returned --> Reset : system reset and ready for next user
+Reset : entry / nil
+Reset : do / become ready for the next user / [*]
+
+PIN_Entered --> Error : invalid PIN (missing detail)
+Error : entry / login
+Error : do / handle error / Inserted
+
+state J1 <<choice>>
+Options_Displayed --> J1 : user selects option
+Withdrawal_Processing --> J1 : user approves withdrawal request
+J1 --> Cash_Dispensed
+Cash_Dispensed --> Receipt_Printed
+Receipt_Printed --> Card_Returned
+Card_Returned --> Reset
+Reset --> [*]
+@enduml

@@ -1,0 +1,38 @@
+@startuml
+title UML State Machine Diagram (Healthcare Portal)
+
+state "UnregisteredState" as US {
+    [*] --> RegistrationAttempt
+}
+
+state "RegistrationProcessingState" as RPS {
+    RPS : entry / Processing registration details
+    RPS : do / Validate user information
+    RPS : exit / After processing
+
+    RPS -->LoggedInState : [successful]
+    RPS --> [*] : [failed]
+}
+
+state "LoggedInState" as LGS {
+    LGS : entry / User successfully logged in
+    LGS : do / Provide access to services
+    LGS : exit / After logout action
+
+    LGS --> PaymentProcessingState : [access facilities/payment]
+    LGS --> FeedbackCollectionState : [provide feedback]
+    LGS --> [*] : [logout]
+}
+
+state "PaymentProcessingState" as PPS {
+    PPS : entry / Handling payment method selection
+    PPS : do / Process selected payment option
+    PPS : exit / After processing
+
+    PPS --> CashPaymentDetailsState : [cash chosen]
+    PPS --> InsuranceValidationState : [insurance chosen]
+}
+
+state "CashPaymentDetailsState" as CPDS {
+    CPDS : entry
+@enduml

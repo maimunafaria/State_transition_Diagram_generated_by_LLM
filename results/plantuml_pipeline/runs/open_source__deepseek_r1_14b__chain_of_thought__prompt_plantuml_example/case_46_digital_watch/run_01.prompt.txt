@@ -1,0 +1,245 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.
+
+=== Chain-of-thought analysis response ===
+### States:
+- **Main State**: The primary state where time can be viewed and adjusted.
+- **Alarm Off State**: The system is in this state when the alarm is turned off.
+- **Alarm On State**: The system triggers an alarm sound when it transitions to this state.
+- **Light On State**: The light feature is active, providing illumination.
+- **Light Off State**: The light feature is inactive.
+
+### Initial State:
+- **Main State**: The watch starts in the main state with the alarm off and light off.
+
+### Final States:
+- **Alarm Off State**
+- **Light Off State**
+
+### Events or Conditions:
+- **Mode Button Press**: Initiates a transition to different settings (hour, minute, alarm hour, alarm minute).
+- **Increment Button Press**: Increases the current value being adjusted.
+- **Alarm Stop Button Press**: Stops the alarm sound.
+- **Time Match**: When the current time matches the set alarm time.
+
+### Transitions:
+1. **Main State**:
+   - On **Mode Button Press**, cycle through settings (hour, minute, alarm hour, alarm minute).
+   - On **Increment Button Press**, increase the value in the current setting; wrap around when reaching maximum (e.g., 59 minutes to 00 minutes).
+
+2. **Alarm Off State**:
+   - Monitors time continuously.
+   - If **Time Match** occurs, transition to **Alarm On State**.
+
+3. **Alarm On State**:
+   - System rings alarm sound.
+   - On **Alarm Stop
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+E Med Medical Assistance Tool — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to fill in their personal medical history if it is missing, and then check and save the information.
+2. The system shall provide users with the ability to view their medical history, receive reminders for medication, receive reminders for medicine restocking, schedule appointments, use an emergency button, write and view medical notes.
+3. The system shall allow users to update their medical history if they choose to do so after viewing it.
+4. The system shall allow users to update their medical notes if they choose to do so after viewing them.
+5. The system shall call emergency contacts if they use the emergency button.
+
+Example PlantUML:
+@startuml
+title UML State Chart Diagram - Medical System
+
+[*] --> CheckHistory
+
+state CheckHistory <<choice>>
+CheckHistory --> FillHistory : [No]
+CheckHistory --> Hub : [Yes]
+
+state "Fill personal medical history" as FillHistory
+FillHistory : entry / start state
+FillHistory : do / fill details in personal medical history
+FillHistory : exit / verify medical history
+
+state "Validate and store" as ValidateStore
+ValidateStore : entry / verify medical history
+ValidateStore : do / validate and store
+ValidateStore : exit / medical history stored
+
+FillHistory --> ValidateStore
+ValidateStore --> Hub
+
+state Hub <<choice>>
+
+state "View Medical History" as ViewHistory
+ViewHistory : entry / entered the app
+ViewHistory : do / view medical history stored
+ViewHistory : exit / viewed medical history
+
+state "Reminder to have medicines on time" as ReminderTime
+ReminderTime : entry / entered the app
+ReminderTime : do / user is reminded to have medicines
+ReminderTime : exit / notification acknowledged
+
+state "Reminder to buy medicines when not in stock" as ReminderBuy
+ReminderBuy : entry / entered the app
+ReminderBuy : do / user is reminded to buy medicines
+ReminderBuy : exit / notification acknowledged
+
+state "Schedule Appointments Regularly" as Schedule
+Schedule : entry / entered the app
+Schedule : do / schedule the appointment regularly
+Schedule : exit / scheduled appointment
+
+state "Press Emergency Button" as Emergency
+Emergency : entry / entered the app
+Emergency : do / press emergency button
+Emergency : exit / pressed emergency button
+
+state "Write medical notes for reference" as WriteNotes
+WriteNotes : entry / entered the app
+WriteNotes : do / write medical notes
+WriteNotes : exit / store in database
+
+state "View medical notes" as ViewNotes
+ViewNotes : entry / entered the app
+ViewNotes : do / view medical notes stored
+ViewNotes : exit / viewed medical notes
+
+state "Send message to receptionist" as MessageReception
+MessageReception : entry / scheduled appointment
+MessageReception : do / send message to receptionist based on schedule
+MessageReception : exit / message sent
+
+state "Call Emergency Contacts" as CallEmergency
+CallEmergency : entry / pressed emergency button
+CallEmergency : do / call the emergency contacts
+CallEmergency : exit / called emergency contacts
+
+state "Update Medical History" as UpdateHistory
+UpdateHistory : entry / want to update medical history
+UpdateHistory : do / update medical history
+UpdateHistory : exit / updated details are stored in the database
+
+state "Update Medical Notes" as UpdateNotes
+UpdateNotes : entry / want to update medical notes
+UpdateNotes : do / update medical notes
+UpdateNotes : exit / updated details are stored in the database
+
+state UpdateChoice <<choice>>
+state UpdateChoice1 <<choice>>
+Hub --> ViewHistory
+Hub --> ReminderTime
+Hub --> ReminderBuy
+Hub --> Schedule
+Hub --> Emergency
+Hub --> WriteNotes
+Hub --> ViewNotes
+
+Schedule --> MessageReception
+Emergency --> CallEmergency
+
+ViewHistory --> UpdateChoice : [Update ?]
+ViewNotes --> UpdateChoice1 : [Update ?]
+
+UpdateChoice --> UpdateHistory : [Yes]
+UpdateChoice1 --> UpdateNotes : [Yes]
+UpdateChoice --> [*] : [No]
+UpdateChoice1 --> [*] : [No]
+ReminderTime --> [*]
+ReminderBuy --> [*]
+WriteNotes --> [*]
+MessageReception --> [*]
+CallEmergency --> [*]
+UpdateHistory --> [*]
+UpdateNotes --> [*]
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.
+
+Structured analysis from step 1:
+### States:
+- **Main State**: The primary state where time can be viewed and adjusted.
+- **Alarm Off State**: The system is in this state when the alarm is turned off.
+- **Alarm On State**: The system triggers an alarm sound when it transitions to this state.
+- **Light On State**: The light feature is active, providing illumination.
+- **Light Off State**: The light feature is inactive.
+
+### Initial State:
+- **Main State**: The watch starts in the main state with the alarm off and light off.
+
+### Final States:
+- **Alarm Off State**
+- **Light Off State**
+
+### Events or Conditions:
+- **Mode Button Press**: Initiates a transition to different settings (hour, minute, alarm hour, alarm minute).
+- **Increment Button Press**: Increases the current value being adjusted.
+- **Alarm Stop Button Press**: Stops the alarm sound.
+- **Time Match**: When the current time matches the set alarm time.
+
+### Transitions:
+1. **Main State**:
+   - On **Mode Button Press**, cycle through settings (hour, minute, alarm hour, alarm minute).
+   - On **Increment Button Press**, increase the value in the current setting; wrap around when reaching maximum (e.g., 59 minutes to 00 minutes).
+
+2. **Alarm Off State**:
+   - Monitors time continuously.
+   - If **Time Match** occurs, transition to **Alarm On State**.
+
+3. **Alarm On State**:
+   - System rings alarm sound.
+   - On **Alarm Stop
+
+Now return only the final PlantUML.

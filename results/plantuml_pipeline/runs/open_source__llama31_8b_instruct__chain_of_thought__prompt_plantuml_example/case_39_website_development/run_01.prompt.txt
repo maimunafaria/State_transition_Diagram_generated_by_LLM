@@ -1,0 +1,307 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Website Development — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to navigate from the homepage using a navigation bar.
+2. The system shall display information about projects when selected by the user.
+3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.
+4. The system shall display information about career opportunities when selected by the user.
+5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.
+6. The system shall check submitted job applications after they are submitted.
+
+=== Chain-of-thought analysis response ===
+Here is the analysis of the requirement:
+
+**States:**
+
+* Homepage
+* Projects view (with photos and videos)
+* Career Opportunities view (with updates and application form)
+
+**Initial state:**
+
+* Homepage (assuming this is where the user starts when interacting with the system)
+
+**Final states:**
+
+* None explicitly mentioned, but it can be inferred that the system will remain in one of the above states until the user navigates away or performs another action.
+
+**Events or conditions:**
+
+* User selects a project from the navigation bar
+* User chooses to view photos or videos when viewing projects
+* User selects career opportunities from the navigation bar
+* User chooses to view updates or open an application form for employment or internship when viewing career opportunities
+* Job application is submitted
+
+**Transitions:**
+
+* From Homepage to Projects view (on project selection)
+* From Projects view to Career Opportunities view (on user choice)
+* From Career Opportunities view to Updates view (on user choice)
+* From Career Opportunities view to Application Form view (on user choice)
+* From any state back to Homepage (on user navigation)
+
+**Missing or ambiguous details:**
+
+* What happens when a job application is submitted? Is there a specific state for checking submitted applications?
+* Are there any other states or transitions not mentioned in the requirement?
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Advocate Diary — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to explore blogs and news updates.
+2. The system shall permit users to leave at any time after viewing blogs and news updates.
+3. The system shall enable users to create an account by providing their details.
+4. The system shall check the provided details during account creation.
+5. The system shall prevent users from proceeding if the provided details are incorrect during account creation.
+6. The system shall allow users to sign in using a password after creating an account.
+7. The system shall check the entered password during sign-in.
+8. The system shall allow users to add a new case after signing in.
+9. The system shall require users to select a category ( civil or criminal ) when adding a new case.
+10. The system shall allow users to enter details for the selected category when adding a new case.
+11. The system shall enable users to set reminders after entering case details.
+12. The system shall allow users to upload related documents for their cases.
+13. The system shall enable users to file something online after signing in.
+14. The system shall allow users to download model forms after signing in.
+15. The system shall enable users to view references ( quick or book )after signing in.
+16. The system shall allow users to provide feedback after signing in.
+17. The system shall permit users to leave the system after completing their tasks.
+
+Example PlantUML:
+@startuml
+title UML state machine diagram
+
+state "View blogs as news updates" as ViewBlogs
+ViewBlogs : entry/Visit page
+ViewBlogs : do/Shows blogs and news updates
+ViewBlogs : exit/Leave the page
+
+state "Register" as Register
+Register : entry/New user
+Register : do/Verify details
+Register : exit/Verified details
+
+state "Login" as Login
+Login : entry/Registered
+Login : do/Verify password
+Login : exit/View details
+
+state "View details and logs" as ViewDetails
+ViewDetails : entry/Login
+ViewDetails : do/Show details of case and logs
+ViewDetails : exit/Do required function
+
+state "Add case" as AddCase
+AddCase : entry/Wants to add case
+AddCase : do/Show Category
+AddCase : exit/Selects a category
+
+state "Civil" as Civil
+Civil : entry/Selects this category
+Civil : do/update view table
+Civil : exit/Allows to add details
+
+state "Criminal" as Criminal
+Criminal : entry/Selects this category
+Criminal : do/Update the view table
+Criminal : exit/Allows to add details
+
+state "Add details" as AddDetails
+AddDetails : entry/Selects category
+AddDetails : do/Add details about case
+AddDetails : exit/Update view table
+
+state "Add remainder" as AddReminder
+AddReminder : entry/Adds details
+AddReminder : do/Add remainder
+AddReminder : exit/Update calender
+
+state "Upload document" as UploadDocument
+UploadDocument : entry/Add details
+UploadDocument : do/Upload documents
+UploadDocument : exit/leave page
+
+state "File online" as FileOnline
+FileOnline : entry/Prefers online filing
+FileOnline : do/Select category
+FileOnline : exit/Click a link
+
+state "Redirect to page" as RedirectPage
+RedirectPage : entry/Click a link
+RedirectPage : do/Redirects to page
+RedirectPage : exit/Returns to page
+
+state "Download model forms" as DownloadForms
+DownloadForms : entry/wants to download forms
+DownloadForms : do/Select a form
+DownloadForms : exit/Downloads form
+
+state "Reference" as Reference
+Reference : entry/Pefers to refer
+Reference : do/Select a category
+Reference : exit/prefered categoried is showed
+
+state "Quick References" as QuickReferences
+QuickReferences : entry/Selects quick references
+QuickReferences : do/Shows some Quick references
+QuickReferences : exit/Leave the page
+
+state "Books" as Books
+Books : entry/Selects books
+Books : do/Shows books
+Books : exit/Leave page
+
+state "Feedback" as Feedback
+Feedback : entry/Wants to give feedback
+Feedback : do/Add feedback
+Feedback : exit/Exit page
+
+state "Logout" as Logout
+Logout : entry/Wants to leave the site
+Logout : do/The session of logged in user ended
+Logout : exit/Leave the site
+
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+
+state J10 <<choice>>
+
+[*] --> J1
+
+J1 --> ViewBlogs
+J1 --> Register
+
+ViewBlogs --> [*]
+
+Register --> J2
+J2 --> [*] : [Invalid Credentials]
+J2 --> Login : [Valid]
+
+Login --> [*] : [Improper]
+Login --> ViewDetails : [Proper]
+
+ViewDetails --> J3
+
+J3 --> AddCase
+J3 --> FileOnline
+J3 --> DownloadForms
+J3 --> Reference
+J3 --> Feedback
+
+AddCase --> J4
+J4 --> Civil
+J4 --> Criminal
+
+Civil --> J5
+Criminal --> J5
+J5 --> AddDetails
+AddDetails --> AddReminder
+AddReminder --> UploadDocument
+UploadDocument --> J10
+
+FileOnline --> RedirectPage
+RedirectPage --> J10
+
+DownloadForms --> J10
+
+Reference --> J6
+J6 --> QuickReferences
+J6 --> Books
+QuickReferences --> J10
+Books --> J10
+
+Feedback --> J10
+
+J10 --> Logout
+Logout --> [*]
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Website Development — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to navigate from the homepage using a navigation bar.
+2. The system shall display information about projects when selected by the user.
+3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.
+4. The system shall display information about career opportunities when selected by the user.
+5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.
+6. The system shall check submitted job applications after they are submitted.
+
+Structured analysis from step 1:
+Here is the analysis of the requirement:
+
+**States:**
+
+* Homepage
+* Projects view (with photos and videos)
+* Career Opportunities view (with updates and application form)
+
+**Initial state:**
+
+* Homepage (assuming this is where the user starts when interacting with the system)
+
+**Final states:**
+
+* None explicitly mentioned, but it can be inferred that the system will remain in one of the above states until the user navigates away or performs another action.
+
+**Events or conditions:**
+
+* User selects a project from the navigation bar
+* User chooses to view photos or videos when viewing projects
+* User selects career opportunities from the navigation bar
+* User chooses to view updates or open an application form for employment or internship when viewing career opportunities
+* Job application is submitted
+
+**Transitions:**
+
+* From Homepage to Projects view (on project selection)
+* From Projects view to Career Opportunities view (on user choice)
+* From Career Opportunities view to Updates view (on user choice)
+* From Career Opportunities view to Application Form view (on user choice)
+* From any state back to Homepage (on user navigation)
+
+**Missing or ambiguous details:**
+
+* What happens when a job application is submitted? Is there a specific state for checking submitted applications?
+* Are there any other states or transitions not mentioned in the requirement?
+
+Now return only the final PlantUML.

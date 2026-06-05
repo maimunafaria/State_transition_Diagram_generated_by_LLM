@@ -1,0 +1,259 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.
+
+=== Chain-of-thought analysis response ===
+States:
+- Shut Down
+- Running
+- Configuration Mode
+- Controlled Mode
+
+Initial state:
+Shut Down
+
+Final states:
+Running, Configuration Mode, Controlled Mode (not strictly final but can be considered as end states)
+
+Events or conditions:
+- Restart Command
+- Changes or Power-Saving Settings Required
+- Clock Trigger
+- Request for Weather Summary
+- Request for Status Check
+- Activity Completion (Data Collection, Summary Preparation, Status Checking)
+- Remote Control Command
+- Shutdown Command
+
+Transitions:
+1. Shut Down -> Running: Restart Command
+2. Running -> Configuration Mode: Changes or Power-Saving Settings Required
+3. Configuration Mode -> Running: Configuration Completed
+4. Running -> Running: Clock Trigger (Data Collection)
+5. Running -> Running: Request for Weather Summary (Prepare and Send Out Summary)
+6. Running -> Running: Request for Status Check (Transmit Result)
+7. Running, Configuration Mode, Controlled Mode -> Running: Activity Completion
+8. Running -> Shut Down: Shutdown Command
+9. Running -> Controlled Mode: Remote Control Command
+
+Missing or ambiguous details:
+- The exact sequence of events leading to the initial state from a powered-off condition is not specified.
+- It's unclear if there are any transitions between Configuration Mode and other states besides returning to Running after configuration completion.
+- There is no explicit mention of how the system enters Controlled Mode, only that it can be entered through remote control.
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Equihealth — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to create an account.
+2. The system shall check if a user's registration is completed before allowing them to sign in.
+3. The system shall display different dashboards based on the user type after they sign in (patient, health worker, or government official).
+4. The system shall show a patient dashboard to users who enter as patients, allowing them to provide medical information.
+5. The system shall allow health workers to check and use the medical information provided by patients for further analysis.
+6. The system shall prepare alerts based on the analyzed information, which may be sent to either the patient or the health worker.
+7. The system shall show planned activities (from the analysis) to health workers.
+8. The system shall display health planning results (from the analysis) to government officials.
+9. The system shall allow users to log out after they complete their tasks.
+
+Example PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [check user]
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state "Register" as Register
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/ successful registration
+Register : exit/ invalid registration
+
+state "Login" as Login {
+
+  state "Patient dashboard" as PatientDashboard
+  PatientDashboard : entry/if the user is logged in as patient
+  PatientDashboard : do/dashboard is displayed
+  PatientDashboard : exit/when user logout
+
+  state "Health worker Dashboard" as HealthWorkerDashboard
+  HealthWorkerDashboard : entry/if the user is logged in as health worker
+  HealthWorkerDashboard : do/display the health worker dashboard
+  HealthWorkerDashboard : exit/if health worker logout
+
+  state "Government dashboard" as GovernmentDashboard
+  GovernmentDashboard : entry/if the user is government official
+  GovernmentDashboard : do/display government dashboard
+  GovernmentDashboard : exit/after his activity is finished
+
+  state "Data Entry" as DataEntry
+  DataEntry : entry/if the data entry is logged in as patient
+  DataEntry : do/data entry is processed
+  DataEntry : exit/after data entry is completed
+  DataEntry : exit/send the data for validation
+
+  state "Validation of medical data" as ValidationMedicalData
+  ValidationMedicalData : entry/if the data entry by the patient is completed
+  ValidationMedicalData : do/validate the data by healthworker
+  ValidationMedicalData : exit/after validation of medical data is completed
+
+  state "Health Financing" as HealthPlanning
+  HealthPlanning : entry/analysis of data should be done
+  HealthPlanning : do/the basis of analysed data the best health schemes are drafted
+  HealthPlanning : exit/ the health schemes are sent to the government dashboard
+
+  state "Analysis" as Analysis
+  Analysis : entry/if the data entered is validated
+  Analysis : do/analysis of data
+  Analysis : exit/after analysis of data
+  Analysis : exit/send data to health monitoring
+  Analysis : exit/send data to activity scheduling module
+
+  state "Activity Scheduling" as ActivityScheduling
+  ActivityScheduling : entry/analysis of data should be done
+  ActivityScheduling : do/activity is scheduled for the healthworkers
+  ActivityScheduling : exit/the activity scheduling is complete
+  ActivityScheduling : exit/send data to alert module
+  ActivityScheduling : exit/send the schedule to health worker dashboard
+
+  state "Alerts" as Alerts
+  Alerts : entry/when data from analysis is received
+  Alerts : do/prepare alerts
+  Alerts : exit/after sending alerts patient dashboard and health worker dashboard
+
+  [*] --> LJ
+  state LJ <<choice>>
+
+  LJ --> PatientDashboard
+  LJ --> HealthWorkerDashboard
+  LJ --> GovernmentDashboard
+
+  PatientDashboard --> DataEntry
+  DataEntry --> ValidationMedicalData
+  DataEntry --> Analysis
+
+  Analysis --> ActivityScheduling
+  Analysis --> Alerts
+  Analysis --> HealthPlanning
+  Alerts --> PatientDashboard
+  Alerts --> HealthWorkerDashboard
+  ActivityScheduling --> HealthWorkerDashboard
+  HealthWorkerDashboard --> ValidationMedicalData
+  HealthPlanning --> GovernmentDashboard
+}
+
+state "Logout" as Logout
+Logout : entry/when the user completes his process
+Logout : do/logout user
+Logout : exit/successfully logged out
+
+J1 --> Register : [ new user ]
+Register --> J2
+J1 --> J2
+J2 --> J3
+J3 --> Login
+J3 --> J4
+Login --> J4
+J4 --> Logout
+J2 --> [*]
+Logout --> [*]
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.
+
+Structured analysis from step 1:
+States:
+- Shut Down
+- Running
+- Configuration Mode
+- Controlled Mode
+
+Initial state:
+Shut Down
+
+Final states:
+Running, Configuration Mode, Controlled Mode (not strictly final but can be considered as end states)
+
+Events or conditions:
+- Restart Command
+- Changes or Power-Saving Settings Required
+- Clock Trigger
+- Request for Weather Summary
+- Request for Status Check
+- Activity Completion (Data Collection, Summary Preparation, Status Checking)
+- Remote Control Command
+- Shutdown Command
+
+Transitions:
+1. Shut Down -> Running: Restart Command
+2. Running -> Configuration Mode: Changes or Power-Saving Settings Required
+3. Configuration Mode -> Running: Configuration Completed
+4. Running -> Running: Clock Trigger (Data Collection)
+5. Running -> Running: Request for Weather Summary (Prepare and Send Out Summary)
+6. Running -> Running: Request for Status Check (Transmit Result)
+7. Running, Configuration Mode, Controlled Mode -> Running: Activity Completion
+8. Running -> Shut Down: Shutdown Command
+9. Running -> Controlled Mode: Remote Control Command
+
+Missing or ambiguous details:
+- The exact sequence of events leading to the initial state from a powered-off condition is not specified.
+- It's unclear if there are any transitions between Configuration Mode and other states besides returning to Running after configuration completion.
+- There is no explicit mention of how the system enters Controlled Mode, only that it can be entered through remote control.
+
+Now return only the final PlantUML.

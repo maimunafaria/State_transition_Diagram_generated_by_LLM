@@ -1,0 +1,39 @@
+@startuml
+title E-Ticketing System State Machine
+
+[*] --> CreateAccount
+
+state "CreateAccount <<final>>" as CreateAccount
+
+state ValidateRegistration {
+  [*] --> RegisterUser
+  state RegisterUser
+  RegisterUser --> [*] : registrationSuccess / failed
+}
+
+state Login {
+  state "Login <<final>>" as Login
+  Login --> [*] : loginSuccess / failed
+}
+
+state BookTicket {
+  state "BookTicket <<final>>" as BookTicket
+  BookTicket --> [*] : bookingConfirmation
+}
+
+state ManageAccount {
+  state "ManageAccount <<final>>" as ManageAccount
+  ManageAccount --> [*] : accountEditing / deletion
+}
+
+state Logout
+
+CreateAccount --> ValidateRegistration : createAccount
+ValidateRegistration --> Login : registrationSuccess
+Login --> BookTicket : loginSuccess
+BookTicket --> Pay : bookingConfirmation
+Pay --> Logout : paymentCompletion
+Login --> Logout : logoutAction
+ManageAccount --> Logout : accountEditing / deletion
+
+@enduml

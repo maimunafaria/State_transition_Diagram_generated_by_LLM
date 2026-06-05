@@ -1,0 +1,215 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Process Sale — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a new sale.
+2. The system shall enter items one by one as they are selected by the customer.
+3. The system shall move to payment after all items have been added.
+4. The system shall complete the sale immediately if the customer pays with cash.
+5. The system shall verify the payment if the customer chooses to pay by card or check.
+6. The system shall complete the sale once the payment is approved.
+7. The system shall return to waiting for the next customer after the payment has been finished.
+
+=== Chain-of-thought analysis response ===
+### States:
+- Waiting
+- Entering Items
+- Payment
+- Verifying Payment
+- Sale Completed
+
+### Initial state:
+- **Waiting**
+
+### Final states:
+- **Sale Completed**
+
+### Events or conditions:
+1. Item selection completed (all items added)
+2. Cash payment made
+3. Card payment chosen
+4. Check payment chosen
+5. Payment approved
+
+### Transitions:
+1. From **Waiting** to **Entering Items**: When a new sale starts and the customer begins selecting items.
+2. From **Entering Items** to **Payment**: After all items have been added by the customer.
+3. From **Payment** to **Sale Completed**: If the customer pays with cash.
+4. From **Payment** to **Verifying Payment**: If the customer chooses to pay by card or check.
+5. From **Verifying Payment** to **Sale Completed**: Once payment verification is successful.
+6. From **Sale Completed** to **Waiting**: After the sale is finished, returning to wait for the next customer.
+
+### Missing or ambiguous details:
+- The system's behavior if a customer decides to modify their order after items have been entered.
+- Handling of failed payments (e.g., declined card payments).
+- What happens if no payment method is selected after entering items.
+- Whether there is an option to cancel a sale before completing it.
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+E Ration Shop — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to raise a complaint directly.
+2. The system shall end the process after a user raises a complaint.
+3. The system shall allow users to authenticate their identity using an OTP.
+4. The system shall allow multiple attempts for OTP authentication if the initial attempt fails.
+5. The system shall enable users to view items based on different categories once they are successfully authenticated.
+6. The system shall allow users to select items for purchase after viewing them.
+7. The system shall provide users with the option to pay either through an online method or by cash on delivery.
+8. The system shall deliver the product after the payment is completed.
+
+Example PlantUML:
+@startuml
+title UML State Machine Diagram
+
+
+[*] --> C1
+
+state C1 <<choice>>
+C1 --> Auth : [possibilities to start]
+C1 --> Complaints
+
+
+state "Authentication of aadhar card by OTP" as Auth
+Auth : entry / card holder
+Auth : do / Generates OTP
+Auth : do / OTP should match
+Auth : exit / authentication completed
+
+state Complaints
+Complaints : entry / fill
+Complaints : do / raise a complaint
+Complaints : exit / complaint send
+
+Complaints --> [*]
+
+Auth --> Auth
+Auth --> ViewItems
+
+state "View items" as ViewItems
+ViewItems : entry / from Authentication
+ViewItems : do / items shown based on category
+ViewItems : do / select items required
+ViewItems : exit / after selecting
+
+ViewItems --> Purchase
+
+state "make purchase" as Purchase
+Purchase : entry / from view items
+Purchase : do / payment
+Purchase : exit / chose the mode of payment
+
+
+state C2 <<choice>>
+Purchase --> C2 : [possibilities for payment]
+
+state PAYTM
+PAYTM : entry / make purchase
+PAYTM : do / making payment
+PAYTM : exit / payment done
+
+state COD
+COD : entry / make purchase
+COD : do / making payment
+COD : exit / payment done
+
+C2 --> PAYTM
+C2 --> COD
+
+
+state C3 <<choice>>
+PAYTM --> C3
+COD --> C3
+
+C3 --> Delivery : [payment completed]
+
+
+state Delivery
+Delivery : entry / COD
+Delivery : entry / PAYTM
+Delivery : do / product delivered
+
+Delivery --> [*]
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Process Sale — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a new sale.
+2. The system shall enter items one by one as they are selected by the customer.
+3. The system shall move to payment after all items have been added.
+4. The system shall complete the sale immediately if the customer pays with cash.
+5. The system shall verify the payment if the customer chooses to pay by card or check.
+6. The system shall complete the sale once the payment is approved.
+7. The system shall return to waiting for the next customer after the payment has been finished.
+
+Structured analysis from step 1:
+### States:
+- Waiting
+- Entering Items
+- Payment
+- Verifying Payment
+- Sale Completed
+
+### Initial state:
+- **Waiting**
+
+### Final states:
+- **Sale Completed**
+
+### Events or conditions:
+1. Item selection completed (all items added)
+2. Cash payment made
+3. Card payment chosen
+4. Check payment chosen
+5. Payment approved
+
+### Transitions:
+1. From **Waiting** to **Entering Items**: When a new sale starts and the customer begins selecting items.
+2. From **Entering Items** to **Payment**: After all items have been added by the customer.
+3. From **Payment** to **Sale Completed**: If the customer pays with cash.
+4. From **Payment** to **Verifying Payment**: If the customer chooses to pay by card or check.
+5. From **Verifying Payment** to **Sale Completed**: Once payment verification is successful.
+6. From **Sale Completed** to **Waiting**: After the sale is finished, returning to wait for the next customer.
+
+### Missing or ambiguous details:
+- The system's behavior if a customer decides to modify their order after items have been entered.
+- Handling of failed payments (e.g., declined card payments).
+- What happens if no payment method is selected after entering items.
+- Whether there is an option to cancel a sale before completing it.
+
+Now return only the final PlantUML.

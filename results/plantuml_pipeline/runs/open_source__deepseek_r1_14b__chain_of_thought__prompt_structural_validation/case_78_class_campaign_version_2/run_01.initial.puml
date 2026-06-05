@@ -1,0 +1,49 @@
+@startuml
+state InitialSetup {
+  [*] --> InitialSetup
+}
+
+state CampaignActive {
+  on ApprovalGranted + ContractSigned --> AdvertPreparation
+}
+
+state AdvertPreparation {
+  on advertsApproved --> AdvertApproved
+}
+
+state AdvertApproved {
+  on advertScheduled --> AdvertRunning
+}
+
+state AdvertRunning {
+  on advertsFinished --> CampaignCompletion
+  on ExtensionRequested or AdjustmentRequested --> CampaignActive
+}
+
+state CampaignCompletion {
+  on paymentProcessed --> PaymentHandling
+}
+
+state PaymentHandling {
+  on fullPaymentMade --> FullPayment
+  on overpaymentMade --> OverpaymentWait
+  on underpaymentMade --> UnderpaymentRefund
+}
+
+state OverpaymentWait {
+  on balanceSettled --> FullPayment
+}
+
+state UnderpaymentRefund {
+  on correctBalanceSettled --> FullPayment
+}
+
+state FullPayment {
+  --> Archive
+}
+
+state Archive {
+  [*] <--+
+}
+
+@enduml

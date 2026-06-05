@@ -1,0 +1,217 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+=== Chain-of-thought analysis response ===
+Here's the analysis of the requirement for a state transition diagram:
+
+**States:**
+
+* Created (user has created an account)
+* Logged In (user is logged in)
+* Applied For Visa (user has applied for a visa)
+* Viewed Status (user has viewed the status of their application)
+* Cancelled Application (application has been cancelled by user)
+* Modified Details (user has modified their details)
+* Viewed Details (user has viewed their details)
+* Approved/Rejected (visa is either approved or rejected)
+
+**Initial state:**
+
+* Created
+
+**Final states:**
+
+* None explicitly mentioned, but the system can be considered complete when the user logs out after completing a status update.
+
+**Events or conditions:**
+
+* User creates an account
+* User logs in
+* User applies for a visa (after logging in and making payment)
+* Application is accepted
+* User views the status of their application
+* User checks the status
+* User cancels an application
+* User modifies their details
+* User views their details
+* Document check result: approved or rejected
+
+**Transitions:**
+
+* Created → Logged In (user logs in after creating account)
+* Logged In → Applied For Visa (user applies for visa after logging in and making payment)
+* Applied For Visa → Viewed Status (application is accepted, user views status)
+* Viewed Status → Checked Status (user checks the status)
+* Applied For Visa → Cancelled Application (user cancels application)
+* Logged In → Modified Details (user modifies details)
+* Modified Details → Viewed Details (user views modified details)
+* Approved/Rejected → Completed Status Update (document check result is approved or rejected, user completes status update)
+
+**Missing or ambiguous details:**
+
+* The requirement does not specify what happens when the document check result is approved or rejected.
+* It's unclear how the system handles multiple applications by a single user.
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Coin Operated Pay Phone — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start when it is not in use.
+2. The system shall require inserting coins when the user picks up the receiver.
+3. The system shall allow dialing a number only after sufficient credit has been added.
+4. The system shall start the call when the dialed number is valid and the other party answers.
+5. The system shall continue the call as long as there is sufficient credit.
+6. The system shall end the call if the credit runs out during the call.
+7. The system shall allow adding more coins to continue the call.
+8. The system shall return any unused coins when the user hangs up.
+9. The system shall return to an unused state after a call ends.
+
+Example PlantUML:
+@startuml
+title Correct solution with history pseudostate
+
+state "Hung up" as HungUp
+[*] --> HungUp
+
+state "Picked up receiver" as PickedUp {
+
+    state H <<history>>
+
+    state "Waiting for coin" as WaitingCoin
+    state "Waiting for number" as WaitingNumber
+    state "Waiting for validity" as WaitingValidity
+    state "Waiting for callee to pick up receiver" as WaitingCallee
+    state Communication
+    state "End communication" as EndCommunication
+
+    HungUp --> WaitingCoin : pickUpReceiver / credit = 0
+
+
+    WaitingCoin --> WaitingNumber : [credit >= 20]
+    WaitingNumber --> WaitingValidity : dialNumber
+    WaitingValidity --> WaitingCallee : validNumber
+    WaitingCallee --> Communication : startComm / assess
+
+    Communication --> Communication : UT[sufficient credit] / assess
+    Communication --> EndCommunication : UT[insufficient credit] / assess
+}
+
+
+PickedUp --> H : insertCoin(c) / incrementCredit(c)
+PickedUp --> HungUp : replaceReceiver / returnUnusedCoins
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Structured analysis from step 1:
+Here's the analysis of the requirement for a state transition diagram:
+
+**States:**
+
+* Created (user has created an account)
+* Logged In (user is logged in)
+* Applied For Visa (user has applied for a visa)
+* Viewed Status (user has viewed the status of their application)
+* Cancelled Application (application has been cancelled by user)
+* Modified Details (user has modified their details)
+* Viewed Details (user has viewed their details)
+* Approved/Rejected (visa is either approved or rejected)
+
+**Initial state:**
+
+* Created
+
+**Final states:**
+
+* None explicitly mentioned, but the system can be considered complete when the user logs out after completing a status update.
+
+**Events or conditions:**
+
+* User creates an account
+* User logs in
+* User applies for a visa (after logging in and making payment)
+* Application is accepted
+* User views the status of their application
+* User checks the status
+* User cancels an application
+* User modifies their details
+* User views their details
+* Document check result: approved or rejected
+
+**Transitions:**
+
+* Created → Logged In (user logs in after creating account)
+* Logged In → Applied For Visa (user applies for visa after logging in and making payment)
+* Applied For Visa → Viewed Status (application is accepted, user views status)
+* Viewed Status → Checked Status (user checks the status)
+* Applied For Visa → Cancelled Application (user cancels application)
+* Logged In → Modified Details (user modifies details)
+* Modified Details → Viewed Details (user views modified details)
+* Approved/Rejected → Completed Status Update (document check result is approved or rejected, user completes status update)
+
+**Missing or ambiguous details:**
+
+* The requirement does not specify what happens when the document check result is approved or rejected.
+* It's unclear how the system handles multiple applications by a single user.
+
+Now return only the final PlantUML.

@@ -1,0 +1,27 @@
+@startuml
+title ATM Transaction State Machine
+
+state "Idle" as Idle
+state "WaitingForPIN" as WaitingForPIN
+state "Verified" as Verified
+state "OptionsAvailable" as OptionsAvailable
+state "ProcessingWithdrawal" as ProcessingWithdrawal
+state "DispensedCash" as DispensedCash
+state "ReceiptPrinted" as ReceiptPrinted
+state "CardReturned" as CardReturned
+state "Reset" as Reset
+
+[*] --> Idle
+
+Idle --> WaitingForPIN : CardInserted()
+WaitingForPIN --> Verified : PINEntered(), PINVerified()
+Verified --> OptionsAvailable : UserApproval()
+OptionsAvailable --> ProcessingWithdrawal : WithdrawalRequest()
+ProcessingWithdrawal --> DispensedCash : CashDispensed()
+DispensedCash --> ReceiptPrinted : ReceiptRequested()
+ReceiptPrinted --> CardReturned : CardReturnAcknowledged()
+CardReturned --> Reset : TimeElapsed()
+
+Reset --> [*]
+
+@enduml

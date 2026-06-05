@@ -1,0 +1,34 @@
+@startuml
+title E Visa Processing And Follow Up System
+
+state "Created" as Created
+[*] --> Created
+
+state "Logged In" as LoggedIn {
+    state H <<history>>
+    state "Applied For Visa" as AppliedForVisa
+    state "Viewed Status" as ViewedStatus
+    state "Cancelled Application" as CancelledApplication
+    state "Modified Details" as ModifiedDetails
+    state "Viewed Details" as ViewedDetails
+    state "Approved/Rejected" as ApprovedRejected
+
+    Created --> LoggedIn : login
+    LoggedIn --> AppliedForVisa : applyForVisa / paymentMade
+    AppliedForVisa --> ViewedStatus : applicationAccepted
+    ViewedStatus --> CheckedStatus : checkStatus
+    AppliedForVisa --> CancelledApplication : cancelApplication
+    LoggedIn --> ModifiedDetails : modifyDetails
+    ModifiedDetails --> ViewedDetails : viewModifiedDetails
+}
+
+LoggedIn --> H : logout / completeStatusUpdate
+
+AppliedForVisa --> ApprovedRejected : documentCheckResult
+ApprovedRejected --> CompletedStatusUpdate : approvedOrRejected
+
+ViewedStatus --> CheckedStatus : checkStatus
+CheckedStatus --> [*] : statusUpdated
+
+
+@enduml

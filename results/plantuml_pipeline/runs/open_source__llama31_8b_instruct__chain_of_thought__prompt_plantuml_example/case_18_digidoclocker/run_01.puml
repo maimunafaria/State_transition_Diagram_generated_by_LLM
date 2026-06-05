@@ -1,0 +1,35 @@
+@startuml
+title Digidoclocker State Transition Diagram
+
+state "Unregistered" as Unregistered {
+    [*] --> Unregistered
+}
+
+state "Registered" as Registered {
+    state H <<history>>
+}
+
+state "Logged In" as LoggedIn {
+    state H <<history>>
+    state "Uploading documents" as UploadingDocuments
+    state "Viewing profile" as ViewingProfile
+    state "Applying for certificate" as ApplyingForCertificate
+
+    Unregistered --> Registered : enterDetailsToRegister
+    Registered --> LoggedIn : loginCorrectly
+}
+
+state "Done" as Done {
+    [*] --> Done
+}
+
+Unregistered --> Registered : enterDetailsToRegister
+Registered --> LoggedIn : loginCorrectly
+LoggedIn --> UploadingDocuments : uploadDocument / continueUploading
+UploadingDocuments --> LoggedIn : doneUploading
+ViewingProfile --> LoggedIn : viewProfile / continueActions
+ApplyingForCertificate --> LoggedIn : applyForCertificate / continueActions
+
+LoggedIn --> Done : userDoneWithActions
+Registered --> Unregistered : logout / returnToUnregistered
+@enduml

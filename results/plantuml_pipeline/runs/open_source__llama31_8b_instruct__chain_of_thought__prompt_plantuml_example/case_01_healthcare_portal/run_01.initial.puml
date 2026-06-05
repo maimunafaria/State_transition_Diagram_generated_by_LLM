@@ -1,0 +1,76 @@
+@startuml
+title UML State Machine Diagram
+
+
+[*] --> C1
+
+state "New User" as C1 <<choice>>
+C1 --> Register : [possibilities to start]
+C1 --> AccessDenied
+
+state "Registration of a new user" as Register
+Register : entry / fill registration form
+Register : do / validate and process registration
+Register : exit / registered successfully or access denied
+
+
+state AccessDenied
+AccessDenied : entry / registration failed
+AccessDenied : exit / end access
+
+
+state C2 <<choice>>
+C1 --> C2 : [possibilities for signing in]
+
+state "Signed In" as SignedIn
+SignedIn : entry / from Registration
+SignedIn : do / view available facilities
+SignedIn : do / read news and expert content
+SignedIn : do / check symptoms or use fitness checking options
+
+state "Payment Processing" as PaymentProcessing
+PaymentProcessing : entry / from Signed In
+PaymentProcessing : do / process insurance for finance-related services
+PaymentProcessing : do / check payment with insurance for doctor consultations
+
+
+state C3 <<choice>>
+SignedIn --> C3 : [possibilities to continue or finish session]
+
+state "Session Ended" as SessionEnded
+SessionEnded : entry / user logs out or finishes their session
+SessionEnded : exit / final state
+
+C3 --> SessionEnded
+
+state C4 <<choice>>
+PaymentProcessing --> C4 : [payment method selection]
+
+state "Cash Payment Selection" as CashPaymentSelection
+CashPaymentSelection : entry / select cash payment
+CashPaymentSelection : do / inform user about cash payment details
+
+
+state C5 <<choice>>
+C4 --> C5 : [insurance-based payments or cash payment]
+
+state "Insurance-Based Payments" as InsuranceBasedPayments
+InsuranceBasedPayments : entry / process insurance-based payments
+InsuranceBasedPayments : exit / complete payment process
+
+state "Service Completed" as ServiceCompleted
+ServiceCompleted : entry / from Payment Processing
+ServiceCompleted : do / collect user feedback
+
+
+C5 --> InsuranceBasedPayments
+C5 --> CashPaymentSelection
+
+SignedIn --> SignedIn
+SignedIn --> SessionEnded
+SessionEnded --> [*]
+InsuranceBasedPayments --> ServiceCompleted
+CashPaymentSelection --> ServiceCompleted
+ServiceCompleted --> [*]
+
+@enduml

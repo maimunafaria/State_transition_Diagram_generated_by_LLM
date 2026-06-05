@@ -1,0 +1,50 @@
+@startuml
+title UML State Chart Diagram
+
+[*] --> PoweringOn
+
+state "Powering On" as PoweringOn
+PoweringOn : entry / Start power-on sequence
+PoweringOn : do / Check if everything is working
+PoweringOn : exit / Transition to Startup Check or stop system
+
+state "Startup Check" as StartupCheck
+StartupCheck : entry / Perform startup checks
+StartupCheck : do / Check for problems
+StartupCheck : exit / Transition to Ready To Use or stop system
+
+state "Ready To Use" as ReadyToUse
+ReadyToUse : entry / System is ready
+ReadyToUse : do / Allow user actions
+ReadyToUse : exit / Stay in state
+
+state "Monitoring" as Monitoring
+Monitoring : entry / Start monitoring
+Monitoring : do / Monitor sensors
+Monitoring : exit / Stay in state
+
+state "Alarm Activated" as AlarmActivated
+AlarmActivated : entry / Activate alarm and send alerts
+AlarmActivated : do / Handle false alarms or time end
+AlarmActivated : exit / Transition to False Alarm, Time Ended, or Ready To Use
+
+state "False Alarm" as FalseAlarm
+FalseAlarm : entry / System returns to normal after false alarm check
+FalseAlarm : do / Return to Monitoring state
+FalseAlarm : exit / Stay in state
+
+state "Time Ended" as TimeEnded
+TimeEnded : entry / System returns to normal after time ends
+TimeEnded : do / Return to Ready To Use state
+TimeEnded : exit / Stay in state
+
+PoweringOn --> StartupCheck : Power-On
+StartupCheck --> ReadyToUse : Startup Complete
+ReadyToUse --> Monitoring : Activation Requested
+Monitoring --> AlarmActivated : Sensor Triggered
+AlarmActivated --> FalseAlarm : False Alarm Check
+AlarmActivated --> TimeEnded : Time Ends
+FalseAlarm --> ReadyToUse : Password Entered
+TimeEnded --> ReadyToUse : Password Entered
+
+@enduml

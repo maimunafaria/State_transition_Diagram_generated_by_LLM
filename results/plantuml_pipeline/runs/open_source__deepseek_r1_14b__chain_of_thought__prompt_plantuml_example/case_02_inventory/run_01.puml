@@ -1,0 +1,40 @@
+@startuml
+title Inventory Management State Machine
+
+[*] --> InitialState
+
+state "InitialState" as InitialState
+
+state InventoryState {
+  [*] --> addGoods
+  state addGoods
+  addGoods --> updatePrice : updatePrice
+  updatePrice --> removeGoods : removeGoods
+  removeGoods --> identifyExpiredGoods : expiredGoodsRemoved
+}
+
+state OrderPlaced
+state InvoiceGenerated
+state PurchaseProcessStarted {
+  [*] --> selectItemsForPurchase
+  state selectItemsForPurchase
+  selectItemsForPurchase --> calculateDiscountsAndTaxes : calculate
+}
+
+state CalculationsCompleted
+state ReceiptGenerated
+state RequestRecorded
+state SummaryReportViewed
+
+InitialState --> InventoryState : addGoods
+InventoryState --> OrderPlaced : placeOrder
+OrderPlaced --> InvoiceGenerated : generateInvoice
+InvoiceGenerated --> PurchaseProcessStarted : selectItems
+PurchaseProcessStarted --> CalculationsCompleted : applyDiscountsAndTaxes
+CalculationsCompleted --> ReceiptGenerated : generateReceipt
+ReceiptGenerated --> [*] : done
+
+RequestRecorded --> SummaryReportViewed : viewSummary
+SummaryReportViewed --> [*] : exit
+
+@enduml

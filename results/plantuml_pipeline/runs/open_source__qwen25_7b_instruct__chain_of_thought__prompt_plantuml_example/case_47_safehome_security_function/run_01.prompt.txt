@@ -1,0 +1,228 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.
+
+=== Chain-of-thought analysis response ===
+States:
+- Powering On
+- Startup Check
+- Ready To Use
+- Monitoring
+- Alarm Activated
+- False Alarm
+- Time Ended
+
+Initial state:
+Powering On
+
+Final states:
+Ready To Use, False Alarm, Time Ended
+
+Events or conditions:
+- Power-On
+- Startup Complete
+- Sensor Triggered
+- Reset Requested
+- Activation Requested
+- Deactivation Requested
+- Password Entered
+
+Transitions:
+1. From Powering On to Startup Check on Power-On.
+2. From Startup Check to Ready To Use if Startup Complete.
+3. From Ready To Use to Monitoring on Activation Requested.
+4. From Monitoring to Alarm Activated on Sensor Triggered.
+5. From Alarm Activated to False Alarm or Time Ended based on the outcome of the false alarm check.
+6. From Ready To Use, Monitoring, and Alarm Activated back to Ready To Use on Password Entered.
+
+Missing or ambiguous details:
+- The specific conditions under which a sensor trigger results in an actual alarm activation versus a false alarm.
+- The exact sequence of events when a password is entered during different states (e.g., while monitoring, after an alarm has been activated).
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Startup Meet — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select their roll (investor, entrepreneur, or mentor).
+2. The system shall enable the user to sign in after choosing a role.
+3. The system shall allow the signed-in user to submit a startup idea.
+4. The system shall review the submitted startup idea.
+5. The system shall provide mentorship based on the review result.
+6. The system shall make an investment decision if the startup idea is presented to an investor.
+7. The system shall provide funding based on the investment decision.
+8. The system shall end the process once all actions are completed.
+
+Example PlantUML:
+@startuml
+title UML State Chart Diagram
+
+[*] --> UserType
+
+state UserType <<choice>>
+
+UserType --> InvestorLogin : [Investor user]
+UserType --> EntrepreneurLogin : [Entrepreneur user]
+UserType --> MentorLogin : [Mentor user]
+
+state "Investor Login" as InvestorLogin
+InvestorLogin : entry / Action needed
+InvestorLogin : do / enter login credentials
+InvestorLogin : exit / Entered into system
+
+state "Entrepreneur Login" as EntrepreneurLogin
+EntrepreneurLogin : entry / Action needed
+EntrepreneurLogin : do / enter login credentials
+EntrepreneurLogin : exit / Entered into system
+
+state "Mentor Login" as MentorLogin
+MentorLogin : entry / Action needed
+MentorLogin : do / enter login credentials
+MentorLogin : exit / Entered into system
+
+state MergeLogin <<choice>>
+
+InvestorLogin --> MergeLogin
+EntrepreneurLogin --> MergeLogin
+MentorLogin --> MergeLogin
+
+state "Startup idea" as StartupIdea
+StartupIdea : entry / Submitted by entrepreneur
+StartupIdea : do / file the idea
+StartupIdea : exit / accept or decline state
+
+MergeLogin --> StartupIdea
+
+state "Decision on Startup idea" as DecisionIdea
+DecisionIdea : entry / startup idea state
+DecisionIdea : do / accept or decline
+DecisionIdea : exit / NIL
+
+StartupIdea --> DecisionIdea
+
+state ChoiceDecision <<choice>>
+DecisionIdea --> ChoiceDecision
+
+state "Accept mentorship" as AcceptMentorship
+AcceptMentorship : entry / decision on mentorship
+AcceptMentorship : do / mentorship
+AcceptMentorship : exit / NIL
+
+state "Present Idea" as PresentIdea
+PresentIdea : entry / Decision on startup
+PresentIdea : do / present idea to investor
+PresentIdea : exit / Decision on investing
+
+state "Investment" as Investment
+Investment : entry / Decision to invest
+Investment : do / give investment
+Investment : exit / share in profit
+
+ChoiceDecision --> AcceptMentorship
+ChoiceDecision --> PresentIdea
+
+state MergeEnd <<choice>>
+
+AcceptMentorship --> MergeEnd
+PresentIdea --> Investment
+Investment --> MergeEnd
+ChoiceDecision --> MergeEnd
+MergeEnd --> [*]
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.
+
+Structured analysis from step 1:
+States:
+- Powering On
+- Startup Check
+- Ready To Use
+- Monitoring
+- Alarm Activated
+- False Alarm
+- Time Ended
+
+Initial state:
+Powering On
+
+Final states:
+Ready To Use, False Alarm, Time Ended
+
+Events or conditions:
+- Power-On
+- Startup Complete
+- Sensor Triggered
+- Reset Requested
+- Activation Requested
+- Deactivation Requested
+- Password Entered
+
+Transitions:
+1. From Powering On to Startup Check on Power-On.
+2. From Startup Check to Ready To Use if Startup Complete.
+3. From Ready To Use to Monitoring on Activation Requested.
+4. From Monitoring to Alarm Activated on Sensor Triggered.
+5. From Alarm Activated to False Alarm or Time Ended based on the outcome of the false alarm check.
+6. From Ready To Use, Monitoring, and Alarm Activated back to Ready To Use on Password Entered.
+
+Missing or ambiguous details:
+- The specific conditions under which a sensor trigger results in an actual alarm activation versus a false alarm.
+- The exact sequence of events when a password is entered during different states (e.g., while monitoring, after an alarm has been activated).
+
+Now return only the final PlantUML.

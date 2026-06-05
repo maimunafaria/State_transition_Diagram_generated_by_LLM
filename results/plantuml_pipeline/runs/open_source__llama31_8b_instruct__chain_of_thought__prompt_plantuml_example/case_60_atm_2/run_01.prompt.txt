@@ -1,0 +1,159 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Atm Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select an amount to withdraw from a list of options.
+2. The system shall permit the user to enter a custom value if they want a different amount.
+3. The system shall verify the transaction after the user enters an amount.
+4. The system shall allow the user to re-enter the amount if the transaction is rejected.
+
+=== Chain-of-thought analysis response ===
+Here's the analysis of the requirement:
+
+**States:**
+
+* Idle (initial state)
+* SelectingAmount
+* VerifyingTransaction
+* ReenteringAmount
+
+**Initial State:**
+Idle - This is where the system starts when a user initiates a withdrawal.
+
+**Final States:**
+None explicitly mentioned, but we can assume that the system will remain in one of the states until the transaction is completed or cancelled.
+
+**Events or Conditions:**
+
+* User selects an amount from the list
+* User enters a custom value
+* Transaction verification fails (transaction rejected)
+* User requests to re-enter the amount
+
+**Transitions:**
+
+1. Idle → SelectingAmount (user initiates withdrawal)
+2. SelectingAmount → VerifyingTransaction (user selects or enters an amount)
+3. VerifyingTransaction → ReenteringAmount (transaction verification fails)
+4. ReenteringAmount → VerifyingTransaction (user requests to re-enter the amount)
+
+**Missing or Ambiguous Details:**
+
+* What happens if the user cancels the transaction after selecting an amount?
+* Are there any specific error messages or notifications that need to be displayed during the transaction process?
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Atm Many Scenarios Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if the entered PIN is correct.
+2. The system shall ask the user to try again if the entered PIN is incorrect.
+3. The system shall keep the card for security reasons if the PIN is entered incorrectly too many times or if the card is invalid.
+4. The system shall show available options and wait for the user's choice if the entered PIN is correct.
+5. The system shall allow the user to cancel the operation at any point during this process.
+6. The system shall return the card when the user cancels the operation.
+
+Example PlantUML:
+@startuml
+title Same Event and Action on Different Transitions
+
+[*] --> Idle
+
+state Idle
+state "Waiting for PIN" as WaitingForPIN
+state "Validating PIN" as ValidatingPIN
+state "Waiting for Customer Choice" as WaitingForChoice
+state Confiscating
+state Ejecting
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu
+ValidatingPIN --> Confiscating : Third Invalid PIN,\nCard Stolen, Card Expired /\nConfiscate
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+WaitingForChoice --> Ejecting : Cancel / Eject
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Atm Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select an amount to withdraw from a list of options.
+2. The system shall permit the user to enter a custom value if they want a different amount.
+3. The system shall verify the transaction after the user enters an amount.
+4. The system shall allow the user to re-enter the amount if the transaction is rejected.
+
+Structured analysis from step 1:
+Here's the analysis of the requirement:
+
+**States:**
+
+* Idle (initial state)
+* SelectingAmount
+* VerifyingTransaction
+* ReenteringAmount
+
+**Initial State:**
+Idle - This is where the system starts when a user initiates a withdrawal.
+
+**Final States:**
+None explicitly mentioned, but we can assume that the system will remain in one of the states until the transaction is completed or cancelled.
+
+**Events or Conditions:**
+
+* User selects an amount from the list
+* User enters a custom value
+* Transaction verification fails (transaction rejected)
+* User requests to re-enter the amount
+
+**Transitions:**
+
+1. Idle → SelectingAmount (user initiates withdrawal)
+2. SelectingAmount → VerifyingTransaction (user selects or enters an amount)
+3. VerifyingTransaction → ReenteringAmount (transaction verification fails)
+4. ReenteringAmount → VerifyingTransaction (user requests to re-enter the amount)
+
+**Missing or Ambiguous Details:**
+
+* What happens if the user cancels the transaction after selecting an amount?
+* Are there any specific error messages or notifications that need to be displayed during the transaction process?
+
+Now return only the final PlantUML.

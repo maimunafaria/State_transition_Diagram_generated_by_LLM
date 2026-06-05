@@ -1,0 +1,29 @@
+@startuml
+title ATM Control - Processing Transaction
+
+state "Idle" as Idle [*]
+state "Greeting" as Greeting
+state "Card Inserted" as CardInserted
+state "PIN Entered" as PINEntered
+state "Invalid PIN" as InvalidPIN
+state "Too Many Attempts" as TooManyAttempts
+state "Options Displayed" as OptionsDisplayed
+state "Request Processed" as RequestProcessed
+
+Idle --> Greeting : User Arrives /\nGreet,\nDisplay Menu
+
+Greeting --> CardInserted : Card Inserted /\nInsert Card,\nWait for PIN
+
+CardInserted --> PINEntered : PIN Entered /\nEnter PIN,\nVerify PIN
+
+PINEntered --> InvalidPIN : Incorrect PIN /\nError, Display Message
+PINEntered --> OptionsDisplayed : Correct PIN /\nDisplay Options,\nWait for Choice
+
+InvalidPIN --> TooManyAttempts : Too Many Attempts /\nError, Display Message
+TooManyAttempts --> CardKeptForSecurity : Keep Card for Security /\nKeep Card,\nEnd Session
+
+OptionsDisplayed --> RequestProcessed : User Chooses Option /\nProcess Request,\nUpdate Status
+
+RequestProcessed --> Idle : Operation Complete /\nReturn Card,\nDisplay Success
+
+@enduml

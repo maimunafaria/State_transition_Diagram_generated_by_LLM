@@ -1,0 +1,38 @@
+@startuml
+title State diagram for processing a sale
+
+[*] --> WaitingForSale
+
+state "Waiting for a new sale" as WaitingForSale
+state "Adding items (one by one)" as AddingItems
+state "Payment (cash or card/check)" as Payment
+state "Verify payment" as VerifyPayment
+state "Sale completed" as SaleCompleted
+
+' waiting for a new sale
+WaitingForSale --> AddingItems : customer selects an item to add
+
+' adding items loop
+AddingItems --> AddingItems : next item selected / advance
+
+' all items added → move to payment
+AddingItems --> Payment : all items have been added
+
+' cash payment → complete sale
+Payment --> SaleCompleted : payment method is cash
+
+' card/check payment → verify payment
+Payment --> VerifyPayment : payment method is card or check
+
+' verify payment loop
+VerifyPayment --> VerifyPayment : payment verification in progress / advance
+
+' payment approved → complete sale
+VerifyPayment --> SaleCompleted : payment is approved
+
+' payment finished → wait for new sale
+SaleCompleted --> WaitingForSale : payment has been finished
+
+[*] --> WaitingForSale
+
+@enduml

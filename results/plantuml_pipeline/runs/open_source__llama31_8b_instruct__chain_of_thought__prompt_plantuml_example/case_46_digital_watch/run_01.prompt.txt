@@ -1,0 +1,223 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.
+
+=== Chain-of-thought analysis response ===
+Here's the analysis of the requirement:
+
+**States:**
+
+* Idle (default state)
+* Adjusting Hour
+* Adjusting Minutes
+* Adjusting Alarm Hour
+* Adjusting Alarm Minutes
+* Alarm Triggered
+* Alarm On/Off
+* Light On/Off
+
+**Initial State:**
+Idle
+
+**Final States:**
+None explicitly mentioned, but the system is expected to be in a stable state after alarm triggering or user interaction.
+
+**Events or conditions:**
+
+* User presses button to switch between time settings (e.g., hour, minutes, alarm hour, alarm minutes)
+* User increases values while adjusting time settings
+* Set alarm time matches current time
+* Alarm triggered
+* User presses specific button to stop alarm
+* User presses button to turn light on/off
+
+**Transitions:**
+
+* Idle → Adjusting Hour (user presses button)
+* Adjusting Hour → Adjusting Minutes (user presses button)
+* Adjusting Minutes → Adjusting Alarm Hour (user presses button)
+* Adjusting Alarm Hour → Adjusting Alarm Minutes (user presses button)
+* Adjusting Alarm Minutes → Alarm Triggered (set alarm time matches current time)
+* Alarm Triggered → Idle (alarm stopped by user or system)
+* Light On/Off → Light On/Off (user presses button to toggle light)
+
+**Missing or ambiguous details:**
+
+* How does the system handle invalid input (e.g., setting an alarm for a future time)?
+* What happens when the user tries to adjust a time setting while another setting is being adjusted?
+* Is there a specific timeout for the alarm feature?
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Class Campaign Final Version — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall activate a campaign once a manager and staff are assigned, it is approved, and the contract is signed.
+2. The system shall allow surveys to be carried out and evaluated during the campaign.
+3. The system shall prepare, approve, schedule, and run adverts during the campaign.
+4. The system shall allow adjustments to the campaign, such as extending its duration or changing the budget.
+5. The system shall pause a campaign, stopping all adverts, and allow resuming to continue work.
+6. The system shall calculate costs and prepare a final statement if the campaign is cancelled.
+7. The system shall complete the campaign and prepare a final statement when all work is finished.
+8. The system shall handle payment after completion; if the amount does not match what is due, it may make adjustments such as refunds.
+9. The system shall mark a campaign as paid once the correct payment is settled.
+10. The system shall archive the campaign and release all assigned staff and managers after completion.
+
+Example PlantUML:
+@startuml
+title Campaign State Machine (Final Version)
+
+[*] --> Commissioned : /assignManager; assignStaff
+
+state Commissioned
+state Suspended
+state Completed
+state Paid
+
+Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+Commissioned --> Completed : campaignCancelled;\ncalculateCosts;\nprepareFinalStatement
+state Active {
+
+  state Monitoring {
+    [*] --> Survey
+
+    state Survey
+    state Evaluation
+    state H1 <<history>>
+
+    Survey --> Evaluation : surveyComplete
+    Evaluation --> Survey : runSurvey
+  }
+
+  --
+
+  state Running {
+    [*] --> AdvertPreparation
+
+    state AdvertPreparation
+    state Scheduling
+    state "Running Adverts" as RunningAdverts
+    state H2 <<history>>
+
+    AdvertPreparation --> Scheduling : advertsApproved\n/authorize
+    Scheduling --> RunningAdverts : confirmSchedule
+    RunningAdverts --> AdvertPreparation : extendCampaign\n/modifyBudget
+  }
+
+}
+
+
+Active --> Suspended : suspendCampaign\n/stopAdverts
+Suspended --> Active : resumeCampaign
+
+
+Active --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+AdvertPreparation --> Completed : campaignCompleted\n/prepareFinalStatement
+
+
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > 0]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
+
+
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.
+
+Structured analysis from step 1:
+Here's the analysis of the requirement:
+
+**States:**
+
+* Idle (default state)
+* Adjusting Hour
+* Adjusting Minutes
+* Adjusting Alarm Hour
+* Adjusting Alarm Minutes
+* Alarm Triggered
+* Alarm On/Off
+* Light On/Off
+
+**Initial State:**
+Idle
+
+**Final States:**
+None explicitly mentioned, but the system is expected to be in a stable state after alarm triggering or user interaction.
+
+**Events or conditions:**
+
+* User presses button to switch between time settings (e.g., hour, minutes, alarm hour, alarm minutes)
+* User increases values while adjusting time settings
+* Set alarm time matches current time
+* Alarm triggered
+* User presses specific button to stop alarm
+* User presses button to turn light on/off
+
+**Transitions:**
+
+* Idle → Adjusting Hour (user presses button)
+* Adjusting Hour → Adjusting Minutes (user presses button)
+* Adjusting Minutes → Adjusting Alarm Hour (user presses button)
+* Adjusting Alarm Hour → Adjusting Alarm Minutes (user presses button)
+* Adjusting Alarm Minutes → Alarm Triggered (set alarm time matches current time)
+* Alarm Triggered → Idle (alarm stopped by user or system)
+* Light On/Off → Light On/Off (user presses button to toggle light)
+
+**Missing or ambiguous details:**
+
+* How does the system handle invalid input (e.g., setting an alarm for a future time)?
+* What happens when the user tries to adjust a time setting while another setting is being adjusted?
+* Is there a specific timeout for the alarm feature?
+
+Now return only the final PlantUML.

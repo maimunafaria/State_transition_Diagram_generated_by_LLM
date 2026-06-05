@@ -1,0 +1,234 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Atm Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select an amount to withdraw from a list of options.
+2. The system shall permit the user to enter a custom value if they want a different amount.
+3. The system shall verify the transaction after the user enters an amount.
+4. The system shall allow the user to re-enter the amount if the transaction is rejected.
+
+=== Chain-of-thought analysis response ===
+States:
+- MenuScreen
+- AmountSelectionScreen
+- TransactionVerificationScreen
+- ReenterAmountScreen
+
+Initial state:
+MenuScreen
+
+Final states:
+TransactionVerificationScreen (if transaction is successful)
+ReenterAmountScreen (if transaction is rejected)
+
+Events or conditions:
+- UserSelectsAmountFromList
+- UserEntersCustomValue
+- TransactionRejected
+- TransactionSuccessful
+
+Transitions:
+- From MenuScreen to AmountSelectionScreen when UserSelectsAmountFromList or UserEntersCustomValue
+- From AmountSelectionScreen to TransactionVerificationScreen when TransactionVerified
+- From TransactionVerificationScreen to ReenterAmountScreen when TransactionRejected
+- From TransactionVerificationScreen to Final state (TransactionSuccessful) when TransactionSuccessful
+
+Missing or ambiguous details:
+- The exact conditions under which the transaction is verified and whether it can be automatically verified without user interaction.
+- Whether re-entering the amount involves returning to the selection screen or staying on the same screen.
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Student Counselling Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a student to log in.
+2. The system shall prompt the student to try again if login details are incorrect.
+3. The system shall proceed with registration and payment upon a successful login.
+4. The system shall end there if the registration payment is not completed.
+5. The system shall register the student and declare ranks if the registration payment is completed.
+6. The system shall allow the student to pay enrollment fees after rank declaration.
+7. The system shall end there if the payment for enrollment fees is not successful.
+8. The system shall allow the student to fill in their choices if the payment for enrollment fees is successful.
+9. The system shall lock the choices and allocate seats based on rank if they are correct.
+10. The system shall generate an admit letter once a seat is allotted.
+11. The system shall allow the student to accept or decline the admit letter.
+
+Example PlantUML:
+@startuml
+title UML State Chart Diagram
+
+[*] --> StartMerge
+
+state StartMerge <<choice>>
+state Login
+state LoginDecision <<choice>>
+state "Invalid Login" as InvalidLogin
+state "Valid Login" as ValidLogin
+state RegistrationDecision <<choice>>
+state "Failed Registration" as FailedRegistration
+state "Rank Declaration" as RankDeclaration
+state "Enrollment Fees" as EnrollmentFees
+state PaymentDecision <<choice>>
+state "Invalid Payment" as InvalidPayment
+state "Valid Payment" as ValidPayment
+state "Choice Filing" as ChoiceFiling
+state ChoiceDecision <<choice>>
+state "Failed choice filing" as FailedChoiceFiling
+state "Seat Allotment" as SeatAllotment
+state "Admit Letter Generation" as AdmitLetterGeneration
+state "Accept/Decline" as AcceptDecline
+
+Login : entry / To Action
+Login : do / Log in to the system
+Login : exit / Username and password entered
+
+InvalidLogin : entry / Trying to log in
+InvalidLogin : do / Invalid username and password
+InvalidLogin : exit / Back to login page
+
+ValidLogin : entry / Student logged in
+ValidLogin : do / Registration form submission with payment
+ValidLogin : exit / Student Registered
+
+FailedRegistration : entry / Payment not made
+FailedRegistration : do / Throw an error
+FailedRegistration : exit / Abnormal termination
+
+RankDeclaration : entry / Student registered
+RankDeclaration : do / Declare ranks for all the students
+RankDeclaration : exit / Rank published
+
+EnrollmentFees : entry / Rank declared
+EnrollmentFees : do / Pay enrollment fees
+EnrollmentFees : exit / Payment done
+
+InvalidPayment : entry / Payment not made
+InvalidPayment : do / Show the errors
+InvalidPayment : exit / Abnormal Termination
+
+ValidPayment : entry / Payment made
+ValidPayment : do / Allow to fill choices
+ValidPayment : exit / log out from payment portal
+
+ChoiceFiling : entry / Valid payment
+ChoiceFiling : do / Fill choices
+ChoiceFiling : exit / Lock choices
+
+FailedChoiceFiling : entry / Invalid choices
+FailedChoiceFiling : do / Show the errors
+FailedChoiceFiling : exit / Abnormal Termination
+
+SeatAllotment : entry / Choices must be locked
+SeatAllotment : do / Allot seats based on rank
+SeatAllotment : exit / Publish alloted results
+
+AdmitLetterGeneration : entry / Seat alotted
+AdmitLetterGeneration : do / Generate admit letter
+AdmitLetterGeneration : exit / Publish admit letters to students and colleges
+
+AcceptDecline : entry / Received admit letter
+AcceptDecline : do / Accept/Decline
+AcceptDecline : exit / After decision is made
+
+StartMerge --> Login
+Login --> LoginDecision
+LoginDecision --> InvalidLogin
+LoginDecision --> ValidLogin
+InvalidLogin --> StartMerge
+
+ValidLogin --> RegistrationDecision
+RegistrationDecision --> FailedRegistration
+RegistrationDecision --> RankDeclaration
+
+RankDeclaration --> EnrollmentFees
+EnrollmentFees --> PaymentDecision
+PaymentDecision --> InvalidPayment
+PaymentDecision --> ValidPayment
+
+ValidPayment --> ChoiceFiling
+ChoiceFiling --> ChoiceDecision
+ChoiceDecision --> FailedChoiceFiling
+ChoiceDecision --> SeatAllotment
+
+SeatAllotment --> AdmitLetterGeneration
+AdmitLetterGeneration --> AcceptDecline
+AcceptDecline --> [*]
+
+FailedRegistration --> [*]
+InvalidPayment --> [*]
+FailedChoiceFiling --> [*]
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Atm Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select an amount to withdraw from a list of options.
+2. The system shall permit the user to enter a custom value if they want a different amount.
+3. The system shall verify the transaction after the user enters an amount.
+4. The system shall allow the user to re-enter the amount if the transaction is rejected.
+
+Structured analysis from step 1:
+States:
+- MenuScreen
+- AmountSelectionScreen
+- TransactionVerificationScreen
+- ReenterAmountScreen
+
+Initial state:
+MenuScreen
+
+Final states:
+TransactionVerificationScreen (if transaction is successful)
+ReenterAmountScreen (if transaction is rejected)
+
+Events or conditions:
+- UserSelectsAmountFromList
+- UserEntersCustomValue
+- TransactionRejected
+- TransactionSuccessful
+
+Transitions:
+- From MenuScreen to AmountSelectionScreen when UserSelectsAmountFromList or UserEntersCustomValue
+- From AmountSelectionScreen to TransactionVerificationScreen when TransactionVerified
+- From TransactionVerificationScreen to ReenterAmountScreen when TransactionRejected
+- From TransactionVerificationScreen to Final state (TransactionSuccessful) when TransactionSuccessful
+
+Missing or ambiguous details:
+- The exact conditions under which the transaction is verified and whether it can be automatically verified without user interaction.
+- Whether re-entering the amount involves returning to the selection screen or staying on the same screen.
+
+Now return only the final PlantUML.

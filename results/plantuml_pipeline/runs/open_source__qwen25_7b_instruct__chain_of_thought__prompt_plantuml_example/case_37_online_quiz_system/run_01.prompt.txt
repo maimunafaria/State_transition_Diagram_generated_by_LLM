@@ -1,0 +1,206 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+=== Chain-of-thought analysis response ===
+States:
+- Registered User
+- Teacher
+- Student
+- Quiz Available
+- Quiz Answered
+- Quiz Submitted
+- Quiz Results
+
+Initial state:
+Registered User
+
+Final states:
+Quiz Results
+
+Events or conditions:
+- Register/Login
+- Continue as Teacher/Student
+- Create New Quiz
+- Edit Existing Quiz
+- Save Draft/Post Quiz
+- View Quiz Results
+- Select Quiz
+- Answer Questions
+- Submit Quiz
+
+Transitions:
+1. Registered User -> Teacher: Register/Login, Continue as Teacher
+2. Registered User -> Student: Register/Login, Continue as Student
+3. Teacher -> Create New Quiz: Create New Quiz
+4. Teacher -> Edit Existing Quiz: Edit Existing Quiz
+5. Teacher -> Save Draft/Post Quiz: Save Draft, Post Quiz
+6. Teacher -> View Quiz Results: View Quiz Results
+7. Student -> Quiz Available: Select Quiz
+8. Student -> Quiz Answered: Answer Questions
+9. Student -> Quiz Submitted: Submit Quiz
+10. Student -> Quiz Results: Submit Quiz
+
+Missing or ambiguous details:
+- The requirement does not specify the exact states for quiz creation and editing, which could be additional states like "Quiz Draft" and "Quiz Edited".
+- It is unclear if there are any intermediate states between creating a new quiz and saving it as a draft or posting it.
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Ui — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to open a budget-checking window from the main screen.
+2. The system shall wait for the user to select a client before proceeding with the checking process.
+3. The system shall require users to select a campaign related to the chosen client before allowing them to check information.
+4. The system shall display results only after both a client and a campaign are selected.
+5. The system shall allow users to refresh or recheck information by pressing the check button again.
+6. The system shall prompt users with a confirmation message before closing the window.
+7. The system shall return to the main screen if the user confirms closing the window.
+8. The system shall keep the window open and allow further interaction if the user cancels the close action.
+
+Example PlantUML:
+@startuml
+title Check Budget Window State Machine
+
+state "Main Window" as MainWindow
+state "5 Alert Dialog" as AlertDialog
+
+state "Check Budget Window" as CBW {
+  [*] --> NoClientSelected
+
+  state "1 No Client Selected" as NoClientSelected
+
+  state "Selection Flow" as SelectionFlow {
+    [*] --> NoCampaignSelected
+
+    state "2 No Campaign Selected" as NoCampaignSelected
+
+    state "Result Flow" as ResultFlow {
+      [*] --> Blank
+      state "3 Blank" as Blank
+      state "4 Display Result" as DisplayResult
+
+      Blank --> DisplayResult : checkButtonClicked()
+      DisplayResult --> DisplayResult : checkButtonClicked()
+    }
+
+    NoCampaignSelected --> ResultFlow : campaignSelected()
+    ResultFlow --> ResultFlow : campaignSelected()
+  }
+
+  NoClientSelected --> SelectionFlow : clientSelected()
+  SelectionFlow --> SelectionFlow : clientSelected()
+  state H <<history*>>
+}
+
+MainWindow --> CBW : checkCampaignBudget\nMenuSelected()
+
+CBW --> AlertDialog : closeButtonClicked()
+
+AlertDialog --> MainWindow : OK
+AlertDialog --> H : Cancel
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Structured analysis from step 1:
+States:
+- Registered User
+- Teacher
+- Student
+- Quiz Available
+- Quiz Answered
+- Quiz Submitted
+- Quiz Results
+
+Initial state:
+Registered User
+
+Final states:
+Quiz Results
+
+Events or conditions:
+- Register/Login
+- Continue as Teacher/Student
+- Create New Quiz
+- Edit Existing Quiz
+- Save Draft/Post Quiz
+- View Quiz Results
+- Select Quiz
+- Answer Questions
+- Submit Quiz
+
+Transitions:
+1. Registered User -> Teacher: Register/Login, Continue as Teacher
+2. Registered User -> Student: Register/Login, Continue as Student
+3. Teacher -> Create New Quiz: Create New Quiz
+4. Teacher -> Edit Existing Quiz: Edit Existing Quiz
+5. Teacher -> Save Draft/Post Quiz: Save Draft, Post Quiz
+6. Teacher -> View Quiz Results: View Quiz Results
+7. Student -> Quiz Available: Select Quiz
+8. Student -> Quiz Answered: Answer Questions
+9. Student -> Quiz Submitted: Submit Quiz
+10. Student -> Quiz Results: Submit Quiz
+
+Missing or ambiguous details:
+- The requirement does not specify the exact states for quiz creation and editing, which could be additional states like "Quiz Draft" and "Quiz Edited".
+- It is unclear if there are any intermediate states between creating a new quiz and saving it as a draft or posting it.
+
+Now return only the final PlantUML.

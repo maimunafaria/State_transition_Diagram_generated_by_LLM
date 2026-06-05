@@ -1,0 +1,61 @@
+@startuml
+title Digital Watch State Machine (Final Version)
+
+[*] --> Idle : /initWatch
+
+state Idle
+state AdjustingHour
+state AdjustingMinutes
+state AdjustingAlarmHour
+state AdjustingAlarmMinutes
+state AlarmTriggered
+state LightOnOff
+
+Idle --> AdjustingHour : pressButton
+AdjustingHour --> AdjustingMinutes : pressButton
+AdjustingMinutes --> AdjustingAlarmHour : pressButton
+AdjustingAlarmHour --> AdjustingAlarmMinutes : pressButton
+AdjustingAlarmMinutes --> AlarmTriggered : alarmTimeMatchesCurrentTime
+AlarmTriggered --> Idle : stopAlarm
+
+state AdjustingHour {
+  state IncreasingHour {
+    [*] --> IncreaseHourValue : increaseValues
+    IncreaseHourValue --> IncreaseHourValue : increaseValues
+  }
+}
+
+state AdjustingMinutes {
+  state IncreasingMinutes {
+    [*] --> IncreaseMinuteValue : increaseValues
+    IncreaseMinuteValue --> IncreaseMinuteValue : increaseValues
+  }
+}
+
+state AdjustingAlarmHour {
+  state IncreasingAlarmHour {
+    [*] --> IncreaseAlarmHourValue : increaseValues
+    IncreaseAlarmHourValue --> IncreaseAlarmHourValue : increaseValues
+  }
+}
+
+state AdjustingAlarmMinutes {
+  state IncreasingAlarmMinutes {
+    [*] --> IncreaseAlarmMinuteValue : increaseValues
+    IncreaseAlarmMinuteValue --> IncreaseAlarmMinuteValue : increaseValues
+  }
+}
+
+Idle --> LightOnOff : pressLightButton
+
+state LightOnOff {
+  [*] --> LightOn : pressLightButton
+  LightOn --> LightOff : releaseLightButton
+  LightOff --> LightOn : pressLightButton
+}
+
+AlarmTriggered --> Idle : stopAlarm
+AlarmTriggered --> AlarmTriggered : alarmTimeMatchesCurrentTime
+
+Idle --> [*] : /shutdownWatch
+@enduml

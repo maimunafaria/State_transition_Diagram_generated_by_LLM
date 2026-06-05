@@ -1,0 +1,188 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Process Sale — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a new sale.
+2. The system shall enter items one by one as they are selected by the customer.
+3. The system shall move to payment after all items have been added.
+4. The system shall complete the sale immediately if the customer pays with cash.
+5. The system shall verify the payment if the customer chooses to pay by card or check.
+6. The system shall complete the sale once the payment is approved.
+7. The system shall return to waiting for the next customer after the payment has been finished.
+
+=== Chain-of-thought analysis response ===
+Here's the analysis of the requirement:
+
+**States:**
+
+* Waiting for a new sale
+* Adding items (one by one)
+* Payment (cash or card/check)
+* Sale completed
+
+**Initial state:**
+Waiting for a new sale
+
+**Final states:**
+Sale completed
+
+**Events or conditions:**
+
+* Customer selects an item to add
+* All items have been added
+* Customer chooses to pay with cash
+* Customer chooses to pay by card or check
+* Payment is approved
+
+**Transitions:**
+
+1. Waiting for a new sale → Adding items (one by one): customer selects an item to add
+2. Adding items (one by one) → Payment (cash or card/check): all items have been added
+3. Payment (cash) → Sale completed: payment method is cash
+4. Payment (card/check) → Verify payment: payment method is card or check
+5. Verify payment → Sale completed: payment is approved
+6. Sale completed → Waiting for a new sale: payment has been finished
+
+**Missing or ambiguous details:**
+
+* What happens if the customer cancels the sale while adding items?
+* How does the system handle errors during payment verification?
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Java — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall skip non-meaningful elements like spaces or comments.
+2. The system shall ignore empty spaces and line breaks at the beginning.
+3. The system shall skip all characters from // to the end of the line.
+4. The system shall continue skipping content until the end of a block comment (*/).
+
+Example PlantUML:
+@startuml
+title State diagram for advancing past whitespace and comments in Java
+
+[*] --> Start
+
+state Start
+state "saw '/'" as SawSlash
+state "line comment" as LineComment
+state "saw '*'" as SawStar
+state "block comment" as BlockComment
+state EndWhitespace
+
+' whitespace loop
+Start --> Start : next char = ' ' \\t \\r \\n / advance
+
+' detect slash
+Start --> SawSlash : next char = '/' / advance
+
+' anything else → end
+Start --> EndWhitespace : next char = anything else
+
+' after seeing '/'
+SawSlash --> LineComment : next char = '/' / advance
+SawSlash --> SawStar : next char = '*' / advance
+SawSlash --> EndWhitespace : next char != '/' or '*' / pushback '/'
+
+' line comment behavior
+LineComment --> LineComment : next char != eoln / advance
+LineComment --> Start : next char = eoln / advance
+
+' saw '*' (possible block comment)
+SawStar --> BlockComment : next char = '*' / advance
+
+' block comment behavior
+BlockComment --> BlockComment : next char != '*' / advance
+BlockComment --> SawStar : next char = '*' / advance
+
+' loop back
+SawStar --> BlockComment : next char = '*' / advance
+BlockComment --> Start : next char = '/' / advance
+
+EndWhitespace --> [*]
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Process Sale — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a new sale.
+2. The system shall enter items one by one as they are selected by the customer.
+3. The system shall move to payment after all items have been added.
+4. The system shall complete the sale immediately if the customer pays with cash.
+5. The system shall verify the payment if the customer chooses to pay by card or check.
+6. The system shall complete the sale once the payment is approved.
+7. The system shall return to waiting for the next customer after the payment has been finished.
+
+Structured analysis from step 1:
+Here's the analysis of the requirement:
+
+**States:**
+
+* Waiting for a new sale
+* Adding items (one by one)
+* Payment (cash or card/check)
+* Sale completed
+
+**Initial state:**
+Waiting for a new sale
+
+**Final states:**
+Sale completed
+
+**Events or conditions:**
+
+* Customer selects an item to add
+* All items have been added
+* Customer chooses to pay with cash
+* Customer chooses to pay by card or check
+* Payment is approved
+
+**Transitions:**
+
+1. Waiting for a new sale → Adding items (one by one): customer selects an item to add
+2. Adding items (one by one) → Payment (cash or card/check): all items have been added
+3. Payment (cash) → Sale completed: payment method is cash
+4. Payment (card/check) → Verify payment: payment method is card or check
+5. Verify payment → Sale completed: payment is approved
+6. Sale completed → Waiting for a new sale: payment has been finished
+
+**Missing or ambiguous details:**
+
+* What happens if the customer cancels the sale while adding items?
+* How does the system handle errors during payment verification?
+
+Now return only the final PlantUML.

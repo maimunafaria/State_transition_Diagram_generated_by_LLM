@@ -1,0 +1,181 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Atm Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose or enter a withdrawal amount.
+2. The system shall support predefined amounts for selection by the user.
+3. The system shall allow users to input their own custom withdrawal amount.
+4. The system shall provide an option for the user to cancel the transaction at any point.
+5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.
+
+=== Chain-of-thought analysis response ===
+### Analysis for UML State Machine Model
+
+#### States:
+1. **Initial State**: The starting point where the user begins the withdrawal process.
+2. **Predefined Amount Selection**: User selects from preset options (e.g., $20, $40).
+3. **Custom Amount Entry**: User inputs a custom amount.
+4. **Cancel Transaction**: Transitioned to when the user cancels at any point.
+5. **Transaction Completed**: Final state after successful withdrawal or cancellation.
+
+#### Initial State:
+- The starting point for all transactions.
+
+#### Final States:
+- **Transaction Completed**: Reached after a successful withdrawal or cancellation, leading to card return.
+
+#### Events or Conditions:
+1. Choosing a predefined amount.
+2. Entering a custom amount.
+3. Pressing cancel.
+4. Completing the transaction.
+
+#### Transitions:
+1. Initial → Predefined Selection upon choosing an amount.
+2. Initial → Custom Entry for custom input.
+3. Any state → Cancel Transaction on cancellation.
+4. Cancel Transaction → Initial or idle after returning the card.
+5. After selecting an amount → Transaction Completed.
+
+#### Missing or Ambiguous Details:
+- Handling of invalid amounts and insufficient funds.
+- Post-cancellation actions beyond card return (e.g., fees, prompts).
+- Timeout for inactivity leading to automatic cancellation.
+- Next state after completing a transaction (likely idle but unspecified).
+
+This analysis provides the necessary states and transitions for the UML model, highlighting areas needing further clarification.
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Atm Many Scenarios Scenario 8 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall keep the card if it is invalid, expired, or the PIN was entered incorrectly too many times.
+2. The system shall return the card with a message if the user cancels the operation or the request is rejected.
+3. The system shall print a receipt and dispense cash if needed before returning the card to the user after a successful transaction.
+4. The system shall consider the session finished once the card is ejected.
+5. The system shall move into a short ending phase before resetting itself after completing the transaction or cancellation process.
+6. The system shall return to its normal waiting condition or shut down depending on the situation.
+
+Example PlantUML:
+@startuml
+title ATM Control - Terminating Transaction
+
+state "Closed Down" as ClosedDown
+ClosedDown : entry / Display System Down
+
+state Idle
+Idle : entry / Display Welcome
+
+state "Processing Customer Input" as ProcessingCustomerInput
+state "Processing Transaction" as ProcessingTransaction
+
+state "Terminating Transaction" as TerminatingTransaction {
+
+  state Terminating
+  state Confiscating
+  state Ejecting
+  state Printing
+  state Dispensing
+
+  Confiscating --> Terminating : Card Confiscated /\nDisplay Confiscated
+  Ejecting --> Terminating : Card Ejected /\nDisplay Ejected
+  Printing --> Ejecting : Receipt Printed /\nEject
+  Dispensing --> Printing : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+}
+
+ProcessingCustomerInput --> Confiscating : Stolen Card, Expired Card /\nConfiscate, Update Status
+ProcessingCustomerInput --> Confiscating : Third Invalid PIN /\nConfiscate
+ProcessingCustomerInput --> Ejecting : Cancel / Eject,\nDisplay Cancel
+
+ProcessingTransaction --> Ejecting : Rejected / Eject,\nDisplay Apology
+ProcessingTransaction --> Printing : Transfer Approved /\nPrint Receipt,\nUpdate Status
+ProcessingTransaction --> Printing : Query Approved /\nPrint Receipt,\nUpdate Status
+ProcessingTransaction --> Dispensing : Withdrawal Approved /\nDispense Cash,\nUpdate Status
+
+Dispensing --> ClosedDown : Insufficient Cash /\nEject,\nAbort Cash Dispensed
+
+Terminating --> Idle : After (Elapsed Time) [Closedown Not Requested]
+Terminating --> ClosedDown : After (Elapsed Time) [Closedown Was Requested]
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Atm Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose or enter a withdrawal amount.
+2. The system shall support predefined amounts for selection by the user.
+3. The system shall allow users to input their own custom withdrawal amount.
+4. The system shall provide an option for the user to cancel the transaction at any point.
+5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.
+
+Structured analysis from step 1:
+### Analysis for UML State Machine Model
+
+#### States:
+1. **Initial State**: The starting point where the user begins the withdrawal process.
+2. **Predefined Amount Selection**: User selects from preset options (e.g., $20, $40).
+3. **Custom Amount Entry**: User inputs a custom amount.
+4. **Cancel Transaction**: Transitioned to when the user cancels at any point.
+5. **Transaction Completed**: Final state after successful withdrawal or cancellation.
+
+#### Initial State:
+- The starting point for all transactions.
+
+#### Final States:
+- **Transaction Completed**: Reached after a successful withdrawal or cancellation, leading to card return.
+
+#### Events or Conditions:
+1. Choosing a predefined amount.
+2. Entering a custom amount.
+3. Pressing cancel.
+4. Completing the transaction.
+
+#### Transitions:
+1. Initial → Predefined Selection upon choosing an amount.
+2. Initial → Custom Entry for custom input.
+3. Any state → Cancel Transaction on cancellation.
+4. Cancel Transaction → Initial or idle after returning the card.
+5. After selecting an amount → Transaction Completed.
+
+#### Missing or Ambiguous Details:
+- Handling of invalid amounts and insufficient funds.
+- Post-cancellation actions beyond card return (e.g., fees, prompts).
+- Timeout for inactivity leading to automatic cancellation.
+- Next state after completing a transaction (likely idle but unspecified).
+
+This analysis provides the necessary states and transitions for the UML model, highlighting areas needing further clarification.
+
+Now return only the final PlantUML.

@@ -1,0 +1,176 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
+
+=== Chain-of-thought analysis response ===
+States:
+- Citizen
+- Registrar
+- LoggedInCitizen
+- LoggedInRegistrar
+
+Initial state:
+- Citizen
+
+Final states:
+- LoggedInCitizen
+- LoggedInRegistrar
+- NoSession
+
+Events or conditions:
+- Register
+- Login
+- UploadDocuments
+- ViewProfile
+- ApplyForCertificate
+- ContinueUploading
+- RequestCertificate
+- Reapply
+- EndSession
+
+Transitions:
+1. Citizen -> LoggedInCitizen: Register, Login
+2. LoggedInCitizen -> NoSession: EndSession
+3. LoggedInCitizen -> LoggedInCitizen: UploadDocuments, ViewProfile, ApplyForCertificate, ContinueUploading, Reapply
+4. Registrar -> LoggedInRegistrar: Register, Login, RequestCertificate
+5. LoggedInRegistrar -> NoSession: EndSession
+6. LoggedInRegistrar -> LoggedInRegistrar: RequestCertificate
+
+Missing or ambiguous details:
+- The requirement does not specify the exact sequence of events for a citizen to go from being unregistered to logged in.
+- It is unclear if a registrar can also upload documents, view their profile, or apply for certificates after logging in.
+- The relationship between "citizen" and "registrars" is not clear; it's possible they are different roles with similar actions.
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Cd Player — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start in a stopped state.
+2. The system shall begin playing music when a disc is inserted and the user presses play.
+3. The system shall allow the user to pause the music at any time while it is playing.
+4. The system shall stop the music temporarily when paused but allow resuming from the same point.
+5. The system shall allow the user to stop the player at any time, regardless of whether the music is playing or paused.
+6. The system shall return to a stopped state when the player is stopped.
+7. The system shall allow switching to another disc and continuing playback if multiple discs are available.
+8. The system shall remain in a stopped state when no more discs are left.
+
+Example PlantUML:
+@startuml
+title CD Player State Machine
+
+[*] --> Stopped
+
+state Playing
+Playing : do / read disc
+
+state Stopped
+state Paused
+
+Stopped --> Playing : press play [disc in tray]
+Playing --> Stopped : press stop
+Playing --> Stopped : [no more discs]
+
+Playing --> Paused : press pause
+Paused --> Playing : press play
+Paused --> Stopped : press stop
+
+Playing --> Playing : [another disc] / change disc
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
+
+Structured analysis from step 1:
+States:
+- Citizen
+- Registrar
+- LoggedInCitizen
+- LoggedInRegistrar
+
+Initial state:
+- Citizen
+
+Final states:
+- LoggedInCitizen
+- LoggedInRegistrar
+- NoSession
+
+Events or conditions:
+- Register
+- Login
+- UploadDocuments
+- ViewProfile
+- ApplyForCertificate
+- ContinueUploading
+- RequestCertificate
+- Reapply
+- EndSession
+
+Transitions:
+1. Citizen -> LoggedInCitizen: Register, Login
+2. LoggedInCitizen -> NoSession: EndSession
+3. LoggedInCitizen -> LoggedInCitizen: UploadDocuments, ViewProfile, ApplyForCertificate, ContinueUploading, Reapply
+4. Registrar -> LoggedInRegistrar: Register, Login, RequestCertificate
+5. LoggedInRegistrar -> NoSession: EndSession
+6. LoggedInRegistrar -> LoggedInRegistrar: RequestCertificate
+
+Missing or ambiguous details:
+- The requirement does not specify the exact sequence of events for a citizen to go from being unregistered to logged in.
+- It is unclear if a registrar can also upload documents, view their profile, or apply for certificates after logging in.
+- The relationship between "citizen" and "registrars" is not clear; it's possible they are different roles with similar actions.
+
+Now return only the final PlantUML.

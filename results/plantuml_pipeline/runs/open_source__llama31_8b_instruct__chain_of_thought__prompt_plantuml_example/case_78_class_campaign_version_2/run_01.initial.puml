@@ -1,0 +1,62 @@
+@startuml
+title Campaign State Machine
+
+[*] --> Unassigned
+
+Unassigned --> Assigned : manager and staff assignment
+Assigned --> Approved : approval of everything and contract signing
+Approved --> Running : campaign starts, adverts are prepared and scheduled
+Running --> Paused : campaign is paused for extension or adjustment
+Paused --> Running : campaign resumes after extension or adjustment
+Running --> Completed : all adverts have finished
+Completed --> Paid : full amount is properly paid
+Completed --> Archived : campaign is archived and all assigned staff and managers are released
+
+state Unassigned {
+    [*] --> Unassigned
+}
+
+state Assigned {
+    Unassigned --> Assigned : manager and staff assignment
+    Assigned --> Approved : approval of everything and contract signing
+}
+
+state Approved {
+    Approved --> Running : campaign starts, adverts are prepared and scheduled
+}
+
+state Running {
+    Running --> Paused : campaign is paused for extension or adjustment
+    Running --> Completed : all adverts have finished
+    Paused --> Running : campaign resumes after extension or adjustment
+    Running --> Paid : full amount is properly paid
+    Running --> Archived : campaign is archived and all assigned staff and managers are released
+}
+
+state Paused {
+    Paused --> Running : campaign resumes after extension or adjustment
+}
+
+state Completed {
+    Completed --> Paid : full amount is properly paid
+    Completed --> Archived : campaign is archived and all assigned staff and managers are released
+}
+
+state Paid {
+    Paid --> Archived : campaign is archived and all assigned staff and managers are released
+}
+
+state Archived {
+    [*] --> Unassigned : manager and staff unassignment
+}
+
+Running --> TimeOut : after (advert preparation and scheduling completion)
+TimeOut --> Running : adverts are prepared and scheduled
+
+Completed --> PaymentMade : payment made
+PaymentMade --> Paid : correct balance settlement
+
+PaymentMade --> WaitingForBalance : amount paid exceeds required amount
+WaitingForBalance --> Paid : correct balance settlement
+
+@enduml

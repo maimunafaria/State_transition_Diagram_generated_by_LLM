@@ -1,0 +1,219 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+=== Chain-of-thought analysis response ===
+States:
+- UserAccountCreated
+- LoggedIn
+- VisaApplicationPending
+- VisaApproved
+- VisaRejected
+- StatusViewed
+- FeedbackGiven
+
+Initial state:
+UserAccountCreated
+
+Final states:
+VisaApproved
+VisaRejected
+
+Events or conditions:
+- CreateAccount
+- Login
+- ApplyForVisa
+- MakePayment
+- AcceptApplication
+- ViewStatus
+- CheckStatus
+- CancelApplication
+- ModifyDetails
+- ViewDetails
+- ViewPurposeOfApplication
+- GiveFeedback
+- Logout
+
+Transitions:
+1. UserAccountCreated -> LoggedIn: CreateAccount, Login
+2. LoggedIn -> VisaApplicationPending: ApplyForVisa, MakePayment, AcceptApplication
+3. VisaApplicationPending -> VisaApproved: CheckStatus (if approved)
+4. VisaApplicationPending -> VisaRejected: CheckStatus (if rejected)
+5. LoggedIn -> StatusViewed: ViewStatus
+6. StatusViewed -> FeedbackGiven: GiveFeedback
+7. LoggedIn -> CancelApplication: CancelApplication
+8. LoggedIn -> ModifyDetails: ModifyDetails
+9. LoggedIn -> ViewDetails: ViewDetails
+10. LoggedIn -> UserAccountCreated: Logout
+
+Missing or ambiguous details:
+- The requirement does not specify the sequence of events leading to the creation of an account and logging in.
+- It is unclear if "ViewPurposeOfApplication" is a separate event from "ViewDetails".
+- There is no explicit mention of what happens after "AcceptApplication"; it would be useful to clarify this transition.
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Displayitem — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to browse products through a catalog.
+2. The system shall enable users to view items directly or explore different ways of browsing in the catalog.
+3. The system shall allow users to browse products using an index, either alphabetically or by category.
+4. The system shall enable users to switch between browsing options based on their preferences.
+5. The system shall allow users to select a product once they find one of interest to view its details.
+6. The system shall enable users to review the items in their basket at any time.
+7. The system shall allow users from the basket to either return to the catalog or proceed to checkout.
+8. The system shall enable users to review their selections during checkout and proceed with the purchase.
+9. The system shall allow users to return to the catalog from the checkout page to make changes before completing the process.
+
+Example PlantUML:
+@startuml
+title BrowseCatalog State Machine
+[*] --> BrowseCatalog
+state BrowseCatalog {
+
+
+
+  state DisplayingItem
+
+  state DisplayingIndex {
+
+    [*] --> Alphabetical
+
+    state Alphabetical
+    state ByCategory
+
+    Alphabetical --> ByCategory : byCategory
+    ByCategory --> Alphabetical : alphabetical
+  }
+
+  state H <<history*>>
+
+  DisplayingItem --> DisplayingIndex : goToIndex
+  DisplayingIndex --> DisplayingItem : selectProduct
+
+  H --> DisplayingIndex
+}
+
+state DisplayingBasket
+state CheckingOut
+
+BrowseCatalog --> DisplayingBasket : goToBasket
+DisplayingIndex --> CheckingOut : goToCheckout
+
+DisplayingBasket --> H : goToCatalog
+CheckingOut --> H : goToCatalog
+
+BrowseCatalog --> [*] : exit
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Structured analysis from step 1:
+States:
+- UserAccountCreated
+- LoggedIn
+- VisaApplicationPending
+- VisaApproved
+- VisaRejected
+- StatusViewed
+- FeedbackGiven
+
+Initial state:
+UserAccountCreated
+
+Final states:
+VisaApproved
+VisaRejected
+
+Events or conditions:
+- CreateAccount
+- Login
+- ApplyForVisa
+- MakePayment
+- AcceptApplication
+- ViewStatus
+- CheckStatus
+- CancelApplication
+- ModifyDetails
+- ViewDetails
+- ViewPurposeOfApplication
+- GiveFeedback
+- Logout
+
+Transitions:
+1. UserAccountCreated -> LoggedIn: CreateAccount, Login
+2. LoggedIn -> VisaApplicationPending: ApplyForVisa, MakePayment, AcceptApplication
+3. VisaApplicationPending -> VisaApproved: CheckStatus (if approved)
+4. VisaApplicationPending -> VisaRejected: CheckStatus (if rejected)
+5. LoggedIn -> StatusViewed: ViewStatus
+6. StatusViewed -> FeedbackGiven: GiveFeedback
+7. LoggedIn -> CancelApplication: CancelApplication
+8. LoggedIn -> ModifyDetails: ModifyDetails
+9. LoggedIn -> ViewDetails: ViewDetails
+10. LoggedIn -> UserAccountCreated: Logout
+
+Missing or ambiguous details:
+- The requirement does not specify the sequence of events leading to the creation of an account and logging in.
+- It is unclear if "ViewPurposeOfApplication" is a separate event from "ViewDetails".
+- There is no explicit mention of what happens after "AcceptApplication"; it would be useful to clarify this transition.
+
+Now return only the final PlantUML.

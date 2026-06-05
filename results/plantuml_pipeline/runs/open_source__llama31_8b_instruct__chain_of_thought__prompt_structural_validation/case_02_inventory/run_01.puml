@@ -1,0 +1,23 @@
+@startuml
+[*] --> Inventory_Idle : Initial State
+Inventory_Idle -->|User adds new goods|> Adding_Goods : Add Goods to Inventory
+Inventory_Idle -->|User updates price|> Updating_Price : Update Price of Existing Items
+Inventory_Idle -->|Goods expire|> Expired_Goods : Remove Expired Goods from Inventory
+Inventory_Idle -->|User places order|> Placing_Order : Place Order for Additional Goods
+Adding_Goods -->|Successful addition|> Inventory_Idle : Add Goods to Inventory Complete
+Updating_Price -->|Successful update|> Inventory_Idle : Update Price of Existing Items Complete
+Expired_Goods -->|Successful removal|> Inventory_Idle : Remove Expired Goods from Inventory Complete
+Placing_Order --> Generating_Invoice : Place Order and Generate Invoice
+Generating_Invoice -->|Order complete|> Inventory_Idle : Order Complete
+Inventory_Idle --> Searching_for_Items : Search for Items Available in Inventory
+Searching_for_Items --> Calculating_Discount_Tax : Select Items for Purchase
+Calculating_Discount_Tax --> Generating_Receipt : Customer Completes Purchase
+Generating_Receipt -->|Receipt complete|> Transaction_Complete : Receipt Complete
+Transaction_Complete --> [*] : Final State
+
+Inventory_Idle -->|User replaces item or cancels receipt|> Replacing_Item_Canceling_Receipt : Replace Item or Cancel Receipt During Billing
+Replacing_Item_Canceling_Receipt --> Inventory_Idle : Replace Item or Cancel Receipt Complete
+Inventory_Idle --> Recording_Customer_Requests : Record Customer Requests for Items Not Currently Available
+
+Transaction_Complete --> [*] : Final State
+@enduml

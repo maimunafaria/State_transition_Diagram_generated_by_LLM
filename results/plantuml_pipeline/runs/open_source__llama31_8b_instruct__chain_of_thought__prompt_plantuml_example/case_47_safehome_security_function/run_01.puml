@@ -1,0 +1,32 @@
+@startuml
+title Safehome Security Function State Machine
+
+[*] --> PowerOn
+
+state PowerOn {
+    [*] --> ReadyToUse : no problem during startup
+    [*] --> Normal : problem during startup
+}
+
+state ReadyToUse {
+    [*] --> Monitoring : user activation request
+    [*] --> Normal : user enters password
+}
+
+state Monitoring {
+    [*] --> Normal : sensor trigger turns out to be false alarm or time ends
+    [*] --> Normal : user enters password
+}
+
+Monitoring --> Alarm : sensor trigger during monitoring
+
+state Alarm {
+    [*] --> Normal : false alarm or time ends
+    [*] --> Normal : user enters password
+}
+
+ReadyToUse --> Monitoring : user activation request
+PowerOn --> ReadyToUse : no problem during startup
+Normal --> PowerOn : power cycle
+
+@enduml

@@ -1,0 +1,57 @@
+@startuml
+title Safehome Security System State Transition Diagram
+
+[*] --> Initial : [Power-on]
+state Initial {
+  entry/perform startup checks
+  do/check system components
+  exit/successful startup -> Ready
+  exit/failure detected -> StartupFailure
+}
+
+state "Startup Failure" as StartupFailure {
+  entry/handle startup failure
+  do/initiate shutdown or reset
+  transition to [*] : [reset successful]
+}
+
+state Ready {
+  entry/system is operational
+  do/wait for user command
+  transition to Initial : [Reset pressed]
+  transition to Monitoring : [Activate]
+  transition to Off : [Deactivate]
+}
+
+state Monitoring {
+  entry/start monitoring sensors
+  do/watch for sensor inputs
+  transition to AlarmAlerting : [Sensor triggered]
+  transition to Ready : [Password entered]
+  transition to Off : [Deactivate]
+}
+
+state "Alarm/Alerting" as AlarmAlerting {
+  entry/sound alarm and send alerts
+  do/wait for resolution or timeout
+  transition to Monitoring : [Time elapsed or false alarm]
+  transition to Ready : [Password entered]
+  transition to Off : [Deactivate]
+}
+
+state Off {
+  entry/system turned off
+  do/power saved state
+  transition to [*] : [Power cycle]
+}
+
+Initial --> StartupFailure
+Ready --> Initial
+Monitoring --> AlarmAlerting
+AlarmAlerting --> Monitoring
+Monitoring --> Ready
+Monitoring --> Off
+Ready --> Off
+AlarmAlerting --> Off
+
+@enduml

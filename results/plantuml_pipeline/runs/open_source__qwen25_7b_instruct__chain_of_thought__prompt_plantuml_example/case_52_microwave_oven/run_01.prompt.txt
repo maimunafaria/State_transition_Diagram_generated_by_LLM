@@ -1,0 +1,211 @@
+=== Chain-of-thought analysis prompt ===
+You are a software requirements analyst preparing a UML state machine model.
+
+Analyze the requirement and extract only the modeling facts needed for a state transition diagram. Keep the analysis concise and evidence-based.
+
+Return the analysis using exactly these headings:
+States:
+Initial state:
+Final states:
+Events or conditions:
+Transitions:
+Missing or ambiguous details:
+
+Do not write PlantUML in this step.
+
+Requirement:
+Microwave Oven — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display the current time when it is waiting for user input.
+2. The system shall allow the user to choose between full power and half power levels.
+3. The system shall enable the user to set cooking time by entering a number.
+4. The system shall remain inactive if the door is open during operation.
+5. The system shall stop immediately when the door is opened during the cooking process.
+6. The system shall allow the user to cancel the cooking process.
+7. The system shall return to displaying the current time after stopping or cancelling and wait for the next use.
+
+=== Chain-of-thought analysis response ===
+States:
+- WaitingForInput
+- Cooking
+- Stopped
+
+Initial state:
+WaitingForInput
+
+Final states:
+Stopped
+
+Events or conditions:
+- DoorOpened
+- TimeSet
+- PowerSelected
+- CookTimeEntered
+- CancelCooking
+
+Transitions:
+- From WaitingForInput to Cooking: when CookTimeEntered and PowerSelected
+- From Cooking to Stopped: when DoorOpened
+- From Cooking to Stopped: when CancelCooking
+- From Stopped to WaitingForInput: after DoorClosed (implied by requirement 4)
+- From Stopping or Cancelling to WaitingForInput: after DoorClosed
+
+Missing or ambiguous details:
+- The exact state transition from Stopped back to WaitingForInput needs clarification. It is implied but not explicitly stated in the requirements.
+- The condition for transitioning from Cooking to Stopped when CancelCooking is triggered is not detailed (e.g., does it stop immediately, or does it finish the current cycle?).
+- The requirement 1 about displaying the current time is more related to user interface and might be better addressed in a use case diagram rather than state machine.
+
+=== PlantUML generation prompt ===
+You are a UML modeling expert.
+
+Convert the requirement and the structured analysis into one UML state transition diagram in PlantUML format.
+
+--- Example PlantUML Structure ---
+Use this training example only to understand PlantUML state diagram structure. Do not copy its domain states or transitions into the target answer.
+
+Example requirement:
+Textile — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow customers to create an account by filling in required details.
+2. The system shall enable customers to place orders for garments once they are registered.
+3. The system shall send out sample materials if a customer needs them after placing an order.
+4. The system shall review the availability of raw materials for orders that require stock checking.
+5. The system shall purchase raw materials if they are not available after stock checking.
+6. The system shall process raw materials if they are already available.
+7. The system shall begin garment production once raw materials are ready, either through purchasing or processing.
+8. The system shall conduct a defect check on the produced garments.
+9. The system shall deliver the finished garments to the customer if all checks pass.
+10. The system shall complete billing and payment processes after delivering the garments.
+11. The system shall generate a report along with feedback at the end of the process.
+
+Example PlantUML:
+@startuml
+
+[*] --> CustomerRegistration
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+CustomerRegistration : entry / Start state
+CustomerRegistration : do / Fill in required details
+CustomerRegistration : exit / Getting garment orders
+
+CustomerRegistration --> GettingGarmentOrders : registration complete
+
+GettingGarmentOrders : entry / Customer registration
+GettingGarmentOrders : do / Place the orders
+GettingGarmentOrders : exit / Sampling / Stock checking
+
+GettingGarmentOrders --> Sampling : sampling required
+GettingGarmentOrders --> StockChecking : check stock
+
+Sampling : entry / Getting garment orders
+Sampling : do / Send out sample materials while ordering
+Sampling : exit / decision
+
+Sampling --> Choice1 : proceed
+StockChecking --> Choice1
+
+StockChecking : entry / Getting garment orders
+StockChecking : do / Check availability of raw material
+StockChecking : exit / decision making
+
+Choice1 --> PurchasingRawMaterials : not in stock
+Choice1 --> ProcessingRawMaterials : in stock
+
+PurchasingRawMaterials : entry / Stock checking
+PurchasingRawMaterials : do / Buy raw materials
+PurchasingRawMaterials : exit / Production of garments
+
+ProcessingRawMaterials : entry / Stock checking
+ProcessingRawMaterials : do / Processing
+ProcessingRawMaterials : exit / Production of garments
+ProcessingRawMaterials --> Choice2
+PurchasingRawMaterials --> Choice2
+Choice2 --> ProductionOfGarments
+
+ProductionOfGarments : entry / Purchasing or processing of raw materials
+ProductionOfGarments : do / Manufacturing
+ProductionOfGarments : exit / Product checking
+
+ProductionOfGarments --> ProductChecking
+
+ProductChecking : entry / Production of garments
+ProductChecking : do / Checking for defects and clearance
+ProductChecking : exit / Receiving the ordered garments
+
+ProductChecking --> ReceivingOrderedGarments
+
+ReceivingOrderedGarments : entry / Product checking
+ReceivingOrderedGarments : do / Garment delivered
+ReceivingOrderedGarments : exit / Billing
+
+ReceivingOrderedGarments --> Billing
+
+Billing : entry / Receiving the ordered garments
+Billing : do / Making payments
+Billing : exit / Report generation
+
+Billing --> ReportGeneration
+
+ReportGeneration : entry / Billing
+ReportGeneration : do / Giving feedback
+ReportGeneration : exit / final state
+
+ReportGeneration --> [*]
+
+@enduml
+
+--- Target Task ---
+Output Rules:
+- Generate ONLY valid PlantUML code.
+- Start with @startuml and end with @enduml.
+- Use [*] for exactly one initial transition.
+- Include at least one final transition to [*].
+- Use clear transition labels when requirement evidence exists.
+- Do not include explanations, analysis, or markdown fences.
+
+Requirement:
+Microwave Oven — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display the current time when it is waiting for user input.
+2. The system shall allow the user to choose between full power and half power levels.
+3. The system shall enable the user to set cooking time by entering a number.
+4. The system shall remain inactive if the door is open during operation.
+5. The system shall stop immediately when the door is opened during the cooking process.
+6. The system shall allow the user to cancel the cooking process.
+7. The system shall return to displaying the current time after stopping or cancelling and wait for the next use.
+
+Structured analysis from step 1:
+States:
+- WaitingForInput
+- Cooking
+- Stopped
+
+Initial state:
+WaitingForInput
+
+Final states:
+Stopped
+
+Events or conditions:
+- DoorOpened
+- TimeSet
+- PowerSelected
+- CookTimeEntered
+- CancelCooking
+
+Transitions:
+- From WaitingForInput to Cooking: when CookTimeEntered and PowerSelected
+- From Cooking to Stopped: when DoorOpened
+- From Cooking to Stopped: when CancelCooking
+- From Stopped to WaitingForInput: after DoorClosed (implied by requirement 4)
+- From Stopping or Cancelling to WaitingForInput: after DoorClosed
+
+Missing or ambiguous details:
+- The exact state transition from Stopped back to WaitingForInput needs clarification. It is implied but not explicitly stated in the requirements.
+- The condition for transitioning from Cooking to Stopped when CancelCooking is triggered is not detailed (e.g., does it stop immediately, or does it finish the current cycle?).
+- The requirement 1 about displaying the current time is more related to user interface and might be better addressed in a use case diagram rather than state machine.
+
+Now return only the final PlantUML.

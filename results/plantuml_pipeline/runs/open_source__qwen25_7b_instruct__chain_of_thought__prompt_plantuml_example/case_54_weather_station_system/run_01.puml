@@ -1,0 +1,40 @@
+@startuml
+title UML state machine diagram
+
+[*] --> ShutDown : [powered-off condition]
+
+state "Shut Down" as ShutDown
+state "Running" as Running
+state "Configuration Mode" as ConfigMode
+state "Controlled Mode" as CtrlMode
+
+Running : entry/system is running
+Running : do/collect data when clock triggers
+Running : exit/after activity completion
+
+ConfigMode : entry/system in configuration mode
+ConfigMode : do/configure system settings
+ConfigMode : exit/system returns to running state after completion
+
+CtrlMode : entry/system enters controlled mode
+CtrlMode : do/system remains in controlled mode until command changes it
+
+ShutDown --> Running : [Restart Command]
+Running --> ConfigMode : [Changes or Power-Saving Settings Required]
+ConfigMode --> Running : [Configuration Completed]
+Running --> Running : [Clock Trigger (Data Collection)]
+Running --> Running : [Request for Weather Summary (Prepare and Send Out Summary)]
+Running --> Running : [Request for Status Check (Transmit Result)]
+Running, ConfigMode, CtrlMode --> Running : [Activity Completion (Data Collection, Summary Preparation, Status Checking)]
+Running --> ShutDown : [Shutdown Command]
+Running --> CtrlMode : [Remote Control Command]
+
+state "Final State" as FinalState
+FinalState : entry/system reaches final state
+
+Running --> FinalState
+ConfigMode --> FinalState
+CtrlMode --> FinalState
+ShutDown --> FinalState
+
+@enduml
