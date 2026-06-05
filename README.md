@@ -263,6 +263,11 @@ includes one training example, use `--few-shot-prompt-structure plantuml_example
 Outputs are written with a `__prompt_plantuml_example` suffix, for example
 `open_source__qwen25_7b_instruct__chain_of_thought__prompt_plantuml_example`.
 
+To run the chain-of-thought variant with structural validation rules in the
+second PlantUML-generation prompt, use `--few-shot-prompt-structure
+structural_validation`. Outputs are written with a
+`__prompt_structural_validation` suffix.
+
 Run only the RAG repair strategy:
 
 ```bash

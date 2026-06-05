@@ -526,11 +526,19 @@ def build_chain_of_thought_generation_prompt(
         "",
     ]
     prompt_structure = prompt_structure.strip().lower() or "original"
-    if prompt_structure == "uml_elements":
+    if prompt_structure in {"uml_elements", "uml_elements_structural_validation"}:
         parts.extend(
             [
                 "--- UML State Transition Diagram Elements ---",
                 *[f"- {element}" for element in _uml_elements_for_generation_prompt()],
+                "",
+            ]
+        )
+    if prompt_structure in {"structural_validation", "uml_elements_structural_validation"}:
+        parts.extend(
+            [
+                "--- Structural Validation Rules ---",
+                *[f"- {rule}" for rule in _repair_rules_for_generation_prompt()],
                 "",
             ]
         )
