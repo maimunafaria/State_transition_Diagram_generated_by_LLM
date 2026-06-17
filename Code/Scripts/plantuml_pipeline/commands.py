@@ -458,6 +458,7 @@ def command_run(args: argparse.Namespace) -> int:
     rag_db_dir = _resolve_root(args.rag_db_dir)
     split_output = _resolve_root(args.split_output)
     rag_mode = str(args.rag_mode).strip().lower()
+    rag_profile = str(args.rag_profile).strip().lower()
     rag_domain_hints = {s.strip().lower() for s in (args.rag_domain_hint or []) if s.strip()}
 
     cases = load_cases(dataset_root)
@@ -571,6 +572,7 @@ def command_run(args: argparse.Namespace) -> int:
         "results_root": str(results_root),
         "rag_docs_dir": str(rag_docs_dir),
         "rag_mode": rag_mode,
+        "rag_profile": rag_profile,
         "rag_db_dir": str(rag_db_dir),
         "rag_collection_name": args.rag_collection_name,
         "rag_doc_count": len(rag_docs),
@@ -652,6 +654,7 @@ def command_run(args: argparse.Namespace) -> int:
                             rag_mode=rag_mode,
                             rag_db_dir=rag_db_dir,
                             rag_collection_name=args.rag_collection_name,
+                            rag_profile=rag_profile,
                             few_shot_seed=args.few_shot_seed,
                             few_shot_count=args.few_shot_count,
                             few_shot_prompt_structure=args.few_shot_prompt_structure,

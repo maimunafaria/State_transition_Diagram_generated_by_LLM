@@ -76,6 +76,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="RAG retrieval mode",
     )
     p_run.add_argument(
+        "--rag-profile",
+        choices=["standard", "behavior_aware"],
+        default="standard",
+        help="RAG selection/prompting profile",
+    )
+    p_run.add_argument(
         "--rag-db-dir",
         default=str(DEFAULT_RAG_DB_DIR),
         help="Persisted vector database directory for --rag-mode vector",

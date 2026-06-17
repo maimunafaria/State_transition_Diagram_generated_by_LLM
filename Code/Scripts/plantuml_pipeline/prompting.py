@@ -105,6 +105,114 @@ def _extract_plantuml_code(content: str) -> str:
     return ""
 
 
+def _bucket_count(value: int, low: int, high: int) -> str:
+    if value <= low:
+        return "low"
+    if value <= high:
+        return "medium"
+    return "high"
+
+
+def _behavior_profile_from_text(text: str) -> dict[str, Any]:
+    tokens = tokenize(text)
+    lower = text.lower()
+    branching_terms = {
+        "if",
+        "else",
+        "invalid",
+        "valid",
+        "fail",
+        "failure",
+        "success",
+        "cancel",
+        "reject",
+        "approve",
+        "retry",
+        "timeout",
+        "error",
+        "choice",
+    }
+    terminal_terms = {
+        "complete",
+        "completed",
+        "finish",
+        "finished",
+        "end",
+        "logout",
+        "close",
+        "cancel",
+        "submit",
+        "approved",
+        "rejected",
+    }
+    lifecycle_terms = {
+        "create",
+        "register",
+        "login",
+        "search",
+        "view",
+        "update",
+        "delete",
+        "pay",
+        "payment",
+        "order",
+        "approve",
+        "reject",
+        "upload",
+        "download",
+    }
+    action_count = len(tokens & lifecycle_terms)
+    branch_count = len(tokens & branching_terms)
+    terminal_count = len(tokens & terminal_terms)
+    bullet_count = len(re.findall(r"(?m)^\s*(?:[-*]|\d+[.)])\s+", text))
+    sentence_count = len(re.findall(r"[.!?]\s+", text))
+    complexity_seed = action_count + branch_count + max(bullet_count, sentence_count // 2)
+    return {
+        "domains": infer_query_domains(text),
+        "branching": _bucket_count(branch_count, 1, 3),
+        "terminal": _bucket_count(terminal_count, 1, 3),
+        "complexity": _bucket_count(complexity_seed, 5, 12),
+        "tokens": tokens,
+    }
+
+
+def _behavior_profile_from_doc(name: str, content: str, tokens: set[str]) -> dict[str, Any]:
+    source_type = _rag_doc_source_type(name, content)
+    puml = _extract_plantuml_code(content)
+    profile_text = content
+    transition_count = 0
+    state_count = 0
+    if puml:
+        profile_text = puml
+        transition_count = len(re.findall(r"-->|->", puml))
+        state_names = set()
+        for match in re.finditer(r"(?m)^\s*(?:state\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*(?:-->|->|:|\\{|$)", puml):
+            state_names.add(match.group(1))
+        state_count = len(state_names)
+
+    profile = _behavior_profile_from_text(profile_text)
+    doc_domains = set(_extract_domain_from_name(name))
+    doc_domains.update(tok for tok in tokens if tok in DOMAIN_TOKEN_HINTS)
+    profile["domains"] = doc_domains
+    if transition_count:
+        profile["transition_count"] = transition_count
+        profile["complexity"] = _bucket_count(state_count or transition_count, 6, 14)
+    profile["source_type"] = source_type
+    return profile
+
+
+def _behavior_similarity(query_profile: dict[str, Any], doc_profile: dict[str, Any]) -> int:
+    score = 0
+    score += 4 * len(set(query_profile.get("domains", set())) & set(doc_profile.get("domains", set())))
+    for key in ("complexity", "branching", "terminal"):
+        if query_profile.get(key) == doc_profile.get(key):
+            score += 2
+    query_tokens = set(query_profile.get("tokens", set()))
+    doc_tokens = set(doc_profile.get("tokens", set()))
+    score += min(len(query_tokens & doc_tokens), 10)
+    return score
+
+
 def _clip_at_line(text: str, max_chars: int) -> str:
     clean = text.strip()
     if len(clean) <= max_chars:
@@ -173,12 +281,17 @@ def retrieve_rag_context(
     top_k: int,
     max_chars_per_doc: int = 1200,
     query_domain_hints: set[str] | None = None,
+    rag_profile: str = "standard",
 ) -> tuple[str, list[dict[str, Any]]]:
     if top_k <= 0 or not docs:
         return "", []
 
     query_tokens = tokenize(query)
     query_domains = infer_query_domains(query, explicit_hints=query_domain_hints)
+
+    behavior_profile = _behavior_profile_from_text(query)
+    if query_domain_hints:
+        behavior_profile["domains"] = set(behavior_profile.get("domains", set())) | set(query_domains)
 
     scored: list[dict[str, Any]] = []
     for name, content, tokens in docs:
@@ -189,23 +302,46 @@ def retrieve_rag_context(
         title_overlap = len(query_tokens & name_tokens)
         domain_overlap = len(query_domains & doc_domains)
 
+        source_type = _rag_doc_source_type(name, content)
+        doc_behavior_profile = _behavior_profile_from_doc(name, content, tokens)
+        behavior_score = _behavior_similarity(behavior_profile, doc_behavior_profile)
         score = lexical_overlap + (2 * title_overlap) + (3 * domain_overlap)
         scored.append(
             {
                 "name": name,
                 "content": content,
                 "token_count": len(tokens),
+                "source_type": source_type,
                 "score": score,
+                "behavior_score": behavior_score,
                 "lexical_overlap": lexical_overlap,
                 "title_overlap": title_overlap,
                 "domain_overlap": domain_overlap,
                 "doc_domains": sorted(doc_domains),
+                "behavior_profile": {
+                    key: value
+                    for key, value in doc_behavior_profile.items()
+                    if key not in {"tokens"}
+                },
             }
         )
+
+    profile = rag_profile.strip().lower()
+    if profile == "behavior_aware":
+        for item in scored:
+            source_bonus = 0
+            if item["source_type"] == "plantuml_rule":
+                source_bonus = 8
+            elif item["source_type"] == "dataset_example":
+                source_bonus = 4
+            elif item["source_type"] == "state_diagram_theory":
+                source_bonus = -6
+            item["score"] = item["score"] + item["behavior_score"] + source_bonus
 
     scored.sort(
         key=lambda item: (
             item["score"],
+            item["behavior_score"],
             item["domain_overlap"],
             item["title_overlap"],
             item["lexical_overlap"],
@@ -214,11 +350,23 @@ def retrieve_rag_context(
         reverse=True,
     )
 
-    for item in scored:
-        item["source_type"] = _rag_doc_source_type(item["name"], item["content"])
-
     source_types = {item["source_type"] for item in scored}
-    if {"dataset_example", "plantuml_rule", "state_diagram_theory"} & source_types:
+    if profile == "behavior_aware" and {"dataset_example", "plantuml_rule"} & source_types:
+        chosen = []
+        seen = set()
+        for source_type, limit in [
+            ("plantuml_rule", 2),
+            ("dataset_example", top_k),
+        ]:
+            category_items = [item for item in scored if item["source_type"] == source_type]
+            positive_items = [item for item in category_items if item["score"] > 0]
+            for item in (positive_items or category_items)[:limit]:
+                if item["name"] not in seen:
+                    chosen.append(item)
+                    seen.add(item["name"])
+        if not chosen:
+            chosen = scored[:top_k]
+    elif {"dataset_example", "plantuml_rule", "state_diagram_theory"} & source_types:
         chosen: list[dict[str, Any]] = []
         seen: set[str] = set()
         for source_type, limit in [
@@ -254,10 +402,12 @@ def retrieve_rag_context(
                 "name": item["name"],
                 "source_type": source_type,
                 "score": item["score"],
+                "behavior_score": item.get("behavior_score", 0),
                 "lexical_overlap": item["lexical_overlap"],
                 "title_overlap": item["title_overlap"],
                 "domain_overlap": item["domain_overlap"],
                 "doc_domains": item["doc_domains"],
+                "behavior_profile": item.get("behavior_profile", {}),
                 "clipped_chars": len(clipped),
             }
         )
@@ -389,6 +539,7 @@ def resolve_rag_context(
     rag_mode: str = "lexical",
     rag_db_dir: Path | None = None,
     rag_collection_name: str = "uml_docs",
+    rag_profile: str = "standard",
 ) -> tuple[str, list[dict[str, Any]]]:
     mode = rag_mode.strip().lower()
     if mode == "vector":
@@ -407,6 +558,7 @@ def resolve_rag_context(
         top_k=top_k,
         max_chars_per_doc=max_chars_per_doc,
         query_domain_hints=query_domain_hints,
+        rag_profile=rag_profile,
     )
 
 
@@ -642,6 +794,7 @@ def build_generation_prompt(
     rag_mode: str = "lexical",
     rag_db_dir: Path | None = None,
     rag_collection_name: str = "uml_docs",
+    rag_profile: str = "standard",
     few_shot_seed: int = 42,
     few_shot_count: int = 3,
     few_shot_prompt_structure: str = "original",
@@ -658,6 +811,7 @@ def build_generation_prompt(
         "rag": {
             "enabled": bool(cfg.use_rag),
             "mode": rag_mode,
+            "profile": rag_profile,
             "top_k": top_k_rag,
             "max_chars_per_doc": rag_max_chars_per_doc,
             "query_domains": sorted(
@@ -763,6 +917,7 @@ def build_generation_prompt(
 
     target_requirement_added = False
     if cfg.use_rag:
+        profile = rag_profile.strip().lower()
         rag_context, rag_trace = resolve_rag_context(
             query=requirement,
             docs=rag_docs,
@@ -772,6 +927,7 @@ def build_generation_prompt(
             rag_mode=rag_mode,
             rag_db_dir=rag_db_dir,
             rag_collection_name=rag_collection_name,
+            rag_profile=rag_profile,
         )
         prompt_meta["rag"]["retrieved_docs"] = rag_trace
         if rag_context:
@@ -779,6 +935,24 @@ def build_generation_prompt(
                 parts.append("Target requirement:")
                 parts.append(requirement)
                 target_requirement_added = True
+            if profile == "behavior_aware":
+                parts.extend(
+                    [
+                        "Retrieved validation checklist:",
+                        "1. Include exactly one top-level initial transition: [*] --> State.",
+                        "2. Include at least one final transition: State --> [*].",
+                        "3. Every declared state must be reachable from the initial state.",
+                        "4. Every transition source and target must exist.",
+                        "5. Do not create multiple top-level initial transitions.",
+                        "6. Do not add states or transitions not supported by the target requirement.",
+                        "",
+                        "Retrieved-context use policy:",
+                        "- Use retrieved examples only for structural pattern guidance.",
+                        "- Do not copy states, transitions, actors, or labels from examples unless directly supported by the target requirement.",
+                        "- If a retrieved example contains behavior not mentioned in the target requirement, ignore that behavior.",
+                        "",
+                    ]
+                )
             parts.append("Reference context (use as support; the target requirement above is primary):")
             parts.append(rag_context)
 

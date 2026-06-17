@@ -49,6 +49,7 @@ def run_single_generation(
     rag_mode: str = "lexical",
     rag_db_dir: Path | None = None,
     rag_collection_name: str = "uml_docs",
+    rag_profile: str = "standard",
     few_shot_seed: int = 42,
     few_shot_count: int = 3,
     few_shot_prompt_structure: str = "original",
@@ -114,6 +115,7 @@ def run_single_generation(
                 "rag": {
                     "enabled": False,
                     "mode": rag_mode,
+                    "profile": rag_profile,
                     "top_k": top_k_rag,
                     "max_chars_per_doc": rag_max_chars_per_doc,
                     "query_domains": [],
@@ -149,6 +151,7 @@ def run_single_generation(
                 rag_mode=rag_mode,
                 rag_db_dir=rag_db_dir,
                 rag_collection_name=rag_collection_name,
+                rag_profile=rag_profile,
                 few_shot_seed=few_shot_seed,
                 few_shot_count=few_shot_count,
                 few_shot_prompt_structure=few_shot_prompt_structure,
@@ -170,6 +173,7 @@ def run_single_generation(
                 {
                     "stage": "rag_retrieval",
                     "mode": str(rag_meta.get("mode", "lexical")),
+                    "profile": str(rag_meta.get("profile", "standard")),
                     "top_k": int(rag_meta.get("top_k", 0)),
                     "query_domains": list(rag_meta.get("query_domains", [])),
                     "retrieved_docs": list(rag_meta.get("retrieved_docs", [])),
