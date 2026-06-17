@@ -99,6 +99,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum repair attempts per generated diagram for repair-enabled configs",
     )
     p_run.add_argument(
+        "--repair-mode",
+        choices=["baseline", "targeted"],
+        default="baseline",
+        help="Repair prompt/acceptance mode for repair-enabled configs",
+    )
+    p_run.add_argument(
+        "--repair-model",
+        default="",
+        help="Optional model id used only for repair calls; default repairs with the generator model",
+    )
+    p_run.add_argument(
         "--test-size",
         type=float,
         default=0.35,
@@ -147,6 +158,14 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Optional tag added to RAG-family run_ids so ablation runs do not overwrite "
             "default RAG outputs, e.g. examples_only or rules_only."
+        ),
+    )
+    p_run.add_argument(
+        "--repair-ablation-tag",
+        default="",
+        help=(
+            "Optional tag added to repair-family run_ids so repair ablation runs do not "
+            "overwrite baseline repair outputs, e.g. targeted or deepseek_repair."
         ),
     )
     p_run.add_argument("--seed", type=int, default=42, help="Random seed")

@@ -12,6 +12,7 @@ from .prompting import (
     build_chain_of_thought_generation_prompt,
     build_generation_prompt,
     build_repair_prompt,
+    build_targeted_repair_prompt,
     select_fewshot_examples,
 )
 
@@ -30,6 +31,38 @@ def validation_repair_score(validation: ValidationResult) -> int:
     return (1000 if not validation.valid else 0) + (100 * len(validation.errors)) + len(
         validation.warnings
     )
+
+
+def repair_preserves_graph_shape(current_puml: str, repaired_puml: str) -> tuple[bool, dict[str, Any]]:
+    current_graph, _ = parse_and_validate_puml_text(current_puml)
+    repaired_graph, _ = parse_and_validate_puml_text(repaired_puml)
+    current_states = len(current_graph.states)
+    current_transitions = len(current_graph.transitions) + len(current_graph.final_states) + len(current_graph.initial_targets)
+    repaired_states = len(repaired_graph.states)
+    repaired_transitions = len(repaired_graph.transitions) + len(repaired_graph.final_states) + len(repaired_graph.initial_targets)
+
+    if current_states <= 2:
+        min_states = current_states
+    else:
+        min_states = max(2, int(current_states * 0.75))
+    if current_transitions <= 2:
+        min_transitions = current_transitions
+    else:
+        min_transitions = max(2, int(current_transitions * 0.70))
+
+    dropped_states = sorted(current_graph.states - repaired_graph.states)
+    added_states = sorted(repaired_graph.states - current_graph.states)
+    meta = {
+        "current_state_count": current_states,
+        "repaired_state_count": repaired_states,
+        "current_transition_count": current_transitions,
+        "repaired_transition_count": repaired_transitions,
+        "min_allowed_state_count": min_states,
+        "min_allowed_transition_count": min_transitions,
+        "dropped_states": dropped_states,
+        "added_states": added_states,
+    }
+    return repaired_states >= min_states and repaired_transitions >= min_transitions, meta
 
 
 def run_single_generation(
@@ -55,6 +88,8 @@ def run_single_generation(
     few_shot_prompt_structure: str = "original",
     run_index: int = 1,
     repair_attempts: int = DEFAULT_REPAIR_ATTEMPTS,
+    repair_mode: str = "baseline",
+    repair_model_name: str = "",
     initial_puml: str | None = None,
     initial_prompt: str = "",
     initial_source: str = "",
@@ -240,14 +275,23 @@ def run_single_generation(
             critic_prompt = ""
             critic_feedback = ""
 
-            repair_prompt = build_repair_prompt(
-                requirement,
-                final_puml,
-                final_validation,
-                critic_feedback,
-            )
+            repair_mode_clean = repair_mode.strip().lower()
+            if repair_mode_clean == "targeted":
+                repair_prompt = build_targeted_repair_prompt(
+                    requirement,
+                    final_puml,
+                    final_validation,
+                    critic_feedback,
+                )
+            else:
+                repair_prompt = build_repair_prompt(
+                    requirement,
+                    final_puml,
+                    final_validation,
+                    critic_feedback,
+                )
             repaired = call_model(
-                model_name=cfg.model_name,
+                model_name=repair_model_name.strip() or cfg.model_name,
                 prompt=repair_prompt,
                 ollama_host=ollama_host,
                 temperature=temperature,
@@ -260,11 +304,16 @@ def run_single_generation(
             repaired_issues = strict_state_diagram_issues(repaired_validation)
             current_score = validation_repair_score(final_validation)
             repaired_score = validation_repair_score(repaired_validation)
-            accepted = repaired_score < current_score
+            preserves_shape, preservation_meta = repair_preserves_graph_shape(final_puml, repaired_puml)
+            accepted = repaired_score < current_score and (
+                repair_mode_clean != "targeted" or preserves_shape or repaired_score == 0
+            )
             attempt_artifacts.append(
                 {
                     "stage": "repair",
                     "attempt": attempt,
+                    "repair_mode": repair_mode_clean,
+                    "repair_model_name": repair_model_name.strip() or cfg.model_name,
                     "repair_prompt": repair_prompt,
                     "puml": repaired_puml,
                     "validation": repaired_validation.to_dict(),
@@ -272,6 +321,7 @@ def run_single_generation(
                     "accepted": accepted,
                     "previous_score": current_score,
                     "repair_score": repaired_score,
+                    "preservation": preservation_meta,
                 }
             )
             if accepted:
@@ -285,8 +335,12 @@ def run_single_generation(
                     "stage": "repair",
                     "attempt": attempt,
                     "accepted": accepted,
+                    "repair_mode": repair_mode_clean,
+                    "repair_model_name": repair_model_name.strip() or cfg.model_name,
                     "previous_score": current_score,
                     "repair_score": repaired_score,
+                    "preserves_graph_shape": preserves_shape,
+                    "preservation": preservation_meta,
                     "plantuml_valid": repaired_validation.valid,
                     "strict_state_diagram_valid": not repaired_issues,
                     "errors": list(repaired_validation.errors),

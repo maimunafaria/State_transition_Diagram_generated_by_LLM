@@ -98,14 +98,32 @@ def _existing_base_run_for_repair(
     if not base_run_id:
         return None
 
-    base_dir = results_root / "runs" / base_run_id / case_id
-    puml_path = base_dir / f"run_{run_index:02d}.puml"
+    base_run_candidates = [base_run_id]
+    if "__" in base_run_id:
+        untagged_base_run_id = base_run_id.rsplit("__", 1)[0]
+        if untagged_base_run_id != base_run_id:
+            base_run_candidates.append(untagged_base_run_id)
+
+    puml_path = None
+    prompt_path = None
+    selected_base_run_id = ""
+    for candidate_base_run_id in base_run_candidates:
+        base_dir = results_root / "runs" / candidate_base_run_id / case_id
+        candidate_puml_path = base_dir / f"run_{run_index:02d}.puml"
+        if candidate_puml_path.exists():
+            selected_base_run_id = candidate_base_run_id
+            puml_path = candidate_puml_path
+            prompt_path = base_dir / f"run_{run_index:02d}.prompt.txt"
+            break
+
+    if puml_path is None:
+        return None
+
     if not puml_path.exists():
         return None
 
-    prompt_path = base_dir / f"run_{run_index:02d}.prompt.txt"
     return {
-        "run_id": base_run_id,
+        "run_id": selected_base_run_id,
         "strategy": source_strategy,
         "puml_path": str(puml_path),
         "prompt_path": str(prompt_path) if prompt_path.exists() else "",
@@ -497,6 +515,7 @@ def command_run(args: argparse.Namespace) -> int:
         deepseek14_model=args.deepseek14_model,
         gemma3_model=args.gemma3_model,
         rag_ablation_tag=args.rag_ablation_tag,
+        repair_ablation_tag=args.repair_ablation_tag,
     )
     # Allow running open-source experiments without requiring OpenAI credentials.
     if args.skip_gpt_baseline:
@@ -586,10 +605,14 @@ def command_run(args: argparse.Namespace) -> int:
         "rag_top_k": args.top_k_rag,
         "rag_max_chars_per_doc": args.rag_max_chars_per_doc,
         "rag_domain_hints": sorted(rag_domain_hints),
+        "rag_ablation_tag": args.rag_ablation_tag,
+        "repair_ablation_tag": args.repair_ablation_tag,
         "runs_per_case": args.runs,
         "few_shot_count": args.few_shot_count,
         "few_shot_prompt_structure": args.few_shot_prompt_structure,
         "repair_attempts": args.repair_attempts,
+        "repair_mode": args.repair_mode,
+        "repair_model": args.repair_model,
         "baseline_subset_size_target": args.baseline_subset_size,
         "baseline_subset_size_actual": len(baseline_cases),
         "baseline_subset_case_ids": [c.case_id for c in baseline_cases],
@@ -660,6 +683,8 @@ def command_run(args: argparse.Namespace) -> int:
                             few_shot_prompt_structure=args.few_shot_prompt_structure,
                             run_index=run_index,
                             repair_attempts=args.repair_attempts,
+                            repair_mode=args.repair_mode,
+                            repair_model_name=args.repair_model,
                             initial_puml=read_text(Path(reused_base["puml_path"]))
                             if reused_base
                             else None,

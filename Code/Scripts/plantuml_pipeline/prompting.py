@@ -1254,13 +1254,110 @@ def _repair_guidance_for_issues(issues: list[str]) -> list[str]:
     return guidance
 
 
+def _repair_issue_priority(issue: str) -> int:
+    low = issue.lower()
+    if "plantuml_syntax_error" in low or "empty src/dst" in low:
+        return 1
+    if "invalid [*]" in low:
+        return 2
+    if "missing_initial_state_transition" in low or "multiple_initial_state_transitions" in low:
+        return 3
+    if "missing_final_state_transition" in low:
+        return 4
+    if "duplicate_transitions" in low:
+        return 6
+    if "orphan" in low:
+        return 7
+    if "unreachable" in low:
+        return 8
+    if "choice_" in low or "fork_" in low or "join_" in low or "history_state" in low:
+        return 9
+    return 5
+
+
+def _prioritized_repair_issues(validation: ValidationResult) -> list[str]:
+    issues = list(validation.errors) + list(validation.warnings)
+    return sorted(issues, key=lambda issue: (_repair_issue_priority(issue), issue))
+
+
+def _validation_issue_details(validation: ValidationResult) -> list[str]:
+    details: list[str] = []
+    if not validation.valid:
+        details.append("PlantUML syntax is invalid. Repair syntax before changing structure.")
+    if validation.initial_state:
+        details.append(f"Current initial state: {validation.initial_state}")
+    else:
+        details.append("Current initial state: none or ambiguous")
+    if validation.unreachable_states:
+        details.append("Unreachable states: " + ", ".join(validation.unreachable_states))
+    details.append(f"State count: {validation.state_count}")
+    details.append(f"Transition count: {validation.transition_count}")
+    if validation.duplicate_transition_count:
+        details.append(f"Duplicate transition count: {validation.duplicate_transition_count}")
+    return details
+
+
+def build_targeted_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+) -> str:
+    validation_issues = _prioritized_repair_issues(validation)
+    repair_guidance = _repair_guidance_for_issues(validation_issues)
+    issue_details = _validation_issue_details(validation)
+    issue_count = len(validation_issues)
+    if issue_count <= 2:
+        severity_rule = "Use targeted repair: fix only the listed localized issue(s)."
+    elif issue_count <= 5:
+        severity_rule = "Use guided repair: fix issues in priority order while preserving all supported behavior."
+    else:
+        severity_rule = (
+            "The diagram has many issues. Keep the existing diagram only as a draft and rebuild the smallest "
+            "valid diagram supported by the requirement; do not copy unsupported draft behavior."
+        )
+
+    return (
+        "You are a violation-specific UML repair assistant.\n"
+        "Repair the candidate PlantUML in priority order.\n"
+        "Do not redesign the diagram unless the issue count is severe.\n"
+        "Prefer the smallest possible edit that fixes the current highest-priority issue.\n"
+        "Preserve requirement-supported states and transitions.\n"
+        "Do not delete states/transitions merely to pass validation unless they are unsupported by the requirement.\n"
+        "Do not introduce states or transitions that are not supported by the requirement.\n"
+        "Output ONLY corrected PlantUML. No markdown fences. No explanation.\n\n"
+        "Repair strategy:\n"
+        f"{severity_rule}\n\n"
+        "Priority order:\n"
+        "1. Syntax errors\n"
+        "2. Parse warnings and invalid [*] transitions\n"
+        "3. Missing or multiple initial states\n"
+        "4. Missing final state\n"
+        "5. Invalid transition source/target\n"
+        "6. Duplicate transitions\n"
+        "7. Orphan states\n"
+        "8. Unreachable states\n"
+        "9. Choice/fork/join/history errors\n\n"
+        "Issue-specific details:\n"
+        + "\n".join(f"- {detail}" for detail in issue_details)
+        + "\n\nRequirement:\n"
+        f"{requirement}\n\n"
+        "Candidate PlantUML:\n"
+        f"{candidate_puml}\n\n"
+        "Validation issues to fix, already sorted by priority:\n"
+        + ("\n".join(f"- {err}" for err in validation_issues) if validation_issues else "- none")
+        + "\n\nRepair guidance for these issues:\n"
+        + "\n".join(f"- {hint}" for hint in repair_guidance)
+    )
+
+
 def build_repair_prompt(
     requirement: str,
     candidate_puml: str,
     validation: ValidationResult,
     critic_feedback: str = "",
 ) -> str:
-    validation_issues = list(validation.errors) + list(validation.warnings)
+    validation_issues = _prioritized_repair_issues(validation)
     repair_guidance = _repair_guidance_for_issues(validation_issues)
     return (
         "You are a UML repair assistant.\n"

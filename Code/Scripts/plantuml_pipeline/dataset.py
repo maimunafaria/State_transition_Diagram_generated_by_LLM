@@ -163,6 +163,7 @@ def build_experiment_configs(
     deepseek14_model: str,
     gemma3_model: str,
     rag_ablation_tag: str = "",
+    repair_ablation_tag: str = "",
 ) -> list[ExperimentConfig]:
     configs: list[ExperimentConfig] = [
         ExperimentConfig(
@@ -204,6 +205,7 @@ def build_experiment_configs(
         return re.sub(r"[^a-z0-9]+", "_", tag.strip().lower()).strip("_")
 
     rag_tag = normalize_tag(rag_ablation_tag)
+    repair_tag = normalize_tag(repair_ablation_tag)
 
     for model_label, model_name, model_tag in open_models:
         for strategy, use_rag, use_validation, use_ensemble in strategies:
@@ -216,6 +218,8 @@ def build_experiment_configs(
             run_id = f"open_source__{model_tag}__{strategy}"
             if use_rag and rag_tag:
                 run_id = f"{run_id}__{rag_tag}"
+            if "repair" in strategy and repair_tag:
+                run_id = f"{run_id}__{repair_tag}"
             configs.append(
                 ExperimentConfig(
                     run_id=run_id,
