@@ -31,6 +31,7 @@ METHOD_LABELS = {
     "zero_shot_validation_generator_critic_repair": "Zero-shot + Repair",
     "one_shot_validation_generator_critic_repair": "One-shot + Repair",
     "few_shot_validation_generator_critic_repair": "Few-shot + Repair",
+    "chain_of_thought_validation_generator_critic_repair": "Chain-of-thought + Repair",
     "rag_structural_validation": "RAG + Validation",
     "rag_validation_generator_critic_repair": "RAG + Repair",
 }

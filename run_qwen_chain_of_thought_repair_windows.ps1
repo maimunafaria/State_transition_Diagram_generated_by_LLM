@@ -1,0 +1,35 @@
+param(
+  [int]$Runs = 1,
+  [int]$RepairAttempts = 5,
+  [switch]$SkipExisting
+)
+
+$ErrorActionPreference = "Stop"
+
+$env:PYTHONPATH = "Code\Scripts"
+
+$commandArgs = @(
+  "Code\Scripts\plantuml_experiment_pipeline.py",
+  "run",
+  "--dataset-root", "dataset",
+  "--results-root", "results\plantuml_pipeline",
+  "--rag-db-dir", "results\rag_db",
+  "--skip-gpt-baseline",
+  "--only-run-id", "open_source__qwen25_7b_instruct__chain_of_thought_validation_generator_critic_repair",
+  "--repair-attempts", "$RepairAttempts",
+  "--runs", "$Runs",
+  "--save-prompts"
+)
+
+if ($SkipExisting) {
+  $commandArgs += "--skip-existing"
+}
+
+Write-Host "Running Qwen 2.5 7B chain-of-thought repair for all test cases..."
+Write-Host "Runs per case/config: $Runs"
+Write-Host "Repair attempts per case: $RepairAttempts"
+if ($SkipExisting) {
+  Write-Host "Skipping existing repaired files."
+}
+
+python @commandArgs

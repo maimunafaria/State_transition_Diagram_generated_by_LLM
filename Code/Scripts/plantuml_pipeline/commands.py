@@ -88,6 +88,12 @@ def _existing_base_run_for_repair(
             "__zero_shot",
         )
         source_strategy = "zero_shot"
+    elif cfg.strategy == "chain_of_thought_validation_generator_critic_repair":
+        base_run_id = cfg.run_id.replace(
+            "__chain_of_thought_validation_generator_critic_repair",
+            "__chain_of_thought",
+        )
+        source_strategy = "chain_of_thought"
 
     if not base_run_id:
         return None

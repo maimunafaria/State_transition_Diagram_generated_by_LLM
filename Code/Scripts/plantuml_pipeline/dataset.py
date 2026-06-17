@@ -190,6 +190,7 @@ def build_experiment_configs(
         ("zero_shot", False, False, False),
         ("few_shot", False, False, False),
         ("chain_of_thought", False, False, False),
+        ("chain_of_thought_validation_generator_critic_repair", False, True, True),
         ("zero_shot_validation_generator_critic_repair", False, True, True),
         ("few_shot_validation_generator_critic_repair", False, True, True),
         ("rag", True, False, False),
