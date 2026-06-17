@@ -1,0 +1,315 @@
+{
+  "run_id": "open_source__qwen25_7b_instruct__rag__graph",
+  "case_id": "case_59_atm_1",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nAtm Scenario 1 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to choose or enter a withdrawal amount.\n2. The system shall support predefined amounts for selection by the user.\n3. The system shall allow users to input their own custom withdrawal amount.\n4. The system shall provide an option for the user to cancel the transaction at any point.\n5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Aliases, Notes, and Descriptions\n\nUse this document when state names are long or when the diagram needs annotations.\n\n## Long state names with alias\n\nUse aliases to keep transitions readable when state names are long.\n\n```plantuml\nstate \"Waiting for Payment Confirmation\" as WaitingPayment\nstate \"Order Completed Successfully\" as OrderComplete\n\nWaitingPayment --> OrderComplete : payment confirmed\n```\n\nAlternative alias form:\n\n```plantuml\nstate WaitingPayment as \"Waiting for Payment Confirmation\"\n```\n\n## Notes attached to states\n\nUse notes to add additional explanation without changing the state name.\n\n```plantuml\nnote right of Processing : validates request details\n```\n\nMulti-line notes:\n\n```plantuml\nnote left of Processing\nThe system checks the request,\n\n# PlantUML State Diagram Points, Pins, and Arrow Direction\n\nUse this document for less common state diagram syntax.\n\n## Entry and exit points\n\nEntry and exit points can be declared with stereotypes.\n\n```plantuml\nstate e1 <<entryPoint>>\nstate x1 <<exitPoint>>\n\n[*] --> e1\ne1 --> Processing\nProcessing --> x1\nx1 --> [*]\n```\n\n## Input and output pins\n\nUse `<<inputPin>>` and `<<outputPin>>` when the diagram needs explicit input/output pin notation.\n\n```plantuml\nstate input1 <<inputPin>>\nstate output1 <<outputPin>>\n\ninput1 --> Processing\nProcessing --> output1\n```\n\n## Expansion nodes\n\nUse `<<expansionInput>>` and `<<expansionOutput>>` for expansion nodes.\n\n```plantuml\nstate expIn <<expansionInput>>\nstate expOut <<expansionOutput>>\n\nexpIn --> Processing\nProcessing --> expOut\n```\n\nExample requirement:\nAlert Notifier — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall initialize a component to detect updates upon initial loading.\n2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.\n3. The system shall process detected updates by storing them and evaluating their significance.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Alert Notifier Component States\n\n[*] --> InitializeComponent : Load Component\n\nstate \"Initialize\\nComponent\" as InitializeComponent\nstate \"Waiting for Update\" as WaitingForUpdate\nstate \"Processing Update\" as ProcessingUpdate\nstate \"Unloading Component\" as UnloadingComponent\n\nWaitingForUpdate : do / checkForUpdate\n\nProcessingUpdate : entry / storeUpdate\nProcessingUpdate : do / evaluateUpdate\nProcessingUpdate : exit / [update > delta] Operator.Notify(update)\n\nUnloadingComponent : exit / compMgr.compUnloaded()\n\nInitializeComponent --> WaitingForUpdate : [ init. success ]\nInitializeComponent --> UnloadingComponent : [ init. failure ]\n\nWaitingForUpdate --> ProcessingUpdate : stock update\nProcessingUpdate --> WaitingForUpdate\n\nWaitingForUpdate --> UnloadingComponent : shutdown\n\nUnloadingComponent --> [*]\n\n@enduml\n```\n\nExample requirement:\nProduct Recommendation — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to register or sign in to access the platform.\n2. The system shall enable users to search for products after they have registered or logged in.\n3. The system shall display matching product results based on the user's search query.\n\nReference PlantUML:\n```plantuml\n@startuml\n[*] --> Register\nRegister : entry / nil\nRegister : do / login / Register\nRegister : exit / valid registration / login\n\nRegister --> SearchProduct : user registers\nSearchProduct : entry / login\nSearchProduct : do / search for the product\nSearchProduct : exit / display search results\n\nSearchProduct --> SearchFilterProductFilter : user applies filters\nSearchFilterProductFilter : entry / search product\nSearchFilterProductFilter : do / apply filters to get desired results\nSearchFilterProductFilter : exit / display filtered results\nstate J1 <<choice>>\nSearchProduct --> J1 : user selects product\nSearchFilterProductFilter --> J1 : user selects product\nGetProduct : entry / login\nGetProduct : do / get the product from the official website\nGetProduct : exit / redirect to the website\nJ1 --> GetProduct \nGetProduct --> [*]\n@enduml\n```\n\nExample requirement:\nAtm Many Scenarios Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the entered PIN is correct.\n2. The system shall ask the user to try again if the entered PIN is incorrect.\n3. The system shall keep the card for security reasons if the PIN is entered incorrectly too many times or if the card is invalid.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Same Event and Action on Different Transitions\n\n[*] --> Idle\n\nstate Idle\nstate \"Waiting for PIN\" as WaitingForPIN\nstate \"Validating PIN\" as ValidatingPIN\nstate \"Waiting for Customer Choice\" as WaitingForChoice\nstate Confiscating\nstate Ejecting\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu\nValidatingPIN --> Confiscating : Third Invalid PIN,\\nCard Stolen, Card Expired /\\nConfiscate\n\nWaitingForPIN --> Ejecting : Cancel / Eject\nValidatingPIN --> Ejecting : Cancel / Eject\nWaitingForChoice --> Ejecting : Cancel / Eject\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Atm Scenario 1 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to choose or enter a withdrawal amount.\n2. The system shall support predefined amounts for selection by the user.\n3. The system shall allow users to input their own custom withdrawal amount.\n4. The system shall provide an option for the user to cancel the transaction at any point.\n5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag__graph\\case_59_atm_1\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "unreachable_states_detected",
+      "unreachable: CancelTransaction, Cancelled, Choose Amount, Custom\\nAmount, Predefined\\nAmounts, ReturnCard, Transaction in Progress"
+    ],
+    "initial_state": "ChooseAmount",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [
+      "CancelTransaction",
+      "Cancelled",
+      "Choose Amount",
+      "Custom\\nAmount",
+      "Predefined\\nAmounts",
+      "ReturnCard",
+      "Transaction in Progress"
+    ],
+    "state_count": 8,
+    "transition_count": 7
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "unreachable_states_detected",
+      "unreachable: CancelTransaction, Cancelled, Choose Amount, Custom\\nAmount, Predefined\\nAmounts, ReturnCard, Transaction in Progress"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "graph",
+      "profile": "standard",
+      "top_k": 3,
+      "query_domains": [],
+      "retrieved_docs": [
+        {
+          "name": "plantuml_rules\\plantuml_state_alias_notes_descriptions.md",
+          "source_type": "plantuml_rule",
+          "score": 18,
+          "graph_score": 0,
+          "lexical_overlap": 10,
+          "title_overlap": 0,
+          "domain_overlap": 0,
+          "doc_domains": [
+            "order",
+            "payment"
+          ],
+          "query_graph_features": {
+            "state_count": 5,
+            "transition_count": 7,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 2,
+            "guarded_count": 2,
+            "state_bucket": "low",
+            "transition_bucket": "low",
+            "branching_bucket": "medium",
+            "loop_bucket": "low"
+          },
+          "doc_graph_features": {},
+          "clipped_chars": 779
+        },
+        {
+          "name": "plantuml_rules\\plantuml_state_points_pins_and_direction.md",
+          "source_type": "plantuml_rule",
+          "score": 16,
+          "graph_score": 0,
+          "lexical_overlap": 6,
+          "title_overlap": 1,
+          "domain_overlap": 0,
+          "doc_domains": [],
+          "query_graph_features": {
+            "state_count": 5,
+            "transition_count": 7,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 2,
+            "guarded_count": 2,
+            "state_bucket": "low",
+            "transition_bucket": "low",
+            "branching_bucket": "medium",
+            "loop_bucket": "low"
+          },
+          "doc_graph_features": {},
+          "clipped_chars": 781
+        },
+        {
+          "name": "dataset_examples\\case_74_alert_notifier.md",
+          "source_type": "dataset_example",
+          "score": 65,
+          "graph_score": 43,
+          "lexical_overlap": 18,
+          "title_overlap": 0,
+          "domain_overlap": 0,
+          "doc_domains": [],
+          "query_graph_features": {
+            "state_count": 5,
+            "transition_count": 7,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 2,
+            "guarded_count": 2,
+            "state_bucket": "low",
+            "transition_bucket": "low",
+            "branching_bucket": "medium",
+            "loop_bucket": "low"
+          },
+          "doc_graph_features": {
+            "state_count": 5,
+            "transition_count": 7,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 0,
+            "guarded_count": 2,
+            "state_bucket": "low",
+            "transition_bucket": "low",
+            "branching_bucket": "medium",
+            "loop_bucket": "low"
+          },
+          "clipped_chars": 1266
+        },
+        {
+          "name": "dataset_examples\\case_04_product_recommendation.md",
+          "source_type": "dataset_example",
+          "score": 58,
+          "graph_score": 38,
+          "lexical_overlap": 16,
+          "title_overlap": 0,
+          "domain_overlap": 0,
+          "doc_domains": [
+            "recommendation"
+          ],
+          "query_graph_features": {
+            "state_count": 5,
+            "transition_count": 7,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 2,
+            "guarded_count": 2,
+            "state_bucket": "low",
+            "transition_bucket": "low",
+            "branching_bucket": "medium",
+            "loop_bucket": "low"
+          },
+          "doc_graph_features": {
+            "state_count": 5,
+            "transition_count": 7,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 1,
+            "guarded_count": 0,
+            "state_bucket": "low",
+            "transition_bucket": "low",
+            "branching_bucket": "low",
+            "loop_bucket": "low"
+          },
+          "clipped_chars": 1244
+        },
+        {
+          "name": "dataset_examples\\case_68_atm_many_scenarios_3.md",
+          "source_type": "dataset_example",
+          "score": 58,
+          "graph_score": 28,
+          "lexical_overlap": 24,
+          "title_overlap": 1,
+          "domain_overlap": 0,
+          "doc_domains": [
+            "customer"
+          ],
+          "query_graph_features": {
+            "state_count": 5,
+            "transition_count": 7,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 2,
+            "guarded_count": 2,
+            "state_bucket": "low",
+            "transition_bucket": "low",
+            "branching_bucket": "medium",
+            "loop_bucket": "low"
+          },
+          "doc_graph_features": {
+            "state_count": 6,
+            "transition_count": 9,
+            "final_count": 0,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 0,
+            "guarded_count": 0,
+            "state_bucket": "low",
+            "transition_bucket": "medium",
+            "branching_bucket": "low",
+            "loop_bucket": "low"
+          },
+          "clipped_chars": 1156
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: CancelTransaction, Cancelled, Choose Amount, Custom\\nAmount, Predefined\\nAmounts, ReturnCard, Transaction in Progress"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: CancelTransaction, Cancelled, Choose Amount, Custom\\nAmount, Predefined\\nAmounts, ReturnCard, Transaction in Progress"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: CancelTransaction, Cancelled, Choose Amount, Custom\\nAmount, Predefined\\nAmounts, ReturnCard, Transaction in Progress"
+        ],
+        "initial_state": "ChooseAmount",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "CancelTransaction",
+          "Cancelled",
+          "Choose Amount",
+          "Custom\\nAmount",
+          "Predefined\\nAmounts",
+          "ReturnCard",
+          "Transaction in Progress"
+        ],
+        "state_count": 8,
+        "transition_count": 7
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag__graph\\case_59_atm_1\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 8,
+    "state_fn": 4,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 7,
+    "transition_fn": 2,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 7,
+    "state_fn_relaxed": 4,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 7,
+    "transition_fn_relaxed": 2,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 7,
+    "transition_fn_semantic": 2,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "unreachable_states_detected",
+      "unreachable: CancelTransaction, Cancelled, Choose Amount, Custom\\nAmount, Predefined\\nAmounts, ReturnCard, Transaction in Progress"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "unreachable_states_detected",
+      "unreachable: CancelTransaction, Cancelled, Choose Amount, Custom\\nAmount, Predefined\\nAmounts, ReturnCard, Transaction in Progress"
+    ]
+  }
+}

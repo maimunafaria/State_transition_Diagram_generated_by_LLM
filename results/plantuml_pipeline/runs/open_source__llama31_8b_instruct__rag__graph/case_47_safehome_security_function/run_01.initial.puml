@@ -1,0 +1,30 @@
+@startuml
+[*] --> PowerOn : power-on
+
+state "Power On" as PowerOn
+state "Problem During Startup" as ProblemStartup
+state "Ready To Use" as ReadyToUse
+state "Monitoring" as Monitoring
+state "Alarm And Alerts" as AlarmAndAlerts
+state "Normal" as Normal
+
+PowerOn --> ProblemStartup : problem during startup
+ProblemStartup --> [*] : stop system
+
+PowerOn --> ReadyToUse : everything fine during startup
+
+ReadyToUse --> Reset : reset pressed
+Reset --> PowerOn : reset to power on
+
+ReadyToUse --> Activate : activate pressed
+Activate --> Monitoring : start monitoring
+
+Monitoring --> AlarmAndAlerts : sensor triggered
+AlarmAndAlerts --> Monitoring : false alarm or time ends
+
+ReadyToUse --> TurnOff : turn off pressed
+TurnOff --> Normal : stop system and return to normal
+
+Normal --> PowerOn : power on pressed
+
+@enduml

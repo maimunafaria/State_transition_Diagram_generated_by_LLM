@@ -1,0 +1,86 @@
+@startuml
+[*] --> AccountCreation
+
+state AccountCreation
+AccountCreation : entry / Collect user details
+AccountCreation : do / Validate details
+AccountCreation : exit / Account created or error
+
+AccountCreation --> Login : [Details Valid]
+AccountCreation --> [*] : [Details Invalid]
+
+state Login
+Login : entry / Get login credentials
+Login : do / Authenticate user
+Login : exit / Logged in or authentication failed
+
+Login --> VisaApplication : [Authentication Successful]
+Login --> [*] : [Authentication Failed]
+
+state VisaApplication
+VisaApplication : entry / Initiate visa application
+VisaApplication : do / Collect application details, payment
+VisaApplication : exit / Application submitted
+
+VisaApplication --> StatusView : [Payment Successful]
+VisaApplication --> [*] : [Payment Failed]
+
+state StatusView
+StatusView : entry / Display visa status
+StatusView : do / Fetch and display status
+StatusView : exit / Status viewed
+
+StatusView --> StatusCheck : [Status viewed]
+StatusView --> [*] : [Error]
+
+state StatusCheck
+StatusCheck : entry / Verify status
+StatusCheck : do / Display status
+StatusCheck : exit / Status confirmed
+
+state CancelApplication
+CancelApplication : entry / Initiate cancellation
+CancelApplication : do / Process cancellation request
+CancelApplication : exit / Application cancelled
+
+state ModifyDetails
+ModifyDetails : entry / Initiate details modification
+ModifyDetails : do / Collect and validate new details
+ModifyDetails : exit / Details modified
+
+state ViewDetails
+ViewDetails : entry / Display user details
+ViewDetails : do / Fetch and display details
+ViewDetails : exit / Details viewed
+
+state ViewPurpose
+ViewPurpose : entry / Display application purpose
+ViewPurpose : do / Fetch and display purpose
+ViewPurpose : exit / Purpose viewed
+
+state Feedback
+Feedback : entry / Collect user feedback
+Feedback : do / Store feedback
+Feedback : exit / Feedback submitted
+
+state Logout
+Logout : entry / Initiate logout
+Logout : do / Clear session
+Logout : exit / Logged out
+
+VisaApplication --> ModifyDetails
+VisaApplication --> ViewDetails
+VisaApplication --> ViewPurpose
+VisaApplication --> CancelApplication
+VisaApplication --> StatusView
+
+StatusView --> Feedback
+StatusView --> StatusCheck
+
+ModifyDetails --> Logout
+ViewDetails --> Logout
+ViewPurpose --> Logout
+CancelApplication --> Logout
+Feedback --> Logout
+
+@enduml

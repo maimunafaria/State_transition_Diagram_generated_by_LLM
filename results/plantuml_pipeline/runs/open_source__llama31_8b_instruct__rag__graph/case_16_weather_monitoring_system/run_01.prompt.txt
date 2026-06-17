@@ -1,0 +1,373 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.
+
+Reference context (use as support; the target requirement above is primary):
+
+# PlantUML State Aliases, Notes, and Descriptions
+
+Use this document when state names are long or when the diagram needs annotations.
+
+## Long state names with alias
+
+Use aliases to keep transitions readable when state names are long.
+
+```plantuml
+state "Waiting for Payment Confirmation" as WaitingPayment
+state "Order Completed Successfully" as OrderComplete
+
+WaitingPayment --> OrderComplete : payment confirmed
+```
+
+Alternative alias form:
+
+```plantuml
+state WaitingPayment as "Waiting for Payment Confirmation"
+```
+
+## Notes attached to states
+
+Use notes to add additional explanation without changing the state name.
+
+```plantuml
+note right of Processing : validates request details
+```
+
+Multi-line notes:
+
+```plantuml
+note left of Processing
+The system checks the request,
+
+# PlantUML State Diagram Core Syntax
+
+Use this document when generating a basic UML state transition diagram in PlantUML.
+
+## Diagram wrapper
+
+PlantUML code should be enclosed between `@startuml` and `@enduml`.
+
+```plantuml
+@startuml
+[*] --> Idle
+Idle --> [*]
+@enduml
+```
+
+## Initial and final state
+
+The initial and final pseudostate is written as `[*]`.
+
+Initial transition:
+
+```plantuml
+[*] --> State1
+```
+
+Final transition:
+
+```plantuml
+State1 --> [*]
+```
+
+## Transitions
+
+Use arrows between states.
+
+```plantuml
+State1 --> State2
+State1 -> State2
+```
+
+Transitions can include labels after a colon.
+
+```plantuml
+Idle --> LoggedIn : login successful
+LoggedIn --> LoggedOut : logout
+```
+
+Labels may include event, guard, and action information.
+
+```plantuml
+
+Example requirement:
+Crime Bureau — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to log in by entering their username and password.
+2. The system shall allow the user to try again if the login details are incorrect until successful login.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Chart Diagram
+
+
+state "Login Verification" as LV
+LV : entry / Enters username and password
+LV : do / Verification of login credentials of users
+LV : exit / Enters the website if login is correct
+
+state "Requests FIR" as RF
+RF : entry / Verified login
+RF : do / FIR Request
+RF : exit / Displays FIR
+
+state "Requests Petition" as RP
+RP : entry / Verified login
+RP : do / Requests Petition
+RP : exit / Displays Petition
+
+state "Requests Wanted person and missing list" as RW
+RW : entry / Verified login
+RW : do / Requests Wanted persons
+RW : do / Requests Missing list
+RW : exit / Saving changes
+
+state Choice1 <<choice>>
+
+LV --> LV : Repeats until login credentials are correct
+LV --> Choice1 : Chooses any one
+
+Choice1 --> RF
+Choice1 --> RP
+Choice1 --> RW
+
+RF --> [*]
+RP --> [*]
+RW --> [*]
+
+
+
+state "Login Verification-Police" as LVP
+LVP : entry / Enters username and password
+LVP : do / Verification of login credentials
+LVP : exit / Enters the website if login is correct
+
+state "Requests Wanted person and missing list" as RWP
+RWP : entry / Verified login
+RWP : do / Requests Wanted persons
+RWP : do / Requests Missing list
+RWP : exit / Saving changes
+
+state "Performs Major Activities" as PMA
+PMA : entry / EntryAction1
+PMA : do / Add station details
+PMA : do / Add crimes
+PMA : exit / Saving changes
+
+state Choice2 <<choice>>
+
+LVP --> LVP : Repeats until login credentials are correct
+LVP --> Choice2 : Chooses any one
+
+Choice2 --> RWP
+Choice2 --> PMA
+
+RWP --> [*]
+PMA --> [*]
+
+@enduml
+```
+
+Example requirement:
+Art Gallery Mananement System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall verify login credentials upon submission.
+2. The system shall display an error message and prevent further interaction if login details are incorrect.
+3. The system shall allow users to view products or update their information after a successful login.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Chart Diagram
+
+
+[*] --> Login
+
+state Login
+Login : entry / getInfo
+Login : do / verifyData
+Login : exit / verified
+
+state LoginDecision <<choice>>
+Login --> LoginDecision
+
+state "Valid Login" as ValidLogin
+ValidLogin : entry / contain Info
+ValidLogin : do / allow Access to system
+ValidLogin : exit / gallery Entry
+
+state "Invalid Login" as InvalidLogin
+InvalidLogin : entry / wrong Info
+InvalidLogin : do / display Error message
+InvalidLogin : exit / return To Start
+
+LoginDecision --> ValidLogin
+LoginDecision --> InvalidLogin
+
+state NavChoice <<choice>>
+ValidLogin --> NavChoice
+
+state Gallery
+Gallery : entry / show Products
+Gallery : do / allow to select Products
+Gallery : exit / save Products
+
+state Update
+Update : entry / contain Info
+Update : do / take New Info
+Update : exit / save new Info
+
+NavChoice --> Gallery
+NavChoice --> Update
+
+Update --> [*]
+
+state Order
+Order : entry / select Items
+Order : do / allowto order If products In Stock
+Order : exit / verification
+
+state Cart
+Cart : entry / contain Selected Items
+Cart : do / all billing Info
+Cart : exit / payment Method
+
+Gallery --> Order
+Order --> Cart
+
+state Payment
+Payment : entry / get Payment Method
+Payment : do / confirm Payment
+Payment : exit / verify
+
+Cart --> Payment
+
+state PayDecision <<choice>>
+Payment --> PayDecision
+
+state "Valid Payment" as ValidPayment
+ValidPayment : entry / payment Method
+ValidPayment : do / get Cash
+ValidPayment : exit / confirmation of product
+
+state "Invalid Payment" as InvalidPayment
+InvalidPayment : entry / wrong Entry
+InvalidPayment : do / error Message
+InvalidPayment : exit / return
+
+PayDecision --> ValidPayment
+PayDecision --> InvalidPayment
+
+
+state Delivery
+Delivery : entry / take out Order
+Delivery : do / deliver Product
+Delivery : exit / exit System
+
+ValidPayment --> Delivery
+Delivery --> [*]
+
+InvalidPayment --> [*]
+
+@enduml
+```
+
+Example requirement:
+Device Handout — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall collect personal details from a donor during registration.
+2. The system shall check the entered personal details after registration.
+3. The system shall collect contact information from a donor after verifying their personal details.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Machine Diagram
+
+[*] --> DonorRegistration
+
+state "donor registration" as DonorRegistration
+DonorRegistration : entry / enter personal details
+DonorRegistration : do / verify details
+DonorRegistration : exit / request contact details
+
+state "get contacts" as GetContacts
+GetContacts : entry / registered donor
+GetContacts : do / receive contact details
+GetContacts : exit / donate a device
+
+state "device details" as DeviceDetails
+DeviceDetails : entry / gave contacts
+DeviceDetails : do / receive details
+DeviceDetails : exit / request approval
+
+state "device verification" as DeviceVerification
+DeviceVerification : entry / provided device details
+DeviceVerification : do / check details
+DeviceVerification : exit / acknowledge donor
+
+state Decision <<choice>>
+
+state approved
+approved : entry / device verified
+approved : do / choose an executive
+approved : exit / send details to executive
+
+state rejected
+rejected : entry / fails verification
+rejected : do / notify donor
+rejected : exit / device not accepted
+
+state "picked up" as PickedUp
+PickedUp : entry / executive receives details
+PickedUp : do / executive picks product
+PickedUp : exit / acknowledges status of product
+
+DonorRegistration --> GetContacts
+GetContacts --> DeviceDetails
+DeviceDetails --> DeviceVerification
+DeviceVerification --> Decision
+
+Decision --> approved : [passes verification]
+Decision --> rejected : [fails verification]
+
+approved --> PickedUp
+
+PickedUp --> [*]
+rejected --> [*]
+
+@enduml
+```
+
+Now return only the final PlantUML.

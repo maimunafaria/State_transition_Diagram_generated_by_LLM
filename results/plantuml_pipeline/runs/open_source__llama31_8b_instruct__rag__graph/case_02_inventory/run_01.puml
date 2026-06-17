@@ -1,0 +1,92 @@
+@startuml
+
+[*] --> AddNewGoods
+state "Add New Goods" as AddNewGoods
+AddNewGoods : entry / user adds new goods to inventory
+AddNewGoods : do / update inventory list
+AddNewGoods : exit / add successful
+
+state UpdatePrice <<choice>>
+AddNewGoods --> UpdatePrice
+
+state "Update Price" as UpdatePrice
+UpdatePrice : entry / select item to update price
+UpdatePrice : do / update price in database
+UpdatePrice : exit / price updated
+
+state RemoveGoods <<choice>>
+AddNewGoods --> RemoveGoods
+
+state "Remove Goods" as RemoveGoods
+RemoveGoods : entry / user removes goods from inventory
+RemoveGoods : do / remove from inventory list
+RemoveGoods : exit / remove successful
+
+state ExpiredGoods <<choice>>
+UpdatePrice --> ExpiredGoods
+RemoveGoods --> ExpiredGoods
+
+state "Expired Goods" as ExpiredGoods
+ExpiredGoods : entry / identify expired goods
+ExpiredGoods : do / notify user of removal
+ExpiredGoods : exit / expired goods removed
+
+state PlaceOrder <<choice>>
+RemoveGoods --> PlaceOrder
+
+state "Place Order" as PlaceOrder
+PlaceOrder : entry / place order with supplier
+PlaceOrder : do / generate invoice for order
+PlaceOrder : exit / order placed
+
+state SearchItems <<choice>>
+PlaceOrder --> SearchItems
+
+state "Search Items" as SearchItems
+SearchItems : entry / search inventory for items
+SearchItems : do / select items for purchase
+SearchItems : exit / items selected
+
+state CalculateDiscountTax <<choice>>
+SearchItems --> CalculateDiscountTax
+
+state "Calculate Discount Tax" as CalculateDiscountTax
+CalculateDiscountTax : entry / calculate discount and tax
+CalculateDiscountTax : do / apply to total cost
+CalculateDiscountTax : exit / total calculated
+
+state GenerateReceipt <<choice>>
+CalculateDiscountTax --> GenerateReceipt
+
+state "Generate Receipt" as GenerateReceipt
+GenerateReceipt : entry / generate receipt for customer
+GenerateReceipt : do / print or email receipt
+GenerateReceipt : exit / receipt generated
+
+state ReplaceItemCancelReceipt <<choice>>
+GenerateReceipt --> ReplaceItemCancelReceipt
+
+state "Replace Item Cancel Receipt" as ReplaceItemCancelReceipt
+ReplaceItemCancelReceipt : entry / replace item or cancel receipt
+ReplaceItemCancelReceipt : do / update inventory and customer records
+ReplaceItemCancelReceipt : exit / replacement or cancellation successful
+
+state RecordCustomerRequests <<choice>>
+ReplaceItemCancelReceipt --> RecordCustomerRequests
+
+state "Record Customer Requests" as RecordCustomerRequests
+RecordCustomerRequests : entry / record customer requests for items
+RecordCustomerRequests : do / notify customer of availability
+RecordCustomerRequests : exit / request recorded
+
+state ViewTransactionSummary <<choice>>
+RecordCustomerRequests --> ViewTransactionSummary
+
+state "View Transaction Summary" as ViewTransactionSummary
+ViewTransactionSummary : entry / view summary report of transactions
+ViewTransactionSummary : do / display transaction history
+ViewTransactionSummary : exit / summary viewed
+
+[*] --> ViewTransactionSummary
+
+@enduml

@@ -1,0 +1,47 @@
+@startuml
+title UML State Machine Diagram (Digidoclocker)
+
+[*] --> DetermineUserType : [Enter Details]
+
+state "Determine User Type" as UserType {
+  [*] --> CitizenRegistration : [Citizen]
+  [*] --> RegistrarLogin : [Registrar]
+}
+
+state CitizenRegistration : entry/Register | do/Validate | exit/CitizenAccountCreated
+CitizenRegistration --> CitizenLogin : [Valid Registration]
+
+state CitizenLogin : entry/Login | do/Authenticate | exit/CitizenLoggedIn
+CitizenLogin --> Choice1 : [Valid Login]
+
+state Choice1 <<choice>> {
+  [*] --> UploadDocuments : [Upload]
+  [*] --> ViewProfile : [View Profile]
+  [*] --> ApplyCertificate : [Apply Certificate]
+}
+
+state UploadDocuments : entry/Upload | do/Process | exit/DocumentsUploaded
+UploadDocuments --> Choice2 : [Continue Uploading]
+
+state Choice2 <<choice>> {
+  [*] --> UploadDocuments : [More Files]
+  [*] --> Choice1 : [Done]
+}
+
+state ViewProfile : entry/View | do/Display | exit/ProfileViewed
+ViewProfile --> Choice1 : [Back to Menu]
+
+state ApplyCertificate : entry/Apply | do/Submit | exit/CertificateApplied
+ApplyCertificate --> Choice3 : [Reapply]
+Choice3 <<choice>> {
+  [*] --> ApplyCertificate : [Yes]
+  [*] --> Choice1 : [No]
+}
+
+state RegistrarLogin : entry/Login | do/Authenticate | exit/RegistrarLoggedIn
+RegistrarLogin --> RegistrarMenu : [Valid Login]
+
+state RegistrarMenu <<choice>> {
+  [*] --> RequestCertificate : [Request Certificate]
+  [*] --> ContinueAfterReceive : [
+@enduml

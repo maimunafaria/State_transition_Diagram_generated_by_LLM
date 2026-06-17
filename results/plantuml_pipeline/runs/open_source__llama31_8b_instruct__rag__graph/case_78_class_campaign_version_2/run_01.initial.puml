@@ -1,0 +1,24 @@
+@startuml
+title Campaign State Machine (Polished Requirement Specification)
+
+[*] --> Commissioned : assignManager; assignStaff
+
+state Commissioned
+state Activated
+state Running
+state Completed
+state Paid
+
+Commissioned --> Activated : approved; contractSigned
+
+Activated --> Running : advertsPrepared; advertsApproved
+
+Running --> Completed : campaignCancelled; advertsFinished
+
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment > 0]\n/waitForPayment
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
+
+Paid --> [*] : archiveCampaign; unassignStaff; unassignManager
+
+@enduml

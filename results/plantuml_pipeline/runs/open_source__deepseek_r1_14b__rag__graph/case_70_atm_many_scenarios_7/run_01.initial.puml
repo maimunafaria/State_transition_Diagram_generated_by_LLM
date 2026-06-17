@@ -1,0 +1,28 @@
+@startuml
+[*] --> Greeting : User arrives
+Greeting --> WaitingForPIN : Card inserted / Get PIN
+
+state WaitingForPIN
+state ValidatingPIN
+state MainMenu
+state ProcessingRequest
+state Ejecting
+state Confiscating
+
+WaitingForPIN --> ValidatingPIN : PIN entered / Validate PIN
+ValidatingPIN --> MainMenu : Correct PIN / Display options
+
+MainMenu --> ProcessingRequest : Option selected / Process request
+ProcessingRequest --> Ejecting : Request rejected / Eject
+ProcessingRequest --> Confiscating : Card issues detected / Confiscate
+
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN prompt
+ValidatingPIN --> Confiscating : Third invalid PIN / Confiscate
+
+WaitingForPIN --> Ejecting : Cancel operation / Eject
+ValidatingPIN --> Ejecting : Cancel during validation / Eject
+MainMenu --> Ejecting : Cancel during menu / Eject
+ProcessingRequest --> Ejecting : Cancel during processing / Eject
+
+Confiscating --> Ejecting : Card confiscated / Eject after confiscation
+@enduml

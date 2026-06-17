@@ -1,0 +1,51 @@
+@startuml
+[*] --> Unauthenticated
+Unauthenticated --> LoggedIn : login successful
+
+LoggedIn -->
+{
+    state "Teacher" as TeacherLoggedIn
+    state "Student" as StudentLoggedIn
+
+    LoggedIn --> TeacherLoggedIn : select teacher role
+    LoggedIn --> StudentLoggedIn : select student role
+}
+
+note right of TeacherLoggedIn
+# Teacher Actions
+createQuiz, editQuiz, saveDraft, postQuiz, viewResults
+
+TeacherLoggedIn -->
+{
+    state CreatingQuiz
+    state EditingQuiz
+    state SavingDraft
+    state PostingQuiz
+    state ViewingResults
+
+    TeacherLoggedIn --> CreatingQuiz : create new quiz
+    CreatingQuiz --> EditingQuiz : start editing
+    EditingQuiz --> SavingDraft : save as draft
+    EditingQuiz --> PostingQuiz : post quiz
+    PostingQuiz --> ViewingResults : view results after quiz ends
+}
+
+note right of StudentLoggedIn
+# Student Actions
+selectQuiz, answerQuiz, submitQuiz, viewResult
+
+StudentLoggedIn -->
+{
+    state SelectingQuiz
+    state AnsweringQuiz
+    state SubmittingQuiz
+    state ViewingResult
+
+    StudentLoggedIn --> SelectingQuiz : select a quiz to take
+    SelectingQuiz --> AnsweringQuiz : start answering
+    AnsweringQuiz --> SubmittingQuiz : submit answers
+    SubmittingQuiz --> ViewingResult : view result after submission
+}
+
+end
+@enduml

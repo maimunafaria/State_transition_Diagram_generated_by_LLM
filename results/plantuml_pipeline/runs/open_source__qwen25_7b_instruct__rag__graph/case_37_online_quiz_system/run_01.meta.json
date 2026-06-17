@@ -1,0 +1,321 @@
+{
+  "run_id": "open_source__qwen25_7b_instruct__rag__graph",
+  "case_id": "case_37_online_quiz_system",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nOnline Quiz System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to register or log in with their details.\n2. The system shall allow users to continue as a teacher or a student after logging in.\n3. The system shall allow teachers to create a new quiz.\n4. The system shall allow teachers to edit an existing quiz.\n5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.\n6. The system shall allow teachers to view quiz results once the quiz is over.\n7. The system shall allow students to select a quiz after getting notified if they continue as a student.\n8. The system shall allow students to answer the selected quiz.\n9. The system shall allow students to submit their quiz after answering.\n10. The system shall allow students to view the result after submitting the quiz.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Aliases, Notes, and Descriptions\n\nUse this document when state names are long or when the diagram needs annotations.\n\n## Long state names with alias\n\nUse aliases to keep transitions readable when state names are long.\n\n```plantuml\nstate \"Waiting for Payment Confirmation\" as WaitingPayment\nstate \"Order Completed Successfully\" as OrderComplete\n\nWaitingPayment --> OrderComplete : payment confirmed\n```\n\nAlternative alias form:\n\n```plantuml\nstate WaitingPayment as \"Waiting for Payment Confirmation\"\n```\n\n## Notes attached to states\n\nUse notes to add additional explanation without changing the state name.\n\n```plantuml\nnote right of Processing : validates request details\n```\n\nMulti-line notes:\n\n```plantuml\nnote left of Processing\nThe system checks the request,\n\n# PlantUML State Diagram Core Syntax\n\nUse this document when generating a basic UML state transition diagram in PlantUML.\n\n## Diagram wrapper\n\nPlantUML code should be enclosed between `@startuml` and `@enduml`.\n\n```plantuml\n@startuml\n[*] --> Idle\nIdle --> [*]\n@enduml\n```\n\n## Initial and final state\n\nThe initial and final pseudostate is written as `[*]`.\n\nInitial transition:\n\n```plantuml\n[*] --> State1\n```\n\nFinal transition:\n\n```plantuml\nState1 --> [*]\n```\n\n## Transitions\n\nUse arrows between states.\n\n```plantuml\nState1 --> State2\nState1 -> State2\n```\n\nTransitions can include labels after a colon.\n\n```plantuml\nIdle --> LoggedIn : login successful\nLoggedIn --> LoggedOut : logout\n```\n\nLabels may include event, guard, and action information.\n\n```plantuml\n\nExample requirement:\nCoin Operated Pay Phone — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start when it is not in use.\n2. The system shall require inserting coins when the user picks up the receiver.\n3. The system shall allow dialing a number only after sufficient credit has been added.\n4. The system shall start the call when the dialed number is valid and the other party answers.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Correct solution with history pseudostate\n\nstate \"Hung up\" as HungUp\n[*] --> HungUp\n\nstate \"Picked up receiver\" as PickedUp {\n\n    state H <<history>>\n\n    state \"Waiting for coin\" as WaitingCoin\n    state \"Waiting for number\" as WaitingNumber\n    state \"Waiting for validity\" as WaitingValidity\n    state \"Waiting for callee to pick up receiver\" as WaitingCallee\n    state Communication\n    state \"End communication\" as EndCommunication\n\n    HungUp --> WaitingCoin : pickUpReceiver / credit = 0\n    \n\n    WaitingCoin --> WaitingNumber : [credit >= 20]\n    WaitingNumber --> WaitingValidity : dialNumber\n    WaitingValidity --> WaitingCallee : validNumber\n    WaitingCallee --> Communication : startComm / assess\n\n    Communication --> Communication : UT[sufficient credit] / assess\n    Communication --> EndCommunication : UT[insufficient credit] / assess\n}\n\n\nPickedUp --> H : insertCoin(c) / incrementCredit(c)\nPickedUp --> HungUp : replaceReceiver / returnUnusedCoins\n\n@enduml\n```\n\nExample requirement:\nOven — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to open the door whenever it is closed.\n2. The system shall allow the user to place food inside or remove it from the microwave when the door is open.\n3. The system shall require the user to close the door after placing food inside.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Microwave Oven Control - State Diagram\n\n[*] --> DoorShut\n\nstate \"Door Shut\" as DoorShut\nstate \"Door Open\" as DoorOpen\nstate \"Door Open With Item\" as DoorOpenItem\nstate \"Door Shut With Item\" as DoorShutItem\nstate \"Ready To Cook\" as ReadyToCook\nstate Cooking\n\nDoorShut --> DoorOpen : Door Opened\nDoorOpen --> DoorShut : Door Closed\n\nDoorOpen --> DoorOpenItem : Item Placed\nDoorOpenItem --> DoorOpen : Item Removed\n\nDoorOpenItem --> DoorShutItem : Door Closed\nDoorShutItem --> DoorOpenItem : Door Opened\n\nDoorShutItem --> ReadyToCook : Cooking Time Entered\nReadyToCook --> ReadyToCook : Cooking Time Entered\n\nReadyToCook --> Cooking : Start\n\nCooking --> DoorOpenItem : Door Opened\nCooking --> DoorShutItem : Timer Expired\n\n@enduml\n```\n\nExample requirement:\nMicrowave Oven Operation — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check for proper functioning before starting.\n2. The system shall alert the user and stop operation if an issue is detected.\n3. The system shall start cooking and run for the set time if no issues are detected.\n4. The system shall emit a sound to notify the user upon completion of cooking.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Microwave Oven Operation\n\nstate Operation {\n\n  state Checking\n  Checking : do / Check Status\n\n  state Cook\n  Cook : do / Run Generator\n\n  state Alarm\n  Alarm : do / Display Event\n\n  state Done\n  Done : do / Buzzer On for 5 Secs.\n\n  [*] --> Checking\n\n  Checking --> Cook : OK\n  Checking --> Alarm : Turntable Fault\n  Checking --> Alarm : Emitter Fault\n\n  Cook --> Done : Timeout\n  Cook --> Cook : Time\n}\n\nstate Disabled\nstate Waiting\n\nOperation --> Disabled : Door Open\nOperation --> Waiting : Cancel\n\nAlarm --> Disabled\nDone --> Waiting\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Online Quiz System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to register or log in with their details.\n2. The system shall allow users to continue as a teacher or a student after logging in.\n3. The system shall allow teachers to create a new quiz.\n4. The system shall allow teachers to edit an existing quiz.\n5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.\n6. The system shall allow teachers to view quiz results once the quiz is over.\n7. The system shall allow students to select a quiz after getting notified if they continue as a student.\n8. The system shall allow students to answer the selected quiz.\n9. The system shall allow students to submit their quiz after answering.\n10. The system shall allow students to view the result after submitting the quiz.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag__graph\\case_37_online_quiz_system\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "unreachable_states_detected",
+      "unreachable: Answer Quiz, Create Quiz, Edit Quiz, Login, Post Quiz, Save Draft, Select Quiz, Student Mode, Submit Quiz, Teacher Mode, View Result, View Results"
+    ],
+    "initial_state": "Idle",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [
+      "Answer Quiz",
+      "Create Quiz",
+      "Edit Quiz",
+      "Login",
+      "Post Quiz",
+      "Save Draft",
+      "Select Quiz",
+      "Student Mode",
+      "Submit Quiz",
+      "Teacher Mode",
+      "View Result",
+      "View Results"
+    ],
+    "state_count": 13,
+    "transition_count": 11
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "unreachable_states_detected",
+      "unreachable: Answer Quiz, Create Quiz, Edit Quiz, Login, Post Quiz, Save Draft, Select Quiz, Student Mode, Submit Quiz, Teacher Mode, View Result, View Results"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "graph",
+      "profile": "standard",
+      "top_k": 3,
+      "query_domains": [],
+      "retrieved_docs": [
+        {
+          "name": "plantuml_rules\\plantuml_state_alias_notes_descriptions.md",
+          "source_type": "plantuml_rule",
+          "score": 22,
+          "graph_score": 0,
+          "lexical_overlap": 14,
+          "title_overlap": 0,
+          "domain_overlap": 0,
+          "doc_domains": [
+            "order",
+            "payment"
+          ],
+          "query_graph_features": {
+            "state_count": 7,
+            "transition_count": 9,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 1,
+            "choice_count": 1,
+            "guarded_count": 1,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "low",
+            "loop_bucket": "medium"
+          },
+          "doc_graph_features": {},
+          "clipped_chars": 779
+        },
+        {
+          "name": "plantuml_rules\\plantuml_state_core_syntax.md",
+          "source_type": "plantuml_rule",
+          "score": 18,
+          "graph_score": 0,
+          "lexical_overlap": 10,
+          "title_overlap": 0,
+          "domain_overlap": 0,
+          "doc_domains": [],
+          "query_graph_features": {
+            "state_count": 7,
+            "transition_count": 9,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 1,
+            "choice_count": 1,
+            "guarded_count": 1,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "low",
+            "loop_bucket": "medium"
+          },
+          "doc_graph_features": {},
+          "clipped_chars": 759
+        },
+        {
+          "name": "dataset_examples\\case_44_coin_operated_pay_phone.md",
+          "source_type": "dataset_example",
+          "score": 63,
+          "graph_score": 39,
+          "lexical_overlap": 20,
+          "title_overlap": 0,
+          "domain_overlap": 0,
+          "doc_domains": [],
+          "query_graph_features": {
+            "state_count": 7,
+            "transition_count": 9,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 1,
+            "choice_count": 1,
+            "guarded_count": 1,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "low",
+            "loop_bucket": "medium"
+          },
+          "doc_graph_features": {
+            "state_count": 9,
+            "transition_count": 10,
+            "final_count": 0,
+            "initial_count": 1,
+            "loop_count": 1,
+            "choice_count": 0,
+            "guarded_count": 1,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "low",
+            "loop_bucket": "medium"
+          },
+          "clipped_chars": 1453
+        },
+        {
+          "name": "dataset_examples\\case_73_oven.md",
+          "source_type": "dataset_example",
+          "score": 61,
+          "graph_score": 38,
+          "lexical_overlap": 19,
+          "title_overlap": 0,
+          "domain_overlap": 0,
+          "doc_domains": [],
+          "query_graph_features": {
+            "state_count": 7,
+            "transition_count": 9,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 1,
+            "choice_count": 1,
+            "guarded_count": 1,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "low",
+            "loop_bucket": "medium"
+          },
+          "doc_graph_features": {
+            "state_count": 7,
+            "transition_count": 12,
+            "final_count": 0,
+            "initial_count": 1,
+            "loop_count": 1,
+            "choice_count": 0,
+            "guarded_count": 0,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "low",
+            "loop_bucket": "medium"
+          },
+          "clipped_chars": 1136
+        },
+        {
+          "name": "dataset_examples\\case_53_microwave_oven_operation.md",
+          "source_type": "dataset_example",
+          "score": 58,
+          "graph_score": 40,
+          "lexical_overlap": 14,
+          "title_overlap": 0,
+          "domain_overlap": 0,
+          "doc_domains": [],
+          "query_graph_features": {
+            "state_count": 7,
+            "transition_count": 9,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 1,
+            "choice_count": 1,
+            "guarded_count": 1,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "low",
+            "loop_bucket": "medium"
+          },
+          "doc_graph_features": {
+            "state_count": 7,
+            "transition_count": 10,
+            "final_count": 0,
+            "initial_count": 1,
+            "loop_count": 1,
+            "choice_count": 0,
+            "guarded_count": 0,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "low",
+            "loop_bucket": "medium"
+          },
+          "clipped_chars": 1017
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: Answer Quiz, Create Quiz, Edit Quiz, Login, Post Quiz, Save Draft, Select Quiz, Student Mode, Submit Quiz, Teacher Mode, View Result, View Results"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: Answer Quiz, Create Quiz, Edit Quiz, Login, Post Quiz, Save Draft, Select Quiz, Student Mode, Submit Quiz, Teacher Mode, View Result, View Results"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: Answer Quiz, Create Quiz, Edit Quiz, Login, Post Quiz, Save Draft, Select Quiz, Student Mode, Submit Quiz, Teacher Mode, View Result, View Results"
+        ],
+        "initial_state": "Idle",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Answer Quiz",
+          "Create Quiz",
+          "Edit Quiz",
+          "Login",
+          "Post Quiz",
+          "Save Draft",
+          "Select Quiz",
+          "Student Mode",
+          "Submit Quiz",
+          "Teacher Mode",
+          "View Result",
+          "View Results"
+        ],
+        "state_count": 13,
+        "transition_count": 11
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag__graph\\case_37_online_quiz_system\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 13,
+    "state_fn": 25,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 11,
+    "transition_fn": 27,
+    "state_precision_relaxed": 0.46153846153846156,
+    "state_recall_relaxed": 0.2608695652173913,
+    "state_f1_relaxed": 0.33333333333333337,
+    "state_tp_relaxed": 6,
+    "state_fp_relaxed": 7,
+    "state_fn_relaxed": 17,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 11,
+    "transition_fn_relaxed": 27,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 11,
+    "transition_fn_semantic": 27,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "unreachable_states_detected",
+      "unreachable: Answer Quiz, Create Quiz, Edit Quiz, Login, Post Quiz, Save Draft, Select Quiz, Student Mode, Submit Quiz, Teacher Mode, View Result, View Results"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.5384615384615384,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.16666666666666669,
+    "weighted_f1_relaxed_70_30": 0.23333333333333334,
+    "overall_f1_semantic": 0.16666666666666669,
+    "weighted_f1_semantic_70_30": 0.23333333333333334,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "unreachable_states_detected",
+      "unreachable: Answer Quiz, Create Quiz, Edit Quiz, Login, Post Quiz, Save Draft, Select Quiz, Student Mode, Submit Quiz, Teacher Mode, View Result, View Results"
+    ]
+  }
+}

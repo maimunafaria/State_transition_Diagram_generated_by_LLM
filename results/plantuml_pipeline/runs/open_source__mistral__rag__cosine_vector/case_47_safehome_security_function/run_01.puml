@@ -1,0 +1,40 @@
+@startuml
+title Safehome Security Function State Diagram
+
+state Startup {
+  [*] --> Checking
+
+  state Checking
+  Checking : do / Check everything is working
+
+  state ReadyToUse
+  ReadyToUse : do / Become ready to use if everything is fine during startup
+
+  state Resetting
+  Resetting : do / Allow the user to reset it when it is ready to use
+
+  state Activating
+  Activating : do / Allow the user to activate it when it is ready to use
+
+  state TurningOff
+  TurningOff : do / Allow the user to turn it off when it is ready to use
+
+  Checking --> ReadyToUse : OK
+  Checking --> Stopping : Problem during startup
+
+  ReadyToUse --> StartMonitoring : Activated by user
+  ReadyToUse --> [*] : User enters password at any time
+
+  Stopping --> [*] : Return to normal when the user enters the password
+}
+
+state Monitoring {
+  state Normal
+  Normal --> AlarmActive : Sensor triggered during monitoring
+  Normal --> ContinueMonitoring : False alarm or time ends
+
+  state AlarmActive
+  AlarmActive : do / Start alarm and send alerts
+  AlarmActive --> Normal : False alarm or time ends
+}
+@enduml

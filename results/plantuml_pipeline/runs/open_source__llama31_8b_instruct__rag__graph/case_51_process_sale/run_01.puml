@@ -1,0 +1,51 @@
+@startuml
+
+[*] --> WaitingForSale
+state "Waiting for a new sale" as WaitingForSale
+
+WaitingForSale : entry / Start state
+WaitingForSale : do / wait for customer to select items
+
+WaitingForSale --> AddingItems
+state "Adding items one by one" as AddingItems
+AddingItems : entry / customer selects item
+AddingItems : do / add item to sale
+AddingItems : exit / move to payment
+
+AddingItems --> Payment
+state "Move to payment after all items have been added" as Payment
+Payment : entry / all items selected
+Payment : do / ask for payment method
+Payment : exit / complete sale or verify payment
+
+state CashPayment <<choice>>
+CashPayment : entry / customer pays with cash
+CashPayment : do / complete sale immediately
+CashPayment : exit / return to waiting state
+
+state CardOrCheckPayment <<choice>>
+CardOrCheckPayment : entry / customer chooses to pay by card or check
+CardOrCheckPayment : do / verify payment
+CardOrCheckPayment : exit / complete sale once payment is approved
+
+Payment --> CashPayment : [pays with cash]
+Payment --> CardOrCheckPayment : [chooses to pay by card or check]
+
+CashPayment --> [*]
+CardOrCheckPayment --> PaymentVerification
+
+state "Verify the payment" as PaymentVerification
+PaymentVerification : entry / verify payment
+PaymentVerification : do / confirm payment
+PaymentVerification : exit / complete sale once payment is approved
+
+PaymentVerification --> SaleCompleted
+
+state "Complete the sale once the payment has been finished" as SaleCompleted
+SaleCompleted : entry / payment verified
+SaleCompleted : do / complete sale
+SaleCompleted : exit / return to waiting state
+
+SaleCompleted --> [*]
+
+@enduml

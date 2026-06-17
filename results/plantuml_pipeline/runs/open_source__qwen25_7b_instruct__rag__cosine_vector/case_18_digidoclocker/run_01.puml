@@ -1,0 +1,65 @@
+@startuml
+title UML State Machine Diagram (Digidoclocker)
+
+[*] --> Registration
+
+state Registration {
+  [*] --> CitizenLogin
+  CitizenLogin : entry / Get Login Details
+  CitizenLogin : do / Validate Login Details
+  CitizenLogin : exit / Valid or Invalid Login
+
+  CitizenLogin --> [*] : [Invalid Login]
+
+  CitizenLogin --> CitizenDashboard : [Valid Login]
+}
+
+state CitizenDashboard {
+  [*] --> DocumentUpload
+  DocumentUpload : entry / Upload Documents
+  DocumentUpload : do / Validate Upload Details
+  DocumentUpload : exit / Valid or Invalid Upload
+
+  DocumentUpload --> DocumentUpload : [Continue Uploading if needed]
+
+  DocumentUpload --> ProfileView : [View Profile]
+  DocumentUpload --> CertificateApply : [Apply for Certificate]
+}
+
+state ProfileView {
+  [*] --> [*]
+}
+
+state CertificateApply {
+  [*] --> MultipleCertificates
+  MultipleCertificates : entry / Apply for Certificates
+  MultipleCertificates : do / Validate Application Details
+  MultipleCertificates : exit / Valid or Invalid Application
+
+  MultipleCertificates --> Reapply : [Reapply after sending request to issuer]
+
+  MultipleCertificates --> [*]
+}
+
+state Reapply {
+  [*] --> CertificateApply
+}
+
+state RegistrarRequest {
+  [*] --> RegistrarDashboard
+  RegistrarDashboard : entry / Request Certificates for Verification
+  RegistrarDashboard : do / Validate Request Details
+  RegistrarDashboard : exit / Valid or Invalid Request
+
+  RegistrarDashboard --> MultipleRegistrarRequests
+  MultipleRegistrarRequests : entry / Continue Requesting Certificates
+  MultipleRegistrarRequests : do / Validate Additional Requests
+  MultipleRegistrarRequests : exit / Valid or Invalid Additional Request
+
+  MultipleRegistrarRequests --> [*]
+}
+
+state EndSession {
+  [*] --> [*]
+}
+@enduml

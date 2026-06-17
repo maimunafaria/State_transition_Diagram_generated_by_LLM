@@ -1,0 +1,115 @@
+@startuml
+
+[*] --> StartState
+
+state StartState <<choice>>
+StartState --> CreateUser : create account
+StartState --> LoggedIn : login
+
+state CreateUser as "Create Account"
+CreateUser : entry / start registration
+CreateUser : do / fill in details
+CreateUser : exit / registered successfully
+
+state "Logged In" as LoggedIn
+LoggedIn : entry / user authentication
+LoggedIn : do / access granted
+LoggedIn : exit / ready for actions
+
+CreateUser --> [*]
+LoggedIn --> ApplyVisa : apply visa
+LoggedIn --> ViewStatus : view status
+LoggedIn --> ModifyDetails : modify details
+LoggedIn --> ViewDetails : view details
+LoggedIn --> PurposeApplication : check purpose
+LoggedIn --> GiveFeedback : give feedback
+LoggedIn --> Logout : logout
+
+state "Apply Visa" as ApplyVisa
+ApplyVisa : entry / user logged in
+ApplyVisa : do / submit application and pay
+ApplyVisa : exit / payment pending
+
+state PaymentPending <<choice>>
+ApplyVisa --> PaymentPending : payment required
+
+state Paid as "Payment Confirmed"
+PaymentConfirmed : entry / payment successful
+PaymentConfirmed : do / process application
+PaymentConfirmed : exit / update status
+
+PaymentPending --> Paid : payment completed
+PaymentPending --> [*] : payment failed
+
+Paid --> StatusUpdate : update status
+
+state "Status Update" as StatusUpdate <<choice>>
+StatusUpdate --> Approved : approved
+StatusUpdate --> Rejected : rejected
+
+state Approved as "Visa Approved"
+Approved : entry / application approved
+Approved : do / notify user
+Approved : exit / final decision
+
+state Rejected as "Visa Rejected"
+Rejected : entry / application rejected
+Rejected : do / notify user
+Rejected : exit / final decision
+
+Approved --> [*]
+Rejected --> [*]
+
+LoggedIn --> StatusCheck : check status
+
+state "Status Check" as StatusCheck
+StatusCheck : entry / view current status
+StatusCheck : do / review status details
+StatusCheck : exit / ready for next action
+
+StatusCheck --> StatusUpdate : update status
+StatusCheck --> GiveFeedback : provide feedback
+StatusCheck --> Logout : log out
+
+LoggedIn --> ModifyDetails : modify profile
+
+state "Modify Details" as ModifyDetails
+ModifyDetails : entry / edit personal info
+ModifyDetails : do / save changes
+ModifyDetails : exit / return to main menu
+
+ModifyDetails --> LoggedIn : back to login
+
+LoggedIn --> ViewDetails : view profile
+
+state "View Details" as ViewDetails
+ViewDetails : entry / check account info
+ViewDetails : do / review details
+ViewDetails : exit / ready for actions
+
+ViewDetails --> ModifyDetails : edit details
+ViewDetails --> Logout : log out
+
+LoggedIn --> PurposeApplication : purpose of visit
+
+state "Purpose Application" as PurposeApplication
+PurposeApplication : entry / submit purpose details
+PurposeApplication : do / document check
+PurposeApplication : exit / status updated
+
+PurposeApplication --> StatusUpdate : update status
+
+LoggedIn --> GiveFeedback : leave feedback
+
+state "Give Feedback" as GiveFeedback
+GiveFeedback : entry / provide comments
+GiveFeedback : do / submit feedback
+GiveFeedback : exit / done with feedback
+
+GiveFeedback --> [*] : logout
+
+LoggedIn --> Logout : log out
+
+state Logout <<entry/exit>>
+Logout : entry / terminate session
+@enduml

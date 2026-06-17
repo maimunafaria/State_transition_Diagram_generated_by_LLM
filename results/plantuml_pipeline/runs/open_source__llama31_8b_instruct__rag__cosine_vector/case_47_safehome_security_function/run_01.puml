@@ -1,0 +1,29 @@
+@startuml
+[*] --> PowerOn
+PowerOn --> [*]
+PowerOn --> StartupFailed : problem during startup
+StartupFailed --> Idle : stop
+Idle --> ReadyToUse : everything is fine during startup
+ReadyToUse --> Reset : reset by user
+Reset --> Idle : system reset
+ReadyToUse --> Activate : activate by user
+Activate --> Monitoring : start monitoring
+Monitoring --> Alarm : sensor triggered
+Alarm --> ContinueMonitoring : false alarm or time ended
+ContinueMonitoring --> ReadyToUse : continue monitoring
+ReadyToUse --> TurnOff : turn off by user
+TurnOff --> Idle : system turned off
+Idle --> PasswordEntry : user enters password
+PasswordEntry --> ReadyToUse : correct password entered
+
+state Monitoring {
+  [*] --> Active
+  Active --> Alarm : sensor triggered
+  Alarm --> ContinueMonitoring : false alarm or time ended
+}
+
+state Alarm {
+  [*] --> Triggered
+  Triggered --> ContinueMonitoring : false alarm or time ended
+}
+@enduml

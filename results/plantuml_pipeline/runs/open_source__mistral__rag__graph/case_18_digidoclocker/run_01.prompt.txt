@@ -1,0 +1,380 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
+
+Reference context (use as support; the target requirement above is primary):
+
+# PlantUML State Aliases, Notes, and Descriptions
+
+Use this document when state names are long or when the diagram needs annotations.
+
+## Long state names with alias
+
+Use aliases to keep transitions readable when state names are long.
+
+```plantuml
+state "Waiting for Payment Confirmation" as WaitingPayment
+state "Order Completed Successfully" as OrderComplete
+
+WaitingPayment --> OrderComplete : payment confirmed
+```
+
+Alternative alias form:
+
+```plantuml
+state WaitingPayment as "Waiting for Payment Confirmation"
+```
+
+## Notes attached to states
+
+Use notes to add additional explanation without changing the state name.
+
+```plantuml
+note right of Processing : validates request details
+```
+
+Multi-line notes:
+
+```plantuml
+note left of Processing
+The system checks the request,
+
+# PlantUML State Diagram Core Syntax
+
+Use this document when generating a basic UML state transition diagram in PlantUML.
+
+## Diagram wrapper
+
+PlantUML code should be enclosed between `@startuml` and `@enduml`.
+
+```plantuml
+@startuml
+[*] --> Idle
+Idle --> [*]
+@enduml
+```
+
+## Initial and final state
+
+The initial and final pseudostate is written as `[*]`.
+
+Initial transition:
+
+```plantuml
+[*] --> State1
+```
+
+Final transition:
+
+```plantuml
+State1 --> [*]
+```
+
+## Transitions
+
+Use arrows between states.
+
+```plantuml
+State1 --> State2
+State1 -> State2
+```
+
+Transitions can include labels after a colon.
+
+```plantuml
+Idle --> LoggedIn : login successful
+LoggedIn --> LoggedOut : logout
+```
+
+Labels may include event, guard, and action information.
+
+```plantuml
+
+Example requirement:
+E Province — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall register a new user.
+2. The system shall end the process if registration details are not accepted.
+3. The system shall allow a user to log in after successful registration.
+4. The system shall provide multiple login attempts if the details are incorrect.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Machine Diagram (Certificate Management)
+
+
+[*] --> Registration
+
+state Registration
+Registration : entry / Get the Registration Details
+Registration : do / Validate the Details
+Registration : exit / Valid or Invalid Registration
+
+
+Registration --> [*] : [Invalid Registration]
+
+
+Registration --> Login : [Valid Registration]
+
+
+state Login
+Login : entry / Get the Login Details
+Login : do / Validate the Login Details
+Login : exit / Valid or Invalid Login
+
+
+Login --> Login : [Invalid Login]
+
+
+Login --> Choice1 : [Valid Login]
+
+
+state Choice1 <<choice>>
+
+Choice1 --> CancelCert : [Cancel the Certificate]
+Choice1 --> RequestCert : [Applying for Certificates]
+Choice1 --> ViewProfile : [Profile Viewing]
+Choice1 --> UpdateProfile : [Profile Updation]
+
+
+state "Cancellation of Certificates" as CancelCert
+CancelCert : entry / Certificate is asked for Cancellation
+CancelCert : do / Certificate is Canceled
+CancelCert : exit / Move to End
+
+CancelCert --> EndMerge
+
+state "Request for Certificates" as RequestCert
+RequestCert : entry / Fill the Form and Upload the Details
+RequestCert : do / Request for Certificates
+RequestCert : exit / Apply for another Certificate or Move to End
+
+RequestCert --> RequestCert : [Apply for another Certificate if needed]
+
+RequestCert --> IssueCert : [Certificates requested]
+
+state "Issuing the Certificates" as IssueCert
+IssueCert : entry / Validating Details
+IssueCert : do / Issuing the Certificates
+IssueCert : exit / Updating the Database
+
+IssueCert --> RequestCert : [Certificate is issued]
+RequestCert --> EndMerge : [End]
+
+state "View Profile" as ViewProfile
+ViewProfile : entry / View the Profile
+ViewProfile : do / Display the Profile
+ViewProfile : exit / Exit from Profile Viewing
+
+ViewProfile --> EndMerge : [End]
+
+
+state "Update the Profile" as UpdateProfile
+UpdateProfile : entry / Update the User's Profile
+UpdateProfile : do / Citizen Profile is updated
+UpdateProfile : exit / Move to End
+
+UpdateProfile --> EndMerge : [End]
+
+
+state EndMerge <<choice>>
+
+EndMerge --> [*]
+
+@enduml
+```
+
+Example requirement:
+Diet Care — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose between entering their information or consulting a professional nutritionist.
+2. The system shall enable users who choose consultation to speak with a nutritionist and rate the experience afterward.
+3. The system shall analyze the information entered by the user.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Chart Diagram
+
+
+
+state StartChoice <<choice>>
+
+state Input
+Input : entry / validate user
+Input : do / provide data to model
+Input : exit / processing of data
+
+state Consult
+Consult : entry / user's choice of consultation
+Consult : do / consult professional nutritionist
+Consult : exit / rate professional nutritionist
+
+state Analysis
+Analysis : entry / input data for processing
+Analysis : do / analyse data
+Analysis : exit / detect unhealthy diet or deficiencies
+
+state "Unhealthy diet" as UnhealthyDiet
+UnhealthyDiet : entry / detection of unhealthy diet
+UnhealthyDiet : do / find healthy diet
+UnhealthyDiet : exit / suggest to users
+
+state "Disease or deficiencies" as DiseaseDef
+DiseaseDef : entry / presence of disease or deficiencies
+DiseaseDef : do / find food that fights that disease
+DiseaseDef : exit / suggest to users
+
+state "Healthy diet" as HealthyDiet
+HealthyDiet : do / presence of healthy diet
+HealthyDiet : do / appreciate user's diet
+HealthyDiet : exit / terminate
+
+state Suggestion
+Suggestion : entry / presence of disease or deficiency or unhealthy diet
+Suggestion : do / search for nutrient food
+Suggestion : exit / suggest to users
+
+state AnalysisChoice <<choice>>
+state MergeSuggest <<choice>>
+
+[*] --> StartChoice
+StartChoice --> Input
+StartChoice --> Consult
+
+Input --> Analysis
+Analysis --> AnalysisChoice
+Analysis --> Analysis
+AnalysisChoice --> UnhealthyDiet
+AnalysisChoice --> DiseaseDef
+AnalysisChoice --> HealthyDiet
+
+UnhealthyDiet --> MergeSuggest
+DiseaseDef --> MergeSuggest
+
+MergeSuggest --> Suggestion
+
+Consult --> [*]
+HealthyDiet --> [*]
+Suggestion --> [*]
+
+@enduml
+```
+
+Example requirement:
+E Ration Shop — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to raise a complaint directly.
+2. The system shall end the process after a user raises a complaint.
+3. The system shall allow users to authenticate their identity using an OTP.
+4. The system shall allow multiple attempts for OTP authentication if the initial attempt fails.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Machine Diagram
+
+
+[*] --> C1
+
+state C1 <<choice>>
+C1 --> Auth : [possibilities to start]
+C1 --> Complaints
+
+
+state "Authentication of aadhar card by OTP" as Auth
+Auth : entry / card holder
+Auth : do / Generates OTP
+Auth : do / OTP should match
+Auth : exit / authentication completed
+
+state Complaints
+Complaints : entry / fill
+Complaints : do / raise a complaint
+Complaints : exit / complaint send
+
+Complaints --> [*]
+
+Auth --> Auth 
+Auth --> ViewItems
+
+state "View items" as ViewItems
+ViewItems : entry / from Authentication
+ViewItems : do / items shown based on category
+ViewItems : do / select items required
+ViewItems : exit / after selecting
+
+ViewItems --> Purchase
+
+state "make purchase" as Purchase
+Purchase : entry / from view items
+Purchase : do / payment
+Purchase : exit / chose the mode of payment
+
+
+state C2 <<choice>>
+Purchase --> C2 : [possibilities for payment]
+
+state PAYTM
+PAYTM : entry / make purchase
+PAYTM : do / making payment
+PAYTM : exit / payment done
+
+state COD
+COD : entry / make purchase
+COD : do / making payment
+COD : exit / payment done
+
+C2 --> PAYTM
+C2 --> COD
+
+
+state C3 <<choice>>
+PAYTM --> C3
+COD --> C3
+
+C3 --> Delivery : [payment completed]
+
+
+state Delivery
+Delivery : entry / COD
+Delivery : entry / PAYTM
+Delivery : do / product delivered
+
+Delivery --> [*]
+
+@enduml
+```
+
+Now return only the final PlantUML.

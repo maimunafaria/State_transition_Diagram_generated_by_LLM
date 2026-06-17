@@ -1,0 +1,212 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Video Suggestion System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall receive a video suggestion request from a user.
+2. The system shall identify the user who made the video suggestion request.
+3. The system shall gather different types of videos simultaneously based on the user's profile or preferences, trending videos from the user’s area, videos with similar tags, videos from similar genres, and promoted videos .
+4. The system shall add additional details such as thumbnails and view counts to the suggested videos.
+5. The system shall send the suggested videos to the user.
+
+Reference context (use as support; the target requirement above is primary):
+
+# PlantUML State Aliases, Notes, and Descriptions
+
+Use this document when state names are long or when the diagram needs annotations.
+
+## Long state names with alias
+
+Use aliases to keep transitions readable when state names are long.
+
+```plantuml
+state "Waiting for Payment Confirmation" as WaitingPayment
+state "Order Completed Successfully" as OrderComplete
+
+WaitingPayment --> OrderComplete : payment confirmed
+```
+
+Alternative alias form:
+
+```plantuml
+state WaitingPayment as "Waiting for Payment Confirmation"
+```
+
+## Notes attached to states
+
+Use notes to add additional explanation without changing the state name.
+
+```plantuml
+note right of Processing : validates request details
+```
+
+Multi-line notes:
+
+```plantuml
+note left of Processing
+The system checks the request,
+
+# PlantUML Composite States and Pseudostates
+
+Use this document when the requirement contains nested behavior, decisions, history, branching, or concurrent regions.
+
+## Composite states
+
+A composite state is declared with `state Name { ... }`.
+
+```plantuml
+@startuml
+[*] --> LoggedIn
+
+state LoggedIn {
+  [*] --> Dashboard
+  Dashboard --> Settings : open settings
+  Settings --> Dashboard : back
+}
+
+LoggedIn --> [*] : logout
+@enduml
+```
+
+## Nested substates
+
+Nested states may be declared inside a composite state.
+
+```plantuml
+state Parent {
+  state ChildA
+  state ChildB
+  ChildA --> ChildB
+}
+```
+
+## Substate-to-substate transitions
+
+Transitions between substates are allowed.
+
+```plantuml
+state A {
+  [*] --> X
+  X --> Y : next
+}
+```
+
+## History states
+
+Example requirement:
+First Person Shooter Fps Games — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall keep the troll in a calm state with no actions if there is no detected threat.
+2. The system shall determine the troll's reaction based on the perceived strength of the detected opponent.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Troll State Diagram
+
+[*] --> Neutral
+
+state Neutral
+state Attack
+state Panic
+state Die
+
+Neutral --> Attack : see opponent [defeatable]
+Attack --> Neutral : lost opponent
+
+Neutral --> Panic : see opponent [undefeatable]
+Panic --> Neutral : lost opponent
+
+Attack --> Die : receive blow [health = 0] / pray
+Panic --> Die : receive blow [health = 0] / pray
+
+Die --> [*]
+
+@enduml
+```
+
+Example requirement:
+Online Pharmacy Management System Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow admins to update medicine details.
+2. The system shall allow admins to manage customer orders.
+3. The system shall allow admins to view delivery addresses related to customer orders.
+4. The system shall allow admins to update attendance records.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Machine Diagram - Admin
+
+[*] --> UpdateMedicine
+
+state "Update medicine" as UpdateMedicine
+state "Manage orders" as ManageOrders
+state "View delivery address" as ViewDeliveryAddress
+state "Update attendance" as UpdateAttendance
+state "Update salary" as UpdateSalary
+
+UpdateMedicine --> ManageOrders
+ManageOrders --> ViewDeliveryAddress
+ViewDeliveryAddress --> UpdateAttendance
+UpdateAttendance --> UpdateSalary
+UpdateSalary --> [*]
+
+@enduml
+```
+
+Example requirement:
+Product Recommendation — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or sign in to access the platform.
+2. The system shall enable users to search for products after they have registered or logged in.
+3. The system shall display matching product results based on the user's search query.
+
+Reference PlantUML:
+```plantuml
+@startuml
+[*] --> Register
+Register : entry / nil
+Register : do / login / Register
+Register : exit / valid registration / login
+
+Register --> SearchProduct : user registers
+SearchProduct : entry / login
+SearchProduct : do / search for the product
+SearchProduct : exit / display search results
+
+SearchProduct --> SearchFilterProductFilter : user applies filters
+SearchFilterProductFilter : entry / search product
+SearchFilterProductFilter : do / apply filters to get desired results
+SearchFilterProductFilter : exit / display filtered results
+state J1 <<choice>>
+SearchProduct --> J1 : user selects product
+SearchFilterProductFilter --> J1 : user selects product
+GetProduct : entry / login
+GetProduct : do / get the product from the official website
+GetProduct : exit / redirect to the website
+J1 --> GetProduct 
+GetProduct --> [*]
+@enduml
+```
+
+Now return only the final PlantUML.

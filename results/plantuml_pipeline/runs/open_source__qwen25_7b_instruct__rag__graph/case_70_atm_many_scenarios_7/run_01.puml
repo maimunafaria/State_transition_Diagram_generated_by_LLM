@@ -1,0 +1,25 @@
+@startuml
+[*] --> Idle
+Idle --> [*]
+state Idle
+state "Waiting for Card Insertion" as WaitingForCard
+state ValidatingPIN
+state "Displaying Options" as DisplayOptions
+state ProcessingRequest
+state Confiscating
+state Ejecting
+
+Idle --> WaitingForCard : Card Inserted / Get PIN
+
+WaitingForCard --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> ValidatingPIN : Invalid PIN / Invalid PIN Prompt, Keep Card
+ValidatingPIN --> DisplayOptions : Valid PIN / Display Menu
+ValidatingPIN --> Confiscating : Third Invalid PIN, Card Stolen, Card Expired / Confiscate
+
+DisplayOptions --> ProcessingRequest : Choice Made / Process Request
+ProcessingRequest --> Ejecting : Cancel / Eject
+
+Confiscating --> Ejecting : Card Confiscated / Display Confiscated
+
+Ejecting --> [*] : Card Ejected / Display Ejected
+@enduml

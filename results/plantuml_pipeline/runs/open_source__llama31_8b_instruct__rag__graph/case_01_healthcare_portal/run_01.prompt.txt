@@ -1,0 +1,241 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Reference context (use as support; the target requirement above is primary):
+
+# PlantUML State Aliases, Notes, and Descriptions
+
+Use this document when state names are long or when the diagram needs annotations.
+
+## Long state names with alias
+
+Use aliases to keep transitions readable when state names are long.
+
+```plantuml
+state "Waiting for Payment Confirmation" as WaitingPayment
+state "Order Completed Successfully" as OrderComplete
+
+WaitingPayment --> OrderComplete : payment confirmed
+```
+
+Alternative alias form:
+
+```plantuml
+state WaitingPayment as "Waiting for Payment Confirmation"
+```
+
+## Notes attached to states
+
+Use notes to add additional explanation without changing the state name.
+
+```plantuml
+note right of Processing : validates request details
+```
+
+Multi-line notes:
+
+```plantuml
+note left of Processing
+The system checks the request,
+
+# PlantUML State Diagram Core Syntax
+
+Use this document when generating a basic UML state transition diagram in PlantUML.
+
+## Diagram wrapper
+
+PlantUML code should be enclosed between `@startuml` and `@enduml`.
+
+```plantuml
+@startuml
+[*] --> Idle
+Idle --> [*]
+@enduml
+```
+
+## Initial and final state
+
+The initial and final pseudostate is written as `[*]`.
+
+Initial transition:
+
+```plantuml
+[*] --> State1
+```
+
+Final transition:
+
+```plantuml
+State1 --> [*]
+```
+
+## Transitions
+
+Use arrows between states.
+
+```plantuml
+State1 --> State2
+State1 -> State2
+```
+
+Transitions can include labels after a colon.
+
+```plantuml
+Idle --> LoggedIn : login successful
+LoggedIn --> LoggedOut : logout
+```
+
+Labels may include event, guard, and action information.
+
+```plantuml
+
+Example requirement:
+Class Campaign — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall begin a campaign once a manager and staff are assigned.
+2. The system shall activate and start running a campaign upon approval and signing of the contract.
+3. The system shall prepare a final statement when the campaign is finished and move the process toward completion.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title State machine for Campaign
+
+state Commissioned
+state Active
+state Completed
+state Paid
+
+[*] --> Commissioned : /assignManager;\nassignStaff
+
+Commissioned --> Active : Authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+
+Active --> Completed : campaignCompleted\n/prepareFinalStatement
+
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = zero]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > zero]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < zero]\n/generateRefund
+
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+
+@enduml
+```
+
+Example requirement:
+Product Recommendation — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or sign in to access the platform.
+2. The system shall enable users to search for products after they have registered or logged in.
+3. The system shall display matching product results based on the user's search query.
+
+Reference PlantUML:
+```plantuml
+@startuml
+[*] --> Register
+Register : entry / nil
+Register : do / login / Register
+Register : exit / valid registration / login
+
+Register --> SearchProduct : user registers
+SearchProduct : entry / login
+SearchProduct : do / search for the product
+SearchProduct : exit / display search results
+
+SearchProduct --> SearchFilterProductFilter : user applies filters
+SearchFilterProductFilter : entry / search product
+SearchFilterProductFilter : do / apply filters to get desired results
+SearchFilterProductFilter : exit / display filtered results
+state J1 <<choice>>
+SearchProduct --> J1 : user selects product
+SearchFilterProductFilter --> J1 : user selects product
+GetProduct : entry / login
+GetProduct : do / get the product from the official website
+GetProduct : exit / redirect to the website
+J1 --> GetProduct 
+GetProduct --> [*]
+@enduml
+```
+
+Example requirement:
+Controlpanel Class — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check the entered password.
+2. The system shall allow the user to continue making selections if the password is correct.
+3. The system shall limit the number of incorrect password attempts a user can make.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title State Diagram - Control Panel
+
+[*] --> Reading : Key hit
+
+state Reading
+state Comparing
+state Locked
+state Selecting
+
+
+Comparing : do / validatePassword
+
+
+Reading --> Comparing : Password entered
+
+
+Comparing --> Comparing : Password incorrect\nnumberOfTries < maxTries
+
+
+Comparing --> Locked : numberOfTries > maxTries
+
+
+Comparing --> Selecting : Password correct
+
+
+Locked --> Locked : Timer <= lockedTime
+
+
+Locked --> Reading : Timer > lockedTime
+
+
+Selecting --> Reading : Activation successful
+
+@enduml
+```
+
+Now return only the final PlantUML.

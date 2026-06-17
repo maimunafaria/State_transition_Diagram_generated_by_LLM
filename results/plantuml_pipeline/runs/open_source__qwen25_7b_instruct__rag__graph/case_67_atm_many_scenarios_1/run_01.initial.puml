@@ -1,0 +1,24 @@
+@startuml
+title ATM Control - PIN Verification and Transaction Processing
+
+[*] --> Idle
+
+state Idle
+state "Waiting for PIN" as WaitingForPIN
+state ValidatingPIN
+state "Displaying Menu" as DisplayMenu
+state Confiscating
+state Ejecting
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+ValidatingPIN --> DisplayMenu : Valid PIN / Display Menu
+ValidatingPIN --> Confiscating : Third Invalid PIN, Card Stolen, Card Expired / Confiscate
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+DisplayMenu --> Ejecting : Cancel / Eject
+
+@enduml

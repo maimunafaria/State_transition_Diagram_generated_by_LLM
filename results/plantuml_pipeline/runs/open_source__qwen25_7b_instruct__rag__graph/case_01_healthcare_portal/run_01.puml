@@ -1,0 +1,61 @@
+@startuml
+title State Machine for Healthcare Portal
+
+[*] --> Registering : entry / nil
+Registering : do / registration process
+Registering : exit / valid registration / login
+
+Registering --> LoggingIn : user registers
+LoggingIn : entry / login
+LoggingIn : do / authentication
+LoggingIn : exit / access granted / access denied
+
+LoggingIn --> AccessingFacilities : access granted
+AccessingFacilities : entry / login
+AccessingFacilities : do / check facilities availability
+AccessingFacilities : exit / display available facilities
+
+AccessingFacilities --> ReadingContent : user selects facility
+ReadingContent : entry / login
+ReadingContent : do / read content
+ReadingContent : exit / continue using system / finish session
+
+ReadingContent --> CheckingSymptoms : user reads content
+CheckingSymptoms : entry / login
+CheckingSymptoms : do / check symptoms or use fitness options
+CheckingSymptoms : exit / continue using system / finish session
+
+CheckingSymptoms --> ProcessingInsurance : user selects service
+ProcessingInsurance : entry / login
+ProcessingInsurance : do / process and validate insurance
+ProcessingInsurance : exit / payment processing
+
+ProcessingInsurance --> PayingWithInsurance : payment processing successful
+PayingWithInsurance : entry / login
+PayingWithInsurance : do / complete payment with insurance
+PayingWithInsurance : exit / payment completed
+
+ProcessingInsurance --> PayingWithCash : payment processing unsuccessful
+PayingWithCash : entry / login
+PayingWithCash : do / select cash as payment method
+PayingWithCash : exit / display cash details
+
+PayingWithCash --> CompletingPayment : user selects cash
+CompletingPayment : entry / login
+CompleletingPayment : do / complete payment with cash
+CompletingPayment : exit / payment completed
+
+ProcessingInsurance --> [*] : payment processing failed
+
+LoggingIn --> [*] : access denied
+
+ReadingContent --> [*] : finish session
+
+CheckingSymptoms --> [*] : finish session
+
+PayingWithCash --> [*] : finish session
+
+PayingWithInsurance --> [*] : finish session
+
+CompletingPayment --> [*] : finish session
+@enduml

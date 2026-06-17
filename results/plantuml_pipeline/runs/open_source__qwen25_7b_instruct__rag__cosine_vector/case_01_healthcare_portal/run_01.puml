@@ -1,0 +1,77 @@
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  [*] --> Login : [registration completed]
+}
+
+state Login {
+  [*] --> Dashboard : [user signed in]
+}
+
+state Dashboard <<choice>>
+Dashboard --> PatientDashboard : [patient user]
+Dashboard --> HealthWorkerDashboard : [health worker user]
+Dashboard --> GovernmentDashboard : [government official]
+
+state PatientDashboard
+PatientDashboard : entry / patient logged in
+PatientDashboard : do / display patient dashboard
+PatientDashboard : exit / logout
+
+state HealthWorkerDashboard
+HealthWorkerDashboard : entry / health worker logged in
+HealthWorkerDashboard : do / display health worker dashboard
+HealthWorkerDashboard : exit / logout
+
+state GovernmentDashboard
+GovernmentDashboard : entry / government official logged in
+GovernmentDashboard : do / display government dashboard
+GovernmentDashboard : exit / logout
+
+state Logout {
+  [*] --> [*] : [user completed session]
+}
+
+Register --> Login : [registration failed]
+
+Login --> Dashboard : [invalid credentials]
+
+PatientDashboard --> ResultPage
+HealthWorkerDashboard --> ResultPage
+GovernmentDashboard --> ResultPage
+
+ResultPage <<choice>>
+ResultPage --> ContinueSession : [continue using system]
+ResultPage --> FinishSession : [finish session]
+
+ContinueSession {
+  [*] --> PatientDashboard
+  [*] --> HealthWorkerDashboard
+  [*] --> GovernmentDashboard
+}
+
+FinishSession --> Logout
+
+state PaymentProcessing <<choice>>
+PaymentProcessing --> InsuranceValidation : [insurance available]
+PaymentProcessing --> CashPayment : [no insurance]
+
+InsuranceValidation {
+  [*] --> InsuranceSuccess : [payment successful]
+  [*] --> InsuranceFailure : [payment failed]
+}
+
+CashPayment {
+  [*] --> CashDetails : [cash details provided]
+  CashDetails --> PaymentComplete : [payment completed]
+}
+
+InsuranceSuccess --> PaymentComplete
+InsuranceFailure --> PaymentComplete
+
+PaymentComplete --> Logout
+
+@enduml

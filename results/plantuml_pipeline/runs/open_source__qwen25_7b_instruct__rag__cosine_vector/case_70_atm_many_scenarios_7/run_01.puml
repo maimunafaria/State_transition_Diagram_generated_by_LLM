@@ -1,0 +1,35 @@
+@startuml
+title ATM Control - Polished Requirement Specification
+
+[*] --> Idle
+
+state Idle
+state "Waiting for PIN" as WaitingForPIN
+state ValidatingPIN
+state "Displaying Options" as DisplayOptions
+state ProcessingRequest
+state Ejecting
+state Confiscating
+
+Idle : entry / Greet User
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt, Try Again
+ValidatingPIN --> Confiscating : Third Invalid PIN, Card Stolen, Card Expired / Confiscate, Update Status
+ValidatingPIN --> DisplayOptions : Valid PIN / Display Menu
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+DisplayOptions --> Ejecting : Cancel / Eject
+
+DisplayOptions --> ProcessingRequest : Choice Made / Process Request
+
+ProcessingRequest --> Ejecting : Rejected / Eject, Display Apology
+
+Confiscating --> Ejecting : Card Confiscated / Display Confiscated
+
+Ejecting --> Idle : Card Ejected / Display Ejected
+
+@enduml

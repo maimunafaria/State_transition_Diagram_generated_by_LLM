@@ -1,0 +1,260 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Reference context (use as support; the target requirement above is primary):
+
+# PlantUML State Aliases, Notes, and Descriptions
+
+Use this document when state names are long or when the diagram needs annotations.
+
+## Long state names with alias
+
+Use aliases to keep transitions readable when state names are long.
+
+```plantuml
+state "Waiting for Payment Confirmation" as WaitingPayment
+state "Order Completed Successfully" as OrderComplete
+
+WaitingPayment --> OrderComplete : payment confirmed
+```
+
+Alternative alias form:
+
+```plantuml
+state WaitingPayment as "Waiting for Payment Confirmation"
+```
+
+## Notes attached to states
+
+Use notes to add additional explanation without changing the state name.
+
+```plantuml
+note right of Processing : validates request details
+```
+
+Multi-line notes:
+
+```plantuml
+note left of Processing
+The system checks the request,
+
+# PlantUML State Diagram Core Syntax
+
+Use this document when generating a basic UML state transition diagram in PlantUML.
+
+## Diagram wrapper
+
+PlantUML code should be enclosed between `@startuml` and `@enduml`.
+
+```plantuml
+@startuml
+[*] --> Idle
+Idle --> [*]
+@enduml
+```
+
+## Initial and final state
+
+The initial and final pseudostate is written as `[*]`.
+
+Initial transition:
+
+```plantuml
+[*] --> State1
+```
+
+Final transition:
+
+```plantuml
+State1 --> [*]
+```
+
+## Transitions
+
+Use arrows between states.
+
+```plantuml
+State1 --> State2
+State1 -> State2
+```
+
+Transitions can include labels after a colon.
+
+```plantuml
+Idle --> LoggedIn : login successful
+LoggedIn --> LoggedOut : logout
+```
+
+Labels may include event, guard, and action information.
+
+```plantuml
+
+Example requirement:
+Coin Operated Pay Phone — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start when it is not in use.
+2. The system shall require inserting coins when the user picks up the receiver.
+3. The system shall allow dialing a number only after sufficient credit has been added.
+4. The system shall start the call when the dialed number is valid and the other party answers.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Correct solution with history pseudostate
+
+state "Hung up" as HungUp
+[*] --> HungUp
+
+state "Picked up receiver" as PickedUp {
+
+    state H <<history>>
+
+    state "Waiting for coin" as WaitingCoin
+    state "Waiting for number" as WaitingNumber
+    state "Waiting for validity" as WaitingValidity
+    state "Waiting for callee to pick up receiver" as WaitingCallee
+    state Communication
+    state "End communication" as EndCommunication
+
+    HungUp --> WaitingCoin : pickUpReceiver / credit = 0
+    
+
+    WaitingCoin --> WaitingNumber : [credit >= 20]
+    WaitingNumber --> WaitingValidity : dialNumber
+    WaitingValidity --> WaitingCallee : validNumber
+    WaitingCallee --> Communication : startComm / assess
+
+    Communication --> Communication : UT[sufficient credit] / assess
+    Communication --> EndCommunication : UT[insufficient credit] / assess
+}
+
+
+PickedUp --> H : insertCoin(c) / incrementCredit(c)
+PickedUp --> HungUp : replaceReceiver / returnUnusedCoins
+
+@enduml
+```
+
+Example requirement:
+Oven — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to open the door whenever it is closed.
+2. The system shall allow the user to place food inside or remove it from the microwave when the door is open.
+3. The system shall require the user to close the door after placing food inside.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Microwave Oven Control - State Diagram
+
+[*] --> DoorShut
+
+state "Door Shut" as DoorShut
+state "Door Open" as DoorOpen
+state "Door Open With Item" as DoorOpenItem
+state "Door Shut With Item" as DoorShutItem
+state "Ready To Cook" as ReadyToCook
+state Cooking
+
+DoorShut --> DoorOpen : Door Opened
+DoorOpen --> DoorShut : Door Closed
+
+DoorOpen --> DoorOpenItem : Item Placed
+DoorOpenItem --> DoorOpen : Item Removed
+
+DoorOpenItem --> DoorShutItem : Door Closed
+DoorShutItem --> DoorOpenItem : Door Opened
+
+DoorShutItem --> ReadyToCook : Cooking Time Entered
+ReadyToCook --> ReadyToCook : Cooking Time Entered
+
+ReadyToCook --> Cooking : Start
+
+Cooking --> DoorOpenItem : Door Opened
+Cooking --> DoorShutItem : Timer Expired
+
+@enduml
+```
+
+Example requirement:
+Microwave Oven Operation — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check for proper functioning before starting.
+2. The system shall alert the user and stop operation if an issue is detected.
+3. The system shall start cooking and run for the set time if no issues are detected.
+4. The system shall emit a sound to notify the user upon completion of cooking.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Microwave Oven Operation
+
+state Operation {
+
+  state Checking
+  Checking : do / Check Status
+
+  state Cook
+  Cook : do / Run Generator
+
+  state Alarm
+  Alarm : do / Display Event
+
+  state Done
+  Done : do / Buzzer On for 5 Secs.
+
+  [*] --> Checking
+
+  Checking --> Cook : OK
+  Checking --> Alarm : Turntable Fault
+  Checking --> Alarm : Emitter Fault
+
+  Cook --> Done : Timeout
+  Cook --> Cook : Time
+}
+
+state Disabled
+state Waiting
+
+Operation --> Disabled : Door Open
+Operation --> Waiting : Cancel
+
+Alarm --> Disabled
+Done --> Waiting
+
+@enduml
+```
+
+Now return only the final PlantUML.

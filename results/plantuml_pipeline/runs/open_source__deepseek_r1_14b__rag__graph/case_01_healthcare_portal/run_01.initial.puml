@@ -1,0 +1,91 @@
+@startuml
+[*] --> Registration : new user registration attempt
+
+state Registration
+Registration --> [*] : registration failed
+
+state LoggedIn
+Registration --> LoggedIn : registration successful
+
+LoggedIn --> MainMenu : access facilities
+
+MainMenu -->
+|read news/expert content|
+|check symptoms/fitness|
+
+state NewsExpertContent
+MainMenu --> NewsExpertContent : read news/expert content
+
+NewsExpertContent --> MainMenu : back to main menu
+
+state CheckSymptomsFitness
+MainMenu --> CheckSymptomsFitness : check symptoms/fitness
+
+CheckSymptomsFitness --> MainMenu : back to main menu
+
+CheckSymptomsFitness -->
+|view result|
+
+state ViewResult
+CheckSymptomsFitness --> ViewResult : view result
+
+ViewResult -->
+|continue session|
+|finish session|
+
+state ContinueSession
+ViewResult --> ContinueSession : continue session
+
+ContinueSession --> MainMenu : back to main menu
+
+state FinishSession
+ViewResult --> FinishSession : finish session
+
+FinishSession --> Logout : logout process
+
+MainMenu -->
+|select payment method (cash/insurance)|
+
+state PaymentSelection
+MainMenu --> PaymentSelection : select payment method
+
+PaymentSelection -->
+|cash|
+|insurance|
+
+state CashPayment
+PaymentSelection --> CashPayment : cash selected
+
+CashPayment -->
+|informed about cash details|
+
+state InsurancePayment
+PaymentSelection --> InsurancePayment : insurance selected
+
+InsurancePayment -->
+|process insurance payment|
+
+state ProcessPayment
+InsurancePayment --> ProcessPayment : process insurance payment
+
+ProcessPayment --> PaymentComplete : payment successful
+
+state PaymentComplete
+ProcessPayment --> PaymentComplete : payment completed
+
+PaymentComplete --> MainMenu : back to main menu
+
+MainMenu -->
+|collect feedback after service completion|
+
+state CollectFeedback
+MainMenu --> CollectFeedback : collect feedback
+
+CollectFeedback --> Logout : logout after feedback
+
+state Logout
+CollectFeedback --> Logout : logout process
+FinishSession --> Logout : logout process
+
+Logout --> [*] : end of session
+@enduml

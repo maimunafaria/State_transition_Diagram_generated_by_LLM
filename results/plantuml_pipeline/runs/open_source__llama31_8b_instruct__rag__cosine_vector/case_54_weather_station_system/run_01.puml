@@ -1,0 +1,22 @@
+@startuml
+[*] --> Idle
+Idle --> [*]
+state Running {
+  [*] --> CollectData
+  state CollectData {
+    [*] --> SendSummary
+    CollectData --> CollectData : clockTriggered()
+    SendSummary --> Running : summarySent()
+  }
+  state CheckStatus {
+    [*] --> Running : statusChecked()
+  }
+  Idle --> Running : powerOn()
+  Running --> Idle : shutdownCommand()
+}
+state ConfigMode {
+  [*] --> Running
+  ConfigMode --> Running : configCompleted()
+}
+ConfigMode --> Idle : cancelConfig()
+@enduml

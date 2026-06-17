@@ -1,0 +1,372 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Reference context (use as support; the target requirement above is primary):
+
+# PlantUML State Aliases, Notes, and Descriptions
+
+Use this document when state names are long or when the diagram needs annotations.
+
+## Long state names with alias
+
+Use aliases to keep transitions readable when state names are long.
+
+```plantuml
+state "Waiting for Payment Confirmation" as WaitingPayment
+state "Order Completed Successfully" as OrderComplete
+
+WaitingPayment --> OrderComplete : payment confirmed
+```
+
+Alternative alias form:
+
+```plantuml
+state WaitingPayment as "Waiting for Payment Confirmation"
+```
+
+## Notes attached to states
+
+Use notes to add additional explanation without changing the state name.
+
+```plantuml
+note right of Processing : validates request details
+```
+
+Multi-line notes:
+
+```plantuml
+note left of Processing
+The system checks the request,
+
+# PlantUML State Diagram Core Syntax
+
+Use this document when generating a basic UML state transition diagram in PlantUML.
+
+## Diagram wrapper
+
+PlantUML code should be enclosed between `@startuml` and `@enduml`.
+
+```plantuml
+@startuml
+[*] --> Idle
+Idle --> [*]
+@enduml
+```
+
+## Initial and final state
+
+The initial and final pseudostate is written as `[*]`.
+
+Initial transition:
+
+```plantuml
+[*] --> State1
+```
+
+Final transition:
+
+```plantuml
+State1 --> [*]
+```
+
+## Transitions
+
+Use arrows between states.
+
+```plantuml
+State1 --> State2
+State1 -> State2
+```
+
+Transitions can include labels after a colon.
+
+```plantuml
+Idle --> LoggedIn : login successful
+LoggedIn --> LoggedOut : logout
+```
+
+Labels may include event, guard, and action information.
+
+```plantuml
+
+Example requirement:
+Guide Dropshipping Website — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to choose whether they are a seller or a customer.
+2. The system shall enable the seller to add or remove products from their list and finalize their offerings.
+3. The system shall allow the customer to view available products and select ones of interest.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Chart Diagram
+
+
+[*] --> StartChoice
+
+state StartChoice <<choice>>
+
+StartChoice --> SellerLogin
+StartChoice --> CustomerLogin
+
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry / seller should be registered
+SellerLogin : do / user provide Login Details
+SellerLogin : exit / login Successful
+
+state "Add/Remove Products" as ManageProducts
+ManageProducts : entry / seller should be LoggedIn
+ManageProducts : do / the seller should be able to add and remove products from the lists
+ManageProducts : exit / fthe seller finalise his products list 
+
+SellerLogin --> ManageProducts
+
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry / customer should be registered
+CustomerLogin : do / user provide Login Details
+CustomerLogin : exit / login Successful
+
+state "View Products" as ViewProducts
+ViewProducts : entry / customer should be LoggedIn
+ViewProducts : do / the customer view Product List
+ViewProducts : exit / customer decides to buy a product
+
+state "Purchase Products" as PurchaseProducts
+PurchaseProducts : entry / customer select a Product
+PurchaseProducts : do / customer contacts Seller via messaging
+PurchaseProducts : exit / customer should be able to message the seller
+CustomerLogin --> ViewProducts
+ViewProducts --> PurchaseProducts
+
+
+state MergePoint <<choice>>
+
+ManageProducts --> MergePoint
+PurchaseProducts --> MergePoint
+
+
+state Message
+Message : entry /customer wanting to purchase a product 
+Message : do / customer seller messaging each other discussing the deal 
+Message : exit / conclusion is drawn
+
+MergePoint --> Message
+
+state Decision <<choice>>
+Message --> Decision
+
+state "Purchase successful" as Success
+Success : entry / customer and the seller agrees on the deal
+Success : do / customer pays the seller through external means 
+Success : exit / customer asks for product feedback
+
+state "Purchase Unsuccessful" as Fail
+Fail : entry / customer not Interested in the offer
+Fail : do / customer decline sellers's Offer
+Fail : exit / end
+
+Decision --> Success
+Decision --> Fail
+
+
+state "Rate Products" as RateProducts
+RateProducts : entry / customer purchases the products
+RateProducts : do / customer gives Feedback for the transaction
+RateProducts : exit / end
+
+Success --> RateProducts
+
+RateProducts --> [*]
+Fail --> [*]
+
+@enduml
+```
+
+Example requirement:
+Textile — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow customers to create an account by filling in required details.
+2. The system shall enable customers to place orders for garments once they are registered.
+3. The system shall send out sample materials if a customer needs them after placing an order.
+
+Reference PlantUML:
+```plantuml
+@startuml
+
+[*] --> CustomerRegistration
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+CustomerRegistration : entry / Start state
+CustomerRegistration : do / Fill in required details
+CustomerRegistration : exit / Getting garment orders
+
+CustomerRegistration --> GettingGarmentOrders : registration complete
+
+GettingGarmentOrders : entry / Customer registration
+GettingGarmentOrders : do / Place the orders
+GettingGarmentOrders : exit / Sampling / Stock checking
+
+GettingGarmentOrders --> Sampling : sampling required
+GettingGarmentOrders --> StockChecking : check stock
+
+Sampling : entry / Getting garment orders
+Sampling : do / Send out sample materials while ordering
+Sampling : exit / decision
+
+Sampling --> Choice1 : proceed
+StockChecking --> Choice1
+
+StockChecking : entry / Getting garment orders
+StockChecking : do / Check availability of raw material
+StockChecking : exit / decision making
+
+Choice1 --> PurchasingRawMaterials : not in stock
+Choice1 --> ProcessingRawMaterials : in stock
+
+PurchasingRawMaterials : entry / Stock checking
+PurchasingRawMaterials : do / Buy raw materials
+PurchasingRawMaterials : exit / Production of garments
+
+ProcessingRawMaterials : entry / Stock checking
+ProcessingRawMaterials : do / Processing
+ProcessingRawMaterials : exit / Production of garments
+ProcessingRawMaterials --> Choice2
+PurchasingRawMaterials --> Choice2
+Choice2 --> ProductionOfGarments
+
+ProductionOfGarments : entry / Purchasing or processing of raw materials
+ProductionOfGarments : do / Manufacturing
+ProductionOfGarments : exit / Product checking
+
+ProductionOfGarments --> ProductChecking
+
+ProductChecking : entry / Production of garments
+ProductChecking : do / Checking for defects and clearance
+ProductChecking : exit / Receiving the ordered garments
+
+ProductChecking --> ReceivingOrderedGarments
+
+ReceivingOrderedGarments : entry / Product checking
+ReceivingOrderedGarments : do / Garment delivered
+ReceivingOrderedGarments : exit / Billing
+
+ReceivingOrderedGarments --> Billing
+
+Billing : entry / Receiving the ordered garments
+Billing : do / Making payments
+Billing : exit / Report generation
+
+Billing --> ReportGeneration
+
+ReportGeneration : entry / Billing
+ReportGeneration : do / Giving feedback
+ReportGeneration : exit / final state
+
+ReportGeneration --> [*]
+
+@enduml
+```
+
+Example requirement:
+Device Handout — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall collect personal details from a donor during registration.
+2. The system shall check the entered personal details after registration.
+3. The system shall collect contact information from a donor after verifying their personal details.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Machine Diagram
+
+[*] --> DonorRegistration
+
+state "donor registration" as DonorRegistration
+DonorRegistration : entry / enter personal details
+DonorRegistration : do / verify details
+DonorRegistration : exit / request contact details
+
+state "get contacts" as GetContacts
+GetContacts : entry / registered donor
+GetContacts : do / receive contact details
+GetContacts : exit / donate a device
+
+state "device details" as DeviceDetails
+DeviceDetails : entry / gave contacts
+DeviceDetails : do / receive details
+DeviceDetails : exit / request approval
+
+state "device verification" as DeviceVerification
+DeviceVerification : entry / provided device details
+DeviceVerification : do / check details
+DeviceVerification : exit / acknowledge donor
+
+state Decision <<choice>>
+
+state approved
+approved : entry / device verified
+approved : do / choose an executive
+approved : exit / send details to executive
+
+state rejected
+rejected : entry / fails verification
+rejected : do / notify donor
+rejected : exit / device not accepted
+
+state "picked up" as PickedUp
+PickedUp : entry / executive receives details
+PickedUp : do / executive picks product
+PickedUp : exit / acknowledges status of product
+
+DonorRegistration --> GetContacts
+GetContacts --> DeviceDetails
+DeviceDetails --> DeviceVerification
+DeviceVerification --> Decision
+
+Decision --> approved : [passes verification]
+Decision --> rejected : [fails verification]
+
+approved --> PickedUp
+
+PickedUp --> [*]
+rejected --> [*]
+
+@enduml
+```
+
+Now return only the final PlantUML.

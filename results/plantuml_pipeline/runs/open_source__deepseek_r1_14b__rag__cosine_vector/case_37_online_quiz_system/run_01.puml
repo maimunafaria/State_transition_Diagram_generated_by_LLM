@@ -1,0 +1,50 @@
+@startuml
+state "Register/Login" as StartChoice {
+  [*] --> RegLogin
+}
+
+state RegLogin as "Enter Details or Login" {
+  RegLogin --> RoleSelection : [Valid]
+  RegLogin --> RegLogin : [Invalid]
+}
+
+state RoleSelection <<choice>> {
+  RegLogin --> RoleSelection
+}
+
+state TeacherMenu {
+  [*] --> CreateQuiz
+  [*] --> EditQuiz
+  [*] --> ViewResults
+}
+
+state StudentMenu {
+  [*] --> SelectQuiz
+  [*] --> Answering
+  [*] --> SubmitQuiz
+  [*] --> ViewResult
+}
+
+state "Create Quiz" as CreateQuiz {
+  CreateQuiz --> SaveDraft : [Save]
+  CreateQuiz --> PostQuiz : [Post]
+}
+
+state "Edit Quiz" as EditQuiz {
+  EditQuiz --> CreateQuiz : [New]
+  EditQuiz --> SaveDraft : [Save]
+  EditQuiz --> PostQuiz : [Post]
+}
+
+state "Save Draft" as SaveDraft {
+  SaveDraft --> EditQuiz
+}
+
+state "Post Quiz" as PostQuiz {
+  PostQuiz --> PublishedState
+}
+
+state PublishedState <<choice>> {
+  PublishedState --> ViewResults : [Teacher]
+  PublishedState --> TakeQuiz : [Student]
+@enduml

@@ -1,0 +1,288 @@
+{
+  "run_id": "open_source__mistral__rag__graph",
+  "case_id": "case_51_process_sale",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nProcess Sale — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall wait for a new sale.\n2. The system shall enter items one by one as they are selected by the customer.\n3. The system shall move to payment after all items have been added.\n4. The system shall complete the sale immediately if the customer pays with cash.\n5. The system shall verify the payment if the customer chooses to pay by card or check.\n6. The system shall complete the sale once the payment is approved.\n7. The system shall return to waiting for the next customer after the payment has been finished.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Aliases, Notes, and Descriptions\n\nUse this document when state names are long or when the diagram needs annotations.\n\n## Long state names with alias\n\nUse aliases to keep transitions readable when state names are long.\n\n```plantuml\nstate \"Waiting for Payment Confirmation\" as WaitingPayment\nstate \"Order Completed Successfully\" as OrderComplete\n\nWaitingPayment --> OrderComplete : payment confirmed\n```\n\nAlternative alias form:\n\n```plantuml\nstate WaitingPayment as \"Waiting for Payment Confirmation\"\n```\n\n## Notes attached to states\n\nUse notes to add additional explanation without changing the state name.\n\n```plantuml\nnote right of Processing : validates request details\n```\n\nMulti-line notes:\n\n```plantuml\nnote left of Processing\nThe system checks the request,\n\n# PlantUML State Diagram Core Syntax\n\nUse this document when generating a basic UML state transition diagram in PlantUML.\n\n## Diagram wrapper\n\nPlantUML code should be enclosed between `@startuml` and `@enduml`.\n\n```plantuml\n@startuml\n[*] --> Idle\nIdle --> [*]\n@enduml\n```\n\n## Initial and final state\n\nThe initial and final pseudostate is written as `[*]`.\n\nInitial transition:\n\n```plantuml\n[*] --> State1\n```\n\nFinal transition:\n\n```plantuml\nState1 --> [*]\n```\n\n## Transitions\n\nUse arrows between states.\n\n```plantuml\nState1 --> State2\nState1 -> State2\n```\n\nTransitions can include labels after a colon.\n\n```plantuml\nIdle --> LoggedIn : login successful\nLoggedIn --> LoggedOut : logout\n```\n\nLabels may include event, guard, and action information.\n\n```plantuml\n\nExample requirement:\nTextile — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow customers to create an account by filling in required details.\n2. The system shall enable customers to place orders for garments once they are registered.\n3. The system shall send out sample materials if a customer needs them after placing an order.\n\nReference PlantUML:\n```plantuml\n@startuml\n\n[*] --> CustomerRegistration\nstate Choice1 <<choice>>\nstate Choice2 <<choice>>\nCustomerRegistration : entry / Start state\nCustomerRegistration : do / Fill in required details\nCustomerRegistration : exit / Getting garment orders\n\nCustomerRegistration --> GettingGarmentOrders : registration complete\n\nGettingGarmentOrders : entry / Customer registration\nGettingGarmentOrders : do / Place the orders\nGettingGarmentOrders : exit / Sampling / Stock checking\n\nGettingGarmentOrders --> Sampling : sampling required\nGettingGarmentOrders --> StockChecking : check stock\n\nSampling : entry / Getting garment orders\nSampling : do / Send out sample materials while ordering\nSampling : exit / decision\n\nSampling --> Choice1 : proceed\nStockChecking --> Choice1\n\nStockChecking : entry / Getting garment orders\nStockChecking : do / Check availability of raw material\nStockChecking : exit / decision making\n\nChoice1 --> PurchasingRawMaterials : not in stock\nChoice1 --> ProcessingRawMaterials : in stock\n\nPurchasingRawMaterials : entry / Stock checking\nPurchasingRawMaterials : do / Buy raw materials\nPurchasingRawMaterials : exit / Production of garments\n\nProcessingRawMaterials : entry / Stock checking\nProcessingRawMaterials : do / Processing\nProcessingRawMaterials : exit / Production of garments\nProcessingRawMaterials --> Choice2\nPurchasingRawMaterials --> Choice2\nChoice2 --> ProductionOfGarments\n\nProductionOfGarments : entry / Purchasing or processing of raw materials\nProductionOfGarments : do / Manufacturing\nProductionOfGarments : exit / Product checking\n\nProductionOfGarments --> ProductChecking\n\nProductChecking : entry / Production of garments\nProductChecking : do / Checking for defects and clearance\nProductChecking : exit / Receiving the ordered garments\n\nProductChecking --> ReceivingOrderedGarments\n\nReceivingOrderedGarments : entry / Product checking\nReceivingOrderedGarments : do / Garment delivered\nReceivingOrderedGarments : exit / Billing\n\nReceivingOrderedGarments --> Billing\n\nBilling : entry / Receiving the ordered garments\nBilling : do / Making payments\nBilling : exit / Report generation\n\nBilling --> ReportGeneration\n\nReportGeneration : entry / Billing\nReportGeneration : do / Giving feedback\nReportGeneration : exit / final state\n\nReportGeneration --> [*]\n\n@enduml\n```\n\nExample requirement:\nArt Gallery Mananement System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall verify login credentials upon submission.\n2. The system shall display an error message and prevent further interaction if login details are incorrect.\n3. The system shall allow users to view products or update their information after a successful login.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Chart Diagram\n\n\n[*] --> Login\n\nstate Login\nLogin : entry / getInfo\nLogin : do / verifyData\nLogin : exit / verified\n\nstate LoginDecision <<choice>>\nLogin --> LoginDecision\n\nstate \"Valid Login\" as ValidLogin\nValidLogin : entry / contain Info\nValidLogin : do / allow Access to system\nValidLogin : exit / gallery Entry\n\nstate \"Invalid Login\" as InvalidLogin\nInvalidLogin : entry / wrong Info\nInvalidLogin : do / display Error message\nInvalidLogin : exit / return To Start\n\nLoginDecision --> ValidLogin\nLoginDecision --> InvalidLogin\n\nstate NavChoice <<choice>>\nValidLogin --> NavChoice\n\nstate Gallery\nGallery : entry / show Products\nGallery : do / allow to select Products\nGallery : exit / save Products\n\nstate Update\nUpdate : entry / contain Info\nUpdate : do / take New Info\nUpdate : exit / save new Info\n\nNavChoice --> Gallery\nNavChoice --> Update\n\nUpdate --> [*]\n\nstate Order\nOrder : entry / select Items\nOrder : do / allowto order If products In Stock\nOrder : exit / verification\n\nstate Cart\nCart : entry / contain Selected Items\nCart : do / all billing Info\nCart : exit / payment Method\n\nGallery --> Order\nOrder --> Cart\n\nstate Payment\nPayment : entry / get Payment Method\nPayment : do / confirm Payment\nPayment : exit / verify\n\nCart --> Payment\n\nstate PayDecision <<choice>>\nPayment --> PayDecision\n\nstate \"Valid Payment\" as ValidPayment\nValidPayment : entry / payment Method\nValidPayment : do / get Cash\nValidPayment : exit / confirmation of product\n\nstate \"Invalid Payment\" as InvalidPayment\nInvalidPayment : entry / wrong Entry\nInvalidPayment : do / error Message\nInvalidPayment : exit / return\n\nPayDecision --> ValidPayment\nPayDecision --> InvalidPayment\n\n\nstate Delivery\nDelivery : entry / take out Order\nDelivery : do / deliver Product\nDelivery : exit / exit System\n\nValidPayment --> Delivery\nDelivery --> [*]\n\nInvalidPayment --> [*]\n\n@enduml\n```\n\nExample requirement:\nDevice Handout — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall collect personal details from a donor during registration.\n2. The system shall check the entered personal details after registration.\n3. The system shall collect contact information from a donor after verifying their personal details.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Machine Diagram\n\n[*] --> DonorRegistration\n\nstate \"donor registration\" as DonorRegistration\nDonorRegistration : entry / enter personal details\nDonorRegistration : do / verify details\nDonorRegistration : exit / request contact details\n\nstate \"get contacts\" as GetContacts\nGetContacts : entry / registered donor\nGetContacts : do / receive contact details\nGetContacts : exit / donate a device\n\nstate \"device details\" as DeviceDetails\nDeviceDetails : entry / gave contacts\nDeviceDetails : do / receive details\nDeviceDetails : exit / request approval\n\nstate \"device verification\" as DeviceVerification\nDeviceVerification : entry / provided device details\nDeviceVerification : do / check details\nDeviceVerification : exit / acknowledge donor\n\nstate Decision <<choice>>\n\nstate approved\napproved : entry / device verified\napproved : do / choose an executive\napproved : exit / send details to executive\n\nstate rejected\nrejected : entry / fails verification\nrejected : do / notify donor\nrejected : exit / device not accepted\n\nstate \"picked up\" as PickedUp\nPickedUp : entry / executive receives details\nPickedUp : do / executive picks product\nPickedUp : exit / acknowledges status of product\n\nDonorRegistration --> GetContacts\nGetContacts --> DeviceDetails\nDeviceDetails --> DeviceVerification\nDeviceVerification --> Decision\n\nDecision --> approved : [passes verification]\nDecision --> rejected : [fails verification]\n\napproved --> PickedUp\n\nPickedUp --> [*]\nrejected --> [*]\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Process Sale — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall wait for a new sale.\n2. The system shall enter items one by one as they are selected by the customer.\n3. The system shall move to payment after all items have been added.\n4. The system shall complete the sale immediately if the customer pays with cash.\n5. The system shall verify the payment if the customer chooses to pay by card or check.\n6. The system shall complete the sale once the payment is approved.\n7. The system shall return to waiting for the next customer after the payment has been finished.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__mistral__rag__graph\\case_51_process_sale\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "WaitingForSale",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 4,
+    "transition_count": 4
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "graph",
+      "profile": "standard",
+      "top_k": 3,
+      "query_domains": [
+        "customer",
+        "payment"
+      ],
+      "retrieved_docs": [
+        {
+          "name": "plantuml_rules\\plantuml_state_alias_notes_descriptions.md",
+          "source_type": "plantuml_rule",
+          "score": 23,
+          "graph_score": 0,
+          "lexical_overlap": 12,
+          "title_overlap": 0,
+          "domain_overlap": 1,
+          "doc_domains": [
+            "order",
+            "payment"
+          ],
+          "query_graph_features": {
+            "state_count": 7,
+            "transition_count": 9,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 2,
+            "guarded_count": 2,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "medium",
+            "loop_bucket": "low"
+          },
+          "doc_graph_features": {},
+          "clipped_chars": 779
+        },
+        {
+          "name": "plantuml_rules\\plantuml_state_core_syntax.md",
+          "source_type": "plantuml_rule",
+          "score": 20,
+          "graph_score": 0,
+          "lexical_overlap": 12,
+          "title_overlap": 0,
+          "domain_overlap": 0,
+          "doc_domains": [],
+          "query_graph_features": {
+            "state_count": 7,
+            "transition_count": 9,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 2,
+            "guarded_count": 2,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "medium",
+            "loop_bucket": "low"
+          },
+          "doc_graph_features": {},
+          "clipped_chars": 759
+        },
+        {
+          "name": "dataset_examples\\case_08_textile.md",
+          "source_type": "dataset_example",
+          "score": 68,
+          "graph_score": 33,
+          "lexical_overlap": 25,
+          "title_overlap": 0,
+          "domain_overlap": 2,
+          "doc_domains": [
+            "customer",
+            "customers",
+            "order",
+            "payment",
+            "textile"
+          ],
+          "query_graph_features": {
+            "state_count": 7,
+            "transition_count": 9,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 2,
+            "guarded_count": 2,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "medium",
+            "loop_bucket": "low"
+          },
+          "doc_graph_features": {
+            "state_count": 13,
+            "transition_count": 16,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 2,
+            "guarded_count": 0,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "medium",
+            "loop_bucket": "low"
+          },
+          "clipped_chars": 2694
+        },
+        {
+          "name": "dataset_examples\\case_35_art_gallery_mananement_system.md",
+          "source_type": "dataset_example",
+          "score": 65,
+          "graph_score": 32,
+          "lexical_overlap": 24,
+          "title_overlap": 1,
+          "domain_overlap": 1,
+          "doc_domains": [
+            "order",
+            "payment"
+          ],
+          "query_graph_features": {
+            "state_count": 7,
+            "transition_count": 9,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 2,
+            "guarded_count": 2,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "medium",
+            "loop_bucket": "low"
+          },
+          "doc_graph_features": {
+            "state_count": 14,
+            "transition_count": 17,
+            "final_count": 3,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 3,
+            "guarded_count": 0,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "medium",
+            "loop_bucket": "low"
+          },
+          "clipped_chars": 2300
+        },
+        {
+          "name": "dataset_examples\\case_10_device_handout.md",
+          "source_type": "dataset_example",
+          "score": 63,
+          "graph_score": 41,
+          "lexical_overlap": 18,
+          "title_overlap": 0,
+          "domain_overlap": 0,
+          "doc_domains": [
+            "device"
+          ],
+          "query_graph_features": {
+            "state_count": 7,
+            "transition_count": 9,
+            "final_count": 1,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 2,
+            "guarded_count": 2,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "medium",
+            "loop_bucket": "low"
+          },
+          "doc_graph_features": {
+            "state_count": 9,
+            "transition_count": 10,
+            "final_count": 2,
+            "initial_count": 1,
+            "loop_count": 0,
+            "choice_count": 1,
+            "guarded_count": 2,
+            "state_bucket": "medium",
+            "transition_bucket": "medium",
+            "branching_bucket": "medium",
+            "loop_bucket": "low"
+          },
+          "clipped_chars": 1889
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "WaitingForSale",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 4,
+        "transition_count": 4
+      },
+      "strict_state_diagram_valid": true,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__mistral__rag__graph\\case_51_process_sale\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.25,
+    "state_recall": 0.25,
+    "state_f1": 0.25,
+    "state_tp": 1,
+    "state_fp": 3,
+    "state_fn": 3,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 4,
+    "transition_fn": 7,
+    "state_precision_relaxed": 0.25,
+    "state_recall_relaxed": 0.25,
+    "state_f1_relaxed": 0.25,
+    "state_tp_relaxed": 1,
+    "state_fp_relaxed": 3,
+    "state_fn_relaxed": 3,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 4,
+    "transition_fn_relaxed": 6,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 4,
+    "transition_fn_semantic": 7,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 0.75,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.75,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.125,
+    "overall_f1_relaxed": 0.125,
+    "weighted_f1_relaxed_70_30": 0.175,
+    "overall_f1_semantic": 0.125,
+    "weighted_f1_semantic_70_30": 0.175,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  }
+}

@@ -1,0 +1,32 @@
+@startuml
+[*] --> WaitingForInput : Power On
+
+state WaitingForInput {
+  [*] --> DisplayTime : wait for input
+  DisplayTime --> WaitForPowerSelection : select power level
+}
+
+WaitForPowerSelection --> FullPower : full power selected
+WaitForPowerSelection --> HalfPower : half power selected
+
+FullPower --> WaitForCookingTime : set cooking time
+HalfPower --> WaitForCookingTime : set cooking time
+
+state WaitForCookingTime {
+  [*] --> SetCookingTime : enter number
+}
+
+SetCookingTime --> Cooking : start cooking
+Cooking : do / cook for [cooking time]
+
+state Cooking {
+  [*] --> DoorOpen : door opened
+  DoorOpen --> StopCooking : stop immediately
+  StopCooking --> DisplayTime : return to display time
+  StopCooking --> CancelCooking : cancel cooking
+}
+
+CancelCooking --> DisplayTime : return to display time
+
+DisplayTime --> WaitingForInput : wait for next use
+@enduml

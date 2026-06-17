@@ -1,0 +1,168 @@
+@startuml
+title UML state machine diagram
+
+state Idle {
+    entry To action
+    do Remain in same state
+    exit Login / Register
+}
+
+state Register {
+    entry Register
+    do Register after validating
+    exit Login/Invalid registration
+}
+
+state InvalidRegistration {
+    entry Invalid registration
+    do Cannot register
+    exit Abnormal termination
+}
+
+state Login {
+    entry Login
+    do Login using valid username and password
+    exit Invalid login/To home page
+}
+
+state InvalidLogin {
+    entry Invalid login
+    do Cannot login
+    exit Abnormal termination
+}
+
+state ReadBlog {
+    entry To home page
+    entry Read blogs of recovered patients
+    exit Idle
+}
+
+state UpdateInfected {
+    entry To home page
+    do Update current no. of infected people in the locality
+    exit View
+}
+
+state ViewInfected {
+    entry View
+    do View number of infected people in the locality
+    exit Idle
+}
+
+state DeathCount {
+    entry View
+    do View no. of deaths in the locality
+    exit Idle
+}
+
+state ViewMaskDemand {
+    entry View
+    do View mask demand in the locality
+    exit Stock
+}
+
+state StockUp {
+    entry Stock
+    do Stock up masks and gloves by the shops
+    exit End
+}
+
+state SendPatientInfo {
+    entry To home page
+    do Update data by home quarantined patients
+    exit View patient info
+}
+
+state ViewPatientInfo {
+    entry View patient info
+    do View patient info by the medical professional
+    exit Prescribe
+}
+
+state PrescribeMedicines {
+    entry Prescribe
+    do Prescribe medicines if needed
+    exit View data from doc
+}
+
+state ViewDoctorData {
+    entry View data from doc
+    do View data shared by doctor
+    exit Buy medicines
+}
+
+state ListMedicalShops {
+    entry To home page
+    do List all medical shops in the locality
+    exit Buy medicines
+}
+
+state AssignWorker {
+    entry To home page
+    do Assign workers to disinfect in an area
+    exit Update status
+}
+
+state CleanlinessStatus {
+    entry Update status
+    do Update status of cleanliness in the locality
+    exit End
+}
+
+state BuyMedicines {
+    entry Buy medicines
+    do Buy medicines if needed
+    exit End
+}
+
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+[*] --> Idle
+
+Idle --> J1
+J1 --> Register
+J1 --> Login
+
+Register --> J2
+J2 --> Login
+J2 --> InvalidRegistration
+InvalidRegistration --> [*]
+
+Login --> J3
+J3 --> InvalidLogin
+J3 --> ReadBlog
+J3 --> UpdateInfected
+J3 --> SendPatientInfo
+J3 --> ListMedicalShops
+J3 --> AssignWorker
+InvalidLogin --> [*]
+
+ReadBlog --> J7
+UpdateInfected --> J4
+ViewInfected --> J7
+DeathCount --> J7
+J7 --> Idle
+J4 --> ViewInfected
+J4 --> DeathCount
+J4 --> ViewMaskDemand
+
+ViewMaskDemand --> StockUp
+StockUp --> J6
+
+SendPatientInfo --> ViewPatientInfo
+ViewPatientInfo --> PrescribeMedicines
+PrescribeMedicines --> ViewDoctorData
+ViewDoctorData --> J5
+ListMedicalShops --> J5
+J5 --> BuyMedicines
+BuyMedicines --> J6
+
+AssignWorker --> CleanlinessStatus
+CleanlinessStatus --> J6
+
+J6 --> [*]
+@enduml

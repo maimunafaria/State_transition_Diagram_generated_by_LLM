@@ -1,0 +1,225 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.
+
+Reference context (use as support; the target requirement above is primary):
+
+# PlantUML State Aliases, Notes, and Descriptions
+
+Use this document when state names are long or when the diagram needs annotations.
+
+## Long state names with alias
+
+Use aliases to keep transitions readable when state names are long.
+
+```plantuml
+state "Waiting for Payment Confirmation" as WaitingPayment
+state "Order Completed Successfully" as OrderComplete
+
+WaitingPayment --> OrderComplete : payment confirmed
+```
+
+Alternative alias form:
+
+```plantuml
+state WaitingPayment as "Waiting for Payment Confirmation"
+```
+
+## Notes attached to states
+
+Use notes to add additional explanation without changing the state name.
+
+```plantuml
+note right of Processing : validates request details
+```
+
+Multi-line notes:
+
+```plantuml
+note left of Processing
+The system checks the request,
+
+# PlantUML State Diagram Core Syntax
+
+Use this document when generating a basic UML state transition diagram in PlantUML.
+
+## Diagram wrapper
+
+PlantUML code should be enclosed between `@startuml` and `@enduml`.
+
+```plantuml
+@startuml
+[*] --> Idle
+Idle --> [*]
+@enduml
+```
+
+## Initial and final state
+
+The initial and final pseudostate is written as `[*]`.
+
+Initial transition:
+
+```plantuml
+[*] --> State1
+```
+
+Final transition:
+
+```plantuml
+State1 --> [*]
+```
+
+## Transitions
+
+Use arrows between states.
+
+```plantuml
+State1 --> State2
+State1 -> State2
+```
+
+Transitions can include labels after a colon.
+
+```plantuml
+Idle --> LoggedIn : login successful
+LoggedIn --> LoggedOut : logout
+```
+
+Labels may include event, guard, and action information.
+
+```plantuml
+
+Example requirement:
+Alert Notifier — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall initialize a component to detect updates upon initial loading.
+2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.
+3. The system shall process detected updates by storing them and evaluating their significance.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Alert Notifier Component States
+
+[*] --> InitializeComponent : Load Component
+
+state "Initialize\nComponent" as InitializeComponent
+state "Waiting for Update" as WaitingForUpdate
+state "Processing Update" as ProcessingUpdate
+state "Unloading Component" as UnloadingComponent
+
+WaitingForUpdate : do / checkForUpdate
+
+ProcessingUpdate : entry / storeUpdate
+ProcessingUpdate : do / evaluateUpdate
+ProcessingUpdate : exit / [update > delta] Operator.Notify(update)
+
+UnloadingComponent : exit / compMgr.compUnloaded()
+
+InitializeComponent --> WaitingForUpdate : [ init. success ]
+InitializeComponent --> UnloadingComponent : [ init. failure ]
+
+WaitingForUpdate --> ProcessingUpdate : stock update
+ProcessingUpdate --> WaitingForUpdate
+
+WaitingForUpdate --> UnloadingComponent : shutdown
+
+UnloadingComponent --> [*]
+
+@enduml
+```
+
+Example requirement:
+First Person Shooter Fps Games — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall keep the troll in a calm state with no actions if there is no detected threat.
+2. The system shall determine the troll's reaction based on the perceived strength of the detected opponent.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Troll State Diagram
+
+[*] --> Neutral
+
+state Neutral
+state Attack
+state Panic
+state Die
+
+Neutral --> Attack : see opponent [defeatable]
+Attack --> Neutral : lost opponent
+
+Neutral --> Panic : see opponent [undefeatable]
+Panic --> Neutral : lost opponent
+
+Attack --> Die : receive blow [health = 0] / pray
+Panic --> Die : receive blow [health = 0] / pray
+
+Die --> [*]
+
+@enduml
+```
+
+Example requirement:
+Accountapplication — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall store an application in a pending state during review.
+2. The system shall update the application status to either approved or rejected after review.
+3. The system shall finalize the application process once a decision is made.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Account Application State Diagram
+
+[*] --> pending
+
+state pending
+state approved
+state rejected
+state finalizing
+
+pending --> approved : approve
+pending --> rejected : reject
+
+approved --> finalizing : complete
+rejected --> finalizing : complete
+
+finalizing --> [*]
+
+@enduml
+```
+
+Now return only the final PlantUML.

@@ -1,0 +1,49 @@
+@startuml
+title Microwave Oven State Diagram
+
+[*] --> Idle
+
+state Idle {
+    [*] --> DisplayTime : initial
+}
+
+state DisplayTime {
+    DisplayTime --> PowerSelection : powerRequest
+    DisplayTime --> TimeEntry : timeRequest
+    DisplayTime --> DoorOpen : doorOpenRequest
+    DisplayTime --> Cancel : cancelRequest
+}
+
+state PowerSelection {
+    PowerSelection --> Idle : powerSelected
+    PowerSelection --> TimeEntry : powerSelected
+}
+
+state TimeEntry {
+    TimeEntry --> Cooking : timeEntered
+    TimeEntry --> DisplayTime : cancelTimeEntry
+}
+
+state Cooking {
+    Cooking --> DoorOpen : doorOpen
+    Cooking --> Complete : timeExpired
+    Cooking --> Cancel : cancelCooking
+}
+
+state DoorOpen {
+    DoorOpen --> DisplayTime : doorClosed
+    DoorOpen --> Cooking : doorClosed
+}
+
+state Complete {
+    Complete --> DisplayTime : complete
+}
+
+state Cancel {
+    Cancel --> DisplayTime : cancelled
+}
+
+DisplayTime --> DisplayTime : tick
+Cooking --> Cooking : tick
+
+@enduml

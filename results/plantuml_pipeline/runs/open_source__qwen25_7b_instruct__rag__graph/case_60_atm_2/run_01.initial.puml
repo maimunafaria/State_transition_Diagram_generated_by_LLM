@@ -1,0 +1,24 @@
+@startuml
+title ATM Withdrawal State Machine
+
+[*] --> VerifyCard
+
+state "VerifyCard <<final>>" as VerifyCard
+
+state ReadAmount {
+  [*] --> SelectAmount
+  state SelectAmount
+  SelectAmount --> [*] : amount
+}
+
+state OutOfService
+state "VerifyTransaction <<final>>" as VerifyTransaction
+state ReEnterAmount
+
+VerifyCard --> ReadAmount : acceptCard
+ReadAmount --> OutOfService : outOfService
+ReadAmount --> VerifyTransaction : transaction verified
+VerifyTransaction --> ReEnterAmount : transaction rejected
+ReEnterAmount --> ReadAmount : re-enter amount / <<choice>>
+
+@enduml

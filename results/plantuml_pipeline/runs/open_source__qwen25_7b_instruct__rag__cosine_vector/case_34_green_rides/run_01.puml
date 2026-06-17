@@ -1,0 +1,63 @@
+@startuml
+[*] --> J0 <<choice>>
+
+state J0 {
+  state "Display Journey Details" as DisplayJourneyDetails
+  DisplayJourneyDetails : entry/user logs in and selects destination
+  DisplayJourneyDetails : do/display journey details
+  DisplayJourneyDetails : exit/user activates driving mode or chooses other options
+
+  state "Select Place to Eat" as SelectPlaceToEat {
+    state "View Menu" as ViewMenu
+    ViewMenu : entry/user is hungry
+    ViewMenu : do/view menu
+    ViewMenu : exit/place order
+
+    state "Place Order" as PlaceOrder
+    PlaceOrder : entry/user selects place and views menu
+    PlaceOrder : do/place order
+    PlaceOrder : exit/order placed
+  }
+}
+
+J0 --> [*] <<choice>>
+state J0 {
+  state "Inform Authorities in Case of Accident" as InformAuthorities
+  InformAuthorities : entry/accident occurs
+  InformAuthorities : do/inform relevant authorities
+  InformAuthorities : exit/accident handled
+
+  state "Send Notifications During Driving or in Case of Accident" as SendNotifications {
+    state "Driving Notifications" as DrivingNotifications
+    DrivingNotifications : entry/user is driving
+    DrivingNotifications : do/send notifications
+    DrivingNotifications : exit/notices sent
+
+    state "Accident Notifications" as AccidentNotifications
+    AccidentNotifications : entry/accident occurs
+    AccidentNotifications : do/send accident notifications
+    AccidentNotifications : exit/notifications sent
+  }
+}
+
+J0 --> [*] <<choice>>
+state J0 {
+  state "Logout" as Logout
+  Logout : entry/user completes process
+  Logout : do/logout user
+  Logout : exit/successfully logged out
+}
+
+J0 --> DisplayJourneyDetails
+DisplayJourneyDetails --> SelectPlaceToEat
+SelectPlaceToEat --> PlaceOrder
+PlaceOrder --> [*]
+DisplayJourneyDetails --> InformAuthorities
+InformAuthorities --> SendNotifications
+SendNotifications --> DrivingNotifications
+DrivingNotifications --> AccidentNotifications
+AccidentNotifications --> [*]
+DisplayJourneyDetails --> Logout
+Logout --> [*]
+
+@enduml

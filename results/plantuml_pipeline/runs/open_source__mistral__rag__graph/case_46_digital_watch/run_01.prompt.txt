@@ -1,0 +1,204 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.
+
+Reference context (use as support; the target requirement above is primary):
+
+# PlantUML State Aliases, Notes, and Descriptions
+
+Use this document when state names are long or when the diagram needs annotations.
+
+## Long state names with alias
+
+Use aliases to keep transitions readable when state names are long.
+
+```plantuml
+state "Waiting for Payment Confirmation" as WaitingPayment
+state "Order Completed Successfully" as OrderComplete
+
+WaitingPayment --> OrderComplete : payment confirmed
+```
+
+Alternative alias form:
+
+```plantuml
+state WaitingPayment as "Waiting for Payment Confirmation"
+```
+
+## Notes attached to states
+
+Use notes to add additional explanation without changing the state name.
+
+```plantuml
+note right of Processing : validates request details
+```
+
+Multi-line notes:
+
+```plantuml
+note left of Processing
+The system checks the request,
+
+# PlantUML Composite States and Pseudostates
+
+Use this document when the requirement contains nested behavior, decisions, history, branching, or concurrent regions.
+
+## Composite states
+
+A composite state is declared with `state Name { ... }`.
+
+```plantuml
+@startuml
+[*] --> LoggedIn
+
+state LoggedIn {
+  [*] --> Dashboard
+  Dashboard --> Settings : open settings
+  Settings --> Dashboard : back
+}
+
+LoggedIn --> [*] : logout
+@enduml
+```
+
+## Nested substates
+
+Nested states may be declared inside a composite state.
+
+```plantuml
+state Parent {
+  state ChildA
+  state ChildB
+  ChildA --> ChildB
+}
+```
+
+## Substate-to-substate transitions
+
+Transitions between substates are allowed.
+
+```plantuml
+state A {
+  [*] --> X
+  X --> Y : next
+}
+```
+
+## History states
+
+Example requirement:
+Online Pharmacy Management System Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display a list of available orders to the delivery person.
+2. The system shall allow the delivery person to contact the delivery address for coordination.
+3. The system shall enable the delivery person to update their profile as needed.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Machine Diagram - Delivery Man
+
+[*] --> ViewOrders
+
+state "View orders" as ViewOrders
+state "Contact delivery address" as ContactDeliveryAddress
+state "Update profile" as UpdateProfile
+
+ViewOrders --> ContactDeliveryAddress
+ContactDeliveryAddress --> UpdateProfile
+UpdateProfile --> [*]
+
+@enduml
+```
+
+Example requirement:
+Flight — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall schedule and assign a flight number when a new flight is created.
+2. The system shall change the flight status to 'on journey' once it takes off.
+3. The system shall mark the flight as inactive and record it as a past record upon landing.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Statechart diagram of the class "Flight"
+
+[*] --> Planned : «M» Flight Defined/
+
+state Planned
+state "In Transit" as InTransit
+state Historic
+
+Planned : «M» New Flight Number/
+
+Planned --> InTransit : «M» Flight Started/
+InTransit --> Historic : «M» Flight Landed/
+
+Planned --> Historic : «M» Flight Cancelled/
+Historic --> [*] : «M» Flight Irrelevant/
+Planned --> [*] : «M» Flight Number Irrelevant/
+
+@enduml
+```
+
+Example requirement:
+First Person Shooter Fps Games — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall keep the troll in a calm state with no actions if there is no detected threat.
+2. The system shall determine the troll's reaction based on the perceived strength of the detected opponent.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Troll State Diagram
+
+[*] --> Neutral
+
+state Neutral
+state Attack
+state Panic
+state Die
+
+Neutral --> Attack : see opponent [defeatable]
+Attack --> Neutral : lost opponent
+
+Neutral --> Panic : see opponent [undefeatable]
+Panic --> Neutral : lost opponent
+
+Attack --> Die : receive blow [health = 0] / pray
+Panic --> Die : receive blow [health = 0] / pray
+
+Die --> [*]
+
+@enduml
+```
+
+Now return only the final PlantUML.
