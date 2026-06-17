@@ -21,6 +21,7 @@ MODEL_LABELS = {
     "llama31_70b_instruct": "Llama 3.1 70B Instruct",
     "deepseek_r1_8b": "DeepSeek R1 8B",
     "deepseek_r1_14b": "DeepSeek R1 14B",
+    "gemma3_12b": "Gemma 3 12B",
 }
 
 METHOD_LABELS = {

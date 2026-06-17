@@ -161,6 +161,7 @@ def build_experiment_configs(
     llama70_model: str,
     deepseek_model: str,
     deepseek14_model: str,
+    gemma3_model: str,
     rag_ablation_tag: str = "",
 ) -> list[ExperimentConfig]:
     configs: list[ExperimentConfig] = [
@@ -185,6 +186,7 @@ def build_experiment_configs(
         ("Llama 3.1-70B-Instruct", llama70_model, "llama31_70b_instruct"),
         ("DeepSeek-R1-8B", deepseek_model, "deepseek_r1_8b"),
         ("DeepSeek-R1-14B", deepseek14_model, "deepseek_r1_14b"),
+        ("Gemma 3 12B", gemma3_model, "gemma3_12b"),
     ]
     strategies = [
         ("zero_shot", False, False, False),
