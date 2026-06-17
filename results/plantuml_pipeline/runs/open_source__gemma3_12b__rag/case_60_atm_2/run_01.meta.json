@@ -1,0 +1,193 @@
+{
+  "run_id": "open_source__gemma3_12b__rag",
+  "case_id": "case_60_atm_2",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nAtm Scenario 2 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to select an amount to withdraw from a list of options.\n2. The system shall permit the user to enter a custom value if they want a different amount.\n3. The system shall verify the transaction after the user enters an amount.\n4. The system shall allow the user to re-enter the amount if the transaction is rejected.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Aliases, Notes, and Descriptions\n\nUse this document when state names are long or when the diagram needs annotations.\n\n## Long state names with alias\n\nUse aliases to keep transitions readable when state names are long.\n\n```plantuml\nstate \"Waiting for Payment Confirmation\" as WaitingPayment\nstate \"Order Completed Successfully\" as OrderComplete\n\nWaitingPayment --> OrderComplete : payment confirmed\n```\n\nAlternative alias form:\n\n```plantuml\nstate WaitingPayment as \"Waiting for Payment Confirmation\"\n```\n\n## Notes attached to states\n\nUse notes to add additional explanation without changing the state name.\n\n```plantuml\nnote right of Processing : validates request details\n```\n\nMulti-line notes:\n\n```plantuml\nnote left of Processing\nThe system checks the request,\n\n# PlantUML State Diagram Core Syntax\n\nUse this document when generating a basic UML state transition diagram in PlantUML.\n\n## Diagram wrapper\n\nPlantUML code should be enclosed between `@startuml` and `@enduml`.\n\n```plantuml\n@startuml\n[*] --> Idle\nIdle --> [*]\n@enduml\n```\n\n## Initial and final state\n\nThe initial and final pseudostate is written as `[*]`.\n\nInitial transition:\n\n```plantuml\n[*] --> State1\n```\n\nFinal transition:\n\n```plantuml\nState1 --> [*]\n```\n\n## Transitions\n\nUse arrows between states.\n\n```plantuml\nState1 --> State2\nState1 -> State2\n```\n\nTransitions can include labels after a colon.\n\n```plantuml\nIdle --> LoggedIn : login successful\nLoggedIn --> LoggedOut : logout\n```\n\nLabels may include event, guard, and action information.\n\n```plantuml\n\n# UML State Diagram Usage Guidelines\n\nUse this document to decide whether a requirement should be modeled as a state machine and how much detail to include.\n\n## When state diagrams are useful\n\nState diagrams are most useful when the same system or object behaves differently depending on its current state.\n\nGood candidates:\n\n```text\nATM sessions\nlogin/authentication flows\norder/payment lifecycles\ndevice controllers\napproval workflows\nbooking or registration workflows\nalarm/notification systems\n```\n\n## Scope\n\nA state diagram should focus on the lifecycle of one system, object, session, controller, or business process.\n\nAvoid mixing unrelated lifecycles into one diagram unless the requirement clearly describes them as one process.\n\n## Observability\n\n# UML State Machine Core Concepts\n\nUse this document to decide what should become a state and what should become a transition.\n\n## Purpose\n\nA state machine diagram describes how a system, object, or controller behaves over time. It is useful when the object reacts differently depending on its current condition.\n\n## State\n\nA state is not just a variable value. In a state machine, a state means an abstract condition where the system reacts to events in a particular way.\n\nGood state names usually describe stable conditions:\n\n```text\nIdle\nWaiting for Payment\nVerifying User\nOrder Confirmed\nSession Active\n```\n\nAvoid making every action a state. Actions such as \"click button\" or \"enter password\" are often better as transition labels unless the system remains in that condition.\n\nExample requirement:\nAtm Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the inserted card is valid.\n2. The system shall prompt the user to select an amount to withdraw if the card is valid.\n3. The system shall verify the transaction after the user selects an amount.\n4. The system shall return the card to the user once the transaction is completed.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle ATM State Machine\n\n[*] --> VerifyCard\n\nstate \"VerifyCard <<final>>\" as VerifyCard\n\nstate ReadAmount {\n  [*] --> SelectAmount\n  state SelectAmount\n  SelectAmount --> [*] : amount\n}\n\nstate OutOfService\nstate \"VerifyTransaction <<final>>\" as VerifyTransaction\nstate ReleaseCard\n\nVerifyCard --> ReadAmount : acceptCard\nReadAmount --> OutOfService : outOfService\nReadAmount --> VerifyTransaction\nVerifyTransaction --> ReleaseCard : releaseCard / <<final>>\n\n@enduml\n```\n\nExample requirement:\nAtm Many Scenarios Scenario 6 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the entered PIN is correct.\n2. The system shall ask for the PIN again if it is incorrect.\n3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle ATM Control - Validate PIN and Withdraw Funds\n\n[*] --> Idle\n\nstate Idle\nstate WaitingForPIN\nstate ValidatingPIN\nstate WaitingForCustomerChoice\nstate ProcessingWithdrawal\nstate Dispensing\nstate Printing\nstate Ejecting\nstate Confiscating\nstate Terminating\nstate ClosedDown\n\nIdle : entry / Display Welcome\nClosedDown : entry / Display System Down\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nWaitingForPIN --> Confiscating : Card Confiscated / display Confiscated\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> Confiscating : Card Stolen, Card Expired /\\nConfiscate, Update Status\nValidatingPIN --> Confiscating : Third Invalid PIN /\\nConfiscate\n\nValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu\n\nWaitingForPIN --> Ejecting : Cancel / Eject\nWaitingForCustomerChoice --> Ejecting : Cancel / Eject\nValidatingPIN --> Ejecting : Cancel / Eject\n\nWaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected /\\nRequest Withdrawal, Display Wait\n\nProcessingWithdrawal --> Dispensing : Withdrawal Approved /\\nDispense Cash, Update Status\nProcessingWithdrawal --> Ejecting : Rejected / Eject\n\nDispensing --> Printing : Cash Dispensed /\\nPrint Receipt,\\nDisplay Cash Dispensed,\\nConfirm Cash Dispensed\nDispensing --> ClosedDown : Insufficient Cash / Eject\n\nPrinting --> Ejecting : Receipt Printed / Eject\n\nEjecting --> Terminating : Card Ejected / Display Ejected\nConfiscating --> Terminating : Card Confiscated / Display Confiscated\n\nTerminating --> Idle : After (Elapsed Time)\\n[Closedown Not Requested]\n\n\n@enduml\n```\n\nExample requirement:\nBook Bank Management System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to register by entering their details.\n2. The system shall issue a member ID and complete the registration upon correct entry of details.\n3. The system shall require the user to re-enter their details upon incorrect entry of details.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Chart Diagram\n\nstate \"Registration\" as Registration {\n  [*] --> RegEnterDetails\n\n  state \"Enter Details\" as RegEnterDetails\n  state \"Get Member_ID\" as GetMemberID\n  state \"Successful Registration\" as SuccessfulRegistration\n  state \"Re-enter Details\" as ReEnterDetails\n\n  RegEnterDetails --> GetMemberID : [Valid]\n  RegEnterDetails --> ReEnterDetails : [Invalid]\n  ReEnterDetails --> RegEnterDetails\n  GetMemberID --> SuccessfulRegistration\n}\n\nstate \"Authentication\" as Authentication {\n  [*] --> AuthEnterMemberID\n\n  state \"Enter Member_ID\" as AuthEnterMemberID\n  state \"Enter Password\" as EnterPassword\n  state \"successful Login\" as SuccessfulLogin\n  state \"Invalid Member_ID or Password\" as InvalidCreds\n\n  AuthEnterMemberID --> EnterPassword\n  EnterPassword --> SuccessfulLogin : [Valid]\n  EnterPassword --> InvalidCreds : [Invalid]\n}\n\nstate \"Search Books\" as SearchBooks {\n  [*] --> EnterBookDetails\n\n  state \"Enter Book Details\" as EnterBookDetails\n  state \"Display Suggestion\" as DisplaySuggestion\n  state \"choose Alternate option\" as ChooseAlternate\n\n  EnterBookDetails --> DisplaySuggestion : [Found]\n  EnterBookDetails --> ChooseAlternate : [Not Found]\n}\n\nstate \"Get Books\" as GetBooksState {\n  [*] --> GetEnterBookID\n\n  state \"Enter Book_ID\" as GetEnterBookID\n  state \"Enter Member_ID\" as GetEnterMemberID\n  state \"Obtain Books\" as ObtainBooks\n  state \"Pay Fine Amount\" as PayFineAmount\n\n  GetEnterBookID --> GetEnterMemberID\n  GetEnterMemberID --> ObtainBooks : [Active Member]\n  GetEnterMemberID --> PayFineAmount : [Inactive Member]\n}\n\nstate \"Buy Books\" as BuyBooks {\n  [*] --> BuyEnterBookID\n\n  state \"Enter Book_ID\" as BuyEnterBookID\n  state \"Display Book Amount\" as DisplayBookAmount\n  state \"Get Books\" as BuyGetBooks\n  state BuyNotPaidEnd <<choice>>\n\n  BuyEnterBookID --> DisplayBookAmount\n  DisplayBookAmount --> BuyGetBooks : [Paid]\n  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]\n  BuyNotPaidEnd --> [*]\n}\n\nstate StartJoin <<choice>>\n\n[*] --> StartJoin\nStartJoin --> Registration\nStartJoin --> Authentication\nStartJoin --> SearchBooks\nStartJoin --> GetBooksState\nStartJoin --> BuyBooks\n\nSuccessfulRegistration --> AuthEnterMemberID\n\nSuccessfulLogin --> EnterBookDetails\nSuccessfulLogin --> GetEnterBookID\nSuccessfulLogin --> BuyEnterBookID\n\n\nObtainBooks --> [*]\nBuyGetBooks --> [*]\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Atm Scenario 2 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to select an amount to withdraw from a list of options.\n2. The system shall permit the user to enter a custom value if they want a different amount.\n3. The system shall verify the transaction after the user enters an amount.\n4. The system shall allow the user to re-enter the amount if the transaction is rejected.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag\\case_60_atm_2\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "WaitForAmountSelection",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 3,
+    "transition_count": 4
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "lexical",
+      "top_k": 3,
+      "query_domains": [],
+      "retrieved_docs": [
+        {
+          "name": "plantuml_rules\\plantuml_state_alias_notes_descriptions.md",
+          "source_type": "plantuml_rule",
+          "score": 7,
+          "lexical_overlap": 7,
+          "title_overlap": 0,
+          "domain_overlap": 0,
+          "doc_domains": [
+            "order",
+            "payment"
+          ],
+          "clipped_chars": 779
+        },
+        {
+          "name": "plantuml_rules\\plantuml_state_core_syntax.md",
+          "source_type": "plantuml_rule",
+          "score": 6,
+          "lexical_overlap": 6,
+          "title_overlap": 0,
+          "domain_overlap": 0,
+          "doc_domains": [],
+          "clipped_chars": 759
+        },
+        {
+          "name": "state_diagram_theory\\uml_state_diagram_usage_guidelines.md",
+          "source_type": "state_diagram_theory",
+          "score": 11,
+          "lexical_overlap": 11,
+          "title_overlap": 0,
+          "domain_overlap": 0,
+          "doc_domains": [
+            "authentication",
+            "device",
+            "order",
+            "payment"
+          ],
+          "clipped_chars": 755
+        },
+        {
+          "name": "state_diagram_theory\\uml_state_machine_core_concepts.md",
+          "source_type": "state_diagram_theory",
+          "score": 11,
+          "lexical_overlap": 11,
+          "title_overlap": 0,
+          "domain_overlap": 0,
+          "doc_domains": [
+            "admin",
+            "order",
+            "payment"
+          ],
+          "clipped_chars": 780
+        },
+        {
+          "name": "dataset_examples\\case_61_atm_3.md",
+          "source_type": "dataset_example",
+          "score": 25,
+          "lexical_overlap": 23,
+          "title_overlap": 1,
+          "domain_overlap": 0,
+          "doc_domains": [],
+          "clipped_chars": 917
+        },
+        {
+          "name": "dataset_examples\\case_69_atm_many_scenarios_6.md",
+          "source_type": "dataset_example",
+          "score": 24,
+          "lexical_overlap": 22,
+          "title_overlap": 1,
+          "domain_overlap": 0,
+          "doc_domains": [],
+          "clipped_chars": 2051
+        },
+        {
+          "name": "dataset_examples\\case_38_book_bank_management_system.md",
+          "source_type": "dataset_example",
+          "score": 21,
+          "lexical_overlap": 19,
+          "title_overlap": 1,
+          "domain_overlap": 0,
+          "doc_domains": [
+            "authentication"
+          ],
+          "clipped_chars": 2755
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "WaitForAmountSelection",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 3,
+        "transition_count": 4
+      },
+      "strict_state_diagram_valid": true,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag\\case_60_atm_2\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 3,
+    "state_fn": 5,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 4,
+    "transition_fn": 3,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 3,
+    "state_fn_relaxed": 5,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 4,
+    "transition_fn_relaxed": 3,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 4,
+    "transition_fn_semantic": 3,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  }
+}

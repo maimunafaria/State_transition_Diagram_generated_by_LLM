@@ -1,0 +1,57 @@
+@startuml
+title State diagram for Digital Watch
+
+[*] --> Idle
+
+state Idle {
+    [*] --> ViewingTime
+}
+
+state ViewingTime {
+    state AdjustingHour
+    state AdjustingMinute
+    state AdjustingAlarmHour
+    state AdjustingAlarmMinute
+
+    [*] --> AdjustingHour
+
+    AdjustingHour --> AdjustingMinute : Press 'Next Setting'
+    AdjustingMinute --> AdjustingAlarmHour : Press 'Next Setting'
+    AdjustingAlarmHour --> AdjustingAlarmMinute : Press 'Next Setting'
+    AdjustingAlarmMinute --> AdjustingHour : Press 'Next Setting'
+
+    AdjustingHour --> Idle : Press 'Confirm'
+    AdjustingMinute --> Idle : Press 'Confirm'
+    AdjustingAlarmHour --> Idle : Press 'Confirm'
+    AdjustingAlarmMinute --> Idle : Press 'Confirm'
+
+    AdjustingHour --> IncreaseValue : Press 'Increase'
+    AdjustingMinute --> IncreaseValue : Press 'Increase'
+    AdjustingAlarmHour --> IncreaseValue : Press 'Increase'
+    AdjustingAlarmMinute --> IncreaseValue : Press 'Increase'
+
+    IncreaseValue --> AdjustingHour :
+    IncreaseValue --> AdjustingMinute :
+    IncreaseValue --> AdjustingAlarmHour :
+    IncreaseValue --> AdjustingAlarmMinute :
+}
+
+state AlarmRinging {
+    [*] --> Ringing
+    Ringing --> Idle : Press 'Stop Alarm'
+}
+
+state LightOn {
+    [*] --> On
+    On --> LightOff : Release 'Light Button'
+}
+
+state LightOff {
+    [*] --> Off
+    Off --> On : Press 'Light Button'
+}
+
+Idle --> AlarmRinging : Alarm Time Reached
+Idle --> LightOn
+LightOn --> LightOff
+@enduml

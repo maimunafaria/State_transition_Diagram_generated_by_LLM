@@ -1,0 +1,56 @@
+@startuml
+title UML State Machine Diagram (ATM Withdrawal)
+
+[*] --> Idle
+
+state Idle {
+    Idle : entry / Display welcome message and options
+    Idle --> SelectAmount : User selects withdrawal
+}
+
+state SelectAmount {
+    SelectAmount : entry / Display predefined amounts
+    SelectAmount --> EnterCustomAmount : User selects custom amount
+    SelectAmount --> ChoosePredefined : User selects predefined amount
+    SelectAmount --> CancelTransaction : User cancels
+}
+
+state EnterCustomAmount {
+    EnterCustomAmount : entry / Prompt user for custom amount
+    EnterCustomAmount --> ValidateAmount : User enters amount
+    EnterCustomAmount --> CancelTransaction : User cancels
+}
+
+state ValidateAmount {
+    ValidateAmount : entry / Validate amount entered
+    ValidateAmount --> InsufficientFunds : [Amount exceeds balance]
+    ValidateAmount --> DispenseCash : [Amount is valid]
+    ValidateAmount --> EnterCustomAmount : [Amount is invalid]
+}
+
+state ChoosePredefined {
+    ChoosePredefined : entry / Select predefined amount
+    ChoosePredefined --> ValidateAmount : Amount selected
+    ChoosePredefined --> CancelTransaction : User cancels
+}
+
+state DispenseCash {
+    DispenseCash : entry / Dispense cash
+    DispenseCash --> Idle : Transaction complete
+}
+
+state InsufficientFunds {
+    InsufficientFunds : entry / Display insufficient funds message
+    InsufficientFunds --> Idle : User returns to idle
+}
+
+state CancelTransaction {
+    CancelTransaction : entry / Stop transaction
+    CancelTransaction --> ReturnCard
+}
+
+state ReturnCard {
+    ReturnCard : entry / Return card to user
+    ReturnCard --> [*]
+}
+@enduml

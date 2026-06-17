@@ -1,0 +1,41 @@
+@startuml
+title Weather Station State Machine
+
+[*] --> Shutdown
+
+state Shutdown {
+    [*] --> Running : restart
+}
+
+state Running {
+    [*] --> Collecting : clock_trigger
+    [*] --> Preparing : request_summary
+    [*] --> Checking : request_status
+    --> Running : activity_complete
+}
+
+state Collecting {
+    --> Running : activity_complete
+}
+
+state Preparing {
+    --> Running : activity_complete
+}
+
+state Checking {
+    --> Running : activity_complete
+}
+
+state Configuration {
+    --> Running : configuration_complete
+}
+
+state Controlled {
+    --> Running : command_received
+}
+
+Shutdown --> Configuration : changes_or_power_settings
+Running --> Controlled : remote_control
+Running --> Shutdown : shutdown_command
+
+@enduml

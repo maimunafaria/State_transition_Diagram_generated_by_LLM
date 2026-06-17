@@ -1,0 +1,44 @@
+@startuml
+title UML State Machine Diagram
+
+[*] --> WaitingForSale
+
+state "WaitingForSale" as WaitingForSale
+WaitingForSale : entry / wait for customer
+WaitingForSale : do / idle
+WaitingForSale : exit / customer starts selecting items
+
+state "AddingItems" as AddingItems
+AddingItems : entry / customer selects item
+AddingItems : do / add item to sale
+AddingItems : exit / customer finishes selecting items
+
+state "Payment" as Payment
+Payment : entry / all items added
+Payment : do / select payment method
+Payment : exit / await payment
+
+state "CashPayment" as CashPayment
+CashPayment : entry / customer pays with cash
+CashPayment : do / process cash payment
+CashPayment : exit / sale complete
+
+state "CardOrCheckPayment" as CardOrCheckPayment
+CardOrCheckPayment : entry / customer pays with card or check
+CardOrCheckPayment : do / verify payment
+CardOrCheckPayment : exit / await payment approval
+
+state "PaymentApproved" as PaymentApproved
+PaymentApproved : entry / payment verified
+PaymentApproved : do / complete sale
+PaymentApproved : exit / return to waiting
+
+WaitingForSale --> AddingItems
+AddingItems --> Payment
+Payment --> CashPayment
+Payment --> CardOrCheckPayment
+CardOrCheckPayment --> PaymentApproved
+PaymentApproved --> WaitingForSale
+CashPayment --> WaitingForSale
+
+@enduml
