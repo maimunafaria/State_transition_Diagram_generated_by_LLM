@@ -1,0 +1,53 @@
+@startuml
+title ATM State Machine
+
+[*] --> Idle : cardInserted
+
+state Idle {
+    [*] --> PinEntry : greetUser
+}
+
+state PinEntry {
+    state IncorrectPin {
+        [*] --> TryAgain : incorrectPin
+        TryAgain --> PinEntry : enterPin
+        TryAgain --> KeepCard : maxAttemptsReached
+    }
+    state CorrectPin {
+        [*] --> Options : correctPin
+    }
+
+    PinEntry --> IncorrectPin : enterPin
+    PinEntry --> CorrectPin : enterPin
+}
+
+state Options {
+    state Withdraw {
+        [*] --> Processing
+    }
+    state CheckInfo {
+        [*] --> Processing
+    }
+    state Transfer {
+        [*] --> Processing
+    }
+
+    Options --> Withdraw : selectWithdraw
+    Options --> CheckInfo : selectCheckInfo
+    Options --> Transfer : selectTransfer
+}
+
+state Processing {
+    [*] --> Idle : processRequest
+}
+
+state KeepCard {
+    [*] --> [*]
+}
+
+state Idle --> Idle : cardEjected
+
+PinEntry --> Idle : cardEjected
+Options --> Idle : cancelOperation
+
+@enduml

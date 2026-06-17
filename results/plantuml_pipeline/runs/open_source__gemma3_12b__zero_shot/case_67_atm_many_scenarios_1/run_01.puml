@@ -1,0 +1,39 @@
+@startuml
+state Idle {
+  [*] --> WaitingForPin : CardInserted
+}
+
+state WaitingForPin {
+  WaitingForPin : Enter PIN
+  WaitingForPin --> PinVerified : PinCorrect
+  WaitingForPin --> WaitingForPin : PinIncorrect
+}
+
+state PinVerified {
+  PinVerified : Display Options
+  PinVerified --> ProcessingWithdrawal : UserSelectsWithdrawal
+}
+
+state ProcessingWithdrawal {
+  ProcessingWithdrawal : Dispense Cash
+  ProcessingWithdrawal --> PrintingReceipt : CashDispensed
+}
+
+state PrintingReceipt {
+  PrintingReceipt : Print Receipt
+  PrintingReceipt --> ReturningCard : ReceiptPrinted
+}
+
+state ReturningCard {
+  ReturningCard : Return Card
+  ReturningCard --> Resetting {
+    Resetting : Timeout
+  }
+}
+
+state Resetting {
+  Resetting : Reset System
+  Resetting --> Idle : ResetComplete
+}
+
+@enduml

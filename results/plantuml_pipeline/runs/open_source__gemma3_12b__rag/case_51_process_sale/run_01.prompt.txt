@@ -1,0 +1,469 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Process Sale — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a new sale.
+2. The system shall enter items one by one as they are selected by the customer.
+3. The system shall move to payment after all items have been added.
+4. The system shall complete the sale immediately if the customer pays with cash.
+5. The system shall verify the payment if the customer chooses to pay by card or check.
+6. The system shall complete the sale once the payment is approved.
+7. The system shall return to waiting for the next customer after the payment has been finished.
+
+Reference context (use as support; the target requirement above is primary):
+
+# PlantUML State Aliases, Notes, and Descriptions
+
+Use this document when state names are long or when the diagram needs annotations.
+
+## Long state names with alias
+
+Use aliases to keep transitions readable when state names are long.
+
+```plantuml
+state "Waiting for Payment Confirmation" as WaitingPayment
+state "Order Completed Successfully" as OrderComplete
+
+WaitingPayment --> OrderComplete : payment confirmed
+```
+
+Alternative alias form:
+
+```plantuml
+state WaitingPayment as "Waiting for Payment Confirmation"
+```
+
+## Notes attached to states
+
+Use notes to add additional explanation without changing the state name.
+
+```plantuml
+note right of Processing : validates request details
+```
+
+Multi-line notes:
+
+```plantuml
+note left of Processing
+The system checks the request,
+
+# PlantUML State Diagram Core Syntax
+
+Use this document when generating a basic UML state transition diagram in PlantUML.
+
+## Diagram wrapper
+
+PlantUML code should be enclosed between `@startuml` and `@enduml`.
+
+```plantuml
+@startuml
+[*] --> Idle
+Idle --> [*]
+@enduml
+```
+
+## Initial and final state
+
+The initial and final pseudostate is written as `[*]`.
+
+Initial transition:
+
+```plantuml
+[*] --> State1
+```
+
+Final transition:
+
+```plantuml
+State1 --> [*]
+```
+
+## Transitions
+
+Use arrows between states.
+
+```plantuml
+State1 --> State2
+State1 -> State2
+```
+
+Transitions can include labels after a colon.
+
+```plantuml
+Idle --> LoggedIn : login successful
+LoggedIn --> LoggedOut : logout
+```
+
+Labels may include event, guard, and action information.
+
+```plantuml
+
+# Event Types for State Transitions
+
+Use this document to choose better transition labels from requirements.
+
+## Event role
+
+An event is a noteworthy occurrence that may trigger a transition. In generated PlantUML, events usually appear as transition labels.
+
+```plantuml
+Idle --> Authenticating : login submitted
+Authenticating --> LoggedIn : credentials valid
+Authenticating --> LoginFailed : credentials invalid
+```
+
+## Call events
+
+A call event represents a request for an operation or service.
+
+Requirement phrases that often indicate call events:
+
+```text
+user submits
+admin approves
+system validates
+customer requests
+doctor confirms
+```
+
+Example:
+
+```plantuml
+Waiting --> Processing : submit request
+```
+
+## Signal events
+
+A signal event represents an asynchronous notification or message.
+
+# UML State Diagram Usage Guidelines
+
+Use this document to decide whether a requirement should be modeled as a state machine and how much detail to include.
+
+## When state diagrams are useful
+
+State diagrams are most useful when the same system or object behaves differently depending on its current state.
+
+Good candidates:
+
+```text
+ATM sessions
+login/authentication flows
+order/payment lifecycles
+device controllers
+approval workflows
+booking or registration workflows
+alarm/notification systems
+```
+
+## Scope
+
+A state diagram should focus on the lifecycle of one system, object, session, controller, or business process.
+
+Avoid mixing unrelated lifecycles into one diagram unless the requirement clearly describes them as one process.
+
+## Observability
+
+Example requirement:
+Cash Register — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a customer.
+2. The system shall add items one by one when a customer begins a purchase.
+3. The system shall wait for payment after all items are added.
+4. The system shall go back to waiting for the next customer after the payment is made.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title State diagram of the system operations of "Process sale"
+
+[*] --> WaitingCustomer
+
+state "Waiting for customer" as WaitingCustomer
+state "Record items" as RecordItems
+state "Waiting for payment" as WaitingPayment
+
+WaitingCustomer --> RecordItems : enter item
+RecordItems --> RecordItems : enter item
+RecordItems --> WaitingPayment : end of sale
+WaitingPayment --> WaitingCustomer : enter payment
+
+@enduml
+```
+
+Example requirement:
+Online Marketplace — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall require the user to provide their details and create an account before they can join as a seller or customer.
+2. The system shall allow the user to sign in and access their workspace after completing registration and verification.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML state machine diagram
+
+state "Seller Registration" as SellerRegistration
+SellerRegistration : entry/Unregistered Seller
+SellerRegistration : do/Get Valid Seller Credentials
+SellerRegistration : exit/Seller Account Registered
+
+state "Seller Verification" as SellerVerification
+SellerVerification : entry/Seller Account Registered
+SellerVerification : do/Verify Seller
+SellerVerification : exit/Login Seller
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry/Unverified Seller
+SellerLogin : entry/Seller not logged in
+SellerLogin : do/Authenticate Seller
+SellerLogin : exit/Logged In Successfully
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry/Not Logged In
+CustomerLogin : do/Authenticate Customer
+CustomerLogin : exit/Successfully Logged In
+
+state "Seller Home" as SellerHome
+SellerHome : entry/Logged In Seller
+SellerHome : do/Display Seller Dashboard
+SellerHome : exit/Sale Products
+SellerHome : exit/Promote Products
+SellerHome : exit/Chat
+SellerHome : exit/Logout
+
+state "Customer Home" as CustomerHome
+CustomerHome : entry/Customer Logged in
+CustomerHome : do/Display Recommended/Promoted Products
+CustomerHome : exit/View Product
+CustomerHome : exit/Buy Product
+CustomerHome : exit/Chat
+CustomerHome : exit/Report Seller
+CustomerHome : exit/Rate and Review
+
+state "View Product" as ViewProduct
+ViewProduct : entry/To View Products
+ViewProduct : do/Search and View Products
+ViewProduct : exit/Return to home
+ViewProduct : exit/Buy Product
+
+state "Buy Product" as BuyProduct
+BuyProduct : entry/Opted to Buy
+BuyProduct : do/Add product to cart
+BuyProduct : exit/Proceed to Checkout
+
+state "Make Purchase" as MakePurchase
+MakePurchase : entry/Proceeded to Checkout
+MakePurchase : do/Enable payment
+MakePurchase : exit/Payment Successful
+MakePurchase : exit/Payment Unsuccessful
+MakePurchase : exit/Return to Home
+
+state "Chat" as CustomerChat
+CustomerChat : entry/To Chat
+CustomerChat : do/Chat with Seller
+CustomerChat : exit/Return to Home
+
+state "Report Seller" as ReportSeller
+ReportSeller : entry/To Report Seller
+ReportSeller : entry/Seller in Purchase History
+ReportSeller : do/Issue Report to Seller
+ReportSeller : exit/Return to Home
+
+state "Rate and Review" as RateReview
+RateReview : entry/To Rate and Review
+RateReview : entry/Product Delivered
+RateReview : do/Rate and Review the product
+RateReview : exit/Return to Home
+
+state "Sale Products" as SaleProducts
+SaleProducts : entry/To Sale Products
+SaleProducts : do/Add new Product to Seller Inventory
+SaleProducts : exit/Product added Successfully
+SaleProducts : exit/Return to Home State
+
+state "Promote Products" as PromoteProducts
+PromoteProducts : entry/To Promote Products
+PromoteProducts : entry/Product in Sale
+PromoteProducts : do/Promote a Product
+PromoteProducts : exit/Return to Home State
+
+state "Chat" as SellerChat
+SellerChat : entry/To Chat
+SellerChat : entry/Seller Product in Sale
+SellerChat : entry/Message from Customer
+SellerChat : do/Enable chat with Customer
+SellerChat : exit/Return to Home State
+
+state "Logout" as Logout
+Logout : entry/To Logout User
+Logout : do/Logout User
+Logout : exit/User Logged out
+
+state J0 <<choice>>
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+state J7 <<choice>>
+state J8 <<choice>>
+
+[*] --> J0
+J0 --> J1 : [Seller Portal]
+J0 --> CustomerLogin : [Customer Portal]
+
+J1 --> SellerRegistration : [New Seller]
+J1 --> J2 : [Registered Seller]
+
+SellerRegistration --> SellerVerification
+SellerVerification --> J2
+J2 --> SellerLogin
+
+CustomerLogin --> J3
+SellerLogin --> J7
+J7 --> SellerHome : [Go To Home]
+
+J3 --> CustomerHome : [Go To Home]
+
+CustomerHome --> J4 : [Possible Activities]
+J4 --> ViewProduct : [View Products]
+J4 --> CustomerChat : [Chat]
+J4 --> ReportSeller : [Report Seller]
+J4 --> RateReview : [Rate and Review]
+J4 --> J8 : [Logout]
+
+ViewProduct --> J5
+J5 --> J3 : [Not to Buy]
+J5 --> BuyProduct : [Proceed to Buy]
+
+BuyProduct --> MakePurchase
+MakePurchase --> J3
+
+CustomerChat --> J3
+ReportSeller --> J3
+RateReview --> J3
+
+SellerHome --> J6 : [Possible Activities]
+J6 --> PromoteProducts : [Promote Products]
+J6 --> SellerChat : [Chat]
+J6 --> SaleProducts
+J6 --> J8 : [Logout]
+
+SaleProducts --> J7
+
+PromoteProducts --> J7
+SellerChat --> J7
+
+J8 -->  Logout
+Logout --> [*]
+
+@enduml
+```
+
+Example requirement:
+Textile — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow customers to create an account by filling in required details.
+2. The system shall enable customers to place orders for garments once they are registered.
+3. The system shall send out sample materials if a customer needs them after placing an order.
+
+Reference PlantUML:
+```plantuml
+@startuml
+
+[*] --> CustomerRegistration
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+CustomerRegistration : entry / Start state
+CustomerRegistration : do / Fill in required details
+CustomerRegistration : exit / Getting garment orders
+
+CustomerRegistration --> GettingGarmentOrders : registration complete
+
+GettingGarmentOrders : entry / Customer registration
+GettingGarmentOrders : do / Place the orders
+GettingGarmentOrders : exit / Sampling / Stock checking
+
+GettingGarmentOrders --> Sampling : sampling required
+GettingGarmentOrders --> StockChecking : check stock
+
+Sampling : entry / Getting garment orders
+Sampling : do / Send out sample materials while ordering
+Sampling : exit / decision
+
+Sampling --> Choice1 : proceed
+StockChecking --> Choice1
+
+StockChecking : entry / Getting garment orders
+StockChecking : do / Check availability of raw material
+StockChecking : exit / decision making
+
+Choice1 --> PurchasingRawMaterials : not in stock
+Choice1 --> ProcessingRawMaterials : in stock
+
+PurchasingRawMaterials : entry / Stock checking
+PurchasingRawMaterials : do / Buy raw materials
+PurchasingRawMaterials : exit / Production of garments
+
+ProcessingRawMaterials : entry / Stock checking
+ProcessingRawMaterials : do / Processing
+ProcessingRawMaterials : exit / Production of garments
+ProcessingRawMaterials --> Choice2
+PurchasingRawMaterials --> Choice2
+Choice2 --> ProductionOfGarments
+
+ProductionOfGarments : entry / Purchasing or processing of raw materials
+ProductionOfGarments : do / Manufacturing
+ProductionOfGarments : exit / Product checking
+
+ProductionOfGarments --> ProductChecking
+
+ProductChecking : entry / Production of garments
+ProductChecking : do / Checking for defects and clearance
+ProductChecking : exit / Receiving the ordered garments
+
+ProductChecking --> ReceivingOrderedGarments
+
+ReceivingOrderedGarments : entry / Product checking
+ReceivingOrderedGarments : do / Garment delivered
+ReceivingOrderedGarments : exit / Billing
+
+ReceivingOrderedGarments --> Billing
+
+Billing : entry / Receiving the ordered garments
+Billing : do / Making payments
+Billing : exit / Report generation
+
+Billing --> ReportGeneration
+
+ReportGeneration : entry / Billing
+ReportGeneration : do / Giving feedback
+ReportGeneration : exit / final state
+
+ReportGeneration --> [*]
+
+@enduml
+```
+
+Now return only the final PlantUML.

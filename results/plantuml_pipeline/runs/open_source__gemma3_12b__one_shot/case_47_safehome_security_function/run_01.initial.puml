@@ -1,0 +1,46 @@
+@startuml
+title UML State Machine Diagram (Safehome Security System)
+
+[*] --> StartupCheck
+
+state StartupCheck {
+    [*] --> WorkingFine : [Everything OK]
+    [*] --> Stop : [Problem detected]
+}
+
+state WorkingFine
+WorkingFine --> Ready : [Startup complete]
+
+state Stop
+Stop --> [*] : [Startup failed]
+
+state Ready {
+    [*] --> ReadyState
+    ReadyState --> Reset : [User requests reset]
+    ReadyState --> Activate : [User activates system]
+    ReadyState --> TurnOff : [User turns off system]
+}
+
+state Reset
+Reset --> Ready : [Reset complete]
+
+state Activate
+Activate --> Monitoring : [System activated]
+
+state TurnOff
+TurnOff --> [*] : [System turned off]
+
+state Monitoring {
+    [*] --> MonitoringState
+    MonitoringState --> Alarm : [Sensor triggered]
+    MonitoringState --> ContinueMonitoring : [False alarm or time ends]
+    MonitoringState --> Stop : [User enters password]
+}
+
+state Alarm
+Alarm --> ContinueMonitoring : [Alarm acknowledged/time ends]
+
+state ContinueMonitoring
+ContinueMonitoring --> MonitoringState : [Monitoring continues]
+
+@enduml

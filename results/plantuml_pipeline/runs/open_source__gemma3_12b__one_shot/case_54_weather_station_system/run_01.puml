@@ -1,0 +1,33 @@
+@startuml
+title State diagram of the Weather Station System
+
+[*] --> ShutDown
+
+state "ShutDown" as ShutDown
+state "Running" as Running
+state "Configuration" as Configuration
+state "DataCollection" as DataCollection
+state "SummaryPreparation" as SummaryPreparation
+state "StatusCheck" as StatusCheck
+state "Controlled" as Controlled
+
+ShutDown --> Running : restart
+
+Running --> Configuration : configuration required
+Configuration --> Running : configuration complete
+
+Running --> DataCollection : clock triggered
+DataCollection --> Running : data collected
+
+Running --> SummaryPreparation : summary requested
+SummaryPreparation --> Running : summary prepared
+
+Running --> StatusCheck : status requested
+StatusCheck --> Running : status checked
+
+Running --> Controlled : remote control
+Controlled --> Running : remote control released
+
+Running --> ShutDown : shutdown command
+
+@enduml
