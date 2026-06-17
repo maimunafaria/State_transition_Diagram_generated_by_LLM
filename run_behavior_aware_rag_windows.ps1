@@ -15,6 +15,7 @@ $commandArgs = @(
   "--results-root", "results\plantuml_pipeline",
   "--rag-docs-dir", "data\rag_corpus",
   "--rag-db-dir", "results\rag_db",
+  "--rag-mode", "vector",
   "--skip-gpt-baseline",
   "--rag-profile", "behavior_aware",
   "--rag-ablation-tag", "behavior_aware",

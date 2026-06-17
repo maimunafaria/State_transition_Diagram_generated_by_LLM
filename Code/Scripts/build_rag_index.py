@@ -12,6 +12,7 @@ RESULTS_DIR = PROJECT_ROOT / "results"
 RAG_DOCS_DIR = DATA_DIR / "rag_corpus"
 DB_DIR = RESULTS_DIR / "rag_db"
 COLLECTION_NAME = "uml_docs"
+COLLECTION_METADATA = {"hnsw:space": "cosine"}
 
 
 def build_index(rag_docs_dir: Path, db_dir: Path, collection_name: str, reset: bool = True) -> None:
@@ -26,7 +27,10 @@ def build_index(rag_docs_dir: Path, db_dir: Path, collection_name: str, reset: b
             client.delete_collection(collection_name)
         except Exception:
             pass
-    collection = client.get_or_create_collection(collection_name)
+    collection = client.get_or_create_collection(
+        collection_name,
+        metadata=COLLECTION_METADATA,
+    )
 
     docs = []
     ids = []
@@ -52,6 +56,7 @@ def build_index(rag_docs_dir: Path, db_dir: Path, collection_name: str, reset: b
 
     collection.add(documents=docs, ids=ids, metadatas=metadatas)
     print(f"Indexed {len(docs)} documents into collection '{collection_name}'")
+    print("Vector similarity: cosine")
     print(f"Vector DB: {db_dir}")
 
 
