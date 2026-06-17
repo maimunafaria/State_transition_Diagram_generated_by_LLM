@@ -71,7 +71,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_run.add_argument(
         "--rag-mode",
-        choices=["lexical", "vector"],
+        choices=["lexical", "vector", "graph"],
         default="lexical",
         help="RAG retrieval mode",
     )

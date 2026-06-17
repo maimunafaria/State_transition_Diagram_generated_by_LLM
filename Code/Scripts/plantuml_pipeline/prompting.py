@@ -8,6 +8,7 @@ from typing import Any
 from .constants import WORD_RE
 from .io_utils import read_text
 from .models import Case, ExperimentConfig, ValidationResult
+from .parser import parse_plantuml
 
 DOMAIN_TOKEN_HINTS = {
     "accounts",
@@ -210,6 +211,122 @@ def _behavior_similarity(query_profile: dict[str, Any], doc_profile: dict[str, A
     query_tokens = set(query_profile.get("tokens", set()))
     doc_tokens = set(doc_profile.get("tokens", set()))
     score += min(len(query_tokens & doc_tokens), 10)
+    return score
+
+
+def _count_guarded_transitions(puml: str) -> int:
+    return len(re.findall(r"--?>\s+[^:]+:\s*\[[^\]]+\]", puml))
+
+
+def _graph_features_from_puml(puml: str) -> dict[str, Any]:
+    if not puml.strip():
+        return {}
+    graph = parse_plantuml(puml)
+    loop_count = sum(1 for src, _, dst in graph.transitions if src == dst)
+    choice_count = sum(
+        1
+        for stereotypes in graph.stereotypes.values()
+        if any("choice" in stereo for stereo in stereotypes)
+    )
+    guarded_count = _count_guarded_transitions(puml)
+    return {
+        "state_count": len(graph.states),
+        "transition_count": len(graph.transitions) + len(graph.final_states) + len(graph.initial_targets),
+        "final_count": len(graph.final_states),
+        "initial_count": len(graph.initial_targets),
+        "loop_count": loop_count,
+        "choice_count": choice_count,
+        "guarded_count": guarded_count,
+        "state_bucket": _bucket_count(len(graph.states), 6, 14),
+        "transition_bucket": _bucket_count(
+            len(graph.transitions) + len(graph.final_states) + len(graph.initial_targets),
+            8,
+            20,
+        ),
+        "branching_bucket": _bucket_count(choice_count + guarded_count, 1, 4),
+        "loop_bucket": _bucket_count(loop_count, 0, 2),
+    }
+
+
+def _estimated_graph_features_from_requirement(requirement: str) -> dict[str, Any]:
+    profile = _behavior_profile_from_text(requirement)
+    tokens = set(profile.get("tokens", set()))
+    action_terms = {
+        "register",
+        "login",
+        "view",
+        "search",
+        "select",
+        "upload",
+        "download",
+        "apply",
+        "approve",
+        "reject",
+        "pay",
+        "cancel",
+        "submit",
+        "verify",
+        "validate",
+        "process",
+        "send",
+        "receive",
+        "update",
+        "delete",
+        "logout",
+    }
+    branch_terms = {
+        "if",
+        "valid",
+        "invalid",
+        "correct",
+        "incorrect",
+        "success",
+        "failure",
+        "approved",
+        "rejected",
+        "paid",
+        "unpaid",
+        "cancel",
+        "retry",
+        "multiple",
+    }
+    loop_terms = {"again", "continue", "multiple", "retry", "repeat", "another"}
+    action_count = len(tokens & action_terms)
+    branch_count = len(tokens & branch_terms)
+    loop_count = len(tokens & loop_terms)
+    estimated_states = max(3, action_count + branch_count + 2)
+    estimated_transitions = max(estimated_states + 1, action_count + (2 * branch_count) + loop_count + 2)
+    return {
+        "state_count": estimated_states,
+        "transition_count": estimated_transitions,
+        "final_count": 1,
+        "initial_count": 1,
+        "loop_count": loop_count,
+        "choice_count": branch_count,
+        "guarded_count": branch_count,
+        "state_bucket": _bucket_count(estimated_states, 6, 14),
+        "transition_bucket": _bucket_count(estimated_transitions, 8, 20),
+        "branching_bucket": _bucket_count(branch_count, 1, 4),
+        "loop_bucket": _bucket_count(loop_count, 0, 2),
+    }
+
+
+def _graph_similarity_score(query_features: dict[str, Any], doc_features: dict[str, Any]) -> int:
+    if not doc_features:
+        return 0
+    score = 0
+    for key in ("state_bucket", "transition_bucket", "branching_bucket", "loop_bucket"):
+        if query_features.get(key) == doc_features.get(key):
+            score += 4
+    for key in ("state_count", "transition_count", "loop_count", "choice_count", "guarded_count"):
+        q_value = int(query_features.get(key, 0) or 0)
+        d_value = int(doc_features.get(key, 0) or 0)
+        distance = abs(q_value - d_value)
+        score += max(0, 5 - min(distance, 5))
+    if int(doc_features.get("initial_count", 0) or 0) == 1:
+        score += 2
+    if int(doc_features.get("final_count", 0) or 0) >= 1:
+        score += 2
     return score
 
 
@@ -530,6 +647,103 @@ def retrieve_vector_rag_context(
     return "\n\n".join(sections), trace
 
 
+def retrieve_graph_rag_context(
+    query: str,
+    docs: list[tuple[str, str, set[str]]],
+    top_k: int,
+    max_chars_per_doc: int = 1200,
+    query_domain_hints: set[str] | None = None,
+) -> tuple[str, list[dict[str, Any]]]:
+    if top_k <= 0 or not docs:
+        return "", []
+
+    query_tokens = tokenize(query)
+    query_domains = infer_query_domains(query, explicit_hints=query_domain_hints)
+    query_graph_features = _estimated_graph_features_from_requirement(query)
+
+    scored: list[dict[str, Any]] = []
+    for name, content, tokens in docs:
+        source_type = _rag_doc_source_type(name, content)
+        name_tokens = _filename_tokens(name)
+        doc_domains = set(_extract_domain_from_name(name))
+        doc_domains.update(tok for tok in tokens if tok in DOMAIN_TOKEN_HINTS)
+        lexical_overlap = len(query_tokens & tokens)
+        title_overlap = len(query_tokens & name_tokens)
+        domain_overlap = len(query_domains & doc_domains)
+        puml = _extract_plantuml_code(content)
+        graph_features = _graph_features_from_puml(puml) if source_type == "dataset_example" else {}
+        graph_score = _graph_similarity_score(query_graph_features, graph_features)
+        source_bonus = 8 if source_type == "plantuml_rule" else 4 if source_type == "dataset_example" else -4
+        score = graph_score + lexical_overlap + (2 * title_overlap) + (3 * domain_overlap) + source_bonus
+        scored.append(
+            {
+                "name": name,
+                "content": content,
+                "source_type": source_type,
+                "score": score,
+                "graph_score": graph_score,
+                "lexical_overlap": lexical_overlap,
+                "title_overlap": title_overlap,
+                "domain_overlap": domain_overlap,
+                "doc_domains": sorted(doc_domains),
+                "graph_features": graph_features,
+            }
+        )
+
+    scored.sort(
+        key=lambda item: (
+            item["score"],
+            item["graph_score"],
+            item["domain_overlap"],
+            item["title_overlap"],
+            item["lexical_overlap"],
+        ),
+        reverse=True,
+    )
+
+    chosen: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for source_type, limit in [
+        ("plantuml_rule", 2),
+        ("dataset_example", top_k),
+    ]:
+        category_items = [item for item in scored if item["source_type"] == source_type]
+        positive_items = [item for item in category_items if item["score"] > 0]
+        for item in (positive_items or category_items)[:limit]:
+            if item["name"] not in seen:
+                chosen.append(item)
+                seen.add(item["name"])
+    if not chosen:
+        chosen = scored[:top_k]
+
+    sections: list[str] = []
+    trace: list[dict[str, Any]] = []
+    for item in chosen:
+        clipped = _format_rag_doc_for_prompt(
+            item["name"],
+            item["content"],
+            max_chars_per_doc,
+        )
+        sections.append(clipped)
+        trace.append(
+            {
+                "name": item["name"],
+                "source_type": item["source_type"],
+                "score": item["score"],
+                "graph_score": item["graph_score"],
+                "lexical_overlap": item["lexical_overlap"],
+                "title_overlap": item["title_overlap"],
+                "domain_overlap": item["domain_overlap"],
+                "doc_domains": item["doc_domains"],
+                "query_graph_features": query_graph_features,
+                "doc_graph_features": item["graph_features"],
+                "clipped_chars": len(clipped),
+            }
+        )
+
+    return "\n\n".join(sections), trace
+
+
 def resolve_rag_context(
     query: str,
     docs: list[tuple[str, str, set[str]]],
@@ -551,6 +765,14 @@ def resolve_rag_context(
             max_chars_per_doc=max_chars_per_doc,
             rag_db_dir=rag_db_dir,
             rag_collection_name=rag_collection_name,
+        )
+    if mode == "graph":
+        return retrieve_graph_rag_context(
+            query=query,
+            docs=docs,
+            top_k=top_k,
+            max_chars_per_doc=max_chars_per_doc,
+            query_domain_hints=query_domain_hints,
         )
     return retrieve_rag_context(
         query=query,

@@ -482,8 +482,8 @@ def command_run(args: argparse.Namespace) -> int:
         target_size=args.baseline_subset_size,
         seed=args.seed,
     )
-    rag_docs = load_rag_docs(rag_docs_dir) if rag_mode == "lexical" else []
-    if args.use_case_rag and rag_mode == "lexical":
+    rag_docs = load_rag_docs(rag_docs_dir) if rag_mode in {"lexical", "graph"} else []
+    if args.use_case_rag and rag_mode in {"lexical", "graph"}:
         rag_docs.extend(_case_rag_docs(rag_cases))
 
     configs = build_experiment_configs(
