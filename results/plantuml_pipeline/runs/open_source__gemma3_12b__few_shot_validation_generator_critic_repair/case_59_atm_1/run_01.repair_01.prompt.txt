@@ -1,0 +1,66 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Atm Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose or enter a withdrawal amount.
+2. The system shall support predefined amounts for selection by the user.
+3. The system shall allow users to input their own custom withdrawal amount.
+4. The system shall provide an option for the user to cancel the transaction at any point.
+5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.
+
+Candidate PlantUML:
+@startuml
+title UML State Chart Diagram - ATM Withdrawal
+
+[*] --> Idle
+
+state Idle
+Idle : entry / Display welcome message
+
+Idle --> SelectAmount : User interaction
+
+state SelectAmount
+SelectAmount : entry / Display predefined amounts
+SelectAmount : do / User selects predefined amount or enters custom amount
+SelectAmount --> InputAmount : User selects predefined amount
+SelectAmount --> CustomAmount : User enters custom amount
+SelectAmount --> Cancel : User chooses to cancel
+
+state InputAmount
+InputAmount : entry / Validate amount
+InputAmount --> Idle : Amount invalid
+InputAmount --> ProcessWithdrawal : Amount valid
+
+state CustomAmount
+CustomAmount : entry / Validate amount
+CustomAmount --> Idle : Amount invalid
+CustomAmount --> ProcessWithdrawal : Amount valid
+
+state ProcessWithdrawal
+ProcessWithdrawal : entry / Check account balance
+ProcessWithdrawal : do / Dispense cash
+ProcessWithdrawal --> Idle : Insufficient funds
+ProcessWithdrawal --> Idle : Transaction successful
+
+state Cancel
+Cancel : entry / Stop transaction
+Cancel --> Idle : Return card
+
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].

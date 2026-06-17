@@ -1,0 +1,36 @@
+@startuml
+[*] --> Registration
+
+state Registration {
+  [*] --> LoginFailure
+  LoginFailure --> Registration : retry registration
+}
+
+state Login {
+  [*] --> Dashboard
+  Dashboard --> Logout : logout user
+}
+
+state Dashboard {
+  state PatientDashboard
+  PatientDashboard : entry / user is patient
+  PatientDashboard : do / display patient dashboard
+  PatientDashboard : exit / user logs out
+
+  state HealthWorkerDashboard
+  HealthWorkerDashboard : entry / user is health worker
+  HealthWorkerDashboard : do / display health worker dashboard
+  HealthWorkerDashboard : exit / user logs out
+
+  state GovernmentDashboard
+  GovernmentDashboard : entry / user is government official
+  GovernmentDashboard : do / display government dashboard
+  GovernmentDashboard : exit / user finishes activity
+}
+
+state LoginFailure --> [*]
+Login --> LoginFailure : registration fails
+Registration --> Login : sign in after registration
+Dashboard --> [*] : logout
+
+@enduml

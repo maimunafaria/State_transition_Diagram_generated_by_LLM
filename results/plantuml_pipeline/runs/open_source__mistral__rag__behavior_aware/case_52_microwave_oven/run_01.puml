@@ -1,0 +1,34 @@
+@startuml
+state Idle {
+  [*] --> PowerSelection
+  state PowerSelection {
+    [*] --> TimeInput
+    state TimeInput {
+      [*] --> Cooking
+      state Cooking {
+        [*] --> DoorOpen
+        DoorOpen --> Stop : doorOpened
+        state Stop {
+          [*] --> Idle
+        }
+        state Cancel {
+          [*] --> Idle
+        }
+      }
+      TimeInput --> TimeTooShort : timeTooShort
+      TimeInput --> TimeTooLong : timeTooLong
+    }
+    PowerSelection --> HalfPower
+    PowerSelection --> FullPower
+  }
+  Idle --> DoorOpen : doorOpen
+  state DoorOpen {
+    [*] --> FoodPlaced
+    FoodPlaced --> DoorClosed : foodPlaced
+    state FoodPlaced {
+      [*] --> DoorOpen
+    }
+    DoorOpen --> DoorClosed : doorClosed
+  }
+}
+@enduml

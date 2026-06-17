@@ -1,0 +1,46 @@
+@startuml
+state "Unregistered User" {
+  [*] --> Register
+  state "Registering"
+  Register --> ValidRegistration : Correct Details
+  Register --> InvalidRegistration : Incorrect Details
+
+  state "Validated Registration" {
+    [*] --> Login
+    Login --> LoggedIn : Correct Credentials
+    Login --> LoginFailed : Incorrect Credentials
+  }
+}
+
+state "LoggedIn User" {
+  [*] --> Dashboard
+  state "Dashboard" {
+    Dashboard --> CheckStatus : View Ticket Status
+    Dashboard --> BookTicket : Book a Ticket
+    Dashboard --> AccountDetails : Manage Account Details
+    Dashboard --> Logout : Logout
+  }
+
+  state "Booking Ticket" {
+    [*] --> EnterDetails
+    EnterDetails --> ValidEntry : Correct Entry
+    EnterDetails --> InvalidEntry : Incorrect Entry
+
+    state "Valid Entry" {
+      [*] --> ConfirmBooking : Confirm Booking
+      ConfirmBooking --> SuccessfulBooking : Successful
+      ConfirmBooking --> FailedBooking : Failed
+    }
+  }
+
+  state "Account Details" {
+    [*] --> ViewDetails
+    ViewDetails --> EditDetails : Edit Details
+    EditDetails --> SavedChanges : Changes Saved
+    EditDetails --> CancelChanges : Changes Cancelled
+  }
+}
+
+state "Logout" {
+  Logout --> [*] : Exit System
+@enduml

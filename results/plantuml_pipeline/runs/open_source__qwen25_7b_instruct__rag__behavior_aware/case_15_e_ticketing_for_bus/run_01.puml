@@ -1,0 +1,50 @@
+@startuml
+[*] --> Registration
+
+state "Registration" as Registration {
+  [*] --> EnterDetails
+
+  state "Enter Details"
+  state "Validation" <<choice>>
+  state "Successful Registration"
+
+  EnterDetails --> Validation : [Valid]
+  EnterDetails --> Validation : [Invalid]
+
+  Validation --> SuccessfulRegistration : [Valid]
+  Validation --> ReEnterDetails : [Invalid]
+
+  state "Re-Enter Details"
+  ReEnterDetails --> Validation : [Valid]
+}
+
+state "Login" as Login {
+  [*] --> EnterCredentials
+
+  state "Enter Credentials"
+  state "Authentication" <<choice>>
+  state "Successful Login"
+
+  EnterCredentials --> Authentication : [Valid]
+  EnterCredentials --> Authentication : [Invalid]
+
+  Authentication --> SuccessfulLogin : [Valid]
+  Authentication --> LoginFailed : [Invalid]
+}
+
+state "Dashboard" as Dashboard {
+  [*] --> CheckTicketStatus
+  CheckTicketStatus --> BookTicket
+  BookTicket --> ConfirmBooking
+  ConfirmBooking --> MakePayment
+
+  state "Manage Account"
+  ManageAccount --> EditDetails
+  EditDetails --> DeleteAccount
+  DeleteAccount --> Logout
+}
+
+SuccessfulRegistration --> EnterCredentials
+SuccessfulLogin --> Dashboard
+Logout --> [*]
+@enduml

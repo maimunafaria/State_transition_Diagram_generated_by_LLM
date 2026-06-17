@@ -1,0 +1,54 @@
+@startuml
+title Digital Watch State Diagram
+
+[*] --> TimeDisplay
+
+state TimeDisplay {
+    TimeDisplay --> AdjustingHour : buttonPressed
+    TimeDisplay --> AdjustingMinutes : buttonPressed
+    TimeDisplay --> AdjustingAlarmHour : buttonPressed
+    TimeDisplay --> AdjustingAlarmMinutes : buttonPressed
+    TimeDisplay --> LightOn : buttonPressed
+}
+
+state AdjustingHour
+state AdjustingMinutes
+state AdjustingAlarmHour
+state AdjustingAlarmMinutes
+state AlarmRinging
+state LightOn
+
+AdjustingHour --> AdjustingHour : buttonPressed
+AdjustingHour --> AdjustingMinutes : buttonPressed
+AdjustingHour --> TimeDisplay : valueAdjusted
+
+AdjustingMinutes --> AdjustingMinutes : buttonPressed
+AdjustingMinutes --> AdjustingAlarmHour : buttonPressed
+AdjustingMinutes --> TimeDisplay : valueAdjusted
+
+AdjustingAlarmHour --> AdjustingAlarmHour : buttonPressed
+AdjustingAlarmHour --> AdjustingAlarmMinutes : buttonPressed
+AdjustingAlarmHour --> TimeDisplay : valueAdjusted
+
+AdjustingAlarmMinutes --> AdjustingAlarmMinutes : buttonPressed
+AdjustingAlarmMinutes --> TimeDisplay : valueAdjusted
+AdjustingAlarmMinutes --> AdjustingHour : buttonPressed
+
+LightOn --> TimeDisplay : buttonReleased
+
+state AlarmEnabled
+state AlarmDisabled
+
+TimeDisplay --> AlarmEnabled : alarmOn
+AlarmEnabled --> TimeDisplay : buttonPressed
+AlarmEnabled --> AlarmDisabled : alarmOff
+AlarmDisabled --> TimeDisplay : buttonPressed
+AlarmDisabled --> AlarmEnabled : alarmOn
+
+AlarmRinging --> AlarmDisabled : buttonPressed
+AlarmRinging --> TimeDisplay : alarmStopped
+
+TimeDisplay --> AlarmRinging : alarmTimeReached
+
+AlarmDisabled --> [*]
+@enduml

@@ -1,0 +1,145 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Candidate PlantUML:
+@startuml
+title Healthcare Portal State Diagram
+
+[*] --> Registration
+
+state Registration {
+    [*] --> EnteringDetails
+    EnteringDetails --> ValidRegistration : validDetails
+    EnteringDetails --> RegistrationFailed : invalidDetails
+}
+
+state RegistrationFailed {
+    [*] --> [*]
+}
+
+state SignedIn {
+    [*] --> ViewingDashboard
+}
+
+state ViewingDashboard {
+    [*] --> Choice1
+    Choice1 --> ReadingNews : readNews
+    Choice1 --> CheckingSymptoms : checkSymptoms
+    Choice1 --> ViewingFacilities : viewFacilities
+    Choice1 --> Logout : logout
+}
+
+state ReadingNews {
+    [*] --> [*]
+}
+
+state CheckingSymptoms {
+    [*] --> ViewingResults
+}
+
+state ViewingResults {
+    [*] --> Choice2
+    Choice2 --> ContinueSession : continue
+    Choice2 --> Logout : finish
+}
+
+state ViewingFacilities {
+    [*] --> InsuranceProcessing
+}
+
+state InsuranceProcessing {
+    [*] --> PaymentProcessing
+}
+
+state PaymentProcessing {
+    [*] --> Choice3
+    Choice3 --> CashPayment : cash
+    Choice3 --> InsurancePayment : insurance
+}
+
+state CashPayment {
+    [*] --> PaymentComplete
+}
+
+state InsurancePayment {
+    [*] --> PaymentComplete
+}
+
+state PaymentComplete {
+    [*] --> Feedback
+}
+
+state Feedback {
+    [*] --> Logout
+}
+
+state Logout {
+    [*] --> [*]
+}
+
+Registration --> SignedIn : successfulRegistration
+RegistrationFailed --> [*] : registrationFailed
+
+SignedIn --> ViewingDashboard : signIn
+
+ViewingDashboard --> ReadingNews : accessNews
+ViewingDashboard --> CheckingSymptoms : accessSymptoms
+ViewingDashboard --> ViewingFacilities : accessFacilities
+ViewingDashboard --> Logout : signOut
+
+CheckingSymptoms --> ViewingResults : checkDone
+ViewingResults --> Logout : sessionEnd
+
+ViewingFacilities --> InsuranceProcessing : accessFinance
+InsuranceProcessing --> PaymentProcessing : initiatePayment
+
+PaymentProcessing --> CashPayment : chooseCash
+PaymentProcessing --> InsurancePayment : chooseInsurance
+
+CashPayment --> PaymentComplete : processCash
+InsurancePayment --> PaymentComplete : processInsurance
+
+PaymentComplete --> Feedback : provideFeedback
+
+Feedback --> Logout : sessionEnd
+
+@enduml
+
+
+Validation issues to fix:
+- candidate_line_13: invalid [*] -> [*] transition
+- candidate_line_29: invalid [*] -> [*] transition
+- candidate_line_73: invalid [*] -> [*] transition
+- multiple_initial_state_transitions (Registration, EnteringDetails, ViewingDashboard, Choice1, ViewingResults, Choice2, InsuranceProcessing, PaymentProcessing, Choice3, PaymentComplete, PaymentComplete, Feedback, Logout)
+
+Repair guidance for these issues:
+- For invalid [*] --> [*], replace it with a real final transition, for example Logout --> [*] : session ended.
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.

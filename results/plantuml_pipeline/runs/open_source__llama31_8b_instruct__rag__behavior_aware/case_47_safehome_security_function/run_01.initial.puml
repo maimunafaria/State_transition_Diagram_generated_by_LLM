@@ -1,0 +1,43 @@
+@startuml
+[*] --> State
+
+state "Power On" as PowerOn {
+  [*] --> CheckEverything
+  CheckEverything --> ReadyToUse : everything is fine
+}
+
+state "Ready To Use" as ReadyToUse {
+  UserReset --> PowerOn : reset pressed
+  UserActivate --> Monitoring : activate pressed
+  UserTurnOff --> PowerOn : turn off pressed
+}
+
+state "Monitoring" as Monitoring {
+  SensorTriggered --> AlarmAndAlerts : sensor triggered
+  FalseAlarmOrTimeEnd --> ReadyToUse : false alarm or time end
+}
+
+state "Alarm And Alerts" as AlarmAndAlerts {
+  AlarmResolvedOrTimeEnd --> Monitoring : alarm resolved or time end
+}
+
+PowerOn --> CheckEverything
+
+CheckEverything --> PowerOn : problem during startup
+CheckEverything --> ReadyToUse : everything is fine
+
+ReadyToUse --> UserReset
+ReadyToUse --> UserActivate
+ReadyToUse --> UserTurnOff
+
+Monitoring --> SensorTriggered
+Monitoring --> FalseAlarmOrTimeEnd
+
+AlarmAndAlerts --> AlarmResolvedOrTimeEnd
+
+UserReset --> PowerOn : reset pressed
+UserActivate --> Monitoring : activate pressed
+UserTurnOff --> PowerOn : turn off pressed
+
+PowerOn --> [*] : user enters password at any time
+@enduml

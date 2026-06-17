@@ -1,0 +1,28 @@
+@startuml
+[*] --> State
+
+state State {
+  state Start
+  state Running
+  state Completed
+  state Paid
+
+  Start --> Running : /assignManager;\nassignStaff\n/authorize(authorizationCode)\n[contract signed]\n/setCampaignActive
+  Running --> Completed : campaignCompleted\n/prepareFinalStatement
+  Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
+  Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment > 0]\n/generateRefund
+  Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+
+  state Running {
+    state Preparing
+    state Scheduling
+    state "Running Adverts" as RunningAdverts
+    Preparing --> Scheduling : advertsApproved\n/authorize
+    Scheduling --> RunningAdverts : confirmSchedule
+    RunningAdverts --> Preparing : extendCampaign\n/modifyBudget
+  }
+}
+
+Completed --> [*] : campaignCancelled
+
+@enduml

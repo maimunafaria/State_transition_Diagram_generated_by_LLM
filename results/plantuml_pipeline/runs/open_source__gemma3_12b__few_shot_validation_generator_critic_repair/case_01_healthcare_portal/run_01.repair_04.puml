@@ -1,0 +1,102 @@
+@startuml
+title Healthcare Portal State Diagram
+
+[*] --> Registration
+
+state Registration {
+    [*] --> EnteringDetails
+    EnteringDetails --> ValidRegistration : validDetails
+    EnteringDetails --> RegistrationFailed : invalidDetails
+}
+
+state RegistrationFailed {
+    [*] --> [*] : registrationFailed
+}
+
+state SignedIn {
+    [*] --> ViewingDashboard
+}
+
+state ViewingDashboard {
+    [*] --> Choice1
+    Choice1 --> ReadingNews : readNews
+    Choice1 --> CheckingSymptoms : checkSymptoms
+    Choice1 --> ViewingFacilities : viewFacilities
+    Choice1 --> Logout : logout
+}
+
+state ReadingNews {
+    [*] --> [*] : sessionEnd
+}
+
+state CheckingSymptoms {
+    [*] --> ViewingResults
+}
+
+state ViewingResults {
+    [*] --> Choice2
+    Choice2 --> ContinueSession : continue
+    Choice2 --> Logout : finish
+}
+
+state ViewingFacilities {
+    [*] --> InsuranceProcessing
+}
+
+state InsuranceProcessing {
+    [*] --> PaymentProcessing
+}
+
+state PaymentProcessing {
+    [*] --> Choice3
+    Choice3 --> CashPayment : cash
+    Choice3 --> InsurancePayment : insurance
+}
+
+state CashPayment {
+    [*] --> PaymentComplete : processCash
+}
+
+state InsurancePayment {
+    [*] --> PaymentComplete : processInsurance
+}
+
+state PaymentComplete {
+    [*] --> Feedback : provideFeedback
+}
+
+state Feedback {
+    [*] --> Logout : sessionEnd
+}
+
+state Logout {
+    [*] --> [*]
+}
+
+Registration --> SignedIn : successfulRegistration
+RegistrationFailed --> [*] : registrationFailed
+
+SignedIn --> ViewingDashboard : signIn
+
+ViewingDashboard --> ReadingNews : accessNews
+ViewingDashboard --> CheckingSymptoms : accessSymptoms
+ViewingDashboard --> ViewingFacilities : accessFacilities
+ViewingDashboard --> Logout : signOut
+
+CheckingSymptoms --> ViewingResults : checkDone
+ViewingResults --> Logout : sessionEnd
+
+ViewingFacilities --> InsuranceProcessing : accessFinance
+InsuranceProcessing --> PaymentProcessing : initiatePayment
+
+PaymentProcessing --> CashPayment : chooseCash
+PaymentProcessing --> InsurancePayment : chooseInsurance
+
+CashPayment --> PaymentComplete : processCash
+InsurancePayment --> PaymentComplete : processInsurance
+
+PaymentComplete --> Feedback : provideFeedback
+
+Feedback --> Logout : sessionEnd
+
+@enduml

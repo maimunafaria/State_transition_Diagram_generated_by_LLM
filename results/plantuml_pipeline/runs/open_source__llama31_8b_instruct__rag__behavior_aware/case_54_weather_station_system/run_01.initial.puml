@@ -1,0 +1,58 @@
+@startuml
+[*] --> State
+
+state "Shut Down" as ShutDown {
+  [*] --> Idle
+}
+
+state "Idle" as Idle {
+  [*] --> ConfigMode : configModeRequired()
+  Idle --> ShutDown : shutdownCommandReceived()
+  Idle --> CollectData : clockTriggered()
+  Idle --> SendSummary : summaryRequestReceived()
+  Idle --> CheckStatus : statusCheckRequestReceived()
+  Idle --> CollectData --> Idle
+  Idle --> SendSummary --> Idle
+  Idle --> CheckStatus --> Idle
+}
+
+state "ConfigMode" as ConfigMode {
+  [*] --> Idle : configComplete()
+  ConfigMode --> ShutDown : shutdownCommandReceived()
+}
+
+state "CollectData" as CollectData {
+  [*] --> Idle : dataCollectionComplete()
+  CollectData --> SendSummary : summaryRequestReceived()
+  CollectData --> CheckStatus : statusCheckRequestReceived()
+  CollectData --> CollectData
+}
+
+state "SendSummary" as SendSummary {
+  [*] --> Idle : summarySent()
+  SendSummary --> CollectData : clockTriggered()
+  SendSummary --> CheckStatus : statusCheckRequestReceived()
+  SendSummary --> SendSummary
+}
+
+state "CheckStatus" as CheckStatus {
+  [*] --> Idle : statusChecked()
+  CheckStatus --> CollectData : clockTriggered()
+  CheckStatus --> SendSummary : summaryRequestReceived()
+  CheckStatus --> CheckStatus
+}
+
+state "ControlledMode" as ControlledMode {
+  [*] --> ShutDown : shutdownCommandReceived()
+  ControlledMode --> Idle : configComplete()
+}
+
+ShutDown --> Idle
+Idle --> CollectData
+CollectData --> SendSummary
+SendSummary --> CheckStatus
+CheckStatus --> CollectData
+ConfigMode --> Idle
+ControlledMode --> ShutDown
+
+@enduml

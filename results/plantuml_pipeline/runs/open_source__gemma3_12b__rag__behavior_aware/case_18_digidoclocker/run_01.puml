@@ -1,0 +1,71 @@
+@startuml
+title UML State Machine Diagram (Digidoclocker)
+
+[*] --> Unidentified
+
+state Unidentified {
+    [*] --> CitizenRegistration : User enters details
+    CitizenRegistration --> CitizenLogin : Details are valid
+    CitizenRegistration --> Unidentified : Details are invalid
+}
+
+state CitizenRegistration {
+    [*] --> EnterDetails
+    EnterDetails --> ValidateDetails : Details entered
+    ValidateDetails --> CitizenLogin : Details valid
+    ValidateDetails --> EnterDetails : Details invalid
+}
+
+state CitizenLogin {
+    [*] --> EnterLoginDetails
+    EnterLoginDetails --> AuthenticateLogin : Login details entered
+    AuthenticateLogin --> LoggedIn : Login successful
+    AuthenticateLogin --> EnterLoginDetails : Login failed
+}
+
+state LoggedIn {
+    [*] --> Dashboard
+    Dashboard --> UploadDocuments : Upload documents
+    Dashboard --> ViewProfile : View profile
+    Dashboard --> ApplyCertificate : Apply for certificate
+    ApplyCertificate --> ContinueApplying : Apply for more certificates
+    ApplyCertificate --> IssuerRequest : Send request to issuer
+    UploadDocuments --> ContinueUploading : Continue uploading
+    ContinueApplying --> ApplyCertificate
+    IssuerRequest --> ApplyCertificate
+    ContinueUploading --> UploadDocuments
+}
+
+state ContinueApplying {
+    [*] --> ApplyCertificate
+}
+
+state IssuerRequest {
+    [*] --> ApplyCertificate
+}
+
+state ContinueUploading {
+    [*] --> UploadDocuments
+}
+
+state Registrar {
+    [*] --> RequestCertificate
+}
+
+state RequestCertificate {
+    [*] --> VerifyCertificate
+}
+
+state VerifyCertificate {
+    [*] --> RequestCertificate
+}
+
+state EndSession {
+    [*] --> [*] : User is done
+}
+
+CitizenLogin --> EndSession : Logout
+Registrar --> EndSession : Logout
+LoggedIn --> EndSession : Logout
+
+@enduml

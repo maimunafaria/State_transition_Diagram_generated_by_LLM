@@ -1,0 +1,34 @@
+@startuml
+[*] --> CampaignAssigned : assignManager; assignStaff
+
+state CampaignAssigned {
+  [*] --> Active : authorize(contractSigned); setCampaignActive
+}
+
+state Active {
+  state AdvertPreparation
+  state Scheduling
+  state RunningAdverts
+
+  AdvertPreparation --> Scheduling : advertsApproved; scheduleAds
+  Scheduling --> RunningAdverts : confirmSchedule
+  RunningAdverts --> AdvertPreparation : extend_campaign; modifyBudget
+  RunningAdverts --> Completed : allAdvertsFinished; prepareFinalStatement
+}
+
+state Completed {
+  Completed --> Paid : fullPaymentReceived; paymentDue - payment = 0
+  Completed --> WaitingForBalance : overpaymentReceived; paymentDue - payment > 0
+  Completed --> Refunding : underpaymentReceived; generateRefund
+}
+
+state Paid --> [*] : archiveCampaign; releaseStaff; releaseManager
+
+state WaitingForBalance {
+  WaitingForBalance --> Paid : correctBalanceSettled
+}
+
+state Refunding {
+  Refunding --> Completed : refundProcessed
+}
+@enduml

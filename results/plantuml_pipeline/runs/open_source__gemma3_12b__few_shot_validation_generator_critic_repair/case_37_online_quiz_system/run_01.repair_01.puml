@@ -1,0 +1,51 @@
+@startuml
+title UML State Chart Diagram - Online Quiz System
+
+[*] --> Login
+
+state Login {
+    Login --> EnterDetails
+    state EnterDetails
+    state TeacherStudentChoice <<choice>>
+    state Registration
+
+    EnterDetails --> TeacherStudentChoice : [Login Successful]
+    EnterDetails --> Registration : [Registration Required]
+    TeacherStudentChoice --> Teacher : [Teacher]
+    TeacherStudentChoice --> Student : [Student]
+}
+
+state Teacher {
+    Teacher --> CreateQuiz
+    state CreateQuiz
+    state EditQuiz <<choice>>
+    state SaveQuiz <<choice>>
+    state ViewResults
+
+    CreateQuiz --> EditQuiz : [Create]
+    CreateQuiz --> SaveQuiz : [Save as Draft]
+    EditQuiz --> CreateQuiz : [Edit]
+    EditQuiz --> SaveQuiz : [Save Changes]
+    SaveQuiz --> ViewResults : [Post Quiz]
+    ViewResults --> [*] : [Logout]
+}
+
+state Student {
+    Student --> SelectQuiz
+    state SelectQuiz
+    state AnswerQuiz
+    state SubmitQuiz
+    state ViewResult
+
+    SelectQuiz --> AnswerQuiz : [Select]
+    AnswerQuiz --> SubmitQuiz : [Answer All]
+    SubmitQuiz --> ViewResult : [Submit]
+    ViewResult --> [*] : [Logout]
+}
+
+Registration --> Login : [Registration Complete]
+
+Teacher --> Login : [Logout]
+Student --> Login : [Logout]
+
+@enduml

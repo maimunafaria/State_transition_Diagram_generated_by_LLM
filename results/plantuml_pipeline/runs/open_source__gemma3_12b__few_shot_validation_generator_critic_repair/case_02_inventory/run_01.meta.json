@@ -1,0 +1,424 @@
+{
+  "run_id": "open_source__gemma3_12b__few_shot_validation_generator_critic_repair",
+  "case_id": "case_02_inventory",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nJava — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall skip non-meaningful elements like spaces or comments.\n2. The system shall ignore empty spaces and line breaks at the beginning.\n3. The system shall skip all characters from // to the end of the line.\n4. The system shall continue skipping content until the end of a block comment (*/).\n\nExample 1 PlantUML:\n@startuml\ntitle State diagram for advancing past whitespace and comments in Java\n\n[*] --> Start\n\nstate Start\nstate \"saw '/'\" as SawSlash\nstate \"line comment\" as LineComment\nstate \"saw '*'\" as SawStar\nstate \"block comment\" as BlockComment\nstate EndWhitespace\n\n' whitespace loop\nStart --> Start : next char = ' ' \\\\t \\\\r \\\\n / advance\n\n' detect slash\nStart --> SawSlash : next char = '/' / advance\n\n' anything else → end\nStart --> EndWhitespace : next char = anything else\n\n' after seeing '/'\nSawSlash --> LineComment : next char = '/' / advance\nSawSlash --> SawStar : next char = '*' / advance\nSawSlash --> EndWhitespace : next char != '/' or '*' / pushback '/'\n\n' line comment behavior\nLineComment --> LineComment : next char != eoln / advance\nLineComment --> Start : next char = eoln / advance\n\n' saw '*' (possible block comment)\nSawStar --> BlockComment : next char = '*' / advance\n\n' block comment behavior\nBlockComment --> BlockComment : next char != '*' / advance\nBlockComment --> SawStar : next char = '*' / advance\n\n' loop back\nSawStar --> BlockComment : next char = '*' / advance\nBlockComment --> Start : next char = '/' / advance\n\nEndWhitespace --> [*]\n\n@enduml\n\nExample 2 Requirement:\nNational Health Id — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if a person is an Indian citizen.\n2. The system shall verify the details of an Indian citizen.\n3. The system shall generate a unique health ID for registered Indian citizens.\n4. The system shall activate an account upon successful login.\n5. The system shall support after activation, the system shall allow users to either add old files or set permissions.\n6. The system shall store added old files.\n7. The system shall provide access to relevant authorities based on set permissions.\n8. The system shall allow adding new files when permission is granted.\n9. The system shall store all the information provided by users.\n10. The system shall allow the government to access stored data to view details and prepare reports.\n\nExample 2 PlantUML:\n@startuml\n\n[*] --> Choice1\nstate Choice1 <<choice>>\nstate Choice2 <<choice>>\nstate Choice3 <<choice>>\nChoice1 --> Verification : Indian\nChoice1 --> [*] : not Indian\n\nVerification : entry / Citizenship status\nVerification : do / Verify details\nVerification : exit / Verified status\n\nVerification --> Registration : verified\n\nRegistration : entry / Citizenship status\nRegistration : do / Register with ID\nRegistration : exit / Unique National Health ID\n\nRegistration --> Login : registered\n\nLogin : entry / National Health ID\nLogin : do / Login with the ID\nLogin : exit / Logged in to the account\n\nLogin --> Choice2\nChoice2 --> Activation : login success\nChoice2 --> [*]\nActivation : entry / Logged in the account\nActivation : do / Activate the account\nActivation : exit / Activated account\n\nActivation --> AddFiles : add old files\nActivation --> Permission : proceed to permissions\n\nAddFiles : entry / Activated account\nAddFiles : do / Add the files\nAddFiles : exit / Added old files\n\nAddFiles --> Repository\n\nPermission : entry / Activated account\nPermission : do / Providing permissions\nPermission : exit / Access of authorities\n\nPermission --> Access : permission granted\nPermission --> Repository : saving permissions\n\nAccess : entry / Checking for permission\nAccess : do / Accessing the files\nAccess : exit / Adding new files\n\nAccess --> Choice3\nChoice3 --> Repository : given permission\nChoice3 --> [*]\nAccess --> [*] : no permission\n\nGovernment : entry / Having repository\nGovernment : do / Accessing the details\nGovernment : exit / Analysis report\n\nGovernment --> Repository\n\nRepository : entry / Government repository\nRepository : do / Saving the details\nRepository : exit / Logged out\n\nRepository --> [*]\n\n@enduml\n\nExample 3 Requirement:\nCar Care — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to choose whether they are using the service center side or the car owner side.\n2. The system shall allow service center users to register or log in if already registered.\n3. The system shall allow service center users to enter damaged parts, update parts information, or send expiry-related notifications after logging in.\n4. The system shall allow service center users to log out after finishing any of the above activities.\n5. The system shall allow car owner users to register or log in.\n6. The system shall allow car owners to view parts information, request or respond to services, or report a service center after logging in.\n7. The system shall allow car owners to select required parts and make a payment when choosing a service.\n8. The system shall allow car owners to log out after completing their activities.\n\nExample 3 PlantUML:\n@startuml\ntitle UML state machine diagram\n\nstate PortalChoice1 <<choice>>\nstate PortalChoice2 <<choice>>\nstate PortalChoice3 <<choice>>\nstate ServiceJoin <<choice>>\nstate OwnerJoin <<choice>>\n\n\n[*] --> PortalChoice1\n\nPortalChoice1 --> PortalChoice2 : [Service Center Portal]\nPortalChoice1 --> PortalChoice3 : [Car Owner Portal]\n\nPortalChoice2 --> ServiceCenterRegistration : [New Service Center]\nPortalChoice2 --> ServiceJoin : [Registered Service center]\nPortalChoice3 --> CarOwnerRegistration : [New Car Owner]\nPortalChoice3 --> OwnerJoin : [Registered Car Owner]\n\nstate \"Service Center Registration\" as ServiceCenterRegistration\nServiceCenterRegistration : entry / Unregistered service center\nServiceCenterRegistration : do / Enter Valid Credentials\nServiceCenterRegistration : exit / Account registered\n\nstate \"Service Center Verification\" as ServiceCenterVerification\nServiceCenterVerification : entry / Service Center account registered\nServiceCenterVerification : do / Verify Service center\nServiceCenterVerification : exit / Login Service center\n\nstate \"Service Center Login\" as ServiceCenterLogin\nServiceCenterLogin : entry / Verified Service Center\nServiceCenterLogin : entry / Service Center not logged in\nServiceCenterLogin : do / Authenticate Service Center\nServiceCenterLogin : exit / Logged In Successfully\n\nstate \"Service center Home\" as ServiceCenterHome\nServiceCenterHome : entry / Logged in Service Center\nServiceCenterHome : do / Display home page\nServiceCenterHome : exit / Enter Damaged parts list\nServiceCenterHome : exit / Expiry Notification page\nServiceCenterHome : exit / Updating Information list\n\nstate \"Expiry Notification page\" as ExpiryNotification\nExpiryNotification : entry / To view expiry notification\nExpiryNotification : do / Send service request to Car owner\nExpiryNotification : exit / Return to Service center home page\n\nstate \"Entering Damaged parts list\" as DamagedParts\nDamagedParts : entry / To enter Damaged parts list\nDamagedParts : do / Preparing and entering damaged parts list\nDamagedParts : exit / Return to service center home page\n\nstate \"Updating parts Information\" as UpdatingParts\nUpdatingParts : entry / To update changed parts information\nUpdatingParts : do / Update Information\nUpdatingParts : exit / Return to Service center home page\n\nstate \"Logout\" as Logout\nLogout : entry / To Logout\nLogout : do / Logout\nLogout : exit / Logged out Successfully\n\nstate \"Car Owner Registration\" as CarOwnerRegistration\nCarOwnerRegistration : entry / Unregistered Car Owner\nCarOwnerRegistration : do / Enter valid Credentials\nCarOwnerRegistration : exit / Account registered\n\nstate \"Car owner Verification\" as CarOwnerVerification\nCarOwnerVerification : entry / Car owner account registered\nCarOwnerVerification : do / Verify Car owner\nCarOwnerVerification : exit / Login Car Owner\n\nstate \"Car Owner Login\" as CarOwnerLogin\nCarOwnerLogin : entry / Verified Car Owner\nCarOwnerLogin : entry / Car owner not logged in\nCarOwnerLogin : do / Authenticate Car Owner\nCarOwnerLogin : exit / Logged In Successfully\n\nstate \"Car Owner Home\" as CarOwnerHome\nCarOwnerHome : entry / Logged in Car Owner\nCarOwnerHome : do / Display home page\nCarOwnerHome : exit / View parts information\nCarOwnerHome : exit / Service\nCarOwnerHome : exit / Report\n\nstate \"Report\" as Report\nReport : entry / To Report Service center\nReport : do / Enter the report\nReport : exit / Return to car owner home page\n\nstate \"View Parts Information\" as ViewPartsInformation\nViewPartsInformation : entry / To view parts information\nViewPartsInformation : do / View car parts Information\nViewPartsInformation : exit / Return to Car owner home page\n\nstate \"Service\" as Service\nService : entry / Service request from service center\nService : do / Accept or deny request\nService : exit / Return to Car Owner home page\n\nstate \"Choose parts\" as ChooseParts\nChooseParts : entry / To choose selected parts\nChooseParts : do / Choose the part to be serviced\nChooseParts : exit / Return to service page\n\nstate \"Make Payment\" as MakePayment\nMakePayment : entry / To make payments\nMakePayment : do / Make payments\nMakePayment : exit / Return to Service page\n\n\nstate ServiceHomeChoice <<choice>>\nstate ServiceLoginChoice <<choice>>\nstate OwnerHomeChoice <<choice>>\nstate OwnerLoginChoice <<choice>>\nstate FinalJoin <<choice>>\n\n\nServiceCenterRegistration --> ServiceCenterVerification\nServiceCenterVerification --> ServiceJoin\nServiceJoin --> ServiceCenterLogin\nServiceCenterLogin --> ServiceLoginChoice\nServiceLoginChoice --> ServiceCenterHome\nExpiryNotification --> ServiceLoginChoice\nUpdatingParts --> ServiceLoginChoice\nDamagedParts --> ServiceLoginChoice\n\nServiceCenterHome --> ServiceHomeChoice : [Possible Activities]\nServiceHomeChoice --> ExpiryNotification\nServiceHomeChoice --> DamagedParts\nServiceHomeChoice --> UpdatingParts\nServiceHomeChoice --> FinalJoin\n\nFinalJoin --> Logout\nLogout --> [*]\n\n\n\nCarOwnerRegistration --> CarOwnerVerification\nCarOwnerVerification --> OwnerJoin\nOwnerJoin --> CarOwnerLogin\n\nCarOwnerLogin --> OwnerLoginChoice\nOwnerLoginChoice --> CarOwnerHome\nCarOwnerHome --> OwnerHomeChoice : [Possible Activities]\nViewPartsInformation --> OwnerLoginChoice\nReport --> OwnerLoginChoice\nService --> OwnerLoginChoice\n\nOwnerHomeChoice --> Report\nOwnerHomeChoice --> ViewPartsInformation\nOwnerHomeChoice --> Service\nOwnerHomeChoice --> FinalJoin\n\nService --> ChooseParts\nChooseParts --> MakePayment\nMakePayment --> Service\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nInventory — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to add new goods to the inventory.\n2. The system shall allow the user to update the price of existing items in the inventory.\n3. The system shall allow the user to remove goods from the inventory that are no longer required.\n4. The system shall identify expired goods and notify the user about their removal from the inventory.\n5. The system shall allow the user to place an order to a supplier for additional goods when required.\n6. The system shall generate an invoice for the order once it is placed.\n7. The system shall allow the user to search for items available in the inventory and select them for purchase.\n8. The system shall calculate the applicable discount and tax based on the selected items.\n9. The system shall generate a receipt for the customer after the purchase.\n10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.\n11. The system shall record customer requests for items that may not be currently available.\n12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.\n",
+  "requirement_used": "Inventory — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to add new goods to the inventory.\n2. The system shall allow the user to update the price of existing items in the inventory.\n3. The system shall allow the user to remove goods from the inventory that are no longer required.\n4. The system shall identify expired goods and notify the user about their removal from the inventory.\n5. The system shall allow the user to place an order to a supplier for additional goods when required.\n6. The system shall generate an invoice for the order once it is placed.\n7. The system shall allow the user to search for items available in the inventory and select them for purchase.\n8. The system shall calculate the applicable discount and tax based on the selected items.\n9. The system shall generate a receipt for the customer after the purchase.\n10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.\n11. The system shall record customer requests for items that may not be currently available.\n12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+      "missing_final_state_transition (state --> [*])",
+      "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 13,
+    "transition_count": 18
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+      "missing_final_state_transition (state --> [*])",
+      "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__gemma3_12b__few_shot",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": false,
+      "previous_score": 4,
+      "repair_score": 4,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: ExpiredGoods, ReplaceOrCancelReceipt",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: ExpiredGoods, ReplaceOrCancelReceipt",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 1,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "accepted": true,
+      "previous_score": 4,
+      "repair_score": 3,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+        "missing_final_state_transition (state --> [*])",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+        "missing_final_state_transition (state --> [*])",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+        "missing_final_state_transition (state --> [*])",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+        "missing_final_state_transition (state --> [*])",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 3,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+        "missing_final_state_transition (state --> [*])",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+        "missing_final_state_transition (state --> [*])",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+        "missing_final_state_transition (state --> [*])",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 4,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+        "missing_final_state_transition (state --> [*])",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+        "missing_final_state_transition (state --> [*])",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+        "missing_final_state_transition (state --> [*])",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 5,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+        "missing_final_state_transition (state --> [*])",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 5,
+      "strict_state_diagram_valid": false,
+      "remaining_issues": [
+        "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+        "missing_final_state_transition (state --> [*])",
+        "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])",
+          "unreachable_states_detected",
+          "unreachable: ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt",
+          "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+        ],
+        "initial_state": "InventoryHome",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "ExpiredGoods",
+          "RecordCustomerRequest",
+          "ReplaceOrCancelReceipt"
+        ],
+        "state_count": 13,
+        "transition_count": 18
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])",
+          "unreachable_states_detected",
+          "unreachable: ExpiredGoods, ReplaceOrCancelReceipt",
+          "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+        ],
+        "initial_state": "InventoryHome",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "ExpiredGoods",
+          "ReplaceOrCancelReceipt"
+        ],
+        "state_count": 13,
+        "transition_count": 18
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 4,
+      "repair_score": 4,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.repair_01.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+          "missing_final_state_transition (state --> [*])",
+          "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 13,
+        "transition_count": 18
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": true,
+      "previous_score": 4,
+      "repair_score": 3,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.repair_02.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.repair_02.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+          "missing_final_state_transition (state --> [*])",
+          "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 13,
+        "transition_count": 18
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.repair_03.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.repair_03.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+          "missing_final_state_transition (state --> [*])",
+          "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 13,
+        "transition_count": 18
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.repair_04.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.repair_04.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+          "missing_final_state_transition (state --> [*])",
+          "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 13,
+        "transition_count": 18
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.repair_05.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.repair_05.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 13,
+    "state_fn": 16,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 18,
+    "transition_fn": 11,
+    "state_precision_relaxed": 0.38461538461538464,
+    "state_recall_relaxed": 0.3125,
+    "state_f1_relaxed": 0.3448275862068966,
+    "state_tp_relaxed": 5,
+    "state_fp_relaxed": 8,
+    "state_fn_relaxed": 11,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 18,
+    "transition_fn_relaxed": 11,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 18,
+    "transition_fn_semantic": 11,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+      "missing_final_state_transition (state --> [*])",
+      "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.6153846153846154,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.1724137931034483,
+    "weighted_f1_relaxed_70_30": 0.2413793103448276,
+    "overall_f1_semantic": 0.1724137931034483,
+    "weighted_f1_semantic_70_30": 0.2413793103448276,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "multiple_initial_state_transitions (InventoryHome, ExpiredGoods, RecordCustomerRequest, ReplaceOrCancelReceipt)",
+      "missing_final_state_transition (state --> [*])",
+      "choice_node_without_guarded_outgoing_transitions (InventoryHome)"
+    ]
+  },
+  "reused_base_run": {
+    "run_id": "open_source__gemma3_12b__few_shot",
+    "strategy": "few_shot",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot\\case_02_inventory\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot\\case_02_inventory\\run_01.prompt.txt"
+  }
+}

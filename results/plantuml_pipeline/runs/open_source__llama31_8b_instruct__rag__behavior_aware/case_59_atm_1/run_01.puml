@@ -1,0 +1,35 @@
+@startuml
+title ATM Control - Withdrawal Transaction
+
+[*] --> State
+
+state "Waiting for User Input" as WaitingForInput
+state "Processing Withdrawal" as ProcessingWithdrawal {
+  state "Validating PIN" as ValidatingPIN
+  state "Checking Balance" as CheckingBalance
+}
+state "Dispensing Cash" as DispensingCash
+state "Printing Receipt" as PrintingReceipt
+state "Ejecting Card" as EjectingCard
+
+WaitingForInput --> ValidatingPIN : User Inserts Card /\nGet PIN
+ValidatingPIN --> WaitingForInput : Invalid PIN / Display Error Message
+ValidatingPIN --> CheckingBalance : Valid PIN / Check Balance
+CheckingBalance --> ProcessingWithdrawal : Sufficient Funds / Process Withdrawal
+ProcessingWithdrawal --> DispensingCash : Approved / Dispense Cash
+DispensingCash --> PrintingReceipt : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+PrintingReceipt --> EjectingCard : Receipt Printed /\nEject Card
+
+WaitingForInput --> EjectingCard : Cancel / Eject Card
+
+state "Terminating Transaction" as TerminatingTransaction {
+  state Terminating
+  state Confiscating
+}
+
+Confiscating --> Terminating : Card Confiscated /\nDisplay Confiscated
+EjectingCard --> Terminating : Card Ejected /\nDisplay Ejected
+
+Terminating --> WaitingForInput : After (Elapsed Time) [Closedown Not Requested]
+
+@enduml

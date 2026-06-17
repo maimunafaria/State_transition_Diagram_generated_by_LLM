@@ -1,0 +1,46 @@
+@startuml
+[*] --> UnregisteredUser
+
+state "Unregistered User" as UnregisteredUser {
+    [*] --> Registering : [Register]
+}
+
+state "Registering" as Registering {
+    Registering --> RegisteredNotLoggedIn : [Registration Successful]
+}
+
+state "Registered but Not Logged In" as RegisteredNotLoggedIn {
+    [*] --> Login : [Login]
+}
+
+state "LoggedIn" as LoggedIn {
+    [*] --> CheckStatus : [Check Ticket Status]
+    [*] --> BookTicket : [Book Ticket]
+    [*] --> ManageAccount : [Manage Account Details]
+    [*] --> Logout : [Logout]
+}
+
+state "Select Trip" as SelectTrip
+state "Review Details" as ReviewDetails
+state "Confirm Booking" as ConfirmBooking
+state "Make Payment" as MakePayment
+
+LoggedIn --> SelectTrip : [Select Trip]
+SelectTrip --> ReviewDetails : [Review Details]
+ReviewDetails --> ConfirmBooking : [Confirm]
+ConfirmBooking --> MakePayment : [Pay]
+
+ManageAccount --> [*] : [Logout]
+
+CheckStatus --> [*] : [Logout]
+
+BookTicket --> SelectTrip : [Back to Book Ticket]
+
+MakePayment --> LoggedIn : [Return to Menu]
+
+state Logout <<choice>>
+    Logout --> [*] : [Logged Out]
+}
+
+LoggedIn --> Logout
+@enduml

@@ -1,0 +1,97 @@
+@startuml
+title Healthcare Portal State Machine
+
+[*] --> Registration
+
+state Registration
+Registration : entry / Start New User
+Registration : do / Enter Details
+Registration : exit / Registered or Failed
+
+state RegDecision <<choice>>
+Registration --> RegDecision
+
+state ValidRegistration
+ValidRegistration : entry / Successfully Registered
+ValidRegistration : do / Proceed to Login
+ValidRegistration : exit / Move to Login State
+
+state InvalidRegistration
+InvalidRegistration : entry / Registration Failed
+InvalidRegistration : do / Access Denied
+InvalidRegistration : exit / End Session
+
+RegDecision --> ValidRegistration
+RegDecision --> InvalidRegistration
+
+ValidRegistration --> Login
+
+state Login
+Login : entry / Enter Credentials
+Login : do / Verify User
+Login : exit / Successfully Logged In or Not
+
+state LoginDecision <<choice>>
+Login --> LoginDecision
+
+state ValidLogin
+ValidLogin : entry / Successfully Logged In
+ValidLogin : do / Access Granted
+ValidLogin : exit / Proceed to Dashboard
+
+state InvalidLogin
+InvalidLogin : entry / Wrong Credentials
+InvalidLogin : do / Display Error
+InvalidLogin : exit / Return to Login or End Session
+
+LoginDecision --> ValidLogin
+LoginDecision --> InvalidLogin
+
+ValidLogin --> Dashboard
+
+state Dashboard
+Dashboard : entry / Welcome Screen
+Dashboard : do / Access Features
+Dashboard : exit / Continue Using or Logout
+
+state DashboardAction <<choice>>
+Dashboard --> DashboardAction
+
+state ViewContent
+ViewContent : entry / Read News/Expert Content
+ViewContent : do / Access Information
+ViewContent : exit / Return to Dashboard
+
+state HealthInfo
+HealthInfo : entry / Check Symptoms/Health Info
+HealthInfo : do / Analyze Data
+HealthInfo : exit / Show Results or Continue
+
+DashboardAction --> ViewContent
+DashboardAction --> HealthInfo
+
+HealthInfo --> ResultsReview
+
+state ResultsReview
+ResultsReview : entry / Review Results
+ResultsReview : do / Decide Next Steps
+ResultsReview : exit / Return to Dashboard or Logout
+
+ViewContent --> ResultsReview
+
+ResultsReview --> PaymentChoice
+
+state PaymentChoice <<choice>>
+PaymentChoice : entry / Choose Payment Method
+PaymentChoice : do / Select Option
+PaymentChoice : exit / Proceed with Selected Method
+
+state CashPayment
+CashPayment : entry / Choose Cash
+CashPayment : do / Provide Details and Confirm
+CashPayment : exit / Processed or Cancelled
+
+state InsurancePayment
+InsurancePayment : entry / Use Insurance
+InsurancePayment
+@enduml

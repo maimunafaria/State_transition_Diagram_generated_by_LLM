@@ -1,0 +1,50 @@
+@startuml
+title Online Quiz System - State Machine Diagram
+
+state "Login" {
+  [*] --> LoginChoice
+
+  state "Teacher Login" as TeacherLogin
+  state "Student Login" as StudentLogin
+  state "Invalid Credentials" as InvalidCredentials
+
+  LoginChoice --> TeacherLogin
+  LoginChoice --> StudentLogin : [Valid]
+  TeacherLogin --> [*]
+  StudentLogin --> [*]
+  InvalidCredentials --> LoginChoice : [Invalid]
+}
+
+state "Teacher Dashboard" {
+  [*] --> TeacherDashboardChoice
+
+  state "Create Quiz" as CreateQuiz
+  state "View Quizzes" as ViewQuizzes
+  state "Edit Profile" as EditProfile
+  state "Logout" as Logout
+
+  TeacherDashboardChoice --> CreateQuiz
+  TeacherDashboardChoice --> ViewQuizzes
+  TeacherDashboardChoice --> EditProfile
+  TeacherDashboardChoice --> Logout
+}
+
+state "Student Dashboard" {
+  [*] --> StudentDashboardChoice
+
+  state "View Quizzes" as ViewQuizzes
+  state "Take Quiz" as TakeQuiz
+  state "Results" as Results
+  state "Logout" as Logout
+
+  StudentDashboardChoice --> ViewQuizzes
+  StudentDashboardChoice --> TakeQuiz : [Available]
+  TakeQuiz --> Results : [Completed]
+  Results --> [*]
+}
+
+state StartJoin <<choice>>
+
+[*] --> StartJoin
+StartJoin --> Login
+@enduml

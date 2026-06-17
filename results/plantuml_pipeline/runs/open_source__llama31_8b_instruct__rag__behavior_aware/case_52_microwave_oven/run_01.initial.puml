@@ -1,0 +1,44 @@
+@startuml
+[*] --> Idle
+Idle --> DisplayTime : [*]
+Idle --> SelectPowerLevel : [*]
+
+state "Select Power Level" as SelectPowerLevel {
+  [*] --> HalfPowerSelected
+
+  state "Half Power Selected" as HalfPowerSelected
+  state "Full Power Selected" as FullPowerSelected
+
+  HalfPowerSelected --> CookingTimeEntry : powerButtonPressed()
+  FullPowerSelected --> CookingTimeEntry : powerButtonPressed()
+
+  CookingTimeEntry --> Cooking : cookingTimeEntered()
+}
+
+state "Cooking Time Entry" as CookingTimeEntry {
+  [*] --> Cooking
+  state "Cancel" as Cancel
+
+  Cancel --> Idle : cancelButtonPressed()
+  CookingTimeEntry --> Cooking : cookingTimeEntered()
+}
+
+state "Cooking" as Cooking {
+  [*] --> DoorOpenDuringCooking : doorOpened()
+
+  state "Door Open During Cooking" as DoorOpenDuringCooking
+  state "Timer Expired" as TimerExpired
+
+  DoorOpenDuringCooking --> Idle : doorClosed()
+  TimerExpired --> Idle : timerExpired()
+}
+
+state "Display Time" as DisplayTime {
+  [*] --> SelectPowerLevel : [*]
+}
+
+Idle --> Cancel : cancelButtonPressed()
+
+Cancel --> Idle : cancelButtonPressed()
+
+@enduml

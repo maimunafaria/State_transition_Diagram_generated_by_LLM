@@ -1,0 +1,84 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+E Ticketing For Bus — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create a new account.
+2. The system shall validate the registration of a new user.
+3. The system shall allow the user to log in upon successful registration.
+4. The system shall provide options for logged-in users to check their ticket status.
+5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.
+6. The system shall enable users to manage their account details such as editing or deleting them.
+7. The system shall log out the user after they complete any action.
+
+Candidate PlantUML:
+@startuml
+title UML State Chart Diagram - E Ticketing For Bus
+
+[*] --> Registration
+
+state Registration
+Registration : entry / User initiates registration
+Registration --> Validation : User provides details
+
+state Validation
+Validation : do / Validate user details
+Validation --> Login : Validation successful
+Validation --> Registration : Validation failed
+
+state Login
+Login : entry / User enters credentials
+Login --> TicketStatus : Login successful
+Login --> Registration : Login failed
+
+state TicketStatus
+TicketStatus : do / Check ticket status
+TicketStatus --> Booking : User chooses to book
+TicketStatus --> Logout : User chooses to log out
+
+state Booking
+Booking : entry / User initiates booking
+Booking --> Confirmation : User selects route and seats
+Booking --> TicketStatus : User cancels booking
+
+state Confirmation
+Confirmation : do / Confirm booking details
+Confirmation --> Payment : User confirms details
+
+state Payment
+Payment : do / Process payment
+Payment --> TicketStatus : Payment successful
+Payment --> Booking : Payment failed
+
+state AccountManagement
+AccountManagement : entry / User accesses account management
+AccountManagement --> TicketStatus : User returns to ticket status
+AccountManagement --> Logout : User exits account management
+
+state Logout
+Logout : entry / User initiates logout
+Logout --> [*]
+
+Registration --> AccountManagement : User chooses to manage account
+Login --> AccountManagement : User chooses to manage account
+TicketStatus --> AccountManagement : User chooses to manage account
+TicketStatus --> Logout : User chooses to log out
+Confirmation --> AccountManagement : User chooses to manage account
+
+@enduml
+
+
+Validation issues to fix:
+- duplicate_transitions_detected (1)
+
+Repair guidance for these issues:
+- Remove duplicate transitions or merge their labels into one transition.

@@ -1,0 +1,50 @@
+@startuml
+title Online Quiz System — Polished Requirement Specification
+
+state "Register/Log in" as RegisterLogin {
+  [*] --> Login
+  state "Continue as teacher/student" as ContinueChoice
+  Login --> ContinueChoice : [Valid]
+  ContinueChoice --> TeacherState
+  ContinueChoice --> StudentState
+}
+
+state "Teacher State" as TeacherState {
+  state "Create new quiz" as CreateQuiz
+  state "Edit existing quiz" as EditQuiz
+  state "Save/draft/post quiz" as SaveDraftPost
+  state "View results" as ViewResults
+
+  CreateQuiz --> SaveDraftPost : [Valid]
+  EditQuiz --> SaveDraftPost : [Valid]
+  SaveDraftPost --> ViewResults : [Valid]
+}
+
+state "Student State" as StudentState {
+  state "Select a quiz" as SelectQuiz
+  state "Answer selected quiz" as AnswerQuiz
+  state "Submit quiz" as SubmitQuiz
+  state "View result" as ViewResult
+
+  SelectQuiz --> AnswerQuiz : [Valid]
+  AnswerQuiz --> SubmitQuiz : [Valid]
+  SubmitQuiz --> ViewResult : [Valid]
+}
+
+state StartJoin <<choice>>
+
+[*] --> RegisterLogin
+RegisterLogin --> TeacherState
+RegisterLogin --> StudentState
+
+TeacherState --> CreateQuiz
+CreateQuiz --> SaveDraftPost
+EditQuiz --> SaveDraftPost
+SaveDraftPost --> ViewResults
+
+StudentState --> SelectQuiz
+SelectQuiz --> AnswerQuiz
+AnswerQuiz --> SubmitQuiz
+SubmitQuiz --> ViewResult
+
+@enduml

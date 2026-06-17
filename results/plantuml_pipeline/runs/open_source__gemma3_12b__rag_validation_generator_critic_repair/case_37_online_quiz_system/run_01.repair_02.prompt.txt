@@ -1,0 +1,184 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Candidate PlantUML:
+@startuml
+title UML state machine diagram
+
+state "Seller Registration" as SellerRegistration
+SellerRegistration : entry/Unregistered Seller
+SellerRegistration : do/Get Valid Seller Credentials
+SellerRegistration : exit/Seller Account Registered
+
+state "Seller Verification" as SellerVerification
+SellerVerification : entry/Seller Account Registered
+SellerVerification : do/Verify Seller
+SellerVerification : exit/Login Seller
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry/Unverified Seller
+SellerLogin : entry/Seller not logged in
+SellerLogin : do/Authenticate Seller
+SellerLogin : exit/Logged In Successfully
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry/Not Logged In
+CustomerLogin : do/Authenticate Customer
+CustomerLogin : exit/Successfully Logged In
+
+state "Seller Home" as SellerHome
+SellerHome : entry/Logged In Seller
+SellerHome : do/Display Seller Dashboard
+SellerHome : exit/Sale Products
+SellerHome : exit/Promote Products
+SellerHome : exit/Chat
+SellerHome : exit/Logout
+
+state "Customer Home" as CustomerHome
+CustomerHome : entry/Customer Logged in
+CustomerHome : do/Display Recommended/Promoted Products
+CustomerHome : exit/View Product
+CustomerHome : exit/Buy Product
+CustomerHome : exit/Chat
+CustomerHome : exit/Report Seller
+CustomerHome : exit/Rate and Review
+
+state "View Product" as ViewProduct
+ViewProduct : entry/To View Products
+ViewProduct : do/Search and View Products
+ViewProduct : exit/Return to home
+ViewProduct : exit/Buy Product
+
+state "Buy Product" as BuyProduct
+BuyProduct : entry/Opted to Buy
+BuyProduct : do/Add product to cart
+BuyProduct : exit/Proceed to Checkout
+
+state "Make Purchase" as MakePurchase
+MakePurchase : entry/Proceeded to Checkout
+MakePurchase : do/Enable payment
+MakePurchase : exit/Payment Successful
+MakePurchase : exit/Payment Unsuccessful
+MakePurchase : exit/Return to Home
+
+state "Chat" as CustomerChat
+CustomerChat : entry/To Chat
+CustomerChat : do/Chat with Seller
+CustomerChat : exit/Return to Home
+
+state "Report Seller" as ReportSeller
+ReportSeller : entry/To Report Seller
+ReportSeller : entry/Seller in Purchase History
+ReportSeller : do/Issue Report to Seller
+ReportSeller : exit/Return to Home
+
+state "Rate and Review" as RateReview
+RateReview : entry/To Rate and Review
+RateReview : entry/Product Delivered
+RateReview : do/Rate and Review the product
+RateReview : exit/Return to Home
+
+state "Sale Products" as SaleProducts
+SaleProducts : entry/To Sale Products
+SaleProducts : do/Add new Product to Seller Inventory
+SaleProducts : exit/Product added Successfully
+SaleProducts : exit/Return to Home State
+
+state "Promote Products" as PromoteProducts
+PromoteProducts : entry/To Promote Products
+PromoteProducts : entry/Product in Sale
+PromoteProducts : do/Promote a Product
+PromoteProducts : exit/Return to Home State
+
+state "Chat" as SellerChat
+SellerChat : entry/To Chat
+SellerChat : entry/Seller Product in Sale
+SellerChat : entry/Message from Customer
+SellerChat : do/Enable chat with Customer
+SellerChat : exit/Return to Home State
+
+state "Logout" as Logout
+Logout : entry/To Logout User
+Logout : do/Logout User
+Logout : exit/User Logged out
+Logout : --> [*]
+
+state J0 <<choice>>
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+state J7 <<choice>>
+state J8 <<choice>>
+
+[*] --> J0
+J0 --> J1 : [Seller Portal]
+J0 --> CustomerLogin : [Customer Portal]
+
+J1 --> SellerRegistration : [New Seller]
+J1 --> J2 : [Registered Seller]
+
+SellerRegistration --> SellerVerification
+SellerVerification --> J2
+J2 --> SellerLogin : [Login]
+
+CustomerLogin --> J3
+SellerLogin --> J7
+J7 --> SellerHome : [Go To Home]
+
+J3 --> CustomerHome : [Go To Home]
+
+CustomerHome --> J4 : [Possible Activities]
+J4 --> ViewProduct : [View Products]
+J4 --> CustomerChat : [Chat]
+J4 --> ReportSeller : [Report Seller]
+J4 --> RateReview : [Rate and Review]
+J4 --> J8 : [Logout]
+
+ViewProduct --> J5
+J5 --> J3 : [Not to Buy]
+J5 --> BuyProduct : [Proceed to Buy]
+
+BuyProduct --> MakePurchase
+MakePurchase -->
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+- unreachable_states_detected
+- unreachable: J6, Logout, Promote Products, Sale Products
+- orphan_states_detected
+- orphan: J6, Logout, Promote Products, Sale Products
+- choice_node_without_outgoing_transitions (J6)
+- choice_node_without_outgoing_transitions (J8)
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
+- Give each choice node at least two outgoing alternatives when possible.

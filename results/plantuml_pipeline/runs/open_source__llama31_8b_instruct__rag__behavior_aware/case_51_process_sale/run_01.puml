@@ -1,0 +1,30 @@
+@startuml
+title State diagram of the system operations of "Process Sale"
+
+[*] --> State
+
+state "State" as State
+state "Wait for new sale" as WaitForNewSale
+state "Enter items one by one" as EnterItemsOneByOne
+state "Move to payment after all items have been added" as MoveToPayment
+state "Complete the sale immediately if the customer pays with cash" as CompleteSaleImmediately
+state "Verify the payment if the customer chooses to pay by card or check" as VerifyPayment
+state "Complete the sale once the payment is approved" as CompleteSaleOnceApproved
+state "Return to waiting for the next customer after the payment has been finished" as ReturnToWaiting
+
+State --> WaitForNewSale : [*]
+
+WaitForNewSale --> EnterItemsOneByOne : new sale detected
+
+EnterItemsOneByOne --> MoveToPayment : all items added
+
+MoveToPayment --> CompleteSaleImmediately : cash payment
+CompleteSaleImmediately --> ReturnToWaiting : sale completed
+
+MoveToPayment --> VerifyPayment : card or check payment
+VerifyPayment --> CompleteSaleOnceApproved : payment approved
+CompleteSaleOnceApproved --> ReturnToWaiting : sale completed
+
+ReturnToWaiting --> WaitForNewSale : next customer detected
+
+@enduml
