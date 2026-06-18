@@ -1,0 +1,151 @@
+You are a violation-specific UML repair assistant.
+Repair the candidate PlantUML in priority order.
+Do not redesign the diagram unless the issue count is severe.
+Prefer the smallest possible edit that fixes the current highest-priority issue.
+Preserve requirement-supported states and transitions.
+Do not delete states/transitions merely to pass validation unless they are unsupported by the requirement.
+Do not introduce states or transitions that are not supported by the requirement.
+Output ONLY corrected PlantUML. No markdown fences. No explanation.
+
+Repair strategy:
+Use targeted repair: fix only the listed localized issue(s).
+
+Priority order:
+1. Syntax errors
+2. Parse warnings and invalid [*] transitions
+3. Missing or multiple initial states
+4. Missing final state
+5. Invalid transition source/target
+6. Duplicate transitions
+7. Orphan states
+8. Unreachable states
+9. Choice/fork/join/history errors
+
+Issue-specific details:
+- Current initial state: none or ambiguous
+- State count: 14
+- Transition count: 21
+
+Requirement:
+Inventory — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to add new goods to the inventory.
+2. The system shall allow the user to update the price of existing items in the inventory.
+3. The system shall allow the user to remove goods from the inventory that are no longer required.
+4. The system shall identify expired goods and notify the user about their removal from the inventory.
+5. The system shall allow the user to place an order to a supplier for additional goods when required.
+6. The system shall generate an invoice for the order once it is placed.
+7. The system shall allow the user to search for items available in the inventory and select them for purchase.
+8. The system shall calculate the applicable discount and tax based on the selected items.
+9. The system shall generate a receipt for the customer after the purchase.
+10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.
+11. The system shall record customer requests for items that may not be currently available.
+12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.
+
+Candidate PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> InventoryMenu
+
+state InventoryMenu {
+  [*] --> AddGoods : [Add Goods]
+  AddGoods : entry / start state
+  AddGoods : do / add new goods
+  AddGoods : exit / goods added
+  AddGoods --> InventoryMenu
+}
+
+state InventoryMenu {
+  AddGoods --> UpdatePrice : [Update Price]
+  UpdatePrice : entry / start state
+  UpdatePrice : do / update price of existing items
+  UpdatePrice : exit / price updated
+  UpdatePrice --> InventoryMenu
+}
+
+state InventoryMenu {
+  AddGoods --> RemoveGoods : [Remove Goods]
+  RemoveGoods : entry / start state
+  RemoveGoods : do / remove goods from inventory
+  RemoveGoods : exit / goods removed
+  RemoveGoods --> InventoryMenu
+}
+
+state InventoryMenu {
+  AddGoods --> ExpireCheck : [Check for Expired Goods]
+  ExpireCheck : entry / start state
+  ExpireCheck : do / check for expired goods
+  ExpireCheck : exit / expired goods identified
+  ExpireCheck --> RemoveGoods
+}
+
+state InventoryMenu {
+  AddGoods --> PlaceOrder : [Place Order]
+  PlaceOrder : entry / start state
+  PlaceOrder : do / place order with supplier
+  PlaceOrder : exit / order placed
+  PlaceOrder --> GenerateInvoice
+}
+
+state InventoryMenu {
+  AddGoods --> SearchItems : [Search Items]
+  SearchItems : entry / start state
+  SearchItems : do / search for items in inventory
+  SearchItems : exit / items selected
+  SearchItems --> PurchaseItems
+}
+
+state InventoryMenu {
+  AddGoods --> CalculateDiscount : [Calculate Discount]
+  CalculateDiscount : entry / start state
+  CalculateDiscount : do / calculate applicable discount
+  CalculateDiscount : exit / discount calculated
+  CalculateDiscount --> GenerateReceipt
+}
+
+state InventoryMenu {
+  AddGoods --> GenerateReceipt : [Generate Receipt]
+  GenerateReceipt : entry / start state
+  GenerateReceipt : do / generate receipt for purchase
+  GenerateReceipt : exit / receipt generated
+  GenerateReceipt --> InventoryMenu
+}
+
+state InventoryMenu {
+  AddGoods --> ReplaceItem : [Replace Item]
+  ReplaceItem : entry / start state
+  ReplaceItem : do / replace an item or cancel receipt
+  ReplaceItem : exit / item replaced or receipt cancelled
+  ReplaceItem --> InventoryMenu
+}
+
+state InventoryMenu {
+  AddGoods --> RecordRequest : [Record Request]
+  RecordRequest : entry / start state
+  RecordRequest : do / record customer requests
+  RecordRequest : exit / request recorded
+  RecordRequest --> InventoryMenu
+}
+
+state InventoryMenu {
+  AddGoods --> GenerateSummary : [Generate Summary Report]
+  GenerateSummary : entry / start state
+  GenerateSummary : do / generate summary report
+  GenerateSummary : exit / report generated
+  GenerateSummary --> InventoryMenu
+}
+
+state InventoryMenu
+InventoryMenu --> [*] : [Exit]
+@enduml
+
+
+Validation issues to fix, already sorted by priority:
+- multiple_initial_state_transitions (InventoryMenu, AddGoods)
+
+Repair guidance for these issues:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.

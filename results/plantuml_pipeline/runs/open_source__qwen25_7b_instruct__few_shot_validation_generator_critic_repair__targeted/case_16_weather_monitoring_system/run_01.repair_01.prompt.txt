@@ -1,0 +1,105 @@
+You are a violation-specific UML repair assistant.
+Repair the candidate PlantUML in priority order.
+Do not redesign the diagram unless the issue count is severe.
+Prefer the smallest possible edit that fixes the current highest-priority issue.
+Preserve requirement-supported states and transitions.
+Do not delete states/transitions merely to pass validation unless they are unsupported by the requirement.
+Do not introduce states or transitions that are not supported by the requirement.
+Output ONLY corrected PlantUML. No markdown fences. No explanation.
+
+Repair strategy:
+Use targeted repair: fix only the listed localized issue(s).
+
+Priority order:
+1. Syntax errors
+2. Parse warnings and invalid [*] transitions
+3. Missing or multiple initial states
+4. Missing final state
+5. Invalid transition source/target
+6. Duplicate transitions
+7. Orphan states
+8. Unreachable states
+9. Choice/fork/join/history errors
+
+Issue-specific details:
+- Current initial state: Register
+- State count: 8
+- Transition count: 7
+
+Requirement:
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.
+
+Candidate PlantUML:
+@startuml
+title Weather Monitoring System State Diagram
+
+[*] --> Register
+
+state Register <<choice>>
+Register --> Success : registration successful
+Register --> [*] : registration unsuccessful
+
+state "Login" as Login
+Login : entry / user enters credentials
+Login : do / validate credentials
+Login : exit / login successful
+
+Login --> [*] : login unsuccessful
+
+state "Check Weather" as CheckWeather
+CheckWeather : entry / user selects location
+CheckWeather : do / validate location
+CheckWeather : exit / location valid
+
+CheckWeather --> [*] : location invalid
+
+state "Select Weather Info" as SelectInfo
+SelectInfo : entry / user selects info type
+SelectInfo : do / select info type
+SelectInfo : exit / info type selected
+
+state "Show Weather Info" as ShowInfo
+ShowInfo : entry / show selected weather info
+ShowInfo : do / update and show info
+ShowInfo : exit / info shown
+
+state "View Additional Details" as ViewDetails
+ViewDetails : entry / user selects additional details
+ViewDetails : do / show additional details
+ViewDetails : exit / details shown
+
+state "Logout" as Logout
+Logout : entry / user logs out
+Logout : do / end session
+Logout : exit / session ended
+
+CheckWeather --> SelectInfo : [Select info ?]
+SelectInfo --> ShowInfo : [Show info ?]
+ShowInfo --> ViewDetails : [View details ?]
+
+SelectInfo --> [*] : [No select info]
+ViewDetails --> [*] : [No view details]
+
+Login --> CheckWeather
+CheckWeather --> Logout
+Register --> Login
+
+@enduml
+
+
+Validation issues to fix, already sorted by priority:
+- choice_node_without_guarded_outgoing_transitions (Register)
+
+Repair guidance for these issues:
+- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].

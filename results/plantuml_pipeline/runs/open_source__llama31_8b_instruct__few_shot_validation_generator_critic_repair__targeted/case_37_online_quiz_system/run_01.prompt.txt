@@ -1,0 +1,356 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Alert Notifier — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall initialize a component to detect updates upon initial loading.
+2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.
+3. The system shall process detected updates by storing them and evaluating their significance.
+4. The system shall notify appropriate operators of changes based on evaluation results if certain conditions are met.
+5. The system shall return to a waiting state after processing an update.
+6. The system shall enter an unloading phase if initialization fails or if the system is shut down while the component is running.
+7. The system shall perform necessary cleanup operations and inform the component manager of successful removal during unloading.
+8. The system shall terminate the component's operation after unloading is complete.
+
+Example 1 PlantUML:
+@startuml
+title Alert Notifier Component States
+
+[*] --> InitializeComponent : Load Component
+
+state "Initialize\nComponent" as InitializeComponent
+state "Waiting for Update" as WaitingForUpdate
+state "Processing Update" as ProcessingUpdate
+state "Unloading Component" as UnloadingComponent
+
+WaitingForUpdate : do / checkForUpdate
+
+ProcessingUpdate : entry / storeUpdate
+ProcessingUpdate : do / evaluateUpdate
+ProcessingUpdate : exit / [update > delta] Operator.Notify(update)
+
+UnloadingComponent : exit / compMgr.compUnloaded()
+
+InitializeComponent --> WaitingForUpdate : [ init. success ]
+InitializeComponent --> UnloadingComponent : [ init. failure ]
+
+WaitingForUpdate --> ProcessingUpdate : stock update
+ProcessingUpdate --> WaitingForUpdate
+
+WaitingForUpdate --> UnloadingComponent : shutdown
+
+UnloadingComponent --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Business Process Outsourcing Bpo Management System Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall prompt the user to choose whether they are a new user or an already registered user.
+2. The system shall require new users to enter their details for registration and end the process if the details are invalid.
+3. The system shall save the user's information after a successful registration and allow them to log in.
+4. The system shall allow registered users to directly log in by entering their username and password and continue if the login is successful.
+5. The system shall allow users to manage their profile after logging in, which includes editing details, uploading or accepting requests, searching for other users, or viewing current deals.
+6. The system shall require users to log out after they complete any action.
+
+Example 2 PlantUML:
+@startuml
+title UML State Machine Diagram (User System)
+
+[*] --> UserType
+
+state UserType <<choice>>
+UserType --> Registration : [New user]
+UserType --> Login : [Registered user]
+
+state "Registration" as Registration {
+    [*] --> GettingDetails
+
+    state GettingDetails
+    state ChoiceReg <<choice>>
+    state "Update Database" as UpdateDB
+    state EndInvalid <<choice>>
+
+    GettingDetails --> ChoiceReg : [Registration verification]
+    ChoiceReg --> UpdateDB : [valid]
+    ChoiceReg --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+Registration : entry / New user
+Registration : do / Registration
+Registration : exit / After updation
+
+UpdateDB --> Login : [verified]
+
+state Login
+Login : do / Enter username and password
+Login : exit / After verification
+
+Login --> Profile : [valid uname & pwd]
+
+state "Profile" as Profile {
+    [*] --> ChoiceProfile
+
+    state ChoiceProfile <<choice>>
+    state "View or Edit profile" as EditProfile
+    state "Upload or Accept request" as UploadReq
+    state "Search users" as SearchUsers
+    state "View current deals" as ViewDeals
+
+    ChoiceProfile --> EditProfile : [edit profile data]
+    ChoiceProfile --> UploadReq : [new project]
+    ChoiceProfile --> SearchUsers : [search user]
+    ChoiceProfile --> ViewDeals : [current deals]
+
+    
+}
+
+Profile : entry / View or Edit profile
+Profile : do / Upload or Accept request
+Profile : do / Search users
+Profile : do / View current deals
+Profile : exit / Logout
+
+    EditProfile --> [*] : [Logout]
+    UploadReq --> [*] : [Logout]
+    SearchUsers --> [*] : [Logout]
+    ViewDeals --> [*] : [Logout]
+
+@enduml
+
+Example 3 Requirement:
+Car Care — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose whether they are using the service center side or the car owner side.
+2. The system shall allow service center users to register or log in if already registered.
+3. The system shall allow service center users to enter damaged parts, update parts information, or send expiry-related notifications after logging in.
+4. The system shall allow service center users to log out after finishing any of the above activities.
+5. The system shall allow car owner users to register or log in.
+6. The system shall allow car owners to view parts information, request or respond to services, or report a service center after logging in.
+7. The system shall allow car owners to select required parts and make a payment when choosing a service.
+8. The system shall allow car owners to log out after completing their activities.
+
+Example 3 PlantUML:
+@startuml
+title UML state machine diagram
+
+state PortalChoice1 <<choice>>
+state PortalChoice2 <<choice>>
+state PortalChoice3 <<choice>>
+state ServiceJoin <<choice>>
+state OwnerJoin <<choice>>
+
+
+[*] --> PortalChoice1
+
+PortalChoice1 --> PortalChoice2 : [Service Center Portal]
+PortalChoice1 --> PortalChoice3 : [Car Owner Portal]
+
+PortalChoice2 --> ServiceCenterRegistration : [New Service Center]
+PortalChoice2 --> ServiceJoin : [Registered Service center]
+PortalChoice3 --> CarOwnerRegistration : [New Car Owner]
+PortalChoice3 --> OwnerJoin : [Registered Car Owner]
+
+state "Service Center Registration" as ServiceCenterRegistration
+ServiceCenterRegistration : entry / Unregistered service center
+ServiceCenterRegistration : do / Enter Valid Credentials
+ServiceCenterRegistration : exit / Account registered
+
+state "Service Center Verification" as ServiceCenterVerification
+ServiceCenterVerification : entry / Service Center account registered
+ServiceCenterVerification : do / Verify Service center
+ServiceCenterVerification : exit / Login Service center
+
+state "Service Center Login" as ServiceCenterLogin
+ServiceCenterLogin : entry / Verified Service Center
+ServiceCenterLogin : entry / Service Center not logged in
+ServiceCenterLogin : do / Authenticate Service Center
+ServiceCenterLogin : exit / Logged In Successfully
+
+state "Service center Home" as ServiceCenterHome
+ServiceCenterHome : entry / Logged in Service Center
+ServiceCenterHome : do / Display home page
+ServiceCenterHome : exit / Enter Damaged parts list
+ServiceCenterHome : exit / Expiry Notification page
+ServiceCenterHome : exit / Updating Information list
+
+state "Expiry Notification page" as ExpiryNotification
+ExpiryNotification : entry / To view expiry notification
+ExpiryNotification : do / Send service request to Car owner
+ExpiryNotification : exit / Return to Service center home page
+
+state "Entering Damaged parts list" as DamagedParts
+DamagedParts : entry / To enter Damaged parts list
+DamagedParts : do / Preparing and entering damaged parts list
+DamagedParts : exit / Return to service center home page
+
+state "Updating parts Information" as UpdatingParts
+UpdatingParts : entry / To update changed parts information
+UpdatingParts : do / Update Information
+UpdatingParts : exit / Return to Service center home page
+
+state "Logout" as Logout
+Logout : entry / To Logout
+Logout : do / Logout
+Logout : exit / Logged out Successfully
+
+state "Car Owner Registration" as CarOwnerRegistration
+CarOwnerRegistration : entry / Unregistered Car Owner
+CarOwnerRegistration : do / Enter valid Credentials
+CarOwnerRegistration : exit / Account registered
+
+state "Car owner Verification" as CarOwnerVerification
+CarOwnerVerification : entry / Car owner account registered
+CarOwnerVerification : do / Verify Car owner
+CarOwnerVerification : exit / Login Car Owner
+
+state "Car Owner Login" as CarOwnerLogin
+CarOwnerLogin : entry / Verified Car Owner
+CarOwnerLogin : entry / Car owner not logged in
+CarOwnerLogin : do / Authenticate Car Owner
+CarOwnerLogin : exit / Logged In Successfully
+
+state "Car Owner Home" as CarOwnerHome
+CarOwnerHome : entry / Logged in Car Owner
+CarOwnerHome : do / Display home page
+CarOwnerHome : exit / View parts information
+CarOwnerHome : exit / Service
+CarOwnerHome : exit / Report
+
+state "Report" as Report
+Report : entry / To Report Service center
+Report : do / Enter the report
+Report : exit / Return to car owner home page
+
+state "View Parts Information" as ViewPartsInformation
+ViewPartsInformation : entry / To view parts information
+ViewPartsInformation : do / View car parts Information
+ViewPartsInformation : exit / Return to Car owner home page
+
+state "Service" as Service
+Service : entry / Service request from service center
+Service : do / Accept or deny request
+Service : exit / Return to Car Owner home page
+
+state "Choose parts" as ChooseParts
+ChooseParts : entry / To choose selected parts
+ChooseParts : do / Choose the part to be serviced
+ChooseParts : exit / Return to service page
+
+state "Make Payment" as MakePayment
+MakePayment : entry / To make payments
+MakePayment : do / Make payments
+MakePayment : exit / Return to Service page
+
+
+state ServiceHomeChoice <<choice>>
+state ServiceLoginChoice <<choice>>
+state OwnerHomeChoice <<choice>>
+state OwnerLoginChoice <<choice>>
+state FinalJoin <<choice>>
+
+
+ServiceCenterRegistration --> ServiceCenterVerification
+ServiceCenterVerification --> ServiceJoin
+ServiceJoin --> ServiceCenterLogin
+ServiceCenterLogin --> ServiceLoginChoice
+ServiceLoginChoice --> ServiceCenterHome
+ExpiryNotification --> ServiceLoginChoice 
+UpdatingParts --> ServiceLoginChoice 
+DamagedParts --> ServiceLoginChoice 
+
+ServiceCenterHome --> ServiceHomeChoice : [Possible Activities]
+ServiceHomeChoice --> ExpiryNotification
+ServiceHomeChoice --> DamagedParts
+ServiceHomeChoice --> UpdatingParts
+ServiceHomeChoice --> FinalJoin
+
+FinalJoin --> Logout
+Logout --> [*]
+
+
+
+CarOwnerRegistration --> CarOwnerVerification
+CarOwnerVerification --> OwnerJoin
+OwnerJoin --> CarOwnerLogin
+
+CarOwnerLogin --> OwnerLoginChoice
+OwnerLoginChoice --> CarOwnerHome
+CarOwnerHome --> OwnerHomeChoice : [Possible Activities]
+ViewPartsInformation --> OwnerLoginChoice
+Report --> OwnerLoginChoice
+Service --> OwnerLoginChoice
+
+OwnerHomeChoice --> Report
+OwnerHomeChoice --> ViewPartsInformation
+OwnerHomeChoice --> Service
+OwnerHomeChoice --> FinalJoin
+
+Service --> ChooseParts
+ChooseParts --> MakePayment
+MakePayment --> Service
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.

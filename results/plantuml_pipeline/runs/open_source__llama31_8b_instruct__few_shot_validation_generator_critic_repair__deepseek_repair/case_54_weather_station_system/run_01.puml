@@ -1,0 +1,37 @@
+@startuml
+title Weather Station System State Machine
+
+[*] --> ShutDown
+state ShutDown
+ShutDown : do / shut down system
+ShutDown --> [*]
+
+state ConfigMode
+ConfigMode : entry / configuration mode
+ConfigMode : do / configure system
+ConfigMode : exit / return to running state
+
+state Running
+Running : entry / collect data
+Running : do / collect data
+Running : exit / return to running state
+
+state Controlled
+Controlled : entry / remote control
+Controlled : do / control system
+Controlled : exit / return to running state
+
+ShutDown --> ConfigMode : restart
+ConfigMode --> Running : configuration complete
+Running --> DataCollection : clock triggered
+DataCollection --> Running : data collection complete
+Running --> SummaryPreparation : summary request
+SummaryPreparation --> Running : summary prepared
+Running --> StatusChecking : status request
+StatusChecking --> Running : status checked
+Running --> Controlled : remote control
+Controlled --> Running : remote control released
+Running --> ShutDown : shutdown command
+
+ShutDown --> [*]
+@enduml

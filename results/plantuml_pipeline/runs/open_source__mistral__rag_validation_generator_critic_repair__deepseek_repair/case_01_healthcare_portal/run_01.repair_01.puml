@@ -1,0 +1,38 @@
+@startuml
+title Healthcare Portal State Machine Diagram
+
+state PortalChoice <<choice>>
+state RegisteredUser <<choice>>
+
+[*] --> PortalChoice
+
+PortalChoice --> NewRegistration : [Register]
+PortalChoice --> ExistingLogin : [Login]
+
+state "New Registration" as NewRegistration
+NewRegistration --> AccessEnded : [Registration Failed]
+
+state "Existing Login" as ExistingLogin
+ExistingLogin --> UserHome : [Successful Login]
+
+state "User Home" as UserHome
+UserHome --> ServiceAccess : [Access Services]
+UserHome --> Logout : [Logout]
+
+state "Service Access" as ServiceAccess
+ServiceAccess --> ResultReview : [View Results]
+ServiceAccess --> ContinueUsage : [Continue Session]
+
+state "Result Review" as ResultReview
+ResultReview --> Home : [Return Home]
+ResultReview --> FinishSession : [End Session]
+
+state "Home" as Home
+Home --> Logout : [Logout]
+
+state "Logout" as Logout
+Logout --> [*] : [Logged Out]
+
+state "Access Ended" as AccessEnded
+AccessEnded --> [*] : [Access Denied]
+@enduml

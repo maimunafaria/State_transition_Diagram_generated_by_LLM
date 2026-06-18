@@ -1,0 +1,68 @@
+@startuml
+title UML State Machine Diagram - Search Users
+
+[*] --> ChooseUserType
+
+state ChooseUserType <<choice>>
+ChooseUserType --> NewUser : [New user]
+ChooseUserType --> RegisteredUser : [Registered user]
+
+state "New User Registration" as NewUserRegistration {
+    EnterDetails --> NewUserRegistration : [entry]
+
+    state EnterDetails
+    state ChoiceReg <<choice>>
+    state "Update Database" as UpdateDB
+    state EndInvalid
+
+    EnterDetails --> ChoiceReg : [Registration verification]
+    ChoiceReg --> UpdateDB : [valid]
+    ChoiceReg --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+NewUserRegistration : exit / After updation
+UpdateDB --> Login : [verified]
+
+state Login {
+    [*] --> Checking
+
+    state Checking
+    state "Enter username and password" as EnterCredentials
+
+    Checking --> EnterCredentials : [valid credentials]
+    Checking --> EndInvalid : [invalid credentials]
+
+    EndInvalid --> [*]
+}
+
+Login : entry / Login
+Login : do / Enter username and password
+Login : exit / After verification
+
+EnterCredentials --> Profile : [valid uname & pwd]
+
+state "Profile" as Profile {
+    [*] --> ChoiceProfile <<choice>>
+    ChoiceProfile --> EditProfile : [edit profile data]
+    ChoiceProfile --> SearchUsers : [search user]
+    ChoiceProfile --> ViewDeals : [current deals]
+    ChoiceProfile --> AddToWishlist : [add product to wishlist]
+    ChoiceProfile --> MoveFromWishlistToCart : [move from wishlist to cart]
+
+}
+
+Profile : entry / View or Edit profile
+Profile : do / Search users
+Profile : do / View current deals
+Profile : do / Add to wishlist
+Profile : do / Move from wishlist to cart
+Profile : exit / Logout
+
+    EditProfile --> [*] : [Logout]
+    SearchUsers --> [*] : [Logout]
+    ViewDeals --> [*] : [Logout]
+    AddToWishlist --> [*] : [Logout]
+    MoveFromWishlistToCart --> [*] : [Logout]
+@enduml

@@ -1,0 +1,93 @@
+You are a violation-specific UML repair assistant.
+Repair the candidate PlantUML in priority order.
+Do not redesign the diagram unless the issue count is severe.
+Prefer the smallest possible edit that fixes the current highest-priority issue.
+Preserve requirement-supported states and transitions.
+Do not delete states/transitions merely to pass validation unless they are unsupported by the requirement.
+Do not introduce states or transitions that are not supported by the requirement.
+Output ONLY corrected PlantUML. No markdown fences. No explanation.
+
+Repair strategy:
+Use targeted repair: fix only the listed localized issue(s).
+
+Priority order:
+1. Syntax errors
+2. Parse warnings and invalid [*] transitions
+3. Missing or multiple initial states
+4. Missing final state
+5. Invalid transition source/target
+6. Duplicate transitions
+7. Orphan states
+8. Unreachable states
+9. Choice/fork/join/history errors
+
+Issue-specific details:
+- Current initial state: Unregistered
+- Unreachable states: Logged Out
+- State count: 15
+- Transition count: 15
+
+Requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Candidate PlantUML:
+@startuml
+title State diagram for the Online Quiz System
+
+state "Unregistered" as Unregistered
+state "Registered" as Registered
+state "Login" as Login
+state "Teacher Home" as TeacherHome
+state "Student Home" as StudentHome
+state "Create Quiz" as CreateQuiz
+state "Edit Quiz" as EditQuiz
+state "Save Quiz" as SaveQuiz
+state "Post Quiz" as PostQuiz
+state "View Quiz Results" as ViewQuizResults
+state "Select Quiz" as SelectQuiz
+state "Answer Quiz" as AnswerQuiz
+state "Submit Quiz" as SubmitQuiz
+state "View Quiz Result" as ViewQuizResult
+state "Logged Out" as LoggedOut
+
+[*] --> Unregistered
+
+Unregistered --> Registered : Register
+Registered --> Login : Login
+
+Login --> TeacherHome : Continue as Teacher
+Login --> StudentHome : Continue as Student
+TeacherHome --> CreateQuiz : Create Quiz
+TeacherHome --> EditQuiz : Edit Quiz
+TeacherHome --> SaveQuiz : Save Quiz
+TeacherHome --> PostQuiz : Post Quiz
+TeacherHome --> ViewQuizResults : View Quiz Results
+StudentHome --> SelectQuiz : Select Quiz
+SelectQuiz --> AnswerQuiz : Answer Quiz
+AnswerQuiz --> SubmitQuiz : Submit Quiz
+SubmitQuiz --> ViewQuizResult : View Quiz Result
+ViewQuizResult --> StudentHome : Return to Home
+ViewQuizResults --> TeacherHome : Return to Home
+LoggedOut --> [*]
+
+@enduml
+
+
+Validation issues to fix, already sorted by priority:
+- unreachable: Logged Out
+- unreachable_states_detected
+
+Repair guidance for these issues:
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.

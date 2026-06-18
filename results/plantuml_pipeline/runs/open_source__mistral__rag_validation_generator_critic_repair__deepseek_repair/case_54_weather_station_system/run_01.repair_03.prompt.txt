@@ -1,0 +1,105 @@
+You are a violation-specific UML repair assistant.
+Repair the candidate PlantUML in priority order.
+Do not redesign the diagram unless the issue count is severe.
+Prefer the smallest possible edit that fixes the current highest-priority issue.
+Preserve requirement-supported states and transitions.
+Do not delete states/transitions merely to pass validation unless they are unsupported by the requirement.
+Do not introduce states or transitions that are not supported by the requirement.
+Output ONLY corrected PlantUML. No markdown fences. No explanation.
+
+Repair strategy:
+Use targeted repair: fix only the listed localized issue(s).
+
+Priority order:
+1. Syntax errors
+2. Parse warnings and invalid [*] transitions
+3. Missing or multiple initial states
+4. Missing final state
+5. Invalid transition source/target
+6. Duplicate transitions
+7. Orphan states
+8. Unreachable states
+9. Choice/fork/join/history errors
+
+Issue-specific details:
+- Current initial state: none or ambiguous
+- State count: 14
+- Transition count: 13
+
+Requirement:
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.
+
+Candidate PlantUML:
+@startuml
+title Weather Station System State Machine
+
+state Running {
+  --> RunningFromShutdown : restart from shutdown
+  state RunningFromShutdown
+  RunningFromShutdown --> Configuration : changes/settings required
+  RunningFromShutdown --> DataCollection : triggered by clock
+  RunningFromShutdown --> StatusChecking : request
+  --> RunningFromShutdown : activity completed
+}
+
+state Configuration {
+  --> ConfigurationMode
+  state ConfigurationMode
+  ConfigurationMode --> Running : configuration completed
+}
+
+state DataCollection {
+  --> DataCollecting
+  state DataCollecting
+  DataCollecting --> Running : activity completed
+}
+
+state StatusChecking {
+  --> StatusCheckingMode
+  state StatusCheckingMode
+  StatusCheckingMode --> Running : activity completed
+}
+
+state SummaryPreparation {
+  --> WeatherSummaryRequested
+  state WeatherSummaryRequested
+  WeatherSummaryRequested --> Running : summary prepared
+}
+
+state Shutdown {
+  --> ShuttingDown
+  state ShuttingDown
+  ShuttingDown --> [*] : shutdown command given while running
+}
+
+state ControlledMode {
+  --> ControlledModeOn
+  state ControlledModeOn
+  ControlledModeOn --> Running : remote control off
+}
+
+Running --> ControlledMode : remote control on
+ControlledMode --> Running : remote control off
+Running --> Shutdown : shutdown command given
+Shutdown --> [*]
+Running --> SummaryPreparation : summary requested
+SummaryPreparation --> Running : summary prepared
+@enduml
+
+
+Validation issues to fix, already sorted by priority:
+- missing_initial_state_transition ([*] --> state)
+
+Repair guidance for these issues:
+- Add one clear initial transition from [*] to the first lifecycle state.

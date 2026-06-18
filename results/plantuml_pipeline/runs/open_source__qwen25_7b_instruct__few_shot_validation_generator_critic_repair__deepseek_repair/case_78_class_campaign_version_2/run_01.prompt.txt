@@ -1,0 +1,278 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Java — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall skip non-meaningful elements like spaces or comments.
+2. The system shall ignore empty spaces and line breaks at the beginning.
+3. The system shall skip all characters from // to the end of the line.
+4. The system shall continue skipping content until the end of a block comment (*/).
+
+Example 1 PlantUML:
+@startuml
+title State diagram for advancing past whitespace and comments in Java
+
+[*] --> Start
+
+state Start
+state "saw '/'" as SawSlash
+state "line comment" as LineComment
+state "saw '*'" as SawStar
+state "block comment" as BlockComment
+state EndWhitespace
+
+' whitespace loop
+Start --> Start : next char = ' ' \\t \\r \\n / advance
+
+' detect slash
+Start --> SawSlash : next char = '/' / advance
+
+' anything else → end
+Start --> EndWhitespace : next char = anything else
+
+' after seeing '/'
+SawSlash --> LineComment : next char = '/' / advance
+SawSlash --> SawStar : next char = '*' / advance
+SawSlash --> EndWhitespace : next char != '/' or '*' / pushback '/'
+
+' line comment behavior
+LineComment --> LineComment : next char != eoln / advance
+LineComment --> Start : next char = eoln / advance
+
+' saw '*' (possible block comment)
+SawStar --> BlockComment : next char = '*' / advance
+
+' block comment behavior
+BlockComment --> BlockComment : next char != '*' / advance
+BlockComment --> SawStar : next char = '*' / advance
+
+' loop back
+SawStar --> BlockComment : next char = '*' / advance
+BlockComment --> Start : next char = '/' / advance
+
+EndWhitespace --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Loggedin Mechanism — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall prompt the user to enter their username.
+2. The system shall terminate the login process and exit if the user cancels at any point.
+3. The system shall check the entered username against its records.
+4. The system shall prompt for a password if the username is valid.
+5. The system shall verify both the username and password to allow login.
+6. The system shall allow the user to try again if the credentials are incorrect.
+7. The system shall increase the number of failed attempts with each incorrect entry.
+8. The system shall limit the number of login attempts for a user.
+9. The system shall block further login attempts if the maximum number of attempts is reached.
+10. The system shall prevent login if it cannot recognize the user during any step.
+
+Example 2 PlantUML:
+@startuml
+title LoggingOn State Machine
+
+state LoggingOn {
+  [*] --> AcceptingUserName
+
+  state AcceptingUserName
+  state AcceptingPassword
+  state VerifyingDetails
+
+  state BadDetails {
+    state BadUsername
+    state BadPassword
+  }
+
+  BadDetails : entry / ++tries
+
+  AcceptingUserName --> AcceptingPassword : ok
+  
+  AcceptingUserName --> Canceling : cancel
+
+  AcceptingPassword --> VerifyingDetails : ok
+  AcceptingPassword --> Canceling : cancel
+
+  VerifyingDetails --> BadUsername : badUserName
+  VerifyingDetails --> BadPassword : badPassword
+  VerifyingDetails --> Authenticated : detailsVerified
+
+  BadDetails --> AcceptingUserName : [tries < 4]
+  BadDetails --> Fail : [tries = 4]
+}
+
+LoggingOn : entry / tries := 0
+
+state Canceling
+state Authenticated
+state Fail
+Fail : entry / logFailure
+userRecognized --> AcceptingPassword
+@enduml
+
+Example 3 Requirement:
+Book Bank Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to register by entering their details.
+2. The system shall issue a member ID and complete the registration upon correct entry of details.
+3. The system shall require the user to re-enter their details upon incorrect entry of details.
+4. The system shall allow a user to log in after successful registration using their member ID and password.
+5. The system shall allow the user to continue upon correct entry of member ID and password during login. Otherwise, they cannot log in.
+6. The system shall allow a user to search for a book by entering its details.
+7. The system shall show suggestions if a book is found during a search; otherwise, it shall allow the user to choose another option.
+8. The system shall allow a user to get a book by entering its ID and their member ID.
+9. The system shall allow the user to get the book if their membership is active; otherwise, it shall require them to pay the fine amount first.
+10. The system shall allow a user to buy a book by entering its ID and seeing the price.
+11. The system shall provide the book if the user pays; otherwise, it shall end the process there.
+
+Example 3 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+state "Registration" as Registration {
+  [*] --> RegEnterDetails
+
+  state "Enter Details" as RegEnterDetails
+  state "Get Member_ID" as GetMemberID
+  state "Successful Registration" as SuccessfulRegistration
+  state "Re-enter Details" as ReEnterDetails
+
+  RegEnterDetails --> GetMemberID : [Valid]
+  RegEnterDetails --> ReEnterDetails : [Invalid]
+  ReEnterDetails --> RegEnterDetails
+  GetMemberID --> SuccessfulRegistration
+}
+
+state "Authentication" as Authentication {
+  [*] --> AuthEnterMemberID
+
+  state "Enter Member_ID" as AuthEnterMemberID
+  state "Enter Password" as EnterPassword
+  state "successful Login" as SuccessfulLogin
+  state "Invalid Member_ID or Password" as InvalidCreds
+
+  AuthEnterMemberID --> EnterPassword
+  EnterPassword --> SuccessfulLogin : [Valid]
+  EnterPassword --> InvalidCreds : [Invalid]
+}
+
+state "Search Books" as SearchBooks {
+  [*] --> EnterBookDetails
+
+  state "Enter Book Details" as EnterBookDetails
+  state "Display Suggestion" as DisplaySuggestion
+  state "choose Alternate option" as ChooseAlternate
+
+  EnterBookDetails --> DisplaySuggestion : [Found]
+  EnterBookDetails --> ChooseAlternate : [Not Found]
+}
+
+state "Get Books" as GetBooksState {
+  [*] --> GetEnterBookID
+
+  state "Enter Book_ID" as GetEnterBookID
+  state "Enter Member_ID" as GetEnterMemberID
+  state "Obtain Books" as ObtainBooks
+  state "Pay Fine Amount" as PayFineAmount
+
+  GetEnterBookID --> GetEnterMemberID
+  GetEnterMemberID --> ObtainBooks : [Active Member]
+  GetEnterMemberID --> PayFineAmount : [Inactive Member]
+}
+
+state "Buy Books" as BuyBooks {
+  [*] --> BuyEnterBookID
+
+  state "Enter Book_ID" as BuyEnterBookID
+  state "Display Book Amount" as DisplayBookAmount
+  state "Get Books" as BuyGetBooks
+  state BuyNotPaidEnd <<choice>>
+
+  BuyEnterBookID --> DisplayBookAmount
+  DisplayBookAmount --> BuyGetBooks : [Paid]
+  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]
+  BuyNotPaidEnd --> [*]
+}
+
+state StartJoin <<choice>>
+
+[*] --> StartJoin
+StartJoin --> Registration
+StartJoin --> Authentication
+StartJoin --> SearchBooks
+StartJoin --> GetBooksState
+StartJoin --> BuyBooks
+
+SuccessfulRegistration --> AuthEnterMemberID
+
+SuccessfulLogin --> EnterBookDetails
+SuccessfulLogin --> GetEnterBookID
+SuccessfulLogin --> BuyEnterBookID
+
+
+ObtainBooks --> [*]
+BuyGetBooks --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Class Campaign Version 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start a campaign after a manager and staff are assigned.
+2. The system shall activate the campaign once everything is approved and the contract is signed.
+3. The system shall prepare adverts during the campaign.
+4. The system shall approve and schedule the adverts.
+5. The system shall run the adverts.
+6. The system shall allow extension or adjustment of the campaign while it is running.
+7. The system shall complete the campaign and prepare a final statement after all adverts have finished.
+8. The system shall handle payment after the campaign completion and generate a refund if the amount paid is less than required.
+9. The system shall wait for the correct balance to be settled if the amount paid exceeds the required amount.
+10. The system shall mark the campaign as paid once the full amount is properly paid.
+11. The system shall archive the campaign and release all assigned staff and managers.

@@ -1,0 +1,113 @@
+@startuml
+title UML state machine diagram
+
+state "Seller Registration" as SellerRegistration
+SellerRegistration : entry/Unregistered Seller
+SellerRegistration : do/Get Valid Seller Credentials
+SellerRegistration : exit/Seller Account Registered
+
+state "Seller Verification" as SellerVerification
+SellerVerification : entry/Seller Account Registered
+SellerVerification : do/Verify Seller
+SellerVerification : exit/Login Seller
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry/Unverified Seller
+SellerLogin : entry/Seller not logged in
+SellerLogin : do/Authenticate Seller
+SellerLogin : exit/Logged In Successfully
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry/Not Logged In
+CustomerLogin : do/Authenticate Customer
+CustomerLogin : exit/Successfully Logged In
+
+state "Seller Home" as SellerHome
+SellerHome : entry/Logged In Seller
+SellerHome : do/Display Seller Dashboard
+
+state "Customer Home" as CustomerHome
+CustomerHome : entry/Customer Logged in
+CustomerHome : do/Display Recommended/Promoted Products
+
+state "View Product" as ViewProduct
+ViewProduct : entry/To View Products
+ViewProduct : do/Search and View Products
+
+state "Buy Product" as BuyProduct
+BuyProduct : entry/Opted to Buy
+BuyProduct : do/Add product to cart
+
+state "Make Purchase" as MakePurchase
+MakePurchase : entry/Proceeded to Checkout
+MakePurchase : do/Enable payment
+
+state "Chat" as CustomerChat
+CustomerChat : entry/To Chat
+CustomerChat : do/Chat with Seller
+
+state "Report Seller" as ReportSeller
+ReportSeller : entry/To Report Seller
+ReportSeller : do/Issue Report to Seller
+
+state "Rate and Review" as RateReview
+RateReview : entry/To Rate and Review
+RateReview : do/Rate and Review the product
+
+state "Sale Products" as SaleProducts
+SaleProducts : entry/To Sale Products
+SaleProducts : do/Add new Product to Seller Inventory
+
+state "Promote Products" as PromoteProducts
+PromoteProducts : entry/To Promote Products
+PromoteProducts : do/Promote a Product
+
+state "Chat" as SellerChat
+SellerChat : entry/To Chat
+SellerChat : do/Enable chat with Customer
+
+state "Logout" as Logout
+Logout : entry/To Logout User
+Logout : do/Logout User
+Logout : exit/User Logged out
+
+state J0 <<choice>>
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+
+[*] --> J0
+J0 --> J1 : [Seller Portal]
+J0 --> CustomerLogin : [Customer Portal]
+
+J1 --> SellerRegistration : [New Seller]
+J1 --> J2 : [Registered Seller]
+
+SellerRegistration --> SellerVerification
+SellerVerification --> J2
+J2 --> SellerLogin
+
+CustomerLogin --> J3
+SellerLogin --> SellerHome
+
+J3 --> CustomerHome
+
+CustomerHome --> J4 : [Possible Activities]
+J4 --> ViewProduct : [View Products]
+J4 --> CustomerChat : [Chat]
+J4 --> ReportSeller : [Report Seller]
+J4 --> RateReview : [Rate and Review]
+J4 --> Logout : [Logout]
+
+ViewProduct --> J3
+BuyProduct --> MakePurchase
+MakePurchase --> J3
+SellerChat --> CustomerHome
+RateReview --> CustomerHome
+ReportSeller --> CustomerHome
+SaleProducts --> CustomerHome
+PromoteProducts --> CustomerHome
+Logout --> [*]
+@enduml

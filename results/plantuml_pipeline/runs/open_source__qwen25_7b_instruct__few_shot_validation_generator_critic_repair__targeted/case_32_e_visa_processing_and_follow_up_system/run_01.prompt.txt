@@ -1,0 +1,236 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Accountapplication — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall store an application in a pending state during review.
+2. The system shall update the application status to either approved or rejected after review.
+3. The system shall finalize the application process once a decision is made.
+4. The system shall mark every application as finalized upon process completion.
+
+Example 1 PlantUML:
+@startuml
+title Account Application State Diagram
+
+[*] --> pending
+
+state pending
+state approved
+state rejected
+state finalizing
+
+pending --> approved : approve
+pending --> rejected : reject
+
+approved --> finalizing : complete
+rejected --> finalizing : complete
+
+finalizing --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Oven — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to open the door whenever it is closed.
+2. The system shall allow the user to place food inside or remove it from the microwave when the door is open.
+3. The system shall require the user to close the door after placing food inside.
+4. The system shall require the user to enter cooking time after the door is closed.
+5. The system shall start cooking the food when the user initiates the microwave and continue until the set time is completed.
+6. The system shall stop immediately if the door is opened during cooking for safety reasons.
+7. The system shall stop when the cooking time ends and allow the user to open the door to remove the food.
+
+Example 2 PlantUML:
+@startuml
+title Microwave Oven Control - State Diagram
+
+[*] --> DoorShut
+
+state "Door Shut" as DoorShut
+state "Door Open" as DoorOpen
+state "Door Open With Item" as DoorOpenItem
+state "Door Shut With Item" as DoorShutItem
+state "Ready To Cook" as ReadyToCook
+state Cooking
+
+DoorShut --> DoorOpen : Door Opened
+DoorOpen --> DoorShut : Door Closed
+
+DoorOpen --> DoorOpenItem : Item Placed
+DoorOpenItem --> DoorOpen : Item Removed
+
+DoorOpenItem --> DoorShutItem : Door Closed
+DoorShutItem --> DoorOpenItem : Door Opened
+
+DoorShutItem --> ReadyToCook : Cooking Time Entered
+ReadyToCook --> ReadyToCook : Cooking Time Entered
+
+ReadyToCook --> Cooking : Start
+
+Cooking --> DoorOpenItem : Door Opened
+Cooking --> DoorShutItem : Timer Expired
+
+@enduml
+
+Example 3 Requirement:
+Business Process Outsourcing Bpo Management System Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to upload a new request.
+2. The system shall enable a BPO organization to save the details of a project.
+3. The system shall allow a client to search for a suitable project category.
+4. The system shall enable an BPO organization to accept or decline a request from a client.
+5. The system shall allow a client to decide whether to proceed with an accepted project or reject it.
+6. The system shall update the project status after acceptance by both parties.
+7. The system shall allow a client to track the progress of a project.
+8. The system shall enable an BPO organization to update the progress of a project.
+9. The system shall upload a final project once work is completed.
+10. The system shall perform a quality check on the final project.
+11. The system shall restart the process if a client is unsatisfied with the final project.
+12. The system shall make payment if the client is satisfied with the final project.
+13. The system shall deliver the project after payment.
+14. The system shall allow a client to provide a rating for the completed project.
+
+Example 3 PlantUML:
+@startuml
+title UML State Machine Diagram (Upload or Accept Request)
+
+state "Upload or Accept request" as UAR {
+
+    [*] --> ChoiceUser
+
+
+    UAR : entry / Regarding request details
+    UAR : do / Project dealings
+    UAR : exit / After finishing rating
+
+
+    state ChoiceUser <<choice>>
+
+    ChoiceUser --> EnterDetails : [user = BPO organization]
+    ChoiceUser --> SearchCategory : [user = client]
+
+
+    state "Enter project details" as EnterDetails
+    state "Update database" as UpdateDB
+
+    EnterDetails --> UpdateDB
+    UpdateDB --> [*]
+
+
+    state "Search project category" as SearchCategory
+    state ChoiceBPO <<choice>>
+    state ChoiceClient <<choice>>
+
+    SearchCategory --> ChoiceBPO
+
+    ChoiceBPO --> EndDecline : [BPO org declines]
+    ChoiceBPO --> ChoiceClient : [BPO org accepts]
+
+    ChoiceClient --> EndReject : [client rejects]
+    ChoiceClient --> UpdateStatus : [client accepts]
+
+    state EndDecline <<choice>>
+    EndDecline --> [*]
+
+    state EndReject <<choice>>
+    EndReject --> [*]
+
+    state "Update status of project" as UpdateStatus
+
+    state ChoiceTracking <<choice>>
+
+    UpdateStatus --> ChoiceTracking
+
+    ChoiceTracking --> DisplayProgress : [client wishes to track]
+    ChoiceTracking --> UpdateProgress : [user = BPO org]
+
+    state "Display progress" as DisplayProgress
+    DisplayProgress --> [*]
+
+    state "Update progress" as UpdateProgress
+
+
+    UpdateProgress --> UploadFinal : [End of project]
+
+    state "Upload final project" as UploadFinal
+
+    state QualityCheck <<choice>>
+
+    UploadFinal --> QualityCheck : [Quality check]
+
+    QualityCheck --> Payment : [satisfied]
+    QualityCheck --> ChoiceTracking : [Not satisfied]
+
+    state Payment
+    state Shipment
+    state Rating
+
+    Payment --> Shipment
+    Shipment --> Rating
+
+    Rating --> [*]
+}
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.

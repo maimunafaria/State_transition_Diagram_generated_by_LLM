@@ -1,0 +1,113 @@
+You are a violation-specific UML repair assistant.
+Repair the candidate PlantUML in priority order.
+Do not redesign the diagram unless the issue count is severe.
+Prefer the smallest possible edit that fixes the current highest-priority issue.
+Preserve requirement-supported states and transitions.
+Do not delete states/transitions merely to pass validation unless they are unsupported by the requirement.
+Do not introduce states or transitions that are not supported by the requirement.
+Output ONLY corrected PlantUML. No markdown fences. No explanation.
+
+Repair strategy:
+Use targeted repair: fix only the listed localized issue(s).
+
+Priority order:
+1. Syntax errors
+2. Parse warnings and invalid [*] transitions
+3. Missing or multiple initial states
+4. Missing final state
+5. Invalid transition source/target
+6. Duplicate transitions
+7. Orphan states
+8. Unreachable states
+9. Choice/fork/join/history errors
+
+Issue-specific details:
+- Current initial state: Initial State
+- State count: 16
+- Transition count: 22
+- Duplicate transition count: 1
+
+Requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram - Healthcare Portal
+
+state "Initial State" as Initial
+state "Registration" as Registration
+state "Registration Failed" as RegistrationFailed
+state "Login" as Login
+state "Access Facilities" as AccessFacilities
+state "Read News/Content" as ReadNewsContent
+state "Check Symptoms/Fitness" as CheckSymptomsFitness
+state "Continue Session" as ContinueSession
+state "Finish Session" as FinishSession
+state "Process Insurance" as ProcessInsurance
+state "Validate Insurance" as ValidateInsurance
+state "Payment Process" as PaymentProcess
+state "Cash Payment" as CashPayment
+state "Insurance Payment" as InsurancePayment
+state "Feedback Collection" as FeedbackCollection
+state "Logout" as Logout
+
+[*] --> Initial
+
+Initial --> Registration : Register
+Initial --> RegistrationFailed : Registration Failed
+
+Registration --> Login : Login
+Login --> AccessFacilities : Access Facilities
+
+AccessFacilities --> ReadNewsContent : Read News/Content
+ReadNewsContent --> CheckSymptomsFitness : Check Symptoms/Fitness
+CheckSymptomsFitness --> ContinueSession : Continue Session
+ContinueSession --> AccessFacilities : Continue Session
+ContinueSession --> FinishSession : Finish Session
+
+FinishSession --> Logout : Logout
+
+AccessFacilities --> ProcessInsurance : Process Insurance
+ProcessInsurance --> ValidateInsurance : Validate Insurance
+ValidateInsurance --> PaymentProcess : Payment Process
+
+PaymentProcess --> CashPayment : Cash Payment
+CashPayment --> FinishSession : Finish Session
+
+PaymentProcess --> InsurancePayment : Insurance Payment
+InsurancePayment --> FinishSession : Finish Session
+
+ReadNewsContent --> ContinueSession : Continue Session
+ReadNewsContent --> FinishSession : Finish Session
+
+CheckSymptomsFitness --> ContinueSession : Continue Session
+CheckSymptomsFitness --> FinishSession : Finish Session
+
+AccessFacilities --> FeedbackCollection : Provide Feedback
+FeedbackCollection --> FinishSession : Finish Session
+
+Logout --> [*]
+@enduml
+
+
+Validation issues to fix, already sorted by priority:
+- duplicate_transitions_detected (1)
+
+Repair guidance for these issues:
+- Remove duplicate transitions or merge their labels into one transition.

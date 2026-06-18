@@ -1,0 +1,100 @@
+You are a violation-specific UML repair assistant.
+Repair the candidate PlantUML in priority order.
+Do not redesign the diagram unless the issue count is severe.
+Prefer the smallest possible edit that fixes the current highest-priority issue.
+Preserve requirement-supported states and transitions.
+Do not delete states/transitions merely to pass validation unless they are unsupported by the requirement.
+Do not introduce states or transitions that are not supported by the requirement.
+Output ONLY corrected PlantUML. No markdown fences. No explanation.
+
+Repair strategy:
+Use guided repair: fix issues in priority order while preserving all supported behavior.
+
+Priority order:
+1. Syntax errors
+2. Parse warnings and invalid [*] transitions
+3. Missing or multiple initial states
+4. Missing final state
+5. Invalid transition source/target
+6. Duplicate transitions
+7. Orphan states
+8. Unreachable states
+9. Choice/fork/join/history errors
+
+Issue-specific details:
+- Current initial state: PortalChoice
+- Unreachable states: Access Ended, AccessEnded, ContinueUsage, Existing Login, FinishSession, Home, Logout, New Registration, RegisteredUser, Result Review, ResultReview, Service Access, ServiceAccess, User Home, UserHome
+- State count: 18
+- Transition count: 11
+
+Requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Candidate PlantUML:
+@startuml
+title Healthcare Portal State Machine Diagram
+
+state PortalChoice <<choice>>
+state RegisteredUser <<choice>>
+
+[*] --> PortalChoice
+
+PortalChoice --> NewRegistration : [Register]
+PortalChoice --> ExistingLogin : [Login]
+
+state "New Registration" as NewRegistration
+NewRegistration --> AccessEnded : [Registration Failed]
+
+state "Existing Login" as ExistingLogin
+ExistingLogin --> UserHome : [Successful Login]
+
+state "User Home" as UserHome
+UserHome --> ServiceAccess : [Access Services]
+UserHome --> Logout : [Logout]
+
+state "Service Access" as ServiceAccess
+ServiceAccess --> ResultReview : [View Results]
+ServiceAccess --> ContinueUsage : [Continue Session]
+
+state "Result Review" as ResultReview
+ResultReview --> Home : [Return Home]
+ResultReview --> FinishSession : [End Session]
+
+state "Home" as Home
+Home --> Logout : [Logout]
+
+state "Logout" as Logout
+Logout --> [*] : [Logged Out]
+
+state "Access Ended" as AccessEnded
+AccessEnded --> [*] : [Access Denied]
+@enduml
+
+
+Validation issues to fix, already sorted by priority:
+- orphan: RegisteredUser
+- orphan_states_detected
+- unreachable: Access Ended, AccessEnded, ContinueUsage, Existing Login, FinishSession, Home, Logout, New Registration, RegisteredUser, Result Review, ResultReview, Service Access, ServiceAccess, User Home, UserHome
+- unreachable_states_detected
+- choice_node_without_outgoing_transitions (RegisteredUser)
+
+Repair guidance for these issues:
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+- Give each choice node at least two outgoing alternatives when possible.

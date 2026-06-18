@@ -1,0 +1,84 @@
+You are a violation-specific UML repair assistant.
+Repair the candidate PlantUML in priority order.
+Do not redesign the diagram unless the issue count is severe.
+Prefer the smallest possible edit that fixes the current highest-priority issue.
+Preserve requirement-supported states and transitions.
+Do not delete states/transitions merely to pass validation unless they are unsupported by the requirement.
+Do not introduce states or transitions that are not supported by the requirement.
+Output ONLY corrected PlantUML. No markdown fences. No explanation.
+
+Repair strategy:
+The diagram has many issues. Keep the existing diagram only as a draft and rebuild the smallest valid diagram supported by the requirement; do not copy unsupported draft behavior.
+
+Priority order:
+1. Syntax errors
+2. Parse warnings and invalid [*] transitions
+3. Missing or multiple initial states
+4. Missing final state
+5. Invalid transition source/target
+6. Duplicate transitions
+7. Orphan states
+8. Unreachable states
+9. Choice/fork/join/history errors
+
+Issue-specific details:
+- Current initial state: SelectAmount
+- Unreachable states: End, Enter Custom Amount, Re-enter Amount, Select Amount, Transaction Rejected, Transaction Successful, Transaction Verification, Verify Transaction
+- State count: 9
+- Transition count: 8
+
+Requirement:
+Atm Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select an amount to withdraw from a list of options.
+2. The system shall permit the user to enter a custom value if they want a different amount.
+3. The system shall verify the transaction after the user enters an amount.
+4. The system shall allow the user to re-enter the amount if the transaction is rejected.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram - ATM Withdrawal
+
+[*] --> SelectAmount
+
+state "Select Amount" as SelectAmount
+state "Enter Custom Amount" as EnterCustomAmount
+state "Verify Transaction" as VerifyTransaction
+state "Re-enter Amount" as ReEnterAmount
+state "Transaction Successful" as TransactionSuccessful
+state "Transaction Rejected" as TransactionRejected
+state "End" as End
+
+SelectAmount --> EnterCustomAmount
+SelectAmount --> VerifyTransaction
+
+state "Transaction Verification" <<choice>>
+
+VerifyTransaction --> TransactionSuccessful : [valid]
+VerifyTransaction --> TransactionRejected : [invalid]
+
+TransactionRejected --> ReEnterAmount
+
+ReEnterAmount --> VerifyTransaction
+
+TransactionSuccessful --> End
+
+TransactionRejected --> End
+
+@enduml
+
+
+Validation issues to fix, already sorted by priority:
+- missing_final_state_transition (state --> [*])
+- orphan: Transaction Verification
+- orphan_states_detected
+- unreachable: End, Enter Custom Amount, Re-enter Amount, Select Amount, Transaction Rejected, Transaction Successful, Transaction Verification, Verify Transaction
+- unreachable_states_detected
+- choice_node_without_outgoing_transitions (Transaction Verification)
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+- Give each choice node at least two outgoing alternatives when possible.

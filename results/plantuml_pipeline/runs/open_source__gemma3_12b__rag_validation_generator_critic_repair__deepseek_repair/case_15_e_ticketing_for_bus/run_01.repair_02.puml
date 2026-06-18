@@ -1,0 +1,45 @@
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [new user]
+state J1 <<choice>>
+J1 --> Register : [existing user]
+Register --> J2 : [login]
+
+state J2 <<choice>>
+J2 --> PatientDashboard : [patient]
+J2 --> HealthWorkerDashboard : [health worker]
+J2 --> GovernmentDashboard : [government official]
+J2 --> [*] : [cancel]
+J2 --> J3 : [book ticket]
+
+state J3 <<choice>>
+J3 --> DataEntry : [submit data]
+J3 --> J2 : [cancel booking]
+
+state J4 <<choice>>
+J4 --> Logout : [logout]
+
+state LJ <<choice>>
+LJ --> PatientDashboard
+LJ --> HealthWorkerDashboard
+LJ --> GovernmentDashboard
+
+PatientDashboard --> DataEntry
+DataEntry --> ValidationMedicalData
+ValidationMedicalData --> ActivityScheduling
+Analysis --> ActivityScheduling
+Analysis --> Alerts
+Analysis --> J4 : [logout]
+
+Alerts --> PatientDashboard
+Alerts --> HealthWorkerDashboard
+
+ActivityScheduling --> HealthWorkerDashboard
+
+HealthWorkerDashboard --> ValidationMedicalData
+HealthPlanning --> GovernmentDashboard
+
+state Logout as Logout
+Logout : entry/when the user completes his process
+@enduml

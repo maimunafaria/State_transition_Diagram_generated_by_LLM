@@ -1,0 +1,80 @@
+@startuml
+title UML state machine diagram
+
+[*] --> Register : [new user]
+state Register {
+  entry/when the user are user
+  do/Register process
+  exit/successful registration
+  exit/invalid registration
+}
+state Login {
+  state PatientDashboard {
+    entry/if the user is logged in as patient
+    do/dashboard is displayed
+    exit/when user logout
+  }
+  state HealthWorkerDashboard {
+    entry/if the user is logged in as health worker
+    do/display the health worker dashboard
+    exit/if health worker logout
+  }
+  state GovernmentDashboard {
+    entry/if the user is government official
+    do/display government dashboard
+    exit/after his activity is finished
+  }
+  state DataEntry {
+    entry/if the data entry is logged in as patient
+    do/data entry is processed
+    exit/after data entry is completed
+    exit/send the data for validation
+  }
+  state ValidationMedicalData {
+    entry/if the data entry by the patient is completed
+    do/validate the data by healthworker
+    exit/after validation of medical data is completed
+  }
+  state HealthPlanning {
+    entry/analysis of data should be done
+    do/the basis of analysed data the best health schemes are drafted
+    exit/ the health schemes are sent to the government dashboard
+  }
+  state Analysis {
+    entry/if the data entered is validated
+    do/analysis of data
+    exit/after analysis of data
+  }
+  state ActivityScheduling {
+    entry/analysis of data should be done
+    do/activity is scheduled for the healthworkers
+    exit/the activity scheduling is complete
+  }
+  state Alerts {
+    entry/when data from analysis is received
+    do/prepare alerts
+    exit/after sending alerts patient dashboard and health worker dashboard
+  }
+  [*] --> PatientDashboard
+  PatientDashboard --> DataEntry
+  DataEntry --> ValidationMedicalData
+  DataEntry --> Analysis
+  Analysis --> ActivityScheduling
+  Analysis --> Alerts
+  Analysis --> HealthPlanning
+  Alerts --> PatientDashboard
+  Alerts --> HealthWorkerDashboard
+  ActivityScheduling --> HealthWorkerDashboard
+  HealthPlanning --> GovernmentDashboard
+  HealthWorkerDashboard --> ValidationMedicalData
+}
+state Logout {
+  entry/when the user completes his process
+  do/logout user
+  exit/successfully logged out
+}
+Register --> Login : [successful registration]
+Login --> Logout : [complete any action]
+Logout --> [*]
+
+@enduml

@@ -1,0 +1,100 @@
+You are a violation-specific UML repair assistant.
+Repair the candidate PlantUML in priority order.
+Do not redesign the diagram unless the issue count is severe.
+Prefer the smallest possible edit that fixes the current highest-priority issue.
+Preserve requirement-supported states and transitions.
+Do not delete states/transitions merely to pass validation unless they are unsupported by the requirement.
+Do not introduce states or transitions that are not supported by the requirement.
+Output ONLY corrected PlantUML. No markdown fences. No explanation.
+
+Repair strategy:
+Use guided repair: fix issues in priority order while preserving all supported behavior.
+
+Priority order:
+1. Syntax errors
+2. Parse warnings and invalid [*] transitions
+3. Missing or multiple initial states
+4. Missing final state
+5. Invalid transition source/target
+6. Duplicate transitions
+7. Orphan states
+8. Unreachable states
+9. Choice/fork/join/history errors
+
+Issue-specific details:
+- Current initial state: AssignToClient
+- Unreachable states: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed
+- State count: 13
+- Transition count: 18
+- Duplicate transition count: 1
+
+Requirement:
+Staff Member Class — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow assigning a staff member to a client or adding them to a campaign.
+2. The system shall allow removing assignments from staff members, returning them to an unassigned state.
+3. The system shall enable staff members to switch between different assignments during their work period.
+4. The system shall mark a staff member as unemployed when they leave the job.
+5. The system shall archive the record of a former employee after some time has passed.
+
+Candidate PlantUML:
+@startuml
+title Staff Member State Machine
+
+state "Unassigned" as Unassigned {
+  [*] --> AssignToClient : [assign to client]
+  AssignToClient --> AssignedToClient : [assigned to client]
+  AssignToClient --> AddToCampaign : [add to campaign]
+  AddToCampaign --> AssignedToCampaign : [assigned to campaign]
+}
+
+state "Assigned to client" as AssignedToClient {
+  AssignedToClient --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AssignedToCampaign : [switch to campaign]
+  AssignedToClient --> LeaveJob : [leave job]
+}
+
+state "Assigned to campaign" as AssignedToCampaign {
+  AssignedToCampaign --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AssignedToClient : [switch to client]
+  AssignedToCampaign --> LeaveJob : [leave job]
+}
+
+state "Unemployed" as Unemployed {
+  LeaveJob --> Unemployed : [leave job]
+  Unemployed --> ArchiveRecord : [archive record]
+}
+
+state "Archived" as Archived {
+  ArchiveRecord --> Archived : [archive record]
+}
+
+Unassigned : entry / staff member is unassigned
+AssignedToClient : entry / staff member is assigned to client
+AssignedToCampaign : entry / staff member is assigned to campaign
+Unemployed : entry / staff member is unemployed
+Archived : entry / staff member record is archived
+
+state Choice <<choice>>
+Choice --> AssignToClient : [assign to client]
+Choice --> AddToCampaign : [add to campaign]
+Choice --> SwitchAssignments : [switch assignments]
+Choice --> LeaveJob : [leave job]
+Choice --> ArchiveRecord : [archive record]
+
+@enduml
+
+
+Validation issues to fix, already sorted by priority:
+- missing_final_state_transition (state --> [*])
+- duplicate_transitions_detected (1)
+- unreachable: ArchiveRecord, Archived, Assigned to campaign, Assigned to client, Choice, LeaveJob, SwitchAssignments, Unassigned, Unemployed
+- unreachable_states_detected
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- Remove duplicate transitions or merge their labels into one transition.
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.

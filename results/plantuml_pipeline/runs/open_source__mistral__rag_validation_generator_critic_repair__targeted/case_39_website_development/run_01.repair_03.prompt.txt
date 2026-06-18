@@ -1,0 +1,86 @@
+You are a violation-specific UML repair assistant.
+Repair the candidate PlantUML in priority order.
+Do not redesign the diagram unless the issue count is severe.
+Prefer the smallest possible edit that fixes the current highest-priority issue.
+Preserve requirement-supported states and transitions.
+Do not delete states/transitions merely to pass validation unless they are unsupported by the requirement.
+Do not introduce states or transitions that are not supported by the requirement.
+Output ONLY corrected PlantUML. No markdown fences. No explanation.
+
+Repair strategy:
+Use targeted repair: fix only the listed localized issue(s).
+
+Priority order:
+1. Syntax errors
+2. Parse warnings and invalid [*] transitions
+3. Missing or multiple initial states
+4. Missing final state
+5. Invalid transition source/target
+6. Duplicate transitions
+7. Orphan states
+8. Unreachable states
+9. Choice/fork/join/history errors
+
+Issue-specific details:
+- Current initial state: none or ambiguous
+- State count: 11
+- Transition count: 10
+
+Requirement:
+Website Development — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to navigate from the homepage using a navigation bar.
+2. The system shall display information about projects when selected by the user.
+3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.
+4. The system shall display information about career opportunities when selected by the user.
+5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.
+6. The system shall check submitted job applications after they are submitted.
+
+Candidate PlantUML:
+@startuml
+state Homepage
+Homepage --> NavigationBar
+
+NavigationBar --> Projects
+Projects : displayInfo
+Projects : photosVideosChoice
+
+state LoggedIn
+LoggedIn <-- [*]
+LoggedIn --> Projects
+LoggedIn --> CareerOpportunities
+
+state Projects_Photos
+Projects_Photos : viewPhotos
+Projects_Photos <-- Projects
+Projects_Photos --> LoggedIn
+
+state Projects_Videos
+Projects_Videos : viewVideos
+Projects_Videos <-- Projects
+Projects_Videos --> LoggedIn
+
+state CareerOpportunities_Updates
+CareerOpportunities_Updates : viewUpdates
+CareerOpportunities_Updates <-- CareerOpportunities
+CareerOpportunities_Updates --> LoggedIn
+
+state CareerOpportunities_ApplicationForm
+CareerOpportunities_ApplicationForm : openForm
+CareerOpportunities_ApplicationForm <-- CareerOpportunities
+CareerOpportunities_ApplicationForm --> JobApplications
+JobApplications : checkSubmittedApplications
+JobApplications --> LoggedIn
+
+state AccessEnded
+AccessEnded --> [*]
+AccessEnded --> LoggedIn
+@enduml
+
+
+Validation issues to fix, already sorted by priority:
+- missing_initial_state_transition ([*] --> state)
+
+Repair guidance for these issues:
+- Add one clear initial transition from [*] to the first lifecycle state.

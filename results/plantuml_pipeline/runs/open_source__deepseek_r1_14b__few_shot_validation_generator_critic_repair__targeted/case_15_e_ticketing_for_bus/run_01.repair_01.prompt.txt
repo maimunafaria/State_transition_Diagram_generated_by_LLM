@@ -1,0 +1,83 @@
+You are a violation-specific UML repair assistant.
+Repair the candidate PlantUML in priority order.
+Do not redesign the diagram unless the issue count is severe.
+Prefer the smallest possible edit that fixes the current highest-priority issue.
+Preserve requirement-supported states and transitions.
+Do not delete states/transitions merely to pass validation unless they are unsupported by the requirement.
+Do not introduce states or transitions that are not supported by the requirement.
+Output ONLY corrected PlantUML. No markdown fences. No explanation.
+
+Repair strategy:
+Use targeted repair: fix only the listed localized issue(s).
+
+Priority order:
+1. Syntax errors
+2. Parse warnings and invalid [*] transitions
+3. Missing or multiple initial states
+4. Missing final state
+5. Invalid transition source/target
+6. Duplicate transitions
+7. Orphan states
+8. Unreachable states
+9. Choice/fork/join/history errors
+
+Issue-specific details:
+- Current initial state: Start
+- State count: 11
+- Transition count: 13
+
+Requirement:
+E Ticketing For Bus — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create a new account.
+2. The system shall validate the registration of a new user.
+3. The system shall allow the user to log in upon successful registration.
+4. The system shall provide options for logged-in users to check their ticket status.
+5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.
+6. The system shall enable users to manage their account details such as editing or deleting them.
+7. The system shall log out the user after they complete any action.
+
+Candidate PlantUML:
+@startuml
+title E-Ticketing System State Transition Diagram
+
+[*] --> Start
+
+state Start
+state CreateUser
+state ValidateRegistration
+state Login
+state MainMenu
+state CheckTicketStatus
+state BookTicket
+state ConfirmPayment
+state ManageAccount
+state Logout
+state End
+
+Start --> CreateUser : Create Account
+CreateUser --> ValidateRegistration : Submit Registration
+ValidateRegistration --> Login : Successful Registration
+Login --> MainMenu : Log In
+
+MainMenu --> CheckTicketStatus : Check Status
+MainMenu --> BookTicket : Book Ticket
+MainMenu --> ManageAccount : Manage Account
+MainMenu --> Logout : Log Out
+
+CheckTicketStatus --> MainMenu : Back to Menu
+BookTicket --> ConfirmPayment : Book Now
+ConfirmPayment --> MainMenu : Payment Complete
+ManageAccount --> MainMenu : Account Updated
+
+Logout --> End : Log Out
+
+@enduml
+
+
+Validation issues to fix, already sorted by priority:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].

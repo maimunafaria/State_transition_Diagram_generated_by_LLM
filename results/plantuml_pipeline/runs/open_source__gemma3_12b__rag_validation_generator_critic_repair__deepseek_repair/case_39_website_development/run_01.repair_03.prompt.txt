@@ -1,0 +1,97 @@
+You are a violation-specific UML repair assistant.
+Repair the candidate PlantUML in priority order.
+Do not redesign the diagram unless the issue count is severe.
+Prefer the smallest possible edit that fixes the current highest-priority issue.
+Preserve requirement-supported states and transitions.
+Do not delete states/transitions merely to pass validation unless they are unsupported by the requirement.
+Do not introduce states or transitions that are not supported by the requirement.
+Output ONLY corrected PlantUML. No markdown fences. No explanation.
+
+Repair strategy:
+Use targeted repair: fix only the listed localized issue(s).
+
+Priority order:
+1. Syntax errors
+2. Parse warnings and invalid [*] transitions
+3. Missing or multiple initial states
+4. Missing final state
+5. Invalid transition source/target
+6. Duplicate transitions
+7. Orphan states
+8. Unreachable states
+9. Choice/fork/join/history errors
+
+Issue-specific details:
+- Current initial state: none or ambiguous
+- State count: 17
+- Transition count: 19
+
+Requirement:
+Website Development — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to navigate from the homepage using a navigation bar.
+2. The system shall display information about projects when selected by the user.
+3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.
+4. The system shall display information about career opportunities when selected by the user.
+5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.
+6. The system shall check submitted job applications after they are submitted.
+
+Candidate PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [check user]
+state J1 <<choice>>
+J1 --> Register : [new user]
+J1 --> J2 : [existing user]
+
+state J2 <<choice>>
+J2 --> [*] : [back to start]
+J2 --> J3 : [continue]
+
+state J3 <<choice>>
+J3 --> Login : [proceed]
+J3 --> J4 : [cancel]
+
+state J4 <<choice>>
+J4 --> Logout
+
+state "Register" as Register {
+  // Register state transitions
+}
+
+state "Login" as Login {
+  [*] --> LJ : [select user type]
+  state LJ <<choice>>
+  LJ --> PatientDashboard : [patient]
+  LJ --> HealthWorkerDashboard : [health worker]
+  LJ --> GovernmentDashboard : [government]
+
+  PatientDashboard --> DataEntry
+  DataEntry --> ValidationMedicalData
+  DataEntry --> Analysis
+
+  Analysis --> ActivityScheduling
+  Analysis --> Alerts
+  Analysis --> HealthPlanning
+
+  Alerts --> PatientDashboard
+  Alerts --> HealthWorkerDashboard
+  ActivityScheduling --> HealthWorkerDashboard
+  HealthPlanning --> GovernmentDashboard
+}
+
+state "Logout" as Logout
+@enduml
+
+
+Validation issues to fix, already sorted by priority:
+- multiple_initial_state_transitions (J1, LJ)
+- choice_node_without_guarded_outgoing_transitions (J4)
+
+Repair guidance for these issues:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].

@@ -1,0 +1,174 @@
+You are a violation-specific UML repair assistant.
+Repair the candidate PlantUML in priority order.
+Do not redesign the diagram unless the issue count is severe.
+Prefer the smallest possible edit that fixes the current highest-priority issue.
+Preserve requirement-supported states and transitions.
+Do not delete states/transitions merely to pass validation unless they are unsupported by the requirement.
+Do not introduce states or transitions that are not supported by the requirement.
+Output ONLY corrected PlantUML. No markdown fences. No explanation.
+
+Repair strategy:
+The diagram has many issues. Keep the existing diagram only as a draft and rebuild the smallest valid diagram supported by the requirement; do not copy unsupported draft behavior.
+
+Priority order:
+1. Syntax errors
+2. Parse warnings and invalid [*] transitions
+3. Missing or multiple initial states
+4. Missing final state
+5. Invalid transition source/target
+6. Duplicate transitions
+7. Orphan states
+8. Unreachable states
+9. Choice/fork/join/history errors
+
+Issue-specific details:
+- Current initial state: J0
+- Unreachable states: Buy Product, J5, Make Purchase, Promote Products, Sale Products
+- State count: 21
+- Transition count: 24
+
+Requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Candidate PlantUML:
+@startuml
+title UML state machine diagram
+
+state "Seller Registration" as SellerRegistration
+SellerRegistration : entry/Unregistered Seller
+SellerRegistration : do/Get Valid Seller Credentials
+SellerRegistration : exit/Seller Account Registered
+
+state "Seller Verification" as SellerVerification
+SellerVerification : entry/Seller Account Registered
+SellerVerification : do/Verify Seller
+SellerVerification : exit/Login Seller
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry/Unverified Seller
+SellerLogin : entry/Seller not logged in
+SellerLogin : do/Authenticate Seller
+SellerLogin : exit/Logged In Successfully
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry/Not Logged In
+CustomerLogin : do/Authenticate Customer
+CustomerLogin : exit/Successfully Logged In
+
+state "Seller Home" as SellerHome
+SellerHome : entry/Logged In Seller
+SellerHome : do/Display Seller Dashboard
+
+state "Customer Home" as CustomerHome
+CustomerHome : entry/Customer Logged in
+CustomerHome : do/Display Recommended/Promoted Products
+
+state "View Product" as ViewProduct
+ViewProduct : entry/To View Products
+ViewProduct : do/Search and View Products
+
+state "Buy Product" as BuyProduct
+BuyProduct : entry/Opted to Buy
+BuyProduct : do/Add product to cart
+
+state "Make Purchase" as MakePurchase
+MakePurchase : entry/Proceeded to Checkout
+MakePurchase : do/Enable payment
+
+state "Chat" as CustomerChat
+CustomerChat : entry/To Chat
+CustomerChat : do/Chat with Seller
+
+state "Report Seller" as ReportSeller
+ReportSeller : entry/To Report Seller
+ReportSeller : do/Issue Report to Seller
+
+state "Rate and Review" as RateReview
+RateReview : entry/To Rate and Review
+RateReview : do/Rate and Review the product
+
+state "Sale Products" as SaleProducts
+SaleProducts : entry/To Sale Products
+SaleProducts : do/Add new Product to Seller Inventory
+
+state "Promote Products" as PromoteProducts
+PromoteProducts : entry/To Promote Products
+PromoteProducts : do/Promote a Product
+
+state "Chat" as SellerChat
+SellerChat : entry/To Chat
+SellerChat : do/Enable chat with Customer
+
+state "Logout" as Logout
+Logout : entry/To Logout User
+Logout : do/Logout User
+Logout : exit/User Logged out
+
+state J0 <<choice>>
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+
+[*] --> J0
+J0 --> J1 : [Seller Portal]
+J0 --> CustomerLogin : [Customer Portal]
+
+J1 --> SellerRegistration : [New Seller]
+J1 --> J2 : [Registered Seller]
+
+SellerRegistration --> SellerVerification
+SellerVerification --> J2
+J2 --> SellerLogin
+
+CustomerLogin --> J3
+SellerLogin --> SellerHome
+
+J3 --> CustomerHome
+
+CustomerHome --> J4 : [Possible Activities]
+J4 --> ViewProduct : [View Products]
+J4 --> CustomerChat : [Chat]
+J4 --> ReportSeller : [Report Seller]
+J4 --> RateReview : [Rate and Review]
+J4 --> Logout : [Logout]
+
+ViewProduct --> J3
+BuyProduct --> MakePurchase
+MakePurchase --> J3
+SellerChat --> CustomerHome
+RateReview --> CustomerHome
+ReportSeller --> CustomerHome
+SaleProducts --> CustomerHome
+PromoteProducts --> CustomerHome
+Logout --> [*]
+@enduml
+
+
+Validation issues to fix, already sorted by priority:
+- orphan: J5
+- orphan_states_detected
+- unreachable: Buy Product, J5, Make Purchase, Promote Products, Sale Products
+- unreachable_states_detected
+- choice_node_without_guarded_outgoing_transitions (J2)
+- choice_node_without_guarded_outgoing_transitions (J3)
+- choice_node_without_outgoing_transitions (J5)
+
+Repair guidance for these issues:
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].
+- Give each choice node at least two outgoing alternatives when possible.
