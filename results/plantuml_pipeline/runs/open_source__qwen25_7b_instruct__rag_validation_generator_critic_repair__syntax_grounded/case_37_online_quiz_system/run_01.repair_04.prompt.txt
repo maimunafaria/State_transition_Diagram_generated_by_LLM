@@ -1,0 +1,140 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram
+
+state "Register or Login" as RegisterOrLogin {
+  [*] --> Register
+  Register : do / Fill details
+  Register : exit / Registration successful
+
+  Register : --> Login
+  Login : entry / Registered user
+  Login : do / Enter login credentials
+  Login : exit / Valid username and password
+}
+
+state "Continue as" as ContinueAs {
+  Login --> TeacherChoice
+  Login --> StudentChoice
+
+  state "Teacher Choice" as TeacherChoice
+  TeacherChoice : entry / Teacher logged in
+  TeacherChoice : do / Create, edit, or save quiz
+  TeacherChoice : exit / Action completed
+
+  state "Student Choice" as StudentChoice
+  StudentChoice : entry / Student logged in
+  StudentChoice : do / Select and answer quiz
+  StudentChoice : exit / Quiz submitted
+}
+
+state "Create Quiz" as CreateQuiz {
+  TeacherChoice --> CreateQuiz
+  CreateQuiz : entry / New quiz creation
+  CreateQuiz : do / Define questions, options, etc.
+  CreateQuiz : exit / Quiz saved or posted
+}
+
+state "Edit Quiz" as EditQuiz {
+  TeacherChoice --> EditQuiz
+  EditQuiz : entry / Existing quiz editing
+  EditQuiz : do / Modify questions, options, etc.
+  EditQuiz : exit / Quiz updated
+}
+
+state "Save Quiz" as SaveQuiz {
+  CreateQuiz --> SaveQuiz
+  EditQuiz --> SaveQuiz
+  SaveQuiz : entry / Saving changes
+  SaveQuiz : do / Save quiz as draft or post it
+  SaveQuiz : exit / Quiz saved or posted
+}
+
+state "View Results" as ViewResults {
+  TeacherChoice --> ViewResults
+  ViewResults : entry / Quiz results available
+  ViewResults : do / Review student answers and scores
+  ViewResults : exit / Results reviewed
+}
+
+state "Select Quiz" as SelectQuiz {
+  StudentChoice --> SelectQuiz
+  SelectQuiz : entry / Quizzes available for selection
+  SelectQuiz : do / Choose a quiz to take
+  SelectQuiz : exit / Quiz selected
+}
+
+state "Answer Quiz" as AnswerQuiz {
+  SelectQuiz --> AnswerQuiz
+  AnswerQuiz : entry / Quiz questions displayed
+  AnswerQuiz : do / Answer each question
+  AnswerQuiz : exit / Answers submitted
+}
+
+state "Submit Quiz" as SubmitQuiz {
+  AnswerQuiz --> SubmitQuiz
+  SubmitQuiz : entry / Quiz submission
+  SubmitQuiz : do / Finalize and submit answers
+  SubmitQuiz : exit / Quiz submitted, results viewable
+}
+
+state "View Result" as ViewResult {
+  SubmitQuiz --> ViewResult
+  ViewResult : entry / Results available
+  ViewResult : do / Review quiz score and feedback
+  ViewResult : exit / Results reviewed
+}
+
+[*] --> RegisterOrLogin
+
+@enduml
+
+
+Validation issues:
+- multiple_initial_state_transitions (Register, Register or Login)
+- missing_final_state_transition (state --> [*])
+- orphan: Continue as
+- orphan_states_detected
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 16
+- Transition count: 11
+
+Valid PlantUML repair patterns:
+Pattern 1: exactly one top-level initial transition
+[*] --> INITIAL_STATE
+
+' Replace every additional [*] --> OTHER_STATE with a normal supported transition
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Pattern 2: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 3: connect a requirement-supported orphan state
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT

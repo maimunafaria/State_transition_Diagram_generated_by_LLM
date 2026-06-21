@@ -1,0 +1,57 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Staff Member Class — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow assigning a staff member to a client or adding them to a campaign.
+2. The system shall allow removing assignments from staff members, returning them to an unassigned state.
+3. The system shall enable staff members to switch between different assignments during their work period.
+4. The system shall mark a staff member as unemployed when they leave the job.
+5. The system shall archive the record of a former employee after some time has passed.
+
+Candidate PlantUML:
+@startuml
+title Staff Member Class State Machine Diagram
+
+state Unassigned
+state AssignedToClient
+state AssignedToCampaign
+state Unemployed
+state Archived
+
+[*] --> LoggedIn
+
+LoggedIn --> Assign : assignStaffMember
+Assign --> AssignedToClient : assignedToClient
+Assign --> AssignedToCampaign : assignedToCampaign
+AssignedToClient --> SwitchAssignment : switchAssignment
+AssignedToCampaign --> SwitchAssignment : switchAssignment
+SwitchAssignment --> Unassigned : switchAssignment
+Unassigned --> RemoveAssignment : removeAssignment
+RemoveAssignment --> Unemployed : removeAssignment
+Unemployed --> LeaveJob : leaveJob
+LeaveJob --> Unemployed
+Unemployed --> Archive : archiveRecord
+Archive --> Archived : COMPLETION_EVENT
+@enduml
+
+
+Validation issues:
+- missing_final_state_transition (state --> [*])
+
+Validator details:
+- Current initial state: LoggedIn
+- State count: 11
+- Transition count: 12
+
+Valid PlantUML repair patterns:
+Pattern 1: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT

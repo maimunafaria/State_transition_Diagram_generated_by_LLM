@@ -1,0 +1,86 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Green Rides — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display journey details upon user login and destination selection.
+2. The system shall allow users to activate driving mode or choose other options after viewing journey details.
+3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.
+4. The system shall inform relevant authorities in the event of an accident.
+5. The system shall send notifications during driving or in case of an accident.
+6. The system shall allow users to provide feedback upon completion of their journey.
+
+Candidate PlantUML:
+@startuml
+[*] --> LoggedIn
+
+state LoggedIn {
+  [*] --> JourneyDetails : view journey details
+  JourneyDetails --> DrivingMode : activate driving mode or choose other options
+  JourneyDetails --> EatPlace : select place to eat, view menu, and order
+  DrivingMode --> JourneyDetails : back to journey details
+  EatPlace --> JourneyDetails : finish eating and go back
+}
+
+state JourneyDetails {
+  [*] --> AccidentNotification : accident occurs
+  AccidentNotification --> Notifications : inform relevant authorities
+  Notifications --> Feedback : send notifications during driving or in case of an accident
+  Feedback --> JourneyComplete : provide feedback upon completion of journey
+  AccidentNotification --> Feedback : provide feedback after accident notification
+}
+
+state DrivingMode {
+  [*] --> JourneyDetails : back to journey details
+}
+
+state EatPlace {
+  [*] --> JourneyDetails : finish eating and go back
+}
+
+state Notifications {
+  [*] --> Feedback : provide feedback after sending notifications
+}
+
+state Feedback {
+  [*] --> JourneyComplete : complete journey
+}
+
+state JourneyComplete {
+  [*] --> [*]
+}
+
+@enduml
+
+
+Validation issues:
+- candidate_line_37: invalid [*] -> [*] transition
+- multiple_initial_state_transitions (LoggedIn, JourneyDetails, AccidentNotification, JourneyDetails, JourneyDetails, Feedback, JourneyComplete)
+- missing_final_state_transition (state --> [*])
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 8
+- Transition count: 8
+
+Valid PlantUML repair patterns:
+Pattern 1: replace direct pseudo-state termination
+' Replace [*] --> [*] with a real terminal-state transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 2: exactly one top-level initial transition
+[*] --> INITIAL_STATE
+
+' Replace every additional [*] --> OTHER_STATE with a normal supported transition
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Pattern 3: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT

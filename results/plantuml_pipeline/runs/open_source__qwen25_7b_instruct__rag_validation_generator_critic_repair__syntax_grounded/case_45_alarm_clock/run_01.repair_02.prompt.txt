@@ -1,0 +1,70 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Alarm Clock — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall be in an off state initially.
+2. The system shall support when the user sets an alarm time, the system shall activate the alarm.
+3. The system shall ensure that the user shall be able to turn off the activated alarm.
+4. The system shall support when the current time matches the set alarm time, the system shall start ringing the alarm.
+5. The system shall ensure that once the alarm is ringing, the user shall be able to stop it.
+6. The system shall support after stopping the alarm, the system shall remain active for the next scheduled alarm time.
+
+Candidate PlantUML:
+@startuml
+[*] --> Off
+
+state Off {
+  [*] --> Idle
+  Idle --> Off : turn off
+}
+
+state Idle {
+  [*] --> SetAlarm : set alarm
+  SetAlarm --> AlarmSet : alarm set
+}
+
+state AlarmSet {
+  AlarmSet --> Ringing : alarm time reached
+  Ringing --> Off : turn off
+  Ringing --> Stopped : stop alarm
+  Stopped --> Idle : alarm stopped
+}
+
+Ringing --> Ringing : keep ringing
+Stopped --> Idle : alarm stopped
+@enduml
+
+
+Validation issues:
+- multiple_initial_state_transitions (Off, Idle, SetAlarm)
+- missing_final_state_transition (state --> [*])
+- duplicate_transitions_detected (1)
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 6
+- Transition count: 7
+- Duplicate transition count: 1
+
+Valid PlantUML repair patterns:
+Pattern 1: exactly one top-level initial transition
+[*] --> INITIAL_STATE
+
+' Replace every additional [*] --> OTHER_STATE with a normal supported transition
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Pattern 2: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 3: merge duplicate transitions
+' Keep one transition for the same source and target
+SOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT
