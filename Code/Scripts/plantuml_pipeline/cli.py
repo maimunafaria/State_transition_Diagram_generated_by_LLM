@@ -100,7 +100,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_run.add_argument(
         "--repair-mode",
-        choices=["baseline", "targeted"],
+        choices=["baseline", "targeted", "syntax_grounded"],
         default="baseline",
         help="Repair prompt/acceptance mode for repair-enabled configs",
     )

@@ -12,6 +12,7 @@ from .prompting import (
     build_chain_of_thought_generation_prompt,
     build_generation_prompt,
     build_repair_prompt,
+    build_syntax_grounded_repair_prompt,
     build_targeted_repair_prompt,
     select_fewshot_examples,
 )
@@ -278,6 +279,13 @@ def run_single_generation(
             repair_mode_clean = repair_mode.strip().lower()
             if repair_mode_clean == "targeted":
                 repair_prompt = build_targeted_repair_prompt(
+                    requirement,
+                    final_puml,
+                    final_validation,
+                    critic_feedback,
+                )
+            elif repair_mode_clean == "syntax_grounded":
+                repair_prompt = build_syntax_grounded_repair_prompt(
                     requirement,
                     final_puml,
                     final_validation,

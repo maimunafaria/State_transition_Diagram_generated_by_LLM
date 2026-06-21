@@ -9,6 +9,7 @@ from .constants import WORD_RE
 from .io_utils import read_text
 from .models import Case, ExperimentConfig, ValidationResult
 from .parser import parse_plantuml
+from .repair_patterns import format_syntax_patterns
 
 DOMAIN_TOKEN_HINTS = {
     "accounts",
@@ -1348,6 +1349,37 @@ def build_targeted_repair_prompt(
         + ("\n".join(f"- {err}" for err in validation_issues) if validation_issues else "- none")
         + "\n\nRepair guidance for these issues:\n"
         + "\n".join(f"- {hint}" for hint in repair_guidance)
+    )
+
+
+def build_syntax_grounded_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+) -> str:
+    validation_issues = _prioritized_repair_issues(validation)
+    issue_details = _validation_issue_details(validation)
+    syntax_patterns = format_syntax_patterns(validation_issues)
+    return (
+        "You are a PlantUML repair assistant.\n"
+        "Repair the candidate using the valid PlantUML syntax patterns below.\n"
+        "The uppercase identifiers in the patterns are placeholders, not literal state names.\n"
+        "Replace placeholders only with existing or requirement-supported states, events, and guards.\n"
+        "Apply only patterns that correspond to the listed validation issues.\n"
+        "Keep unaffected states, transitions, labels, and behavior unchanged.\n"
+        "Do not copy placeholder identifiers into the final diagram.\n"
+        "Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.\n\n"
+        "Requirement:\n"
+        f"{requirement}\n\n"
+        "Candidate PlantUML:\n"
+        f"{candidate_puml}\n\n"
+        "Validation issues:\n"
+        + ("\n".join(f"- {issue}" for issue in validation_issues) if validation_issues else "- none")
+        + "\n\nValidator details:\n"
+        + "\n".join(f"- {detail}" for detail in issue_details)
+        + "\n\nValid PlantUML repair patterns:\n"
+        + syntax_patterns
     )
 
 
