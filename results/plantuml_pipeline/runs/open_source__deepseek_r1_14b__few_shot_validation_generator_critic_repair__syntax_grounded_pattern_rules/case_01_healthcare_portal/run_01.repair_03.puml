@@ -1,0 +1,66 @@
+@startuml
+title UML State Transition Diagram - Healthcare Portal
+
+state "Idle" as Idle
+[*] --> Idle : Start
+
+state "Register" as Register
+Idle --> Register : Register
+
+state "InvalidRegister" as InvalidRegister
+Register --> InvalidRegister : Registration Failed
+InvalidRegister --> Termination : Abnormal Termination
+
+state "Login" as Login
+Idle --> Login : Login
+
+state "InvalidLogin" as InvalidLogin
+Login --> InvalidLogin : Invalid Credentials
+InvalidLogin --> Termination : Abnormal Termination
+
+state "MainMenu" as MainMenu
+Register --> MainMenu : Successful Registration
+Login --> MainMenu : Successful Login
+MainMenu : Access facilities
+MainMenu --> ReadContent : Read News/Expert Content
+MainMenu --> HealthInfo : Check Symptoms/Fitness
+
+state "ReadContent" as ReadContent
+ReadContent --> MainMenu : Back to Menu
+
+state "HealthInfo" as HealthInfo
+HealthInfo --> MainMenu : Back to Menu
+
+state "ProcessInsurance" as ProcessInsurance
+MainMenu --> ProcessInsurance : Insurance Required
+ProcessInsurance : Validate insurance
+ProcessInsurance --> InsurancePayment : Insurance Approved
+ProcessInsurance --> Termination : Insurance Rejected
+
+state "PaymentSelection" as PaymentSelection
+MainMenu --> PaymentSelection : Make Payment
+PaymentSelection : Choose payment method
+PaymentSelection --> CashPayment : Cash Selected
+PaymentSelection --> InsurancePayment : Insurance Selected
+
+state "CashPayment" as CashPayment
+CashPayment : Inform cash details
+CashPayment --> Termination : Complete Payment
+
+state "InsurancePayment" as InsurancePayment
+InsurancePayment : Process insurance-based payment
+InsurancePayment --> Termination : Payment Completed
+
+state "ViewResult" as ViewResult
+MainMenu --> ViewResult : View Results
+ViewResult : Continue/Logout
+ViewResult --> MainMenu : Continue
+ViewResult --> Logout : Logout
+
+state "Logout" as Logout
+ViewResult --> Logout : Logout
+Logout --> Termination : Session Terminated
+
+state "Termination" as Termination
+Termination --> [*] : End
+@enduml

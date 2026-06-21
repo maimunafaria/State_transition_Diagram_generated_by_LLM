@@ -1,0 +1,78 @@
+@startuml
+title Healthcare Portal - User Authentication and Service State Machine Diagram
+
+@startstate
+INITIAL_STATE
+@endstate
+
+InitialState --> NewUserRegistration
+InitialState --> Login
+
+state "New User Registration" as NewUserRegistration
+NewUserRegistration : entry / Unregistered user
+NewUserRegistration : do / Enter Valid Credentials and Personal Information
+NewUserRegistration : exit / Account registered
+
+state "Login" as Login
+Login : entry / Existing user login attempt
+Login : do / Authenticate User
+Login : exit / Logged In Successfully or Failed Registration (goto InitialState)
+
+InitialState --> RegisteredUser
+RegisteredUser --> ServiceCenterVerification
+RegisteredUser --> CarOwnerVerification
+
+state "Service Center Verification" as ServiceCenterVerification
+ServiceCenterVerification : entry / Service Center account registered
+ServiceCenterVerification : do / Verify Service center
+ServiceCenterVerification : exit / Login Service center
+
+state "Car Owner Verification" as CarOwnerVerification
+CarOwnerVerification : entry / Car Owner account registered
+CarOwnerVerification : do / Verify Car Owner
+CarOwnerVerification : exit / Login Car Owner
+
+state "Service Center Login" as ServiceCenterLogin
+ServiceCenterLogin : entry / Verified Service Center
+ServiceCenterLogin : entry / Service Center not logged in
+ServiceCenterLogin : do / Authenticate Service Center
+ServiceCenterLogin : exit / Logged In Successfully
+
+state "Car Owner Login" as CarOwnerLogin
+CarOwnerLogin : entry / Verified Car Owner
+CarOwnerLogin : entry / Car Owner not logged in
+CarOwnerLogin : do / Authenticate Car Owner
+CarOwnerLogin : exit / Logged In Successfully
+
+ServiceCenterLogin --> ServiceCenterHome
+CarOwnerLogin --> Home
+
+state "Service center Home" as ServiceCenterHome
+ServiceCenterHome : entry / Logged in Service Center
+ServiceCenterHome : do / Display home page
+ServiceCenterHome : exit / Enter Damaged parts list
+ServiceCenterHome : exit / Expiry Notification page
+ServiceCenterHome : exit / Updating Information list
+
+state "Expiry Notification page" as ExpiryNotification
+ExpiryNotification : entry / To view expiry notification
+ExpiryNotification : do / Send service request to Car owner
+ExpiryNotification : exit / Return to Service center home page
+
+state "Entering Damaged parts list" as DamagedParts
+DamagedParts : entry / To enter Damaged parts list
+DamagedParts : do / Preparing and entering damaged parts list
+DamagedParts : exit / Return to service center home page
+
+state "Updating parts Information" as UpdatingParts
+UpdatingParts : entry / To update changed parts information
+UpdatingParts : do / Update Information
+UpdatingParts : exit / Return to Service center home page
+
+state "Logout" as Logout
+Logout : entry / To Logout
+Logout : do / Logout
+Logout : exit / Logged out Successfully
+
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+@enduml

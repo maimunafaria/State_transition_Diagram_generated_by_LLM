@@ -1,0 +1,74 @@
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+[*] --> Idle
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+Idle --> Register : register_event
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+Register --> InvalidRegistration : invalid_registration_event
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+Idle --> Login : login_event
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+Login --> InvalidLogin : invalid_login_event
+
+state CheckWeather
+CheckWeather : entry/Home page
+CheckWeather : do/Check weather for current or entered location
+CheckWeather : exit/Idle
+Login --> CheckWeather : check_weather_event
+
+state InvalidLocation
+InvalidLocation : entry/Invalid location
+InvalidLocation : do/Cannot find valid location
+InvalidLocation : exit/Abnormal termination
+CheckWeather --> InvalidLocation : invalid_location_event
+
+state SelectInfo
+SelectInfo : entry/Valid location
+SelectInfo : do/Choose what to check (temperature, humidity, rainfall, pressure, or dew point)
+SelectInfo : exit/Weather info page
+InvalidLocation --> SelectInfo : valid_location_event
+
+state WeatherInfo
+WeatherInfo : entry/Weather info page
+WeatherInfo : do/Update and show selected weather information
+WeatherInfo : exit/Additional details page
+SelectInfo --> WeatherInfo : select_info_event
+
+state AdditionalDetails
+AdditionalDetails : entry/Additional details page
+AdditionalDetails : do/View additional weather details (alerts, a weekly analysis, a future prediction, or a graph)
+AdditionalDetails : exit/Idle
+WeatherInfo --> AdditionalDetails : additional_details_event
+
+state Logout
+Logout : entry/Logout
+Logout : do/End session
+Logout : exit/Idle
+WeatherInfo --> Logout : logout_event
+
+CheckWeather --> InvalidLocation : invalid_location_guard
+SelectInfo --> WeatherInfo : valid_location_guard
+AdditionalDetails --> Idle : any_additional_details_event
+
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+@enduml

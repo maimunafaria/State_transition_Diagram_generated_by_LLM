@@ -1,0 +1,30 @@
+@startuml
+title UML State Machine Diagram (Digidoclocker)
+
+[*] --> INITIAL_STATE
+INITIAL_STATE --> MemberRegistration : enter member details
+MemberRegistration --> CheckMemberDetails : valid details
+  CheckMemberDetails --> IssueMemberID : success
+    IssueMemberID --> Authentication
+  CheckMemberDetails --> ReEnterMemberDetails : invalid details
+Authentication --> EnterMemberID
+EnterMemberID --> EnterPassword
+EnterPassword --> SuccessfulLogin : valid credentials
+  SuccessfulLogin --> LoggedIn
+EnterPassword --> InvalidCredentials
+LoggedIn --> Dashboard
+Dashboard --> Settings : open settings
+Settings --> Dashboard : back
+CitizenUploadDocs : upload documents
+CitizenUploadDocs --> CitizenViewDocs : success
+CitizenViewDocs --> CitizenEditDocs : edit documents
+CitizenEditDocs --> CitizenSaveEdits : save edits
+CitizenSaveEdits --> CitizenViewDocs : success
+LoggedIn --> MemberIDCheck : active member
+  MemberIDCheck --> [*]
+LoggedIn --> InactiveMember : inactive member
+  InactiveMember --> PayFineAmount
+  PayFineAmount --> LoggedIn
+CitizenViewDocs --> CitizenLogout : logout
+CitizenLogout --> [*]
+@enduml

@@ -1,0 +1,177 @@
+{
+  "run_id": "open_source__gemma3_12b__rag_validation_generator_critic_repair__syntax_grounded_pattern_rules",
+  "case_id": "case_67_atm_many_scenarios_1",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nAtm Many Scenarios Scenario 1 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall prompt the user to enter their PIN after the card is inserted.\n2. The system shall verify the entered PIN against the stored information.\n3. The system shall ensure that if the PIN is verified successfully, the system shall provide options to the user.\n4. The system shall support upon user approval, the system shall process the withdrawal request.\n5. The system shall support after dispensing cash, the system shall print a receipt for the transaction.\n6. The system shall support after completing the transaction, the system shall return the user's card.\n7. The system shall support after a brief moment, the system shall reset itself and become ready for the next user.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Diagram Core Syntax\n\nUse this document when generating a basic UML state transition diagram in PlantUML.\n\n## Diagram wrapper\n\nPlantUML code should be enclosed between `@startuml` and `@enduml`.\n\n```plantuml\n@startuml\n[*] --> Idle\nIdle --> [*]\n@enduml\n```\n\n## Initial and final state\n\nThe initial and final pseudostate is written as `[*]`.\n\nInitial transition:\n\n```plantuml\n[*] --> State1\n```\n\nFinal transition:\n\n```plantuml\nState1 --> [*]\n```\n\n## Transitions\n\nUse arrows between states.\n\n```plantuml\nState1 --> State2\nState1 -> State2\n```\n\nTransitions can include labels after a colon.\n\n```plantuml\nIdle --> LoggedIn : login successful\nLoggedIn --> LoggedOut : logout\n```\n\nLabels may include event, guard, and action information.\n\n```plantuml\n\n# PlantUML State Aliases, Notes, and Descriptions\n\nUse this document when state names are long or when the diagram needs annotations.\n\n## Long state names with alias\n\nUse aliases to keep transitions readable when state names are long.\n\n```plantuml\nstate \"Waiting for Payment Confirmation\" as WaitingPayment\nstate \"Order Completed Successfully\" as OrderComplete\n\nWaitingPayment --> OrderComplete : payment confirmed\n```\n\nAlternative alias form:\n\n```plantuml\nstate WaitingPayment as \"Waiting for Payment Confirmation\"\n```\n\n## Notes attached to states\n\nUse notes to add additional explanation without changing the state name.\n\n```plantuml\nnote right of Processing : validates request details\n```\n\nMulti-line notes:\n\n```plantuml\nnote left of Processing\nThe system checks the request,\n\n# Reactive Objects and Statechart Scope\n\nUse this document to decide whether a requirement is suitable for state-machine modeling and what lifecycle should be modeled.\n\n## Statechart purpose\n\nA statechart models the dynamic behavior of a reactive object. A reactive object can be a class, use case, subsystem, complete system, session, controller, or business process that responds to events.\n\nFor this project, the reactive object is usually the system or process described by the requirement.\n\n## Reactive object characteristics\n\nA good state-machine candidate usually has:\n\n```text\n1. External or internal events that affect behavior.\n2. A clear lifecycle.\n3. Behavior that depends on previous behavior or current condition.\n4. Meaningful states and transitions.\n```\n\nExamples:\n\n```text\n\n# Event Types for State Transitions\n\nUse this document to choose better transition labels from requirements.\n\n## Event role\n\nAn event is a noteworthy occurrence that may trigger a transition. In generated PlantUML, events usually appear as transition labels.\n\n```plantuml\nIdle --> Authenticating : login submitted\nAuthenticating --> LoggedIn : credentials valid\nAuthenticating --> LoginFailed : credentials invalid\n```\n\n## Call events\n\nA call event represents a request for an operation or service.\n\nRequirement phrases that often indicate call events:\n\n```text\nuser submits\nadmin approves\nsystem validates\ncustomer requests\ndoctor confirms\n```\n\nExample:\n\n```plantuml\nWaiting --> Processing : submit request\n```\n\n## Signal events\n\nA signal event represents an asynchronous notification or message.\n\nExample requirement:\nAtm Many Scenarios Scenario 6 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the entered PIN is correct.\n2. The system shall ask for the PIN again if it is incorrect.\n3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle ATM Control - Validate PIN and Withdraw Funds\n\n[*] --> Idle\n\nstate Idle\nstate WaitingForPIN\nstate ValidatingPIN\nstate WaitingForCustomerChoice\nstate ProcessingWithdrawal\nstate Dispensing\nstate Printing\nstate Ejecting\nstate Confiscating\nstate Terminating\nstate ClosedDown\n\nIdle : entry / Display Welcome\nClosedDown : entry / Display System Down\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nWaitingForPIN --> Confiscating : Card Confiscated / display Confiscated\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> Confiscating : Card Stolen, Card Expired /\\nConfiscate, Update Status\nValidatingPIN --> Confiscating : Third Invalid PIN /\\nConfiscate\n\nValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu\n\nWaitingForPIN --> Ejecting : Cancel / Eject\nWaitingForCustomerChoice --> Ejecting : Cancel / Eject\nValidatingPIN --> Ejecting : Cancel / Eject\n\nWaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected /\\nRequest Withdrawal, Display Wait\n\nProcessingWithdrawal --> Dispensing : Withdrawal Approved /\\nDispense Cash, Update Status\nProcessingWithdrawal --> Ejecting : Rejected / Eject\n\nDispensing --> Printing : Cash Dispensed /\\nPrint Receipt,\\nDisplay Cash Dispensed,\\nConfirm Cash Dispensed\nDispensing --> ClosedDown : Insufficient Cash / Eject\n\nPrinting --> Ejecting : Receipt Printed / Eject\n\nEjecting --> Terminating : Card Ejected / Display Ejected\nConfiscating --> Terminating : Card Confiscated / Display Confiscated\n\nTerminating --> Idle : After (Elapsed Time)\\n[Closedown Not Requested]\n\n\n@enduml\n```\n\nExample requirement:\nAtm Many Scenarios Scenario 8 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall keep the card if it is invalid, expired, or the PIN was entered incorrectly too many times.\n2. The system shall return the card with a message if the user cancels the operation or the request is rejected.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle ATM Control - Terminating Transaction\n\nstate \"Closed Down\" as ClosedDown\nClosedDown : entry / Display System Down\n\nstate Idle\nIdle : entry / Display Welcome\n\nstate \"Processing Customer Input\" as ProcessingCustomerInput\nstate \"Processing Transaction\" as ProcessingTransaction\n\nstate \"Terminating Transaction\" as TerminatingTransaction {\n\n  state Terminating\n  state Confiscating\n  state Ejecting\n  state Printing\n  state Dispensing\n\n  Confiscating --> Terminating : Card Confiscated /\\nDisplay Confiscated\n  Ejecting --> Terminating : Card Ejected /\\nDisplay Ejected\n  Printing --> Ejecting : Receipt Printed /\\nEject\n  Dispensing --> Printing : Cash Dispensed /\\nPrint Receipt,\\nDisplay Cash Dispensed,\\nConfirm Cash Dispensed\n}\n\nProcessingCustomerInput --> Confiscating : Stolen Card, Expired Card /\\nConfiscate, Update Status\nProcessingCustomerInput --> Confiscating : Third Invalid PIN /\\nConfiscate\nProcessingCustomerInput --> Ejecting : Cancel / Eject,\\nDisplay Cancel\n\nProcessingTransaction --> Ejecting : Rejected / Eject,\\nDisplay Apology\nProcessingTransaction --> Printing : Transfer Approved /\\nPrint Receipt,\\nUpdate Status\nProcessingTransaction --> Printing : Query Approved /\\nPrint Receipt,\\nUpdate Status\nProcessingTransaction --> Dispensing : Withdrawal Approved /\\nDispense Cash,\\nUpdate Status\n\nDispensing --> ClosedDown : Insufficient Cash /\\nEject,\\nAbort Cash Dispensed\n\nTerminating --> Idle : After (Elapsed Time) [Closedown Not Requested]\nTerminating --> ClosedDown : After (Elapsed Time) [Closedown Was Requested]\n\n@enduml\n```\n\nExample requirement:\nAtm Many Scenarios Scenario 9 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to choose to transfer money after entering the correct PIN.\n2. The system shall process the transfer request if it is approved.\n3. The system shall print a receipt for approved transfers and queries.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle ATM Control - Processing Transaction\n\nstate \"Waiting for Customer Choice\" as WaitingForChoice\n\nstate \"Processing Transaction\" as ProcessingTransaction {\n  state \"Processing Transfer\" as ProcessingTransfer\n  state \"Processing Query\" as ProcessingQuery\n  state \"Processing Withdrawal\" as ProcessingWithdrawal\n}\n\nstate Ejecting\nstate Printing\nstate Dispensing\n\nWaitingForChoice --> ProcessingTransfer : Transfer Selected /\\nRequest Transfer,\\nDisplay Wait\nWaitingForChoice --> ProcessingQuery : Query Selected /\\nRequest Query,\\nDisplay Wait\nWaitingForChoice --> ProcessingWithdrawal : Withdrawal Selected /\\nRequest Withdrawal,\\nDisplay Wait\n\nProcessingTransaction --> Ejecting : Rejected /\\nEject,\\nDisplay Apology\nProcessingTransfer --> Printing : Transfer Approved /\\nPrint Receipt,\\nUpdate Status\nProcessingQuery --> Printing : Query Approved /\\nPrint Receipt,\\nUpdate Status\nProcessingWithdrawal --> Dispensing : Withdrawal Approved /\\nDispense Cash,\\nUpdate Status\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Atm Many Scenarios Scenario 1 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall prompt the user to enter their PIN after the card is inserted.\n2. The system shall verify the entered PIN against the stored information.\n3. The system shall ensure that if the PIN is verified successfully, the system shall provide options to the user.\n4. The system shall support upon user approval, the system shall process the withdrawal request.\n5. The system shall support after dispensing cash, the system shall print a receipt for the transaction.\n6. The system shall support after completing the transaction, the system shall return the user's card.\n7. The system shall support after a brief moment, the system shall reset itself and become ready for the next user.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__syntax_grounded_pattern_rules\\case_67_atm_many_scenarios_1\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "Idle",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 9,
+    "transition_count": 13
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__gemma3_12b__rag",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": true,
+      "repair_mode": "syntax_grounded_pattern_rules",
+      "repair_model_name": "gemma3:12b",
+      "previous_score": 1,
+      "repair_score": 0,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 9,
+        "repaired_state_count": 9,
+        "current_transition_count": 14,
+        "repaired_transition_count": 15,
+        "min_allowed_state_count": 6,
+        "min_allowed_transition_count": 9,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 1,
+      "strict_state_diagram_valid": true,
+      "remaining_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])"
+        ],
+        "initial_state": "Idle",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 9,
+        "transition_count": 13
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__syntax_grounded_pattern_rules\\case_67_atm_many_scenarios_1\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "repair_mode": "syntax_grounded_pattern_rules",
+      "repair_model_name": "gemma3:12b",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "Idle",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 9,
+        "transition_count": 13
+      },
+      "strict_state_diagram_valid": true,
+      "accepted": true,
+      "previous_score": 1,
+      "repair_score": 0,
+      "preservation": {
+        "current_state_count": 9,
+        "repaired_state_count": 9,
+        "current_transition_count": 14,
+        "repaired_transition_count": 15,
+        "min_allowed_state_count": 6,
+        "min_allowed_transition_count": 9,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__syntax_grounded_pattern_rules\\case_67_atm_many_scenarios_1\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__syntax_grounded_pattern_rules\\case_67_atm_many_scenarios_1\\run_01.repair_01.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.3333333333333333,
+    "state_recall": 0.3333333333333333,
+    "state_f1": 0.3333333333333333,
+    "state_tp": 3,
+    "state_fp": 6,
+    "state_fn": 6,
+    "transition_precision": 0.07692307692307693,
+    "transition_recall": 0.1111111111111111,
+    "transition_f1": 0.09090909090909093,
+    "transition_tp": 1,
+    "transition_fp": 12,
+    "transition_fn": 8,
+    "state_precision_relaxed": 0.7777777777777778,
+    "state_recall_relaxed": 0.7777777777777778,
+    "state_f1_relaxed": 0.7777777777777778,
+    "state_tp_relaxed": 7,
+    "state_fp_relaxed": 2,
+    "state_fn_relaxed": 2,
+    "transition_precision_relaxed": 0.46153846153846156,
+    "transition_recall_relaxed": 0.6666666666666666,
+    "transition_f1_relaxed": 0.5454545454545455,
+    "transition_tp_relaxed": 6,
+    "transition_fp_relaxed": 7,
+    "transition_fn_relaxed": 3,
+    "transition_precision_semantic": 0.38461538461538464,
+    "transition_recall_semantic": 0.5555555555555556,
+    "transition_f1_semantic": 0.4545454545454546,
+    "transition_tp_semantic": 5,
+    "transition_fp_semantic": 8,
+    "transition_fn_semantic": 4,
+    "transition_event_similarity_mean": 1.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 0.6666666666666666,
+    "hallucination_transition_rate": 0.9230769230769231,
+    "hallucination_state_rate_relaxed": 0.2222222222222222,
+    "hallucination_transition_rate_relaxed": 0.5384615384615384,
+    "missing_transition_rate": 0.8888888888888888,
+    "missing_transition_rate_relaxed": 0.3333333333333333,
+    "overall_f1": 0.21212121212121213,
+    "overall_f1_relaxed": 0.6616161616161617,
+    "weighted_f1_relaxed_70_30": 0.7080808080808081,
+    "overall_f1_semantic": 0.6161616161616161,
+    "weighted_f1_semantic_70_30": 0.6808080808080808,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  },
+  "reused_base_run": {
+    "run_id": "open_source__gemma3_12b__rag",
+    "strategy": "rag",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag\\case_67_atm_many_scenarios_1\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag\\case_67_atm_many_scenarios_1\\run_01.prompt.txt"
+  }
+}

@@ -1,0 +1,81 @@
+@startuml
+title UML State Machine Diagram
+
+state "Initial" as Initial {
+  [*] --> Initial : SUPPORTED_EVENT
+}
+
+state "Registration" as Registration {
+  Initial --> Registration : SUPPORTED_EVENT
+  state "Enter Details" as RegEnterDetails
+  state "Get Member_ID" as GetMemberID
+  state "Successful Registration" as SuccessfulRegistration
+  state "Re-enter Details" as ReEnterDetails
+
+  RegEnterDetails --> GetMemberID : [Valid]
+  RegEnterDetails --> ReEnterDetails : [Invalid]
+  ReEnterDetails --> RegEnterDetails
+  GetMemberID --> SuccessfulRegistration
+}
+
+state "Authentication" as Authentication {
+  Initial --> Authentication : SUPPORTED_EVENT
+  state "Enter Member_ID" as AuthEnterMemberID
+  state "Enter Password" as EnterPassword
+  state "successful Login" as SuccessfulLogin
+  state "Invalid Member_ID or Password" as InvalidCreds
+
+  AuthEnterMemberID --> EnterPassword : SUPPORTED_EVENT
+  EnterPassword --> SuccessfulLogin : [Valid]
+  EnterPassword --> InvalidCreds : [Invalid]
+}
+
+state "Search Books" as SearchBooks {
+  Initial --> SearchBooks : SUPPORTED_EVENT
+  state "Enter Book Details" as EnterBookDetails
+  state "Display Suggestion" as DisplaySuggestion
+  state "choose Alternate option" as ChooseAlternate
+
+  EnterBookDetails --> DisplaySuggestion : [Found]
+  EnterBookDetails --> ChooseAlternate : [Not Found]
+}
+
+state "Get Books" as GetBooksState {
+  Initial --> GetBooksState : SUPPORTED_EVENT
+  state "Enter Book_ID" as GetEnterBookID
+  state "Enter Member_ID" as GetEnterMemberID
+  state "Obtain Books" as ObtainBooks
+  state PayFineAmount
+
+  GetEnterBookID --> GetEnterMemberID : SUPPORTED_EVENT
+  GetEnterMemberID --> ObtainBooks : [Active Member]
+  GetEnterMemberID --> PayFineAmount : [Inactive Member]
+}
+
+state "Buy Books" as BuyBooks {
+  Initial --> BuyBooks : SUPPORTED_EVENT
+  state "Enter Book_ID" as BuyEnterBookID
+  state "Display Book Amount" as DisplayBookAmount
+  state "Get Books" as BuyGetBooks
+  state BuyNotPaidEnd <<choice>>
+
+  BuyEnterBookID --> DisplayBookAmount : SUPPORTED_EVENT
+  DisplayBookAmount --> BuyGetBooks : [Paid]
+  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]
+}
+
+state StartJoin <<choice>>
+StartJoin --> Registration : [Teacher or Student]
+StartJoin --> Authentication : [Teacher or Student]
+StartJoin --> SearchBooks : [Teacher or Student]
+StartJoin --> GetBooksState : [Teacher or Student]
+StartJoin --> BuyBooks : [Teacher or Student]
+
+SuccessfulRegistration --> AuthEnterMemberID : SUPPORTED_EVENT
+SuccessfulLogin --> EnterBookDetails : SUPPORTED_EVENT
+SuccessfulLogin --> GetEnterBookID : SUPPORTED_EVENT
+SuccessfulLogin --> BuyEnterBookID : SUPPORTED_EVENT
+
+ObtainBooks --> [*] : SUPPORTED_EVENT
+BuyGetBooks --> [*] : SUPPORTED_EVENT
+@enduml

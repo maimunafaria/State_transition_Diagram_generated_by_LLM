@@ -1,0 +1,81 @@
+@startuml
+title Campaign State Machine Diagram
+
+state "Idle" as Idle
+Idle : entry/No campaign assigned
+Idle : do/Remain in same state
+Idle : exit/Assign manager and staff / Start campaign
+
+state "Start Campaign" as StartCampaign
+StartCampaign : entry/Manager and staff assigned
+StartCampaign : do/Start campaign
+StartCampaign : exit/Activate campaign
+
+state "Activate Campaign" as ActivateCampaign
+ActivateCampaign : entry/Campaign activated
+ActivateCampaign : do/Prepare adverts
+ActivateCampaign : exit/Approve adverts
+
+state "Prepare Adverts" as PrepareAdverts
+PrepareAdverts : entry/Adverts prepared
+PrepareAdverts : do/Approve adverts
+PrepareAdverts : exit/Schedule adverts
+
+state "Schedule Adverts" as ScheduleAdverts
+ScheduleAdverts : entry/Adverts scheduled
+ScheduleAdverts : do/Run adverts
+ScheduleAdverts : exit/Adjust campaign
+
+state "Adjust Campaign" as AdjustCampaign
+AdjustCampaign : entry/Campaign adjusted
+AdjustCampaign : do/Run adverts
+AdjustCampaign : exit/Complete campaign
+
+state "Complete Campaign" as CompleteCampaign
+CompleteCampaign : entry/Campaign completed
+CompleteCampaign : do/Prepare final statement
+CompleteCampaign : exit/Pay campaign
+
+state "Pay Campaign" as PayCampaign
+PayCampaign : entry/Pay campaign
+PayCampaign : do/Handle payment
+PayCampaign : exit/Archive campaign
+
+state "Archive Campaign" as ArchiveCampaign
+ArchiveCampaign : entry/Campaign archived
+ArchiveCampaign : do/Release staff and managers
+ArchiveCampaign : exit/End
+
+state "Refund Campaign" as RefundCampaign
+RefundCampaign : entry/Refund campaign
+RefundCampaign : do/Generate refund
+RefundCampaign : exit/Wait for balance
+
+state "Wait for Balance" as WaitForBalance
+WaitForBalance : entry/Wait for balance
+WaitForBalance : do/Wait for balance
+WaitForBalance : exit/Mark campaign as paid
+
+state "Mark Campaign as Paid" as MarkCampaignAsPaid
+MarkCampaignAsPaid : entry/Mark campaign as paid
+MarkCampaignAsPaid : do/Mark campaign as paid
+MarkCampaignAsPaid : exit/End
+
+[*] --> Idle
+
+Idle --> StartCampaign : Manager and staff assigned
+StartCampaign --> ActivateCampaign : Everything approved and contract signed
+ActivateCampaign --> PrepareAdverts :
+PrepareAdverts --> ScheduleAdverts : Adverts prepared
+ScheduleAdverts --> AdjustCampaign :
+AdjustCampaign --> CompleteCampaign : All adverts finished
+CompleteCampaign --> PayCampaign :
+PayCampaign --> ArchiveCampaign : Full amount paid
+ArchiveCampaign --> [*] : Completion event
+
+state DECISION_NODE <<choice>>
+Idle --> DECISION_NODE : Manager and staff assigned
+DECISION_NODE --> StartCampaign : [Manager and staff assigned]
+DECISION_NODE --> PrepareAdverts : [Everything approved and contract signed]
+
+@enduml

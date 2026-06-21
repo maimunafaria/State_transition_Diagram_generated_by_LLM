@@ -1,0 +1,45 @@
+@startuml
+title Green Rides - State Machine Diagram
+
+[*] --> LoggedOut
+
+state LoggedOut
+LoggedOut --> Login : user initiates login
+
+state Login
+Login : entry / request login
+Login : do / authenticate user
+Login --> JourneyDetails : authentication successful
+Login --> LoggedOut : authentication failed
+
+state JourneyDetails
+JourneyDetails : entry / display journey details
+JourneyDetails : do / show destination and route
+JourneyDetails --> DrivingMode : user selects driving mode
+JourneyDetails --> EatOptions : user selects eat options
+JourneyDetails --> Feedback : journey completed
+
+state DrivingMode
+DrivingMode : entry / activate driving mode
+DrivingMode --> Accident : accident occurs
+DrivingMode --> Feedback : journey completed
+
+state EatOptions
+EatOptions : entry / display restaurant options
+EatOptions : do / show menu and allow ordering
+EatOptions --> DrivingMode : order placed
+EatOptions --> JourneyDetails : user cancels
+
+state Accident
+Accident : entry / accident detected
+Accident : do / notify authorities
+Accident --> DrivingMode : driving resumes
+Accident --> Feedback : journey completed
+
+state Feedback
+Feedback : entry / request feedback
+Feedback : do / collect user feedback
+Feedback --> LoggedOut : feedback submitted
+
+Feedback --> [*] : journey completion
+@enduml

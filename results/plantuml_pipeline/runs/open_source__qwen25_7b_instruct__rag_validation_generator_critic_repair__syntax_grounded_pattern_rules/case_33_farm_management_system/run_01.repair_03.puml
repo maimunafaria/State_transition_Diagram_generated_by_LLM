@@ -1,0 +1,82 @@
+@startuml
+title UML State Chart Diagram
+
+[*] --> Login
+
+state Login {
+  [*] --> ValidLogin
+  ValidLogin : entry / verifyData
+  ValidLogin : do / allow Access to system
+  ValidLogin : exit / MainArea
+}
+
+state MainArea <<choice>> {
+  MainArea --> MarketConditions : [showMarketConditions]
+  MainArea --> PestControlHelp : [provideTechniques]
+  MainArea --> SoilSuggestions : [receiveSoilInfo]
+  MainArea --> WeatherInsights : [receiveLocation]
+  MainArea --> LabourAvailability : [receiveLocation]
+}
+
+state MarketConditions {
+  ValidLogin --> MarketConditions
+}
+
+state Techniques {
+  ValidLogin --> Techniques : provideTechniques
+  Techniques : entry / provideTechniques
+  Techniques : do / showTechniques
+  Techniques : exit / MainArea
+}
+
+state Suggestions {
+  ValidLogin --> Suggestions : provideSuggestions
+  Suggestions : entry / receiveSoilInfo
+  Suggestions : do / suggestCrops
+  Suggestions : exit / MainArea
+}
+
+state Insights {
+  ValidLogin --> Insights : provideInsights
+  Insights : entry / receiveLocation
+  Insights : do / showWeather
+  Insights : exit / MainArea
+}
+
+state Availability {
+  ValidLogin --> Availability : provideAvailability
+  Availability : entry / receiveLocation
+  Availability : do / showLabour
+  Availability : exit / MainArea
+}
+
+Login --> ValidLogin
+
+ValidLogin --> MainArea
+
+MainArea --> MarketConditions : [showMarketConditions]
+MainArea --> PestControlHelp : [provideTechniques]
+MainArea --> SoilSuggestions : [receiveSoilInfo]
+MainArea --> WeatherInsights : [receiveLocation]
+MainArea --> LabourAvailability : [receiveLocation]
+
+PestControlHelp --> Techniques : provideTechniques
+
+SoilSuggestions --> Suggestions : provideSuggestions
+
+WeatherInsights --> Insights : provideInsights
+
+LabourAvailability --> Availability : provideAvailability
+
+Techniques --> [*] : exit
+
+Suggestions --> [*] : exit
+
+Insights --> [*] : exit
+
+Availability --> [*] : exit
+
+[*] --> Logout
+
+Logout : entry / endSession
+@enduml
