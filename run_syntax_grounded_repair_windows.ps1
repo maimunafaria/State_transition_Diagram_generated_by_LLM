@@ -17,26 +17,26 @@ $commandArgs = @(
   "--rag-db-dir", "results\rag_db",
   "--skip-gpt-baseline",
   "--repair-mode", "syntax_grounded",
-  "--repair-ablation-tag", "syntax_grounded",
+  "--repair-ablation-tag", "syntax_grounded_rules",
   "--repair-attempts", "$RepairAttempts",
   "--runs", "$Runs",
   "--save-prompts",
-  "--only-run-id", "open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair__syntax_grounded",
-  "--only-run-id", "open_source__mistral__rag_validation_generator_critic_repair__syntax_grounded",
-  "--only-run-id", "open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair__syntax_grounded",
-  "--only-run-id", "open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair__syntax_grounded",
-  "--only-run-id", "open_source__gemma3_12b__rag_validation_generator_critic_repair__syntax_grounded"
+  "--only-run-id", "open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair__syntax_grounded_rules",
+  "--only-run-id", "open_source__mistral__rag_validation_generator_critic_repair__syntax_grounded_rules",
+  "--only-run-id", "open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair__syntax_grounded_rules",
+  "--only-run-id", "open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair__syntax_grounded_rules",
+  "--only-run-id", "open_source__gemma3_12b__rag_validation_generator_critic_repair__syntax_grounded_rules"
 )
 
 if ($SkipExisting) {
   $commandArgs += "--skip-existing"
 }
 
-Write-Host "Running syntax-grounded repair with baseline repair logic..."
+Write-Host "Running syntax-grounded repair with structural validation rules..."
 Write-Host "Runs per case/config: $Runs"
 Write-Host "Repair attempts per case: $RepairAttempts"
 if ($SkipExisting) {
-  Write-Host "Skipping existing syntax-grounded repair files."
+  Write-Host "Skipping existing syntax-grounded-rules repair files."
 }
 
 python @commandArgs

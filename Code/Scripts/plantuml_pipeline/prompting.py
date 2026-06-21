@@ -973,6 +973,10 @@ def _repair_rules_for_generation_prompt() -> list[str]:
     ]
 
 
+def _format_structural_validation_rules() -> str:
+    return "\n".join(f"- {rule}" for rule in _repair_rules_for_generation_prompt())
+
+
 def _uml_elements_for_generation_prompt() -> list[str]:
     return [
         "State transition diagram: models the lifecycle behavior of one reactive object, system, controller, process, class, subsystem, or use case as it changes state in response to events.",
@@ -1361,6 +1365,7 @@ def build_syntax_grounded_repair_prompt(
     validation_issues = _prioritized_repair_issues(validation)
     issue_details = _validation_issue_details(validation)
     syntax_patterns = format_syntax_patterns(validation_issues)
+    structural_rules = _format_structural_validation_rules()
     return (
         "You are a PlantUML repair assistant.\n"
         "Repair the candidate using the valid PlantUML syntax patterns below.\n"
@@ -1378,6 +1383,8 @@ def build_syntax_grounded_repair_prompt(
         + ("\n".join(f"- {issue}" for issue in validation_issues) if validation_issues else "- none")
         + "\n\nValidator details:\n"
         + "\n".join(f"- {detail}" for detail in issue_details)
+        + "\n\n--- Structural Validation Rules ---\n"
+        + structural_rules
         + "\n\nValid PlantUML repair patterns:\n"
         + syntax_patterns
     )
@@ -1391,6 +1398,7 @@ def build_repair_prompt(
 ) -> str:
     validation_issues = _prioritized_repair_issues(validation)
     repair_guidance = _repair_guidance_for_issues(validation_issues)
+    structural_rules = _format_structural_validation_rules()
     return (
         "You are a UML repair assistant.\n"
         "Fix the candidate PlantUML using only the validation issues and repair guidance below.\n"
@@ -1407,6 +1415,8 @@ def build_repair_prompt(
         f"{candidate_puml}\n\n"
         "Validation issues to fix:\n"
         + ("\n".join(f"- {err}" for err in validation_issues) if validation_issues else "- none")
+        + "\n\n--- Structural Validation Rules ---\n"
+        + structural_rules
         + "\n\nRepair guidance for these issues:\n"
         + "\n".join(f"- {hint}" for hint in repair_guidance)
     )
