@@ -1,0 +1,25 @@
+@startuml
+title Graderate Component States
+
+[*] --> WaitingForStartDate : Load Rate
+
+state "Waiting for Start Date" as WaitingForStartDate
+state "Active" as Active
+state "Expired" as Expired
+state "Removed/Archived" as RemovedArchived
+
+WaitingForStartDate : do / checkCurrentDate
+
+Active : entry / updateRate
+Active : do / maintainRate
+
+Expired : entry / markAsExpired
+
+RemovedArchived : entry / removeOrArchive
+
+WaitingForStartDate --> Active : [current date >= start date]
+Active --> Expired : [finish date reached]
+Expired --> RemovedArchived : [one year from expiration date]
+RemovedArchived --> [*]
+
+@enduml

@@ -1,0 +1,139 @@
+{
+  "run_id": "open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns",
+  "case_id": "case_37_online_quiz_system",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nCash Register — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall wait for a customer.\n2. The system shall add items one by one when a customer begins a purchase.\n3. The system shall wait for payment after all items are added.\n4. The system shall go back to waiting for the next customer after the payment is made.\n\nExample 1 PlantUML:\n@startuml\ntitle State diagram of the system operations of \"Process sale\"\n\n[*] --> WaitingCustomer\n\nstate \"Waiting for customer\" as WaitingCustomer\nstate \"Record items\" as RecordItems\nstate \"Waiting for payment\" as WaitingPayment\n\nWaitingCustomer --> RecordItems : enter item\nRecordItems --> RecordItems : enter item\nRecordItems --> WaitingPayment : end of sale\nWaitingPayment --> WaitingCustomer : enter payment\n\n@enduml\n\nExample 2 Requirement:\nBusiness Process Outsourcing Bpo Management System Scenario 1 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall prompt the user to choose whether they are a new user or an already registered user.\n2. The system shall require new users to enter their details for registration and end the process if the details are invalid.\n3. The system shall save the user's information after a successful registration and allow them to log in.\n4. The system shall allow registered users to directly log in by entering their username and password and continue if the login is successful.\n5. The system shall allow users to manage their profile after logging in, which includes editing details, uploading or accepting requests, searching for other users, or viewing current deals.\n6. The system shall require users to log out after they complete any action.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Machine Diagram (User System)\n\n[*] --> UserType\n\nstate UserType <<choice>>\nUserType --> Registration : [New user]\nUserType --> Login : [Registered user]\n\nstate \"Registration\" as Registration {\n    [*] --> GettingDetails\n\n    state GettingDetails\n    state ChoiceReg <<choice>>\n    state \"Update Database\" as UpdateDB\n    state EndInvalid <<choice>>\n\n    GettingDetails --> ChoiceReg : [Registration verification]\n    ChoiceReg --> UpdateDB : [valid]\n    ChoiceReg --> EndInvalid : [invalid]\n\n    EndInvalid --> [*]\n}\n\nRegistration : entry / New user\nRegistration : do / Registration\nRegistration : exit / After updation\n\nUpdateDB --> Login : [verified]\n\nstate Login\nLogin : do / Enter username and password\nLogin : exit / After verification\n\nLogin --> Profile : [valid uname & pwd]\n\nstate \"Profile\" as Profile {\n    [*] --> ChoiceProfile\n\n    state ChoiceProfile <<choice>>\n    state \"View or Edit profile\" as EditProfile\n    state \"Upload or Accept request\" as UploadReq\n    state \"Search users\" as SearchUsers\n    state \"View current deals\" as ViewDeals\n\n    ChoiceProfile --> EditProfile : [edit profile data]\n    ChoiceProfile --> UploadReq : [new project]\n    ChoiceProfile --> SearchUsers : [search user]\n    ChoiceProfile --> ViewDeals : [current deals]\n\n\n}\n\nProfile : entry / View or Edit profile\nProfile : do / Upload or Accept request\nProfile : do / Search users\nProfile : do / View current deals\nProfile : exit / Logout\n\n    EditProfile --> [*] : [Logout]\n    UploadReq --> [*] : [Logout]\n    SearchUsers --> [*] : [Logout]\n    ViewDeals --> [*] : [Logout]\n\n@enduml\n\nExample 3 Requirement:\nBook Bank Management System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to register by entering their details.\n2. The system shall issue a member ID and complete the registration upon correct entry of details.\n3. The system shall require the user to re-enter their details upon incorrect entry of details.\n4. The system shall allow a user to log in after successful registration using their member ID and password.\n5. The system shall allow the user to continue upon correct entry of member ID and password during login. Otherwise, they cannot log in.\n6. The system shall allow a user to search for a book by entering its details.\n7. The system shall show suggestions if a book is found during a search; otherwise, it shall allow the user to choose another option.\n8. The system shall allow a user to get a book by entering its ID and their member ID.\n9. The system shall allow the user to get the book if their membership is active; otherwise, it shall require them to pay the fine amount first.\n10. The system shall allow a user to buy a book by entering its ID and seeing the price.\n11. The system shall provide the book if the user pays; otherwise, it shall end the process there.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\nstate \"Registration\" as Registration {\n  [*] --> RegEnterDetails\n\n  state \"Enter Details\" as RegEnterDetails\n  state \"Get Member_ID\" as GetMemberID\n  state \"Successful Registration\" as SuccessfulRegistration\n  state \"Re-enter Details\" as ReEnterDetails\n\n  RegEnterDetails --> GetMemberID : [Valid]\n  RegEnterDetails --> ReEnterDetails : [Invalid]\n  ReEnterDetails --> RegEnterDetails\n  GetMemberID --> SuccessfulRegistration\n}\n\nstate \"Authentication\" as Authentication {\n  [*] --> AuthEnterMemberID\n\n  state \"Enter Member_ID\" as AuthEnterMemberID\n  state \"Enter Password\" as EnterPassword\n  state \"successful Login\" as SuccessfulLogin\n  state \"Invalid Member_ID or Password\" as InvalidCreds\n\n  AuthEnterMemberID --> EnterPassword\n  EnterPassword --> SuccessfulLogin : [Valid]\n  EnterPassword --> InvalidCreds : [Invalid]\n}\n\nstate \"Search Books\" as SearchBooks {\n  [*] --> EnterBookDetails\n\n  state \"Enter Book Details\" as EnterBookDetails\n  state \"Display Suggestion\" as DisplaySuggestion\n  state \"choose Alternate option\" as ChooseAlternate\n\n  EnterBookDetails --> DisplaySuggestion : [Found]\n  EnterBookDetails --> ChooseAlternate : [Not Found]\n}\n\nstate \"Get Books\" as GetBooksState {\n  [*] --> GetEnterBookID\n\n  state \"Enter Book_ID\" as GetEnterBookID\n  state \"Enter Member_ID\" as GetEnterMemberID\n  state \"Obtain Books\" as ObtainBooks\n  state \"Pay Fine Amount\" as PayFineAmount\n\n  GetEnterBookID --> GetEnterMemberID\n  GetEnterMemberID --> ObtainBooks : [Active Member]\n  GetEnterMemberID --> PayFineAmount : [Inactive Member]\n}\n\nstate \"Buy Books\" as BuyBooks {\n  [*] --> BuyEnterBookID\n\n  state \"Enter Book_ID\" as BuyEnterBookID\n  state \"Display Book Amount\" as DisplayBookAmount\n  state \"Get Books\" as BuyGetBooks\n  state BuyNotPaidEnd <<choice>>\n\n  BuyEnterBookID --> DisplayBookAmount\n  DisplayBookAmount --> BuyGetBooks : [Paid]\n  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]\n  BuyNotPaidEnd --> [*]\n}\n\nstate StartJoin <<choice>>\n\n[*] --> StartJoin\nStartJoin --> Registration\nStartJoin --> Authentication\nStartJoin --> SearchBooks\nStartJoin --> GetBooksState\nStartJoin --> BuyBooks\n\nSuccessfulRegistration --> AuthEnterMemberID\n\nSuccessfulLogin --> EnterBookDetails\nSuccessfulLogin --> GetEnterBookID\nSuccessfulLogin --> BuyEnterBookID\n\n\nObtainBooks --> [*]\nBuyGetBooks --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- PlantUML Structural Validation Patterns ---\n\nThe uppercase identifiers below are placeholders.\nReplace them with existing requirement-supported states, events, and guards.\nDo not copy placeholder names into the final diagram.\n\nPattern 1: never connect the initial pseudostate directly to the final pseudostate\n\n' Invalid\n[*] --> [*]\n\n' Valid\n[*] --> INITIAL_STATE\nINITIAL_STATE --> TERMINAL_STATE : SUPPORTED_EVENT\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 2: use exactly one top-level initial transition\n\n' Invalid\n[*] --> FIRST_STATE\n[*] --> SECOND_STATE\n\n' Valid\n[*] --> FIRST_STATE\nFIRST_STATE --> SECOND_STATE : SUPPORTED_EVENT\n\n\nPattern 3: add a missing initial transition\n\n[*] --> INITIAL_STATE\n\n\nPattern 4: add a missing final transition\n\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 5: connect every requirement-supported orphan state\n\nPREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT\nORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If ORPHAN_STATE is unsupported by the requirement, omit it.\n\n\nPattern 6: create a path to every requirement-supported unreachable state\n\nREACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT\nUNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If UNREACHABLE_STATE is unsupported by the requirement, omit it.\n\n\nPattern 7: keep only one transition for the same source and target\n\n' Invalid\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\n\n' Valid\nSOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT\n\n\nPattern 8: every choice node must have outgoing transitions\n\nstate DECISION_NODE <<choice>>\nSOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 9: choice-node outgoing transitions must use guards\n\n' Invalid\nDECISION_NODE --> FIRST_STATE\nDECISION_NODE --> SECOND_STATE\n\n' Valid\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 10: a fork node must have multiple outgoing branches\n\nstate FORK_NODE <<fork>>\nSOURCE_STATE --> FORK_NODE : SUPPORTED_EVENT\nFORK_NODE --> FIRST_PARALLEL_STATE\nFORK_NODE --> SECOND_PARALLEL_STATE\n\n\nPattern 11: a join node must have multiple incoming branches\n\nstate JOIN_NODE <<join>>\nFIRST_PARALLEL_STATE --> JOIN_NODE\nSECOND_PARALLEL_STATE --> JOIN_NODE\nJOIN_NODE --> NEXT_STATE\n\n\nPattern 12: use history only inside a composite state\n\nstate COMPOSITE_STATE {\n  [H] --> RESUMED_CHILD_STATE\n}\n\n\nPattern 13: do not add another [*] transition inside a composite state\n\n' Invalid\nstate PARENT_STATE {\n  [*] --> CHILD_STATE\n}\n\n' Valid\nstate PARENT_STATE {\n  state CHILD_STATE\n}\nPARENT_STATE --> CHILD_STATE : SUPPORTED_EVENT\n\n\n\n--- Task ---\n\nRequirement:\n\nOnline Quiz System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to register or log in with their details.\n2. The system shall allow users to continue as a teacher or a student after logging in.\n3. The system shall allow teachers to create a new quiz.\n4. The system shall allow teachers to edit an existing quiz.\n5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.\n6. The system shall allow teachers to view quiz results once the quiz is over.\n7. The system shall allow students to select a quiz after getting notified if they continue as a student.\n8. The system shall allow students to answer the selected quiz.\n9. The system shall allow students to submit their quiz after answering.\n10. The system shall allow students to view the result after submitting the quiz.\n",
+  "requirement_used": "Online Quiz System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to register or log in with their details.\n2. The system shall allow users to continue as a teacher or a student after logging in.\n3. The system shall allow teachers to create a new quiz.\n4. The system shall allow teachers to edit an existing quiz.\n5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.\n6. The system shall allow teachers to view quiz results once the quiz is over.\n7. The system shall allow students to select a quiz after getting notified if they continue as a student.\n8. The system shall allow students to answer the selected quiz.\n9. The system shall allow students to submit their quiz after answering.\n10. The system shall allow students to view the result after submitting the quiz.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns\\case_37_online_quiz_system\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "multiple_initial_state_transitions (Login, EnterDetails, EditQuiz, EnterDetails)",
+      "orphan_states_detected",
+      "orphan: AnswerQuiz, SubmitQuiz, ViewResult, ViewResults"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 12,
+    "transition_count": 7
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "multiple_initial_state_transitions (Login, EnterDetails, EditQuiz, EnterDetails)",
+      "orphan_states_detected",
+      "orphan: AnswerQuiz, SubmitQuiz, ViewResult, ViewResults"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_42_cash_register",
+        "case_11_business_process_outsourcing_bpo_management_system_1",
+        "case_38_book_bank_management_system"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (Login, EnterDetails, EditQuiz, EnterDetails)",
+        "orphan_states_detected",
+        "orphan: AnswerQuiz, SubmitQuiz, ViewResult, ViewResults"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (Login, EnterDetails, EditQuiz, EnterDetails)",
+        "orphan_states_detected",
+        "orphan: AnswerQuiz, SubmitQuiz, ViewResult, ViewResults"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (Login, EnterDetails, EditQuiz, EnterDetails)",
+          "orphan_states_detected",
+          "orphan: AnswerQuiz, SubmitQuiz, ViewResult, ViewResults"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 12,
+        "transition_count": 7
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns\\case_37_online_quiz_system\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 12,
+    "state_fn": 25,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 7,
+    "transition_fn": 27,
+    "state_precision_relaxed": 0.5,
+    "state_recall_relaxed": 0.2608695652173913,
+    "state_f1_relaxed": 0.3428571428571428,
+    "state_tp_relaxed": 6,
+    "state_fp_relaxed": 6,
+    "state_fn_relaxed": 17,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 7,
+    "transition_fn_relaxed": 27,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 7,
+    "transition_fn_semantic": 27,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "multiple_initial_state_transitions (Login, EnterDetails, EditQuiz, EnterDetails)",
+      "orphan_states_detected",
+      "orphan: AnswerQuiz, SubmitQuiz, ViewResult, ViewResults"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.5,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.1714285714285714,
+    "weighted_f1_relaxed_70_30": 0.23999999999999994,
+    "overall_f1_semantic": 0.1714285714285714,
+    "weighted_f1_semantic_70_30": 0.23999999999999994,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "multiple_initial_state_transitions (Login, EnterDetails, EditQuiz, EnterDetails)",
+      "orphan_states_detected",
+      "orphan: AnswerQuiz, SubmitQuiz, ViewResult, ViewResults"
+    ]
+  }
+}

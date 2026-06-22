@@ -1,0 +1,53 @@
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>>
+state EditorChoice <<choice>>
+state ReadFeedbackChoice <<choice>>
+state EndJoin <<choice>>
+
+[*] --> StartChoice
+StartChoice --> Register
+StartChoice --> Login
+
+Register --> AdminChoice
+Login --> EditorChoice
+
+AdminChoice --> ManageProfiles
+AdminChoice --> InvalidUser
+ManageProfiles --> Publishing
+InvalidUser --> [*]
+
+EditorChoice --> Writing
+EditorChoice --> Editing
+EditorChoice --> InvalidUser
+Writing --> Editing
+Editing --> Publishing
+
+Publishing --> Reading
+Reading --> Reading
+
+Search --> Search
+Reading --> ReadFeedbackChoice
+ReadFeedbackChoice --> Feedback
+Feedback --> EndJoin
+
+EndJoin --> [*]
+
+state Admin <<extends ManageProfiles>>
+Admin : do / Manage profile in database
+Admin : do / Add, delete or edit profiles if necessary
+Admin : exit / Action completed
+
+state Editor <<extends Writing & Editing>>
+Editor : entry / Writer logged in
+Editor : do / Write article
+Editor : exit / Send to editor
+
+state Reader <<extends Reading>>
+Reader : entry / Published article
+Reader : do / Read article
+Reader : exit / Completed reading
+
+@enduml

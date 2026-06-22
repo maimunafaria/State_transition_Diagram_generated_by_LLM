@@ -1,0 +1,27 @@
+@startuml
+title UML state machine diagram
+
+@import "patterns.puml"
+
+state Idle
+Idle --> INITIAL_STATE
+INITIAL_STATE --> Register
+Register --> Login : ValidRegistration, InvalidRegistration
+Login --> InvalidLogin : InvalidCredentials
+InvalidLogin --> Idle
+Login --> CheckWeather : EnterLocation
+CheckWeather --> ViewLocation
+ViewLocation --> ValidateLocation : ValidLocation, InvalidLocation
+ValidateLocation --> ChooseWeatherInfo : ChooseWeatherInfo_Guard
+ChooseWeatherInfo --> TemperatureInfo, HumidityInfo, RainfallInfo, PressureInfo, DewPointInfo
+state ViewAdditionalDetails {
+  ViewAdditionalDetails --> WeatherAlerts, WeeklyAnalysis, FuturePrediction, Graph
+}
+ViewAdditionalDetails --> Logout : Logout_Event
+Logout --> [*] : COMPLETION_EVENT
+
+state ValidateLocation {
+  ValidateLocation --> ValidateLocation : ValidLocation
+  ValidateLocation --> InvalidLocation : InvalidLocationEntered
+}
+@enduml

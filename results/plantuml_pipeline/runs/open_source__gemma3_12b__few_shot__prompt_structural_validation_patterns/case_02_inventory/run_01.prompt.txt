@@ -1,0 +1,499 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Java — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall skip non-meaningful elements like spaces or comments.
+2. The system shall ignore empty spaces and line breaks at the beginning.
+3. The system shall skip all characters from // to the end of the line.
+4. The system shall continue skipping content until the end of a block comment (*/).
+
+Example 1 PlantUML:
+@startuml
+title State diagram for advancing past whitespace and comments in Java
+
+[*] --> Start
+
+state Start
+state "saw '/'" as SawSlash
+state "line comment" as LineComment
+state "saw '*'" as SawStar
+state "block comment" as BlockComment
+state EndWhitespace
+
+' whitespace loop
+Start --> Start : next char = ' ' \\t \\r \\n / advance
+
+' detect slash
+Start --> SawSlash : next char = '/' / advance
+
+' anything else → end
+Start --> EndWhitespace : next char = anything else
+
+' after seeing '/'
+SawSlash --> LineComment : next char = '/' / advance
+SawSlash --> SawStar : next char = '*' / advance
+SawSlash --> EndWhitespace : next char != '/' or '*' / pushback '/'
+
+' line comment behavior
+LineComment --> LineComment : next char != eoln / advance
+LineComment --> Start : next char = eoln / advance
+
+' saw '*' (possible block comment)
+SawStar --> BlockComment : next char = '*' / advance
+
+' block comment behavior
+BlockComment --> BlockComment : next char != '*' / advance
+BlockComment --> SawStar : next char = '*' / advance
+
+' loop back
+SawStar --> BlockComment : next char = '*' / advance
+BlockComment --> Start : next char = '/' / advance
+
+EndWhitespace --> [*]
+
+@enduml
+
+Example 2 Requirement:
+National Health Id — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if a person is an Indian citizen.
+2. The system shall verify the details of an Indian citizen.
+3. The system shall generate a unique health ID for registered Indian citizens.
+4. The system shall activate an account upon successful login.
+5. The system shall support after activation, the system shall allow users to either add old files or set permissions.
+6. The system shall store added old files.
+7. The system shall provide access to relevant authorities based on set permissions.
+8. The system shall allow adding new files when permission is granted.
+9. The system shall store all the information provided by users.
+10. The system shall allow the government to access stored data to view details and prepare reports.
+
+Example 2 PlantUML:
+@startuml
+
+[*] --> Choice1
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+state Choice3 <<choice>>
+Choice1 --> Verification : Indian
+Choice1 --> [*] : not Indian
+
+Verification : entry / Citizenship status
+Verification : do / Verify details
+Verification : exit / Verified status
+
+Verification --> Registration : verified
+
+Registration : entry / Citizenship status
+Registration : do / Register with ID
+Registration : exit / Unique National Health ID
+
+Registration --> Login : registered
+
+Login : entry / National Health ID
+Login : do / Login with the ID
+Login : exit / Logged in to the account
+
+Login --> Choice2
+Choice2 --> Activation : login success
+Choice2 --> [*]
+Activation : entry / Logged in the account
+Activation : do / Activate the account
+Activation : exit / Activated account
+
+Activation --> AddFiles : add old files
+Activation --> Permission : proceed to permissions
+
+AddFiles : entry / Activated account
+AddFiles : do / Add the files
+AddFiles : exit / Added old files
+
+AddFiles --> Repository
+
+Permission : entry / Activated account
+Permission : do / Providing permissions
+Permission : exit / Access of authorities
+
+Permission --> Access : permission granted
+Permission --> Repository : saving permissions
+
+Access : entry / Checking for permission
+Access : do / Accessing the files
+Access : exit / Adding new files
+
+Access --> Choice3
+Choice3 --> Repository : given permission
+Choice3 --> [*]
+Access --> [*] : no permission
+
+Government : entry / Having repository
+Government : do / Accessing the details
+Government : exit / Analysis report
+
+Government --> Repository
+
+Repository : entry / Government repository
+Repository : do / Saving the details
+Repository : exit / Logged out
+
+Repository --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Car Care — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose whether they are using the service center side or the car owner side.
+2. The system shall allow service center users to register or log in if already registered.
+3. The system shall allow service center users to enter damaged parts, update parts information, or send expiry-related notifications after logging in.
+4. The system shall allow service center users to log out after finishing any of the above activities.
+5. The system shall allow car owner users to register or log in.
+6. The system shall allow car owners to view parts information, request or respond to services, or report a service center after logging in.
+7. The system shall allow car owners to select required parts and make a payment when choosing a service.
+8. The system shall allow car owners to log out after completing their activities.
+
+Example 3 PlantUML:
+@startuml
+title UML state machine diagram
+
+state PortalChoice1 <<choice>>
+state PortalChoice2 <<choice>>
+state PortalChoice3 <<choice>>
+state ServiceJoin <<choice>>
+state OwnerJoin <<choice>>
+
+
+[*] --> PortalChoice1
+
+PortalChoice1 --> PortalChoice2 : [Service Center Portal]
+PortalChoice1 --> PortalChoice3 : [Car Owner Portal]
+
+PortalChoice2 --> ServiceCenterRegistration : [New Service Center]
+PortalChoice2 --> ServiceJoin : [Registered Service center]
+PortalChoice3 --> CarOwnerRegistration : [New Car Owner]
+PortalChoice3 --> OwnerJoin : [Registered Car Owner]
+
+state "Service Center Registration" as ServiceCenterRegistration
+ServiceCenterRegistration : entry / Unregistered service center
+ServiceCenterRegistration : do / Enter Valid Credentials
+ServiceCenterRegistration : exit / Account registered
+
+state "Service Center Verification" as ServiceCenterVerification
+ServiceCenterVerification : entry / Service Center account registered
+ServiceCenterVerification : do / Verify Service center
+ServiceCenterVerification : exit / Login Service center
+
+state "Service Center Login" as ServiceCenterLogin
+ServiceCenterLogin : entry / Verified Service Center
+ServiceCenterLogin : entry / Service Center not logged in
+ServiceCenterLogin : do / Authenticate Service Center
+ServiceCenterLogin : exit / Logged In Successfully
+
+state "Service center Home" as ServiceCenterHome
+ServiceCenterHome : entry / Logged in Service Center
+ServiceCenterHome : do / Display home page
+ServiceCenterHome : exit / Enter Damaged parts list
+ServiceCenterHome : exit / Expiry Notification page
+ServiceCenterHome : exit / Updating Information list
+
+state "Expiry Notification page" as ExpiryNotification
+ExpiryNotification : entry / To view expiry notification
+ExpiryNotification : do / Send service request to Car owner
+ExpiryNotification : exit / Return to Service center home page
+
+state "Entering Damaged parts list" as DamagedParts
+DamagedParts : entry / To enter Damaged parts list
+DamagedParts : do / Preparing and entering damaged parts list
+DamagedParts : exit / Return to service center home page
+
+state "Updating parts Information" as UpdatingParts
+UpdatingParts : entry / To update changed parts information
+UpdatingParts : do / Update Information
+UpdatingParts : exit / Return to Service center home page
+
+state "Logout" as Logout
+Logout : entry / To Logout
+Logout : do / Logout
+Logout : exit / Logged out Successfully
+
+state "Car Owner Registration" as CarOwnerRegistration
+CarOwnerRegistration : entry / Unregistered Car Owner
+CarOwnerRegistration : do / Enter valid Credentials
+CarOwnerRegistration : exit / Account registered
+
+state "Car owner Verification" as CarOwnerVerification
+CarOwnerVerification : entry / Car owner account registered
+CarOwnerVerification : do / Verify Car owner
+CarOwnerVerification : exit / Login Car Owner
+
+state "Car Owner Login" as CarOwnerLogin
+CarOwnerLogin : entry / Verified Car Owner
+CarOwnerLogin : entry / Car owner not logged in
+CarOwnerLogin : do / Authenticate Car Owner
+CarOwnerLogin : exit / Logged In Successfully
+
+state "Car Owner Home" as CarOwnerHome
+CarOwnerHome : entry / Logged in Car Owner
+CarOwnerHome : do / Display home page
+CarOwnerHome : exit / View parts information
+CarOwnerHome : exit / Service
+CarOwnerHome : exit / Report
+
+state "Report" as Report
+Report : entry / To Report Service center
+Report : do / Enter the report
+Report : exit / Return to car owner home page
+
+state "View Parts Information" as ViewPartsInformation
+ViewPartsInformation : entry / To view parts information
+ViewPartsInformation : do / View car parts Information
+ViewPartsInformation : exit / Return to Car owner home page
+
+state "Service" as Service
+Service : entry / Service request from service center
+Service : do / Accept or deny request
+Service : exit / Return to Car Owner home page
+
+state "Choose parts" as ChooseParts
+ChooseParts : entry / To choose selected parts
+ChooseParts : do / Choose the part to be serviced
+ChooseParts : exit / Return to service page
+
+state "Make Payment" as MakePayment
+MakePayment : entry / To make payments
+MakePayment : do / Make payments
+MakePayment : exit / Return to Service page
+
+
+state ServiceHomeChoice <<choice>>
+state ServiceLoginChoice <<choice>>
+state OwnerHomeChoice <<choice>>
+state OwnerLoginChoice <<choice>>
+state FinalJoin <<choice>>
+
+
+ServiceCenterRegistration --> ServiceCenterVerification
+ServiceCenterVerification --> ServiceJoin
+ServiceJoin --> ServiceCenterLogin
+ServiceCenterLogin --> ServiceLoginChoice
+ServiceLoginChoice --> ServiceCenterHome
+ExpiryNotification --> ServiceLoginChoice
+UpdatingParts --> ServiceLoginChoice
+DamagedParts --> ServiceLoginChoice
+
+ServiceCenterHome --> ServiceHomeChoice : [Possible Activities]
+ServiceHomeChoice --> ExpiryNotification
+ServiceHomeChoice --> DamagedParts
+ServiceHomeChoice --> UpdatingParts
+ServiceHomeChoice --> FinalJoin
+
+FinalJoin --> Logout
+Logout --> [*]
+
+
+
+CarOwnerRegistration --> CarOwnerVerification
+CarOwnerVerification --> OwnerJoin
+OwnerJoin --> CarOwnerLogin
+
+CarOwnerLogin --> OwnerLoginChoice
+OwnerLoginChoice --> CarOwnerHome
+CarOwnerHome --> OwnerHomeChoice : [Possible Activities]
+ViewPartsInformation --> OwnerLoginChoice
+Report --> OwnerLoginChoice
+Service --> OwnerLoginChoice
+
+OwnerHomeChoice --> Report
+OwnerHomeChoice --> ViewPartsInformation
+OwnerHomeChoice --> Service
+OwnerHomeChoice --> FinalJoin
+
+Service --> ChooseParts
+ChooseParts --> MakePayment
+MakePayment --> Service
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- PlantUML Structural Validation Patterns ---
+
+The uppercase identifiers below are placeholders.
+Replace them with existing requirement-supported states, events, and guards.
+Do not copy placeholder names into the final diagram.
+
+Pattern 1: never connect the initial pseudostate directly to the final pseudostate
+
+' Invalid
+[*] --> [*]
+
+' Valid
+[*] --> INITIAL_STATE
+INITIAL_STATE --> TERMINAL_STATE : SUPPORTED_EVENT
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+
+Pattern 2: use exactly one top-level initial transition
+
+' Invalid
+[*] --> FIRST_STATE
+[*] --> SECOND_STATE
+
+' Valid
+[*] --> FIRST_STATE
+FIRST_STATE --> SECOND_STATE : SUPPORTED_EVENT
+
+
+Pattern 3: add a missing initial transition
+
+[*] --> INITIAL_STATE
+
+
+Pattern 4: add a missing final transition
+
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+
+Pattern 5: connect every requirement-supported orphan state
+
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+' If ORPHAN_STATE is unsupported by the requirement, omit it.
+
+
+Pattern 6: create a path to every requirement-supported unreachable state
+
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+' If UNREACHABLE_STATE is unsupported by the requirement, omit it.
+
+
+Pattern 7: keep only one transition for the same source and target
+
+' Invalid
+SOURCE_STATE --> TARGET_STATE : FIRST_EVENT
+SOURCE_STATE --> TARGET_STATE : FIRST_EVENT
+
+' Valid
+SOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT
+
+
+Pattern 8: every choice node must have outgoing transitions
+
+state DECISION_NODE <<choice>>
+SOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]
+
+
+Pattern 9: choice-node outgoing transitions must use guards
+
+' Invalid
+DECISION_NODE --> FIRST_STATE
+DECISION_NODE --> SECOND_STATE
+
+' Valid
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]
+
+
+Pattern 10: a fork node must have multiple outgoing branches
+
+state FORK_NODE <<fork>>
+SOURCE_STATE --> FORK_NODE : SUPPORTED_EVENT
+FORK_NODE --> FIRST_PARALLEL_STATE
+FORK_NODE --> SECOND_PARALLEL_STATE
+
+
+Pattern 11: a join node must have multiple incoming branches
+
+state JOIN_NODE <<join>>
+FIRST_PARALLEL_STATE --> JOIN_NODE
+SECOND_PARALLEL_STATE --> JOIN_NODE
+JOIN_NODE --> NEXT_STATE
+
+
+Pattern 12: use history only inside a composite state
+
+state COMPOSITE_STATE {
+  [H] --> RESUMED_CHILD_STATE
+}
+
+
+Pattern 13: do not add another [*] transition inside a composite state
+
+' Invalid
+state PARENT_STATE {
+  [*] --> CHILD_STATE
+}
+
+' Valid
+state PARENT_STATE {
+  state CHILD_STATE
+}
+PARENT_STATE --> CHILD_STATE : SUPPORTED_EVENT
+
+
+
+--- Task ---
+
+Requirement:
+
+Inventory — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to add new goods to the inventory.
+2. The system shall allow the user to update the price of existing items in the inventory.
+3. The system shall allow the user to remove goods from the inventory that are no longer required.
+4. The system shall identify expired goods and notify the user about their removal from the inventory.
+5. The system shall allow the user to place an order to a supplier for additional goods when required.
+6. The system shall generate an invoice for the order once it is placed.
+7. The system shall allow the user to search for items available in the inventory and select them for purchase.
+8. The system shall calculate the applicable discount and tax based on the selected items.
+9. The system shall generate a receipt for the customer after the purchase.
+10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.
+11. The system shall record customer requests for items that may not be currently available.
+12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.

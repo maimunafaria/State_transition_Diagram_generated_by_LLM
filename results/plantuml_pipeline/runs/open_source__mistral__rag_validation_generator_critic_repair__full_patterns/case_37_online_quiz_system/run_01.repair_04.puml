@@ -1,0 +1,36 @@
+@startuml
+title UML State Machine Diagram
+
+@valid
+[*] --> INITIAL_STATE
+INITIAL_STATE --> Registration : SUPPORTED_EVENT
+INITIAL_STATE --> Authentication : SUPPORTED_EVENT
+INITIAL_STATE --> SearchBooks : SUPPORTED_EVENT
+INITIAL_STATE --> GetBooksState : SUPPORTED_EVENT
+INITIAL_STATE --> BuyBooks : SUPPORTED_EVENT
+
+Registration --> ReEnterDetails : [Invalid]
+ReEnterDetails --> RegEnterDetails
+RegEnterDetails --> GetMemberID : [Valid]
+GetMemberID --> SuccessfulRegistration
+
+Authentication --> AuthEnterMemberID
+AuthEnterMemberID --> EnterPassword
+EnterPassword --> SuccessfulLogin : [Valid]
+EnterPassword --> InvalidCreds : [Invalid]
+
+SearchBooks --> EnterBookDetails : [Found]
+EnterBookDetails --> DisplaySuggestion
+DisplaySuggestion --> ChooseAlternate : [Not Found]
+
+GetBooksState --> GetEnterBookID
+GetBooksState --> ObtainBooks : [Active Member]
+
+BuyBooks --> BuyEnterBookID
+BuyBooks --> DisplayBookAmount : [Paid]
+DisplayBookAmount --> BuyGetBooks
+
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+@invalid
+BuyNotPaidEnd --> TERMINAL_STATE
+@enduml

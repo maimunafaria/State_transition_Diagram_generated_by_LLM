@@ -1,0 +1,73 @@
+@startuml
+title Inventory State Machine
+
+[*] --> AddGoods : [Add new goods]
+
+state "Inventory Management" as InventoryManagement {
+  state "Manage Goods" as ManageGoods {
+    [*] --> AddGoods : [Add new goods]
+    AddGoods : entry / start adding goods
+    AddGoods : do / add new goods to inventory
+    AddGoods : exit / goods added
+
+    AddGoods --> UpdatePrice : [Update price of existing items]
+    state "Update Price" as UpdatePrice {
+      [*] --> UpdatePrice : [Update price of existing items]
+      UpdatePrice : entry / start updating price
+      UpdatePrice : do / update the price of an item in inventory
+      UpdatePrice : exit / price updated
+
+      UpdatePrice --> RemoveGoods : [Remove goods from inventory]
+    }
+
+    RemoveGoods : entry / start removing goods
+    RemoveGoods : do / remove goods from inventory
+    RemoveGoods : exit / goods removed
+
+    RemoveGoods --> ExpireNotification : [Identify expired goods and notify user about removal]
+  }
+
+  state "Order Management" as OrderManagement {
+    [*] --> PlaceOrder : [Place an order to a supplier for additional goods when required]
+    PlaceOrder : entry / start placing order
+    PlaceOrder : do / place an order with the supplier
+    PlaceOrder : exit / order placed
+
+    PlaceOrder --> GenerateInvoice : [Generate invoice for the order once it is placed]
+  }
+
+  state "Purchase Management" as PurchaseManagement {
+    [*] --> SearchItems : [Search for items available in the inventory and select them for purchase]
+    SearchItems : entry / start searching
+    SearchItems : do / search for items in inventory
+    SearchItems : exit / items found
+
+    SearchItems --> SelectItem : [Select item(s) for purchase]
+    state "Calculate Discount & Tax" as CalculateDiscountTax {
+      [*] --> CalculateDiscountTax : [Calculate the applicable discount and tax based on selected items]
+      CalculateDiscountTax : entry / start calculating
+      CalculateDiscountTax : do / calculate discount and tax
+      CalculateDiscountTax : exit / discount and tax calculated
+
+      CalculateDiscountTax --> GenerateReceipt : [Generate receipt for customer after purchase]
+    }
+
+    GenerateReceipt : entry / generate receipt
+    GenerateReceipt : do / create a receipt for the customer
+    GenerateReceipt : exit / receipt generated
+
+    GenerateReceipt --> ReplaceOrCancel : [Allow user to replace an item or cancel the receipt during billing process if needed]
+  }
+
+  state "Customer Requests" as CustomerRequests {
+    [*] --> RecordRequest : [Record customer requests for items that may not be currently available]
+  }
+
+  state "Transaction Summary" as TransactionSummary {
+    [*] --> GenerateReport : [View a summary report of all transactions carried out in the system at any point]
+  }
+}
+
+InventoryManagement --> [*] : [Complete and exit]
+
+@enduml

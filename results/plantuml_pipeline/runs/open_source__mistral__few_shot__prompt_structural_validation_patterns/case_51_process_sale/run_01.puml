@@ -1,0 +1,52 @@
+@startuml
+title UML state machine diagram - Process Sale
+
+state "Waiting for New Sale" as WaitingForSale
+WaitingForSale : entry / No sale in progress
+
+state "Adding Items" as AddingItems
+AddingItems : entry / Customer selects items
+AddingItems : do / Add item to cart
+AddingItems : exit / [item added] Move to Payment
+
+state "Payment" as Payment
+Payment : entry / All items added
+Payment : choice / Payment Method
+
+state "Cash Payment" as CashPayment
+CashPayment : entry / Customer pays with cash
+CashPayment : exit / [payment verified] Complete Sale
+
+state "Card or Check Payment" as CardOrCheckPayment
+CardOrCheckPayment : entry / Customer chooses to pay by card or check
+CardOrCheckPayment : choice / Payment Verification
+
+state "Card Payment" as CardPayment
+CardPayment : entry / Customer pays with a card
+CardPayment : exit / [payment verified] Complete Sale
+
+state "Check Payment" as CheckPayment
+CheckPayment : entry / Customer pays by check
+CheckPayment : exit / [payment verified] Complete Sale
+
+state "Verifying Payment" as VerifyingPayment
+VerifyingPayment : entry / Payment verification in progress
+VerifyingPayment : exit / [payment approved] Complete Sale
+
+state "Completed Sale" as CompletedSale
+CompletedSale : entry / Sale completed
+CompletedSale : exit / [sale finished] Return to WaitingForNewSale
+
+[*] --> WaitingForSale
+WaitingForSale --> AddingItems : [customer selects item]
+AddingItems --> Payment : [all items added]
+Payment --> CashPayment : [payment method: cash]
+CashPayment --> CompletedSale
+Payment --> CardOrCheckPayment : [payment method: card or check]
+CardOrCheckPayment --> VerifyingPayment
+VerifyingPayment --> CardPayment : [payment verified]
+VerifyingPayment --> CompletedSale
+CardPayment --> CompletedSale
+CheckPayment --> CompletedSale
+CompletedSale --> WaitingForSale : [sale finished]
+@enduml

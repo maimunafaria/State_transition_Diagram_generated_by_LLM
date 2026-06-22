@@ -1,0 +1,67 @@
+@startuml
+title State diagram for Healthcare Portal
+
+[*] --> Registration
+
+state Registration {
+    state "New User" as NewUser
+    state "Registered User" as RegisteredUser
+}
+
+' New user registration
+NewUser : entry / Start
+NewUser : do / Enter details
+NewUser : exit / Validate details
+RegisteredUser : entry / Successful Registration
+RegisteredUser : do / Access granted
+RegisteredUser : exit / Login
+
+Registration --> NewUser : User is new
+NewUser --> RegisteredUser : Details are valid
+
+' Failed registration
+NewUser --> [*] : Details are invalid
+
+Login : entry / To Action
+Login : do / Log in to the system
+Login : exit / Username and password entered
+
+[*] --> Login
+Login --> SignIn : Correct login details
+SignIn : entry / Access granted
+SignIn : do / Provide access to facilities
+SignIn : exit / Continue using the system
+
+' Failed sign in
+SignIn --> [*] : Incorrect login details
+
+Facilities : entry / To Action
+Facilities : do / Read news and expert content
+Facilities : do / Check symptoms or use fitness checking options
+Facilities : exit / View result
+
+Result : entry / To Action
+Result : do / Continue using the system or finish session
+Result : exit / Logout
+
+Insurance : entry / To Action
+Insurance : do / Process and validate insurance
+Insurance : do / Check payment with insurance for doctor consultations
+Insurance : do / Complete the payment process
+
+Payment : entry / To Action
+Payment : do / Allow users to select payment methods (cash or insurance)
+Payment : do / Inform users about cash payment details if chosen as the payment method
+Payment : do / Complete the payment process for insurance-based payments
+
+Feedback : entry / To Action
+Feedback : do / Collect user feedback after service completion
+
+Logout : entry / To Action
+Logout : do / Log out users at the end of their session
+
+SignIn --> Insurance : Requires finance-related services
+Insurance --> Payment : Requires payment
+Payment --> Feedback : After service completion
+Feedback --> Logout : At the end of the session
+@enduml

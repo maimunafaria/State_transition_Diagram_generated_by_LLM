@@ -1,0 +1,160 @@
+{
+  "run_id": "open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns",
+  "case_id": "case_65_plane",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nCash Register — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall wait for a customer.\n2. The system shall add items one by one when a customer begins a purchase.\n3. The system shall wait for payment after all items are added.\n4. The system shall go back to waiting for the next customer after the payment is made.\n\nExample 1 PlantUML:\n@startuml\ntitle State diagram of the system operations of \"Process sale\"\n\n[*] --> WaitingCustomer\n\nstate \"Waiting for customer\" as WaitingCustomer\nstate \"Record items\" as RecordItems\nstate \"Waiting for payment\" as WaitingPayment\n\nWaitingCustomer --> RecordItems : enter item\nRecordItems --> RecordItems : enter item\nRecordItems --> WaitingPayment : end of sale\nWaitingPayment --> WaitingCustomer : enter payment\n\n@enduml\n\nExample 2 Requirement:\nBusiness Process Outsourcing Bpo Management System Scenario 1 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall prompt the user to choose whether they are a new user or an already registered user.\n2. The system shall require new users to enter their details for registration and end the process if the details are invalid.\n3. The system shall save the user's information after a successful registration and allow them to log in.\n4. The system shall allow registered users to directly log in by entering their username and password and continue if the login is successful.\n5. The system shall allow users to manage their profile after logging in, which includes editing details, uploading or accepting requests, searching for other users, or viewing current deals.\n6. The system shall require users to log out after they complete any action.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Machine Diagram (User System)\n\n[*] --> UserType\n\nstate UserType <<choice>>\nUserType --> Registration : [New user]\nUserType --> Login : [Registered user]\n\nstate \"Registration\" as Registration {\n    [*] --> GettingDetails\n\n    state GettingDetails\n    state ChoiceReg <<choice>>\n    state \"Update Database\" as UpdateDB\n    state EndInvalid <<choice>>\n\n    GettingDetails --> ChoiceReg : [Registration verification]\n    ChoiceReg --> UpdateDB : [valid]\n    ChoiceReg --> EndInvalid : [invalid]\n\n    EndInvalid --> [*]\n}\n\nRegistration : entry / New user\nRegistration : do / Registration\nRegistration : exit / After updation\n\nUpdateDB --> Login : [verified]\n\nstate Login\nLogin : do / Enter username and password\nLogin : exit / After verification\n\nLogin --> Profile : [valid uname & pwd]\n\nstate \"Profile\" as Profile {\n    [*] --> ChoiceProfile\n\n    state ChoiceProfile <<choice>>\n    state \"View or Edit profile\" as EditProfile\n    state \"Upload or Accept request\" as UploadReq\n    state \"Search users\" as SearchUsers\n    state \"View current deals\" as ViewDeals\n\n    ChoiceProfile --> EditProfile : [edit profile data]\n    ChoiceProfile --> UploadReq : [new project]\n    ChoiceProfile --> SearchUsers : [search user]\n    ChoiceProfile --> ViewDeals : [current deals]\n\n\n}\n\nProfile : entry / View or Edit profile\nProfile : do / Upload or Accept request\nProfile : do / Search users\nProfile : do / View current deals\nProfile : exit / Logout\n\n    EditProfile --> [*] : [Logout]\n    UploadReq --> [*] : [Logout]\n    SearchUsers --> [*] : [Logout]\n    ViewDeals --> [*] : [Logout]\n\n@enduml\n\nExample 3 Requirement:\nOnline Marketplace — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall require the user to provide their details and create an account before they can join as a seller or customer.\n2. The system shall allow the user to sign in and access their workspace after completing registration and verification.\n3. The system shall enable the seller to add new products to the marketplace.\n4. The system shall allow the seller to promote existing products on the platform.\n5. The system shall enable the seller to communicate with customers through the platform.\n6. The system shall allow the seller to leave the platform at any time, leading to logging out.\n7. The system shall require the customer to sign in and access their personal dashboard upon joining.\n8. The system shall allow the customer to explore products on the platform.\n9. The system shall enable the customer to search and view available products during browsing.\n10. The system shall allow the customer to either stop browsing or proceed with a purchase after viewing products.\n11. The system shall add the selected product to the customer's cart and allow them to proceed to checkout if they decide to make a purchase.\n12. The system shall handle payment during the checkout process.\n13. The system shall allow the customer to communicate with a seller during their session.\n14. The system shall enable the customer to report a seller if needed, based on previous interactions.\n15. The system shall allow the customer to rate and review products after receiving them.\n16. The system shall allow both the seller and the customer to log out by choosing to leave the platform at any time.\n\nExample 3 PlantUML:\n@startuml\ntitle UML state machine diagram\n\nstate \"Seller Registration\" as SellerRegistration\nSellerRegistration : entry/Unregistered Seller\nSellerRegistration : do/Get Valid Seller Credentials\nSellerRegistration : exit/Seller Account Registered\n\nstate \"Seller Verification\" as SellerVerification\nSellerVerification : entry/Seller Account Registered\nSellerVerification : do/Verify Seller\nSellerVerification : exit/Login Seller\n\nstate \"Seller Login\" as SellerLogin\nSellerLogin : entry/Unverified Seller\nSellerLogin : entry/Seller not logged in\nSellerLogin : do/Authenticate Seller\nSellerLogin : exit/Logged In Successfully\n\nstate \"Customer Login\" as CustomerLogin\nCustomerLogin : entry/Not Logged In\nCustomerLogin : do/Authenticate Customer\nCustomerLogin : exit/Successfully Logged In\n\nstate \"Seller Home\" as SellerHome\nSellerHome : entry/Logged In Seller\nSellerHome : do/Display Seller Dashboard\nSellerHome : exit/Sale Products\nSellerHome : exit/Promote Products\nSellerHome : exit/Chat\nSellerHome : exit/Logout\n\nstate \"Customer Home\" as CustomerHome\nCustomerHome : entry/Customer Logged in\nCustomerHome : do/Display Recommended/Promoted Products\nCustomerHome : exit/View Product\nCustomerHome : exit/Buy Product\nCustomerHome : exit/Chat\nCustomerHome : exit/Report Seller\nCustomerHome : exit/Rate and Review\n\nstate \"View Product\" as ViewProduct\nViewProduct : entry/To View Products\nViewProduct : do/Search and View Products\nViewProduct : exit/Return to home\nViewProduct : exit/Buy Product\n\nstate \"Buy Product\" as BuyProduct\nBuyProduct : entry/Opted to Buy\nBuyProduct : do/Add product to cart\nBuyProduct : exit/Proceed to Checkout\n\nstate \"Make Purchase\" as MakePurchase\nMakePurchase : entry/Proceeded to Checkout\nMakePurchase : do/Enable payment\nMakePurchase : exit/Payment Successful\nMakePurchase : exit/Payment Unsuccessful\nMakePurchase : exit/Return to Home\n\nstate \"Chat\" as CustomerChat\nCustomerChat : entry/To Chat\nCustomerChat : do/Chat with Seller\nCustomerChat : exit/Return to Home\n\nstate \"Report Seller\" as ReportSeller\nReportSeller : entry/To Report Seller\nReportSeller : entry/Seller in Purchase History\nReportSeller : do/Issue Report to Seller\nReportSeller : exit/Return to Home\n\nstate \"Rate and Review\" as RateReview\nRateReview : entry/To Rate and Review\nRateReview : entry/Product Delivered\nRateReview : do/Rate and Review the product\nRateReview : exit/Return to Home\n\nstate \"Sale Products\" as SaleProducts\nSaleProducts : entry/To Sale Products\nSaleProducts : do/Add new Product to Seller Inventory\nSaleProducts : exit/Product added Successfully\nSaleProducts : exit/Return to Home State\n\nstate \"Promote Products\" as PromoteProducts\nPromoteProducts : entry/To Promote Products\nPromoteProducts : entry/Product in Sale\nPromoteProducts : do/Promote a Product\nPromoteProducts : exit/Return to Home State\n\nstate \"Chat\" as SellerChat\nSellerChat : entry/To Chat\nSellerChat : entry/Seller Product in Sale\nSellerChat : entry/Message from Customer\nSellerChat : do/Enable chat with Customer\nSellerChat : exit/Return to Home State\n\nstate \"Logout\" as Logout\nLogout : entry/To Logout User\nLogout : do/Logout User\nLogout : exit/User Logged out\n\nstate J0 <<choice>>\nstate J1 <<choice>>\nstate J2 <<choice>>\nstate J3 <<choice>>\nstate J4 <<choice>>\nstate J5 <<choice>>\nstate J6 <<choice>>\nstate J7 <<choice>>\nstate J8 <<choice>>\n\n[*] --> J0\nJ0 --> J1 : [Seller Portal]\nJ0 --> CustomerLogin : [Customer Portal]\n\nJ1 --> SellerRegistration : [New Seller]\nJ1 --> J2 : [Registered Seller]\n\nSellerRegistration --> SellerVerification\nSellerVerification --> J2\nJ2 --> SellerLogin\n\nCustomerLogin --> J3\nSellerLogin --> J7\nJ7 --> SellerHome : [Go To Home]\n\nJ3 --> CustomerHome : [Go To Home]\n\nCustomerHome --> J4 : [Possible Activities]\nJ4 --> ViewProduct : [View Products]\nJ4 --> CustomerChat : [Chat]\nJ4 --> ReportSeller : [Report Seller]\nJ4 --> RateReview : [Rate and Review]\nJ4 --> J8 : [Logout]\n\nViewProduct --> J5\nJ5 --> J3 : [Not to Buy]\nJ5 --> BuyProduct : [Proceed to Buy]\n\nBuyProduct --> MakePurchase\nMakePurchase --> J3\n\nCustomerChat --> J3\nReportSeller --> J3\nRateReview --> J3\n\nSellerHome --> J6 : [Possible Activities]\nJ6 --> PromoteProducts : [Promote Products]\nJ6 --> SellerChat : [Chat]\nJ6 --> SaleProducts\nJ6 --> J8 : [Logout]\n\nSaleProducts --> J7\n\nPromoteProducts --> J7\nSellerChat --> J7\n\nJ8 -->  Logout\nLogout --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- PlantUML Structural Validation Patterns ---\n\nThe uppercase identifiers below are placeholders.\nReplace them with existing requirement-supported states, events, and guards.\nDo not copy placeholder names into the final diagram.\n\nPattern 1: never connect the initial pseudostate directly to the final pseudostate\n\n' Invalid\n[*] --> [*]\n\n' Valid\n[*] --> INITIAL_STATE\nINITIAL_STATE --> TERMINAL_STATE : SUPPORTED_EVENT\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 2: use exactly one top-level initial transition\n\n' Invalid\n[*] --> FIRST_STATE\n[*] --> SECOND_STATE\n\n' Valid\n[*] --> FIRST_STATE\nFIRST_STATE --> SECOND_STATE : SUPPORTED_EVENT\n\n\nPattern 3: add a missing initial transition\n\n[*] --> INITIAL_STATE\n\n\nPattern 4: add a missing final transition\n\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 5: connect every requirement-supported orphan state\n\nPREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT\nORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If ORPHAN_STATE is unsupported by the requirement, omit it.\n\n\nPattern 6: create a path to every requirement-supported unreachable state\n\nREACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT\nUNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If UNREACHABLE_STATE is unsupported by the requirement, omit it.\n\n\nPattern 7: keep only one transition for the same source and target\n\n' Invalid\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\n\n' Valid\nSOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT\n\n\nPattern 8: every choice node must have outgoing transitions\n\nstate DECISION_NODE <<choice>>\nSOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 9: choice-node outgoing transitions must use guards\n\n' Invalid\nDECISION_NODE --> FIRST_STATE\nDECISION_NODE --> SECOND_STATE\n\n' Valid\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 10: a fork node must have multiple outgoing branches\n\nstate FORK_NODE <<fork>>\nSOURCE_STATE --> FORK_NODE : SUPPORTED_EVENT\nFORK_NODE --> FIRST_PARALLEL_STATE\nFORK_NODE --> SECOND_PARALLEL_STATE\n\n\nPattern 11: a join node must have multiple incoming branches\n\nstate JOIN_NODE <<join>>\nFIRST_PARALLEL_STATE --> JOIN_NODE\nSECOND_PARALLEL_STATE --> JOIN_NODE\nJOIN_NODE --> NEXT_STATE\n\n\nPattern 12: use history only inside a composite state\n\nstate COMPOSITE_STATE {\n  [H] --> RESUMED_CHILD_STATE\n}\n\n\nPattern 13: do not add another [*] transition inside a composite state\n\n' Invalid\nstate PARENT_STATE {\n  [*] --> CHILD_STATE\n}\n\n' Valid\nstate PARENT_STATE {\n  state CHILD_STATE\n}\nPARENT_STATE --> CHILD_STATE : SUPPORTED_EVENT\n\n\n\n--- Task ---\n\nRequirement:\n\nPlane — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall place a newly acquired plane in an 'Order' state until it is delivered.\n2. The system shall transition a plane from 'Arrival' to 'Preparation' upon its arrival.\n3. The system shall assign a prepared plane to either 'Operations' or 'Maintenance' based on its condition and schedule.\n4. The system shall keep a plane in the 'Operations' state if it still has scheduled flights.\n5. The system shall send a plane to 'Maintenance' when there are no more scheduled flights or maintenance is required.\n6. The system shall transition a plane from 'Maintenance' to 'Preparation' after checking and servicing it until it is ready for operations.\n7. The system shall take a plane out of service if it is no longer available for use.\n8. The system shall remove a plane from its operations when it is permanently withdrawn from service.\n",
+  "requirement_used": "Plane — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall place a newly acquired plane in an 'Order' state until it is delivered.\n2. The system shall transition a plane from 'Arrival' to 'Preparation' upon its arrival.\n3. The system shall assign a prepared plane to either 'Operations' or 'Maintenance' based on its condition and schedule.\n4. The system shall keep a plane in the 'Operations' state if it still has scheduled flights.\n5. The system shall send a plane to 'Maintenance' when there are no more scheduled flights or maintenance is required.\n6. The system shall transition a plane from 'Maintenance' to 'Preparation' after checking and servicing it until it is ready for operations.\n7. The system shall take a plane out of service if it is no longer available for use.\n8. The system shall remove a plane from its operations when it is permanently withdrawn from service.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns\\case_65_plane\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "unreachable_states_detected",
+      "unreachable: Arrival, Maintenance, Operations, Order, Out of Service, Preparation",
+      "orphan_states_detected",
+      "orphan: Out of Service"
+    ],
+    "initial_state": "OrderState",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [
+      "Arrival",
+      "Maintenance",
+      "Operations",
+      "Order",
+      "Out of Service",
+      "Preparation"
+    ],
+    "state_count": 7,
+    "transition_count": 0
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "unreachable_states_detected",
+      "unreachable: Arrival, Maintenance, Operations, Order, Out of Service, Preparation",
+      "orphan_states_detected",
+      "orphan: Out of Service"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_42_cash_register",
+        "case_11_business_process_outsourcing_bpo_management_system_1",
+        "case_03_online_marketplace"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: Arrival, Maintenance, Operations, Order, Out of Service, Preparation",
+        "orphan_states_detected",
+        "orphan: Out of Service"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: Arrival, Maintenance, Operations, Order, Out of Service, Preparation",
+        "orphan_states_detected",
+        "orphan: Out of Service"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: Arrival, Maintenance, Operations, Order, Out of Service, Preparation",
+          "orphan_states_detected",
+          "orphan: Out of Service"
+        ],
+        "initial_state": "OrderState",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Arrival",
+          "Maintenance",
+          "Operations",
+          "Order",
+          "Out of Service",
+          "Preparation"
+        ],
+        "state_count": 7,
+        "transition_count": 0
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns\\case_65_plane\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 7,
+    "state_fn": 4,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 0,
+    "transition_fn": 5,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 7,
+    "state_fn_relaxed": 4,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 0,
+    "transition_fn_relaxed": 5,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 0,
+    "transition_fn_semantic": 5,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "unreachable_states_detected",
+      "unreachable: Arrival, Maintenance, Operations, Order, Out of Service, Preparation",
+      "orphan_states_detected",
+      "orphan: Out of Service"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 0.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 0.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "unreachable_states_detected",
+      "unreachable: Arrival, Maintenance, Operations, Order, Out of Service, Preparation",
+      "orphan_states_detected",
+      "orphan: Out of Service"
+    ]
+  }
+}

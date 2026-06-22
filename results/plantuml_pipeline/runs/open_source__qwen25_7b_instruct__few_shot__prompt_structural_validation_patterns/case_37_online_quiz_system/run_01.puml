@@ -1,0 +1,75 @@
+@startuml
+title UML state machine diagram for Online Quiz System
+
+state "Unregistered User" as UnregisteredUser
+UnregisteredUser : entry/No Account
+UnregisteredUser : do/Register or Login
+UnregisteredUser : exit/User Logged In
+
+state "Logged In User" as LoggedInUser
+LoggedInUser : entry/User Logged In
+LoggedInUser : do/Login as Teacher or Student
+LoggedInUser : exit/Teacher Home
+LoggedInUser : exit/Student Home
+
+state "Teacher Home" as TeacherHome
+TeacherHome : entry/Teacher Logged In
+TeacherHome : do/Create Quiz
+TeacherHome : do/Edit Quiz
+TeacherHome : do/Save Draft
+TeacherHome : do/Publish Quiz
+TeacherHome : do/View Results
+TeacherHome : exit/Logged Out
+
+state "Student Home" as StudentHome
+StudentHome : entry/Student Logged In
+StudentHome : do/Select Quiz
+StudentHome : do/Answer Quiz
+StudentHome : do/Submit Quiz
+StudentHome : do/View Result
+StudentHome : exit/Logged Out
+
+state "Quiz Creation" as QuizCreation
+QuizCreation : entry/New Quiz Created
+QuizCreation : do/Add Questions
+QuizCreation : do/Edit Questions
+QuizCreation : do/Save Draft
+QuizCreation : do/Publish
+QuizCreation : exit/Draft Saved
+QuizCreation : exit/Published
+
+state "Quiz Editing" as QuizEditing
+QuizEditing : entry/Existing Quiz Edited
+QuizEditing : do/Add Questions
+QuizEditing : do/Edit Questions
+QuizEditing : do/Save Changes
+QuizEditing : exit/Changes Saved
+
+state "View Results" as ViewResults
+ViewResults : entry/Quiz Over
+ViewResults : do/Review Results
+ViewResults : exit/Logged Out
+
+state "Answering Quiz" as AnsweringQuiz
+AnsweringQuiz : entry/Selected Quiz
+AnsweringQuiz : do/Answer Questions
+AnsweringQuiz : do/Submitted
+AnsweringQuiz : exit/Result Viewed
+
+[*] --> UnregisteredUser
+UnregisteredUser --> LoggedInUser : Register or Login
+
+LoggedInUser --> TeacherHome : Login as Teacher
+LoggedInUser --> StudentHome : Login as Student
+
+TeacherHome --> QuizCreation : Create New Quiz
+TeacherHome --> QuizEditing : Edit Existing Quiz
+QuizCreation --> QuizEditing : Save Draft / Publish
+QuizEditing --> QuizCreation : Save Changes
+QuizEditing --> TeacherHome : Exit Editing
+
+StudentHome --> AnsweringQuiz : Select and Start Quiz
+AnsweringQuiz --> ViewResults : Submit Quiz
+ViewResults --> StudentHome : Exit Viewing Results
+
+@enduml

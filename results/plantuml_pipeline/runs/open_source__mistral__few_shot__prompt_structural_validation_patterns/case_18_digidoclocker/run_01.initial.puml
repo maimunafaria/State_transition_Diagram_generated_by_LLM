@@ -1,0 +1,69 @@
+@startuml
+title UML State Machine Diagram - User
+
+[*] --> UserType
+
+state UserType <<choice>>
+
+UserType --> CitizenLogin : [Citizen user]
+UserType --> RegistrarLogin : [Registrar user]
+
+state "Citizen Login" as CitizenLogin
+CitizenLogin : entry / Action needed
+CitizenLogin : do / enter login credentials
+CitizenLogin : exit / Entered into system
+
+state "Registrar Login" as RegistrarLogin
+RegistrarLogin : entry / Action needed
+RegistrarLogin : do / enter login credentials
+RegistrarLogin : exit / Entered into system
+
+state CitizenRegister : [Citizen user not registered]
+CitizenLogin --> CitizenRegister
+CitizenRegister --> RegisteredCitizen : register as citizen
+
+state RegistrarRequest : [Registrar user requesting certificate]
+RegistrarLogin --> RegistrarRequest
+RegistrarRequest --> RequestSent : send request for certificate
+
+state RegisteredCitizen
+RegisteredCitizen : entry / Citizen logged in
+RegisteredCitizen : do / view profile, upload documents, apply for certificates
+RegisteredCitizen : exit / Logged out
+
+state "Uploading Documents" as UploadDocs
+UploadDocs : entry / User wants to upload more documents
+UploadDocs : do / upload additional documents
+UploadDocs : exit / Done uploading
+
+state "Applying for Certificate" as ApplyCert
+ApplyCert : entry / User wants to apply for a certificate
+ApplyCert : do / apply for certificate
+ApplyCert : exit / Application sent
+
+state "Request Sent" as RequestSent
+RegistrarRequest --> RequestSent
+RequestSent : entry / Request received by issuer
+RequestSent : do / verify and issue certificate
+RequestSent --> CertificateIssued : [Certificate issued]
+RequestSent --> Rejected : [Certificate rejected]
+
+state "Certificate Issued" as CertificateIssued
+CertificateIssued : entry / Certificate issued to citizen
+CertificateIssued : do / update citizen's profile
+CertificateIssued : exit / Done
+
+state "Rejected" as Rejected
+Rejected : entry / Certificate rejected by issuer
+Rejected : do / notify citizen and registrar
+Rejected --> RequestSent : [Registrar re-requests certificate]
+
+state LoggedOut
+RegisteredCitizen --> LoggedOut : log out
+UploadDocs --> LoggedOut : log out
+ApplyCert --> LoggedOut : log out
+CertificateIssued --> LoggedOut : log out
+Rejected --> LoggedOut : log out
+RequestSent --> LoggedOut : log out
+
+@enduml

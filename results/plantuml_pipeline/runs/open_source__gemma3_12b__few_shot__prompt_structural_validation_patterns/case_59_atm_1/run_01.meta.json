@@ -1,0 +1,142 @@
+{
+  "run_id": "open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns",
+  "case_id": "case_59_atm_1",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nControlpanel Class — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check the entered password.\n2. The system shall allow the user to continue making selections if the password is correct.\n3. The system shall limit the number of incorrect password attempts a user can make.\n4. The system shall lock and not allow further access for a certain period after too many incorrect attempts.\n5. The system shall allow users to try accessing again after the lockout period has passed.\n\nExample 1 PlantUML:\n@startuml\ntitle State Diagram - Control Panel\n\n[*] --> Reading : Key hit\n\nstate Reading\nstate Comparing\nstate Locked\nstate Selecting\n\n\nComparing : do / validatePassword\n\n\nReading --> Comparing : Password entered\n\n\nComparing --> Comparing : Password incorrect\\nnumberOfTries < maxTries\n\n\nComparing --> Locked : numberOfTries > maxTries\n\n\nComparing --> Selecting : Password correct\n\n\nLocked --> Locked : Timer <= lockedTime\n\n\nLocked --> Reading : Timer > lockedTime\n\n\nSelecting --> Reading : Activation successful\n\n@enduml\n\nExample 2 Requirement:\nArt Gallery Mananement System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall verify login credentials upon submission.\n2. The system shall display an error message and prevent further interaction if login details are incorrect.\n3. The system shall allow users to view products or update their information after a successful login.\n4. The system shall allow users to select items and place an order when viewing products.\n5. The system shall add selected product items to the order and prepare billing details.\n6. The system shall allow users to choose a payment method after adding products to their order.\n7. The system shall process and deliver the order if the payment is successful.\n8. The system shall end the process without further action if the payment fails.\n9. The system shall allow users to save updated information after entering new details.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\n\n[*] --> Login\n\nstate Login\nLogin : entry / getInfo\nLogin : do / verifyData\nLogin : exit / verified\n\nstate LoginDecision <<choice>>\nLogin --> LoginDecision\n\nstate \"Valid Login\" as ValidLogin\nValidLogin : entry / contain Info\nValidLogin : do / allow Access to system\nValidLogin : exit / gallery Entry\n\nstate \"Invalid Login\" as InvalidLogin\nInvalidLogin : entry / wrong Info\nInvalidLogin : do / display Error message\nInvalidLogin : exit / return To Start\n\nLoginDecision --> ValidLogin\nLoginDecision --> InvalidLogin\n\nstate NavChoice <<choice>>\nValidLogin --> NavChoice\n\nstate Gallery\nGallery : entry / show Products\nGallery : do / allow to select Products\nGallery : exit / save Products\n\nstate Update\nUpdate : entry / contain Info\nUpdate : do / take New Info\nUpdate : exit / save new Info\n\nNavChoice --> Gallery\nNavChoice --> Update\n\nUpdate --> [*]\n\nstate Order\nOrder : entry / select Items\nOrder : do / allowto order If products In Stock\nOrder : exit / verification\n\nstate Cart\nCart : entry / contain Selected Items\nCart : do / all billing Info\nCart : exit / payment Method\n\nGallery --> Order\nOrder --> Cart\n\nstate Payment\nPayment : entry / get Payment Method\nPayment : do / confirm Payment\nPayment : exit / verify\n\nCart --> Payment\n\nstate PayDecision <<choice>>\nPayment --> PayDecision\n\nstate \"Valid Payment\" as ValidPayment\nValidPayment : entry / payment Method\nValidPayment : do / get Cash\nValidPayment : exit / confirmation of product\n\nstate \"Invalid Payment\" as InvalidPayment\nInvalidPayment : entry / wrong Entry\nInvalidPayment : do / error Message\nInvalidPayment : exit / return\n\nPayDecision --> ValidPayment\nPayDecision --> InvalidPayment\n\n\nstate Delivery\nDelivery : entry / take out Order\nDelivery : do / deliver Product\nDelivery : exit / exit System\n\nValidPayment --> Delivery\nDelivery --> [*]\n\nInvalidPayment --> [*]\n\n@enduml\n\nExample 3 Requirement:\nStartup Meet — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to select their roll (investor, entrepreneur, or mentor).\n2. The system shall enable the user to sign in after choosing a role.\n3. The system shall allow the signed-in user to submit a startup idea.\n4. The system shall review the submitted startup idea.\n5. The system shall provide mentorship based on the review result.\n6. The system shall make an investment decision if the startup idea is presented to an investor.\n7. The system shall provide funding based on the investment decision.\n8. The system shall end the process once all actions are completed.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\n[*] --> UserType\n\nstate UserType <<choice>>\n\nUserType --> InvestorLogin : [Investor user]\nUserType --> EntrepreneurLogin : [Entrepreneur user]\nUserType --> MentorLogin : [Mentor user]\n\nstate \"Investor Login\" as InvestorLogin\nInvestorLogin : entry / Action needed\nInvestorLogin : do / enter login credentials\nInvestorLogin : exit / Entered into system\n\nstate \"Entrepreneur Login\" as EntrepreneurLogin\nEntrepreneurLogin : entry / Action needed\nEntrepreneurLogin : do / enter login credentials\nEntrepreneurLogin : exit / Entered into system\n\nstate \"Mentor Login\" as MentorLogin\nMentorLogin : entry / Action needed\nMentorLogin : do / enter login credentials\nMentorLogin : exit / Entered into system\n\nstate MergeLogin <<choice>>\n\nInvestorLogin --> MergeLogin\nEntrepreneurLogin --> MergeLogin\nMentorLogin --> MergeLogin\n\nstate \"Startup idea\" as StartupIdea\nStartupIdea : entry / Submitted by entrepreneur\nStartupIdea : do / file the idea\nStartupIdea : exit / accept or decline state\n\nMergeLogin --> StartupIdea\n\nstate \"Decision on Startup idea\" as DecisionIdea\nDecisionIdea : entry / startup idea state\nDecisionIdea : do / accept or decline\nDecisionIdea : exit / NIL\n\nStartupIdea --> DecisionIdea\n\nstate ChoiceDecision <<choice>>\nDecisionIdea --> ChoiceDecision\n\nstate \"Accept mentorship\" as AcceptMentorship\nAcceptMentorship : entry / decision on mentorship\nAcceptMentorship : do / mentorship\nAcceptMentorship : exit / NIL\n\nstate \"Present Idea\" as PresentIdea\nPresentIdea : entry / Decision on startup\nPresentIdea : do / present idea to investor\nPresentIdea : exit / Decision on investing\n\nstate \"Investment\" as Investment\nInvestment : entry / Decision to invest\nInvestment : do / give investment\nInvestment : exit / share in profit\n\nChoiceDecision --> AcceptMentorship\nChoiceDecision --> PresentIdea\n\nstate MergeEnd <<choice>>\n\nAcceptMentorship --> MergeEnd\nPresentIdea --> Investment\nInvestment --> MergeEnd\nChoiceDecision --> MergeEnd\nMergeEnd --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- PlantUML Structural Validation Patterns ---\n\nThe uppercase identifiers below are placeholders.\nReplace them with existing requirement-supported states, events, and guards.\nDo not copy placeholder names into the final diagram.\n\nPattern 1: never connect the initial pseudostate directly to the final pseudostate\n\n' Invalid\n[*] --> [*]\n\n' Valid\n[*] --> INITIAL_STATE\nINITIAL_STATE --> TERMINAL_STATE : SUPPORTED_EVENT\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 2: use exactly one top-level initial transition\n\n' Invalid\n[*] --> FIRST_STATE\n[*] --> SECOND_STATE\n\n' Valid\n[*] --> FIRST_STATE\nFIRST_STATE --> SECOND_STATE : SUPPORTED_EVENT\n\n\nPattern 3: add a missing initial transition\n\n[*] --> INITIAL_STATE\n\n\nPattern 4: add a missing final transition\n\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 5: connect every requirement-supported orphan state\n\nPREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT\nORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If ORPHAN_STATE is unsupported by the requirement, omit it.\n\n\nPattern 6: create a path to every requirement-supported unreachable state\n\nREACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT\nUNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If UNREACHABLE_STATE is unsupported by the requirement, omit it.\n\n\nPattern 7: keep only one transition for the same source and target\n\n' Invalid\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\n\n' Valid\nSOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT\n\n\nPattern 8: every choice node must have outgoing transitions\n\nstate DECISION_NODE <<choice>>\nSOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 9: choice-node outgoing transitions must use guards\n\n' Invalid\nDECISION_NODE --> FIRST_STATE\nDECISION_NODE --> SECOND_STATE\n\n' Valid\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 10: a fork node must have multiple outgoing branches\n\nstate FORK_NODE <<fork>>\nSOURCE_STATE --> FORK_NODE : SUPPORTED_EVENT\nFORK_NODE --> FIRST_PARALLEL_STATE\nFORK_NODE --> SECOND_PARALLEL_STATE\n\n\nPattern 11: a join node must have multiple incoming branches\n\nstate JOIN_NODE <<join>>\nFIRST_PARALLEL_STATE --> JOIN_NODE\nSECOND_PARALLEL_STATE --> JOIN_NODE\nJOIN_NODE --> NEXT_STATE\n\n\nPattern 12: use history only inside a composite state\n\nstate COMPOSITE_STATE {\n  [H] --> RESUMED_CHILD_STATE\n}\n\n\nPattern 13: do not add another [*] transition inside a composite state\n\n' Invalid\nstate PARENT_STATE {\n  [*] --> CHILD_STATE\n}\n\n' Valid\nstate PARENT_STATE {\n  state CHILD_STATE\n}\nPARENT_STATE --> CHILD_STATE : SUPPORTED_EVENT\n\n\n\n--- Task ---\n\nRequirement:\n\nAtm Scenario 1 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to choose or enter a withdrawal amount.\n2. The system shall support predefined amounts for selection by the user.\n3. The system shall allow users to input their own custom withdrawal amount.\n4. The system shall provide an option for the user to cancel the transaction at any point.\n5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.\n",
+  "requirement_used": "Atm Scenario 1 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to choose or enter a withdrawal amount.\n2. The system shall support predefined amounts for selection by the user.\n3. The system shall allow users to input their own custom withdrawal amount.\n4. The system shall provide an option for the user to cancel the transaction at any point.\n5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns\\case_59_atm_1\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "unreachable_states_detected",
+      "unreachable: CancelTransaction, Dispensing, SelectAmount, Withdrawing"
+    ],
+    "initial_state": "Idle",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [
+      "CancelTransaction",
+      "Dispensing",
+      "SelectAmount",
+      "Withdrawing"
+    ],
+    "state_count": 5,
+    "transition_count": 6
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "unreachable_states_detected",
+      "unreachable: CancelTransaction, Dispensing, SelectAmount, Withdrawing"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_48_controlpanel_class",
+        "case_35_art_gallery_mananement_system",
+        "case_40_startup_meet"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: CancelTransaction, Dispensing, SelectAmount, Withdrawing"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: CancelTransaction, Dispensing, SelectAmount, Withdrawing"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: CancelTransaction, Dispensing, SelectAmount, Withdrawing"
+        ],
+        "initial_state": "Idle",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "CancelTransaction",
+          "Dispensing",
+          "SelectAmount",
+          "Withdrawing"
+        ],
+        "state_count": 5,
+        "transition_count": 6
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns\\case_59_atm_1\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 5,
+    "state_fn": 4,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 6,
+    "transition_fn": 2,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 5,
+    "state_fn_relaxed": 4,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 6,
+    "transition_fn_relaxed": 2,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 6,
+    "transition_fn_semantic": 2,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "unreachable_states_detected",
+      "unreachable: CancelTransaction, Dispensing, SelectAmount, Withdrawing"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "unreachable_states_detected",
+      "unreachable: CancelTransaction, Dispensing, SelectAmount, Withdrawing"
+    ]
+  }
+}

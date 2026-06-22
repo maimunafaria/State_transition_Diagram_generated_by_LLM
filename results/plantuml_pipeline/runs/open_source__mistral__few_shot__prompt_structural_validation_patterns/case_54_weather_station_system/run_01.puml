@@ -1,0 +1,35 @@
+@startuml
+title UML State Machine Diagram - Weather Station System
+
+[*] --> Running
+
+state "Running" as Running
+state "Configuration" as Configuration
+state "Controlled" as Controlled
+state "Shutdown" as Shutdown
+
+Running : entry / Collect data, prepare summary, check status
+Running : do / Perform activities
+Running : exit / Return to running state
+
+Running --> Configuration : [Changes or power-saving settings required]
+Configuration --> Running : [Configuration completed]
+
+Running --> Controlled : [Remote control command received]
+Controlled --> Shutdown : [Shutdown command given while running]
+
+Running --> Running : [Clock trigger]
+
+Running --> RequestSummary : [Weather summary requested]
+RequestSummary --> PrepareSummary : [Prepare and send out a weather summary]
+PrepareSummary --> Running : [Weather summary prepared]
+
+Running --> RequestStatus : [Status checking requested]
+RequestStatus --> CheckStatus : [Check its own status and transmit the result]
+CheckStatus --> Running : [Status checked]
+
+Shutdown : entry / Shut down condition
+Shutdown : do / System is shut down
+Shutdown : exit / End
+
+@enduml

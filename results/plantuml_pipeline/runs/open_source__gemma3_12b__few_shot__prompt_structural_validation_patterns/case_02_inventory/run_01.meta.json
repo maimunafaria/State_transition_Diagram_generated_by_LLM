@@ -1,0 +1,158 @@
+{
+  "run_id": "open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns",
+  "case_id": "case_02_inventory",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nJava — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall skip non-meaningful elements like spaces or comments.\n2. The system shall ignore empty spaces and line breaks at the beginning.\n3. The system shall skip all characters from // to the end of the line.\n4. The system shall continue skipping content until the end of a block comment (*/).\n\nExample 1 PlantUML:\n@startuml\ntitle State diagram for advancing past whitespace and comments in Java\n\n[*] --> Start\n\nstate Start\nstate \"saw '/'\" as SawSlash\nstate \"line comment\" as LineComment\nstate \"saw '*'\" as SawStar\nstate \"block comment\" as BlockComment\nstate EndWhitespace\n\n' whitespace loop\nStart --> Start : next char = ' ' \\\\t \\\\r \\\\n / advance\n\n' detect slash\nStart --> SawSlash : next char = '/' / advance\n\n' anything else → end\nStart --> EndWhitespace : next char = anything else\n\n' after seeing '/'\nSawSlash --> LineComment : next char = '/' / advance\nSawSlash --> SawStar : next char = '*' / advance\nSawSlash --> EndWhitespace : next char != '/' or '*' / pushback '/'\n\n' line comment behavior\nLineComment --> LineComment : next char != eoln / advance\nLineComment --> Start : next char = eoln / advance\n\n' saw '*' (possible block comment)\nSawStar --> BlockComment : next char = '*' / advance\n\n' block comment behavior\nBlockComment --> BlockComment : next char != '*' / advance\nBlockComment --> SawStar : next char = '*' / advance\n\n' loop back\nSawStar --> BlockComment : next char = '*' / advance\nBlockComment --> Start : next char = '/' / advance\n\nEndWhitespace --> [*]\n\n@enduml\n\nExample 2 Requirement:\nNational Health Id — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if a person is an Indian citizen.\n2. The system shall verify the details of an Indian citizen.\n3. The system shall generate a unique health ID for registered Indian citizens.\n4. The system shall activate an account upon successful login.\n5. The system shall support after activation, the system shall allow users to either add old files or set permissions.\n6. The system shall store added old files.\n7. The system shall provide access to relevant authorities based on set permissions.\n8. The system shall allow adding new files when permission is granted.\n9. The system shall store all the information provided by users.\n10. The system shall allow the government to access stored data to view details and prepare reports.\n\nExample 2 PlantUML:\n@startuml\n\n[*] --> Choice1\nstate Choice1 <<choice>>\nstate Choice2 <<choice>>\nstate Choice3 <<choice>>\nChoice1 --> Verification : Indian\nChoice1 --> [*] : not Indian\n\nVerification : entry / Citizenship status\nVerification : do / Verify details\nVerification : exit / Verified status\n\nVerification --> Registration : verified\n\nRegistration : entry / Citizenship status\nRegistration : do / Register with ID\nRegistration : exit / Unique National Health ID\n\nRegistration --> Login : registered\n\nLogin : entry / National Health ID\nLogin : do / Login with the ID\nLogin : exit / Logged in to the account\n\nLogin --> Choice2\nChoice2 --> Activation : login success\nChoice2 --> [*]\nActivation : entry / Logged in the account\nActivation : do / Activate the account\nActivation : exit / Activated account\n\nActivation --> AddFiles : add old files\nActivation --> Permission : proceed to permissions\n\nAddFiles : entry / Activated account\nAddFiles : do / Add the files\nAddFiles : exit / Added old files\n\nAddFiles --> Repository\n\nPermission : entry / Activated account\nPermission : do / Providing permissions\nPermission : exit / Access of authorities\n\nPermission --> Access : permission granted\nPermission --> Repository : saving permissions\n\nAccess : entry / Checking for permission\nAccess : do / Accessing the files\nAccess : exit / Adding new files\n\nAccess --> Choice3\nChoice3 --> Repository : given permission\nChoice3 --> [*]\nAccess --> [*] : no permission\n\nGovernment : entry / Having repository\nGovernment : do / Accessing the details\nGovernment : exit / Analysis report\n\nGovernment --> Repository\n\nRepository : entry / Government repository\nRepository : do / Saving the details\nRepository : exit / Logged out\n\nRepository --> [*]\n\n@enduml\n\nExample 3 Requirement:\nCar Care — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to choose whether they are using the service center side or the car owner side.\n2. The system shall allow service center users to register or log in if already registered.\n3. The system shall allow service center users to enter damaged parts, update parts information, or send expiry-related notifications after logging in.\n4. The system shall allow service center users to log out after finishing any of the above activities.\n5. The system shall allow car owner users to register or log in.\n6. The system shall allow car owners to view parts information, request or respond to services, or report a service center after logging in.\n7. The system shall allow car owners to select required parts and make a payment when choosing a service.\n8. The system shall allow car owners to log out after completing their activities.\n\nExample 3 PlantUML:\n@startuml\ntitle UML state machine diagram\n\nstate PortalChoice1 <<choice>>\nstate PortalChoice2 <<choice>>\nstate PortalChoice3 <<choice>>\nstate ServiceJoin <<choice>>\nstate OwnerJoin <<choice>>\n\n\n[*] --> PortalChoice1\n\nPortalChoice1 --> PortalChoice2 : [Service Center Portal]\nPortalChoice1 --> PortalChoice3 : [Car Owner Portal]\n\nPortalChoice2 --> ServiceCenterRegistration : [New Service Center]\nPortalChoice2 --> ServiceJoin : [Registered Service center]\nPortalChoice3 --> CarOwnerRegistration : [New Car Owner]\nPortalChoice3 --> OwnerJoin : [Registered Car Owner]\n\nstate \"Service Center Registration\" as ServiceCenterRegistration\nServiceCenterRegistration : entry / Unregistered service center\nServiceCenterRegistration : do / Enter Valid Credentials\nServiceCenterRegistration : exit / Account registered\n\nstate \"Service Center Verification\" as ServiceCenterVerification\nServiceCenterVerification : entry / Service Center account registered\nServiceCenterVerification : do / Verify Service center\nServiceCenterVerification : exit / Login Service center\n\nstate \"Service Center Login\" as ServiceCenterLogin\nServiceCenterLogin : entry / Verified Service Center\nServiceCenterLogin : entry / Service Center not logged in\nServiceCenterLogin : do / Authenticate Service Center\nServiceCenterLogin : exit / Logged In Successfully\n\nstate \"Service center Home\" as ServiceCenterHome\nServiceCenterHome : entry / Logged in Service Center\nServiceCenterHome : do / Display home page\nServiceCenterHome : exit / Enter Damaged parts list\nServiceCenterHome : exit / Expiry Notification page\nServiceCenterHome : exit / Updating Information list\n\nstate \"Expiry Notification page\" as ExpiryNotification\nExpiryNotification : entry / To view expiry notification\nExpiryNotification : do / Send service request to Car owner\nExpiryNotification : exit / Return to Service center home page\n\nstate \"Entering Damaged parts list\" as DamagedParts\nDamagedParts : entry / To enter Damaged parts list\nDamagedParts : do / Preparing and entering damaged parts list\nDamagedParts : exit / Return to service center home page\n\nstate \"Updating parts Information\" as UpdatingParts\nUpdatingParts : entry / To update changed parts information\nUpdatingParts : do / Update Information\nUpdatingParts : exit / Return to Service center home page\n\nstate \"Logout\" as Logout\nLogout : entry / To Logout\nLogout : do / Logout\nLogout : exit / Logged out Successfully\n\nstate \"Car Owner Registration\" as CarOwnerRegistration\nCarOwnerRegistration : entry / Unregistered Car Owner\nCarOwnerRegistration : do / Enter valid Credentials\nCarOwnerRegistration : exit / Account registered\n\nstate \"Car owner Verification\" as CarOwnerVerification\nCarOwnerVerification : entry / Car owner account registered\nCarOwnerVerification : do / Verify Car owner\nCarOwnerVerification : exit / Login Car Owner\n\nstate \"Car Owner Login\" as CarOwnerLogin\nCarOwnerLogin : entry / Verified Car Owner\nCarOwnerLogin : entry / Car owner not logged in\nCarOwnerLogin : do / Authenticate Car Owner\nCarOwnerLogin : exit / Logged In Successfully\n\nstate \"Car Owner Home\" as CarOwnerHome\nCarOwnerHome : entry / Logged in Car Owner\nCarOwnerHome : do / Display home page\nCarOwnerHome : exit / View parts information\nCarOwnerHome : exit / Service\nCarOwnerHome : exit / Report\n\nstate \"Report\" as Report\nReport : entry / To Report Service center\nReport : do / Enter the report\nReport : exit / Return to car owner home page\n\nstate \"View Parts Information\" as ViewPartsInformation\nViewPartsInformation : entry / To view parts information\nViewPartsInformation : do / View car parts Information\nViewPartsInformation : exit / Return to Car owner home page\n\nstate \"Service\" as Service\nService : entry / Service request from service center\nService : do / Accept or deny request\nService : exit / Return to Car Owner home page\n\nstate \"Choose parts\" as ChooseParts\nChooseParts : entry / To choose selected parts\nChooseParts : do / Choose the part to be serviced\nChooseParts : exit / Return to service page\n\nstate \"Make Payment\" as MakePayment\nMakePayment : entry / To make payments\nMakePayment : do / Make payments\nMakePayment : exit / Return to Service page\n\n\nstate ServiceHomeChoice <<choice>>\nstate ServiceLoginChoice <<choice>>\nstate OwnerHomeChoice <<choice>>\nstate OwnerLoginChoice <<choice>>\nstate FinalJoin <<choice>>\n\n\nServiceCenterRegistration --> ServiceCenterVerification\nServiceCenterVerification --> ServiceJoin\nServiceJoin --> ServiceCenterLogin\nServiceCenterLogin --> ServiceLoginChoice\nServiceLoginChoice --> ServiceCenterHome\nExpiryNotification --> ServiceLoginChoice\nUpdatingParts --> ServiceLoginChoice\nDamagedParts --> ServiceLoginChoice\n\nServiceCenterHome --> ServiceHomeChoice : [Possible Activities]\nServiceHomeChoice --> ExpiryNotification\nServiceHomeChoice --> DamagedParts\nServiceHomeChoice --> UpdatingParts\nServiceHomeChoice --> FinalJoin\n\nFinalJoin --> Logout\nLogout --> [*]\n\n\n\nCarOwnerRegistration --> CarOwnerVerification\nCarOwnerVerification --> OwnerJoin\nOwnerJoin --> CarOwnerLogin\n\nCarOwnerLogin --> OwnerLoginChoice\nOwnerLoginChoice --> CarOwnerHome\nCarOwnerHome --> OwnerHomeChoice : [Possible Activities]\nViewPartsInformation --> OwnerLoginChoice\nReport --> OwnerLoginChoice\nService --> OwnerLoginChoice\n\nOwnerHomeChoice --> Report\nOwnerHomeChoice --> ViewPartsInformation\nOwnerHomeChoice --> Service\nOwnerHomeChoice --> FinalJoin\n\nService --> ChooseParts\nChooseParts --> MakePayment\nMakePayment --> Service\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- PlantUML Structural Validation Patterns ---\n\nThe uppercase identifiers below are placeholders.\nReplace them with existing requirement-supported states, events, and guards.\nDo not copy placeholder names into the final diagram.\n\nPattern 1: never connect the initial pseudostate directly to the final pseudostate\n\n' Invalid\n[*] --> [*]\n\n' Valid\n[*] --> INITIAL_STATE\nINITIAL_STATE --> TERMINAL_STATE : SUPPORTED_EVENT\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 2: use exactly one top-level initial transition\n\n' Invalid\n[*] --> FIRST_STATE\n[*] --> SECOND_STATE\n\n' Valid\n[*] --> FIRST_STATE\nFIRST_STATE --> SECOND_STATE : SUPPORTED_EVENT\n\n\nPattern 3: add a missing initial transition\n\n[*] --> INITIAL_STATE\n\n\nPattern 4: add a missing final transition\n\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 5: connect every requirement-supported orphan state\n\nPREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT\nORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If ORPHAN_STATE is unsupported by the requirement, omit it.\n\n\nPattern 6: create a path to every requirement-supported unreachable state\n\nREACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT\nUNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If UNREACHABLE_STATE is unsupported by the requirement, omit it.\n\n\nPattern 7: keep only one transition for the same source and target\n\n' Invalid\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\n\n' Valid\nSOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT\n\n\nPattern 8: every choice node must have outgoing transitions\n\nstate DECISION_NODE <<choice>>\nSOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 9: choice-node outgoing transitions must use guards\n\n' Invalid\nDECISION_NODE --> FIRST_STATE\nDECISION_NODE --> SECOND_STATE\n\n' Valid\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 10: a fork node must have multiple outgoing branches\n\nstate FORK_NODE <<fork>>\nSOURCE_STATE --> FORK_NODE : SUPPORTED_EVENT\nFORK_NODE --> FIRST_PARALLEL_STATE\nFORK_NODE --> SECOND_PARALLEL_STATE\n\n\nPattern 11: a join node must have multiple incoming branches\n\nstate JOIN_NODE <<join>>\nFIRST_PARALLEL_STATE --> JOIN_NODE\nSECOND_PARALLEL_STATE --> JOIN_NODE\nJOIN_NODE --> NEXT_STATE\n\n\nPattern 12: use history only inside a composite state\n\nstate COMPOSITE_STATE {\n  [H] --> RESUMED_CHILD_STATE\n}\n\n\nPattern 13: do not add another [*] transition inside a composite state\n\n' Invalid\nstate PARENT_STATE {\n  [*] --> CHILD_STATE\n}\n\n' Valid\nstate PARENT_STATE {\n  state CHILD_STATE\n}\nPARENT_STATE --> CHILD_STATE : SUPPORTED_EVENT\n\n\n\n--- Task ---\n\nRequirement:\n\nInventory — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to add new goods to the inventory.\n2. The system shall allow the user to update the price of existing items in the inventory.\n3. The system shall allow the user to remove goods from the inventory that are no longer required.\n4. The system shall identify expired goods and notify the user about their removal from the inventory.\n5. The system shall allow the user to place an order to a supplier for additional goods when required.\n6. The system shall generate an invoice for the order once it is placed.\n7. The system shall allow the user to search for items available in the inventory and select them for purchase.\n8. The system shall calculate the applicable discount and tax based on the selected items.\n9. The system shall generate a receipt for the customer after the purchase.\n10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.\n11. The system shall record customer requests for items that may not be currently available.\n12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.\n",
+  "requirement_used": "Inventory — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to add new goods to the inventory.\n2. The system shall allow the user to update the price of existing items in the inventory.\n3. The system shall allow the user to remove goods from the inventory that are no longer required.\n4. The system shall identify expired goods and notify the user about their removal from the inventory.\n5. The system shall allow the user to place an order to a supplier for additional goods when required.\n6. The system shall generate an invoice for the order once it is placed.\n7. The system shall allow the user to search for items available in the inventory and select them for purchase.\n8. The system shall calculate the applicable discount and tax based on the selected items.\n9. The system shall generate a receipt for the customer after the purchase.\n10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.\n11. The system shall record customer requests for items that may not be currently available.\n12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns\\case_02_inventory\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "unreachable_states_detected",
+      "unreachable: AddNewGoods, CalculateDiscountTax, GenerateInvoice, GenerateReceipt, IdentifyExpiredGoods, PlaceOrder, RecordCustomerRequests, RemoveGoods, ReplaceCancelReceipt, SearchAndSelectItems, UpdatePrice, ViewSummaryReport"
+    ],
+    "initial_state": "InventoryManagement",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [
+      "AddNewGoods",
+      "CalculateDiscountTax",
+      "GenerateInvoice",
+      "GenerateReceipt",
+      "IdentifyExpiredGoods",
+      "PlaceOrder",
+      "RecordCustomerRequests",
+      "RemoveGoods",
+      "ReplaceCancelReceipt",
+      "SearchAndSelectItems",
+      "UpdatePrice",
+      "ViewSummaryReport"
+    ],
+    "state_count": 13,
+    "transition_count": 12
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "unreachable_states_detected",
+      "unreachable: AddNewGoods, CalculateDiscountTax, GenerateInvoice, GenerateReceipt, IdentifyExpiredGoods, PlaceOrder, RecordCustomerRequests, RemoveGoods, ReplaceCancelReceipt, SearchAndSelectItems, UpdatePrice, ViewSummaryReport"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_50_java",
+        "case_09_national_health_id",
+        "case_19_car_care"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: AddNewGoods, CalculateDiscountTax, GenerateInvoice, GenerateReceipt, IdentifyExpiredGoods, PlaceOrder, RecordCustomerRequests, RemoveGoods, ReplaceCancelReceipt, SearchAndSelectItems, UpdatePrice, ViewSummaryReport"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: AddNewGoods, CalculateDiscountTax, GenerateInvoice, GenerateReceipt, IdentifyExpiredGoods, PlaceOrder, RecordCustomerRequests, RemoveGoods, ReplaceCancelReceipt, SearchAndSelectItems, UpdatePrice, ViewSummaryReport"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: AddNewGoods, CalculateDiscountTax, GenerateInvoice, GenerateReceipt, IdentifyExpiredGoods, PlaceOrder, RecordCustomerRequests, RemoveGoods, ReplaceCancelReceipt, SearchAndSelectItems, UpdatePrice, ViewSummaryReport"
+        ],
+        "initial_state": "InventoryManagement",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "AddNewGoods",
+          "CalculateDiscountTax",
+          "GenerateInvoice",
+          "GenerateReceipt",
+          "IdentifyExpiredGoods",
+          "PlaceOrder",
+          "RecordCustomerRequests",
+          "RemoveGoods",
+          "ReplaceCancelReceipt",
+          "SearchAndSelectItems",
+          "UpdatePrice",
+          "ViewSummaryReport"
+        ],
+        "state_count": 13,
+        "transition_count": 12
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns\\case_02_inventory\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 13,
+    "state_fn": 16,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 12,
+    "transition_fn": 11,
+    "state_precision_relaxed": 0.23076923076923078,
+    "state_recall_relaxed": 0.1875,
+    "state_f1_relaxed": 0.20689655172413793,
+    "state_tp_relaxed": 3,
+    "state_fp_relaxed": 10,
+    "state_fn_relaxed": 13,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 12,
+    "transition_fn_relaxed": 11,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 12,
+    "transition_fn_semantic": 11,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "unreachable_states_detected",
+      "unreachable: AddNewGoods, CalculateDiscountTax, GenerateInvoice, GenerateReceipt, IdentifyExpiredGoods, PlaceOrder, RecordCustomerRequests, RemoveGoods, ReplaceCancelReceipt, SearchAndSelectItems, UpdatePrice, ViewSummaryReport"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.7692307692307693,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.10344827586206896,
+    "weighted_f1_relaxed_70_30": 0.14482758620689654,
+    "overall_f1_semantic": 0.10344827586206896,
+    "weighted_f1_semantic_70_30": 0.14482758620689654,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "unreachable_states_detected",
+      "unreachable: AddNewGoods, CalculateDiscountTax, GenerateInvoice, GenerateReceipt, IdentifyExpiredGoods, PlaceOrder, RecordCustomerRequests, RemoveGoods, ReplaceCancelReceipt, SearchAndSelectItems, UpdatePrice, ViewSummaryReport"
+    ]
+  }
+}

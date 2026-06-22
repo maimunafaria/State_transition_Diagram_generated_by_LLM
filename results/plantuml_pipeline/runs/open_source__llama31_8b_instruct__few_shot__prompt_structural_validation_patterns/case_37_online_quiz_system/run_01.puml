@@ -1,0 +1,139 @@
+@startuml
+title Online Quiz System States
+
+[*] --> UserType
+
+state UserType <<choice>>
+UserType --> Registration : [New user]
+UserType --> Login : [Registered user]
+
+state "Registration" as Registration {
+    [*] --> GettingDetails
+
+    state GettingDetails
+    state ChoiceReg <<choice>>
+    state "Update Database" as UpdateDB
+    state EndInvalid <<choice>>
+
+    GettingDetails --> ChoiceReg : [Registration verification]
+    ChoiceReg --> UpdateDB : [valid]
+    ChoiceReg --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+Registration : entry / New user
+Registration : do / Registration
+Registration : exit / After updation
+
+UpdateDB --> Login : [verified]
+
+state Login
+Login : do / Enter username and password
+Login : exit / After verification
+
+Login --> Profile : [valid uname & pwd]
+
+state "Profile" as Profile {
+    [*] --> ChoiceProfile
+
+    state ChoiceProfile <<choice>>
+    state "Teacher Profile" as TeacherProfile
+    state "Student Profile" as StudentProfile
+
+    ChoiceProfile --> TeacherProfile : [teacher]
+    ChoiceProfile --> StudentProfile : [student]
+
+
+}
+
+Profile : entry / View or Edit profile
+Profile : do / Upload or Accept request
+Profile : exit / Logout
+
+    TeacherProfile --> CreateQuiz : [create quiz]
+    TeacherProfile --> EditQuiz : [edit quiz]
+
+state "Create Quiz" as CreateQuiz {
+    [*] --> GettingQuestions
+
+    state GettingQuestions
+    state ChoiceQues <<choice>>
+    state "Save Draft" as SaveDraft
+    state PostQuiz : [post quiz]
+
+    GettingQuestions --> ChoiceQues : [quiz creation]
+    ChoiceQues --> SaveDraft : [save draft]
+    ChoiceQues --> PostQuiz : [post quiz]
+
+    SaveDraft --> [*] : [logout]
+    PostQuiz --> [*] : [logout]
+
+
+}
+
+CreateQuiz : entry / Create new quiz
+CreateQuiz : do / Add questions
+CreateQuiz : exit / Save or post
+
+state "Edit Quiz" as EditQuiz {
+    [*] --> GettingQuestions
+
+    state GettingQuestions
+    state ChoiceQues <<choice>>
+    state "Save Draft" as SaveDraft
+    state PostQuiz : [post quiz]
+
+    GettingQuestions --> ChoiceQues : [quiz creation]
+    ChoiceQues --> SaveDraft : [save draft]
+    ChoiceQues --> PostQuiz : [post quiz]
+
+    SaveDraft --> [*] : [logout]
+    PostQuiz --> [*] : [logout]
+
+
+}
+
+EditQuiz : entry / Edit existing quiz
+EditQuiz : do / Add or remove questions
+EditQuiz : exit / Save or post
+
+state "Student Profile" as StudentProfile {
+    [*] --> ChoiceQues
+
+    state ChoiceQues <<choice>>
+    state SelectQuiz : [select quiz]
+    state AnswerQuiz : [answer quiz]
+
+    ChoiceQues --> SelectQuiz : [select quiz]
+    ChoiceQues --> AnswerQuiz : [answer quiz]
+
+
+}
+
+StudentProfile : entry / View or Edit profile
+StudentProfile : do / Upload or Accept request
+StudentProfile : exit / Logout
+
+    SelectQuiz --> AnswerQuiz : [selected quiz]
+    AnswerQuiz --> SubmitQuiz : [submit quiz]
+
+state "Submit Quiz" as SubmitQuiz {
+    [*] --> GettingResult
+
+    state GettingResult
+    state ViewResult : [view result]
+
+    GettingResult --> ViewResult : [result submission]
+
+    ViewResult --> [*] : [logout]
+
+
+}
+
+ViewResult : entry / View submitted quiz result
+ViewResult : do / Display result
+ViewResult : exit / Logout
+
+
+@enduml

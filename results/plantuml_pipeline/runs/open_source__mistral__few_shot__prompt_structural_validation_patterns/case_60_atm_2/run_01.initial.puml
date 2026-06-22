@@ -1,0 +1,43 @@
+@startuml
+title ATM Withdrawal Scenario
+
+state "Available Options" as AvailableOptions
+state "Custom Value" as CustomValue
+state "Transaction Verification" as TransactionVerification
+state "Dispense Amount" as DispenseAmount
+state "Insufficient Funds" as InsufficientFunds
+state "Cancelled Transaction" as CancelledTransaction
+state "End Session" as EndSession
+
+AvailableOptions : do / Display available options
+CustomValue : do / Get custom value from user
+
+TransactionVerification : entry / Verify transaction with bank server
+TransactionVerification : do / Check transaction status
+TransactionVerification : exit / Transaction approved or rejected
+
+DispenseAmount : entry / Dispense requested amount
+DispenseAmount : do / Dispense cash and return change
+DispenseAmount : exit / End session
+
+InsufficientFunds : entry / Inform user of insufficient funds
+InsufficientFunds : do / Return card to user
+InsufficientFunds : exit / End session
+
+CancelledTransaction : entry / Cancel transaction and return card
+CancelledTransaction : do / End session
+
+EndSession : entry / End ATM session
+EndSession : do / Log off user
+EndSession : exit / [*]
+
+AvailableOptions --> CustomValue : User chooses custom value
+CustomValue --> TransactionVerification
+
+TransactionVerification --> DispenseAmount : Transaction approved
+TransactionVerification --> InsufficientFunds : Transaction rejected
+InsufficientFunds --> CancelledTransaction : User cancels transaction
+CancelledTransaction --> EndSession
+
+DispenseAmount --> EndSession : Successful transaction
+@enduml

@@ -1,0 +1,107 @@
+@startuml
+title Weather Monitoring System State Diagram
+
+[*] --> INITIAL_STATE
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Register / Login
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state "Invalid registration" as InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state "Invalid login" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state "Check weather" as CheckWeather
+CheckWeather : entry/From Login
+CheckWeather : do/Enter location
+CheckWeather : exit/Valid location / Invalid location
+
+state "Location valid" as LocationValid
+LocationValid : entry/Valid location
+LocationValid : do/Choose what to check
+LocationValid : exit/Selected weather information
+
+state "Invalid location" as InvalidLocation
+InvalidLocation : entry/Invalid location
+InvalidLocation : do/Cannot enter new location
+InvalidLocation : exit/Abnormal termination
+
+state "Select weather info" as SelectWeatherInfo
+SelectWeatherInfo : entry/From Location valid
+SelectWeatherInfo : do/Update and show selected information
+SelectWeatherInfo : exit/Additional details / End session
+
+state "Additional details" as AdditionalDetails
+AdditionalDetails : entry/From Select weather info
+AdditionalDetails : do/View additional details
+AdditionalDetails : exit/End session
+
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+state J7 <<choice>>
+state J8 <<choice>>
+state J9 <<choice>>
+
+Idle --> J1
+J1 --> Register
+J1 --> Login
+
+Register --> J2
+J2 --> Login
+J2 --> InvalidRegistration
+InvalidRegistration --> [*]
+
+Login --> J3
+J3 --> InvalidLogin
+J3 --> CheckWeather
+J3 --> AdditionalDetails
+
+CheckWeather --> J4
+J4 --> LocationValid
+J4 --> InvalidLocation
+
+LocationValid --> J5
+J5 --> SelectWeatherInfo
+SelectWeatherInfo --> J6
+
+InvalidLocation --> [*]
+
+SelectWeatherInfo --> J7
+J7 --> AdditionalDetails
+AdditionalDetails --> J8
+
+J8 --> EndSession : [End session]
+EndSession --> [*]
+
+AdditionalDetails --> J9
+J9 --> Logout : [Logout]
+
+state "Logout" as Logout
+Logout : entry/From Additional details
+Logout : do/End session
+Logout : exit/Abnormal termination
+
+Logout --> [*]
+
+@enduml

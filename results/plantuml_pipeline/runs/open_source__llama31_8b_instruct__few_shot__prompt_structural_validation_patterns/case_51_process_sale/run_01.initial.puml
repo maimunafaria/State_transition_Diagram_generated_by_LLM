@@ -1,0 +1,36 @@
+@startuml
+title Process Sale State Machine
+
+[*] --> WaitingForSale
+
+state WaitingForSale
+WaitingForSale : entry / Wait for new sale
+
+state AddingItems
+AddingItems : entry / Add items to sale
+
+state PaymentVerification
+PaymentVerification : entry / Verify payment method
+
+state CompletingSale
+CompletingSale : entry / Complete sale after payment approval
+
+state FinishedSale
+FinishedSale : entry / Return to waiting state after sale completion
+
+WaitingForSale --> AddingItems : New sale detected
+
+AddingItems --> PaymentVerification : All items added
+
+PaymentVerification --> CompletingSale : Payment method verified
+
+CompletingSale --> FinishedSale : Sale completed successfully
+
+PaymentVerification --> WaitingForSale : Invalid payment method
+PaymentVerification --> WaitingForSale : Payment verification failed
+
+AddingItems --> WaitingForSale : Cancel sale by customer
+
+WaitingForSale --> [*] : No new sales detected
+
+@enduml

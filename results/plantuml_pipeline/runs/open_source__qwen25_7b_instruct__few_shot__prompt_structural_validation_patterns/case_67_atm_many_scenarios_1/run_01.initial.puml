@@ -1,0 +1,48 @@
+@startuml
+title ATM State Machine Diagram
+
+[*] --> InsertCard
+
+state InsertCard {
+  state WaitingForPINEntry <<choice>>
+  WaitingForPINEntry : entry / Card inserted
+  WaitingForPINEntry --> CorrectPIN : [Correct PIN entered]
+  WaitingForPINEntry --> IncorrectPIN : [Incorrect PIN entered]
+
+  state CorrectPIN {
+    state ProvideOptions <<choice>>
+    ProvideOptions : entry / PIN verified successfully
+    ProvideOptions --> WithdrawalRequest : [Withdrawal request selected]
+    ProvideOptions --> CancelTransaction : [Cancel transaction selected]
+  }
+
+  state IncorrectPIN {
+    state RetryOrCancel <<choice>>
+    RetryOrCancel : entry / PIN verification failed
+    RetryOrCancel --> RetryPINEntry : [Retry PIN entry]
+    RetryOrCancel --> CancelTransaction : [Cancel transaction]
+  }
+}
+
+state WithdrawalRequest {
+  state DispensingCash
+  DispensingCash : entry / Cash dispensing initiated
+  DispensingCash : do / Dispense cash
+  DispensingCash --> PrintReceipt : [Cash dispensed successfully]
+  DispensingCash --> IncorrectPIN : [Dispensing failed]
+
+  state PrintReceipt {
+    state ReturningCard
+    ReturningCard : entry / Receipt printed
+    ReturningCard : do / Return card to user
+    ReturningCard --> ResetMachine : [Return complete]
+  }
+
+  state ResetMachine {
+    state ReadyForNextUser <<history*>
+    ReadyForNextUser : entry / Machine reset
+    ReadyForNextUser : do / Prepare for next user
+  }
+}
+
+@enduml

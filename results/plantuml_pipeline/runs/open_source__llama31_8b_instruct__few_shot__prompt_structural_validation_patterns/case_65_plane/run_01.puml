@@ -1,0 +1,64 @@
+@startuml
+title UML State Machine Diagram (Plane Management)
+
+[*] --> Order : Plane Acquired
+
+state "Order" as Order
+Order : entry / Plane received
+Order : do / Wait for delivery
+Order : exit / Plane delivered
+
+Order --> Arrival : Plane Delivered
+
+state "Arrival" as Arrival
+Arrival : entry / Plane arrived
+Arrival : do / Transition to Preparation
+Arrival : exit / Plane prepared
+
+Arrival --> Preparation : Plane Arrived
+
+state "Preparation" as Preparation
+Preparation : entry / Plane prepared
+Preparation : do / Assign plane to Operations or Maintenance
+Preparation : exit / Plane assigned
+
+Preparation --> J1 <<choice>>
+J1 --> Operations : Scheduled Flights Available
+Operations : entry / Plane in operations
+Operations : do / Monitor scheduled flights
+Operations : exit / No more scheduled flights
+
+J1 --> Maintenance : No Scheduled Flights or Maintenance Required
+Maintenance : entry / Plane sent to maintenance
+Maintenance : do / Check and service plane
+Maintenance : exit / Plane ready for preparation
+
+Preparation --> Preparation : Plane Condition Changed
+
+Maintenance --> Preparation : Plane Serviced
+
+state "Operations" as Operations
+Operations : entry / Plane in operations
+Operations : do / Monitor scheduled flights
+Operations : exit / No more scheduled flights
+
+Operations --> Maintenance : No Scheduled Flights or Maintenance Required
+
+state "Maintenance" as Maintenance
+Maintenance : entry / Plane sent to maintenance
+Maintenance : do / Check and service plane
+Maintenance : exit / Plane ready for preparation
+
+Maintenance --> Preparation : Plane Serviced
+
+state "Withdrawn from Service" as WithdrawnFromService
+WithdrawnFromService : entry / Plane permanently withdrawn
+WithdrawnFromService : do / Remove plane from operations
+WithdrawnFromService : exit / Plane removed
+
+Operations --> WithdrawnFromService : Plane Permanently Withdrawn
+Maintenance --> WithdrawnFromService : Plane Permanently Withdrawn
+
+[*] --> WithdrawnFromService : Plane No Longer Available
+
+@enduml

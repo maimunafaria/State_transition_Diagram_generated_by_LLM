@@ -1,0 +1,74 @@
+@startuml
+title Healthcare Portal State Diagram
+
+[*] --> Registration
+
+state Registration {
+    Registration : do / Complete registration form
+    Registration : exit / Registration successful or failed
+}
+
+Registration --> SignedOut : [failed]
+Registration --> SignIn : [successful]
+
+state SignedOut {
+    SignedOut : entry / User not signed in
+    SignedOut : do / Display login options
+}
+
+SignedInOut --> SignIn : [sign in]
+
+state SignIn {
+    SignIn : do / Enter credentials
+    SignIn : exit / Valid or invalid credentials
+}
+
+SignIn --> AccessGranted : [valid]
+SignIn --> Registration : [invalid]
+
+state AccessGranted {
+    AccessGranted : entry / User signed in
+    AccessGranted : do / Provide access to facilities and content
+}
+
+AccessGranted --> NewsContent : continue
+AccessGranted --> HealthInfo : check symptoms or fitness
+AccessGranted --> PaymentSelection : finance related services
+AccessGranted --> Feedback : [complete session]
+
+state NewsContent {
+    NewsContent : do / Read news and expert content
+}
+
+state HealthInfo {
+    HealthInfo : do / Check symptoms or use fitness options
+}
+
+state PaymentSelection {
+    PaymentSelection : do / Process insurance validation
+    PaymentSelection : exit / Select payment method (cash/insurance)
+}
+
+state CashPaymentDetails{
+    CashPaymentDetails : do / Display cash payment details
+}
+
+state InsurancePaymentComplete{
+    InsurancePaymentComplete : do / Complete the payment process for insurance-based payments.
+}
+
+state Feedback {
+    Feedback : do / Provide feedback
+}
+
+NewsContent --> AccessGranted : continue
+HealthInfo --> AccessGranted : continue
+PaymentSelection --> CashPaymentDetails : [cash]
+PaymentSelection --> InsurancePaymentComplete : [insurance]
+CashPaymentDetails --> AccessGranted : complete
+InsurancePaymentComplete --> AccessGranted : complete
+Feedback --> SignedOut : [log out]
+
+AccessGranted --> [*] : [log out]
+SignedOut --> [*]
+@enduml

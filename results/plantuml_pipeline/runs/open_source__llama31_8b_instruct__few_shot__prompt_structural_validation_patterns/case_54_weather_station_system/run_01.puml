@@ -1,0 +1,37 @@
+@startuml
+title State machine model of a weather station system
+
+[*] --> ShutDown : [system restart]
+
+state ShutDown
+ShutDown : do / display welcome message
+
+state ConfigMode
+ConfigMode : entry / user requests configuration mode
+ConfigMode : do / allow changes or power-saving settings
+ConfigMode : exit / complete configuration, return to running state
+
+state Running
+Running : entry / system is up and running
+Running : do / collect data when triggered by clock
+Running : do / prepare and send weather summary upon request
+Running : do / check status and transmit result upon request
+Running : exit / perform activity (data collection, summary preparation, or status checking)
+
+state ControlledMode
+ControlledMode : entry / user requests remote control
+ControlledMode : do / allow controlled mode operations
+
+state ShutDownCondition
+ShutDownCondition : entry / shutdown command given while running
+ShutDownCondition : do / shut down system
+
+[*] --> Running : [system is up and running]
+Running --> ConfigMode : [user requests configuration mode]
+ConfigMode --> Running : [configuration completed]
+Running --> ControlledMode : [user requests remote control]
+ControlledMode --> Running : [remote control ended]
+Running --> ShutDownCondition : [shutdown command given while running]
+ShutDownCondition --> ShutDown : [system shut down]
+
+@enduml

@@ -1,0 +1,146 @@
+{
+  "run_id": "open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns",
+  "case_id": "case_39_website_development",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nCash Register — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall wait for a customer.\n2. The system shall add items one by one when a customer begins a purchase.\n3. The system shall wait for payment after all items are added.\n4. The system shall go back to waiting for the next customer after the payment is made.\n\nExample 1 PlantUML:\n@startuml\ntitle State diagram of the system operations of \"Process sale\"\n\n[*] --> WaitingCustomer\n\nstate \"Waiting for customer\" as WaitingCustomer\nstate \"Record items\" as RecordItems\nstate \"Waiting for payment\" as WaitingPayment\n\nWaitingCustomer --> RecordItems : enter item\nRecordItems --> RecordItems : enter item\nRecordItems --> WaitingPayment : end of sale\nWaitingPayment --> WaitingCustomer : enter payment\n\n@enduml\n\nExample 2 Requirement:\nDisplayitem — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to browse products through a catalog.\n2. The system shall enable users to view items directly or explore different ways of browsing in the catalog.\n3. The system shall allow users to browse products using an index, either alphabetically or by category.\n4. The system shall enable users to switch between browsing options based on their preferences.\n5. The system shall allow users to select a product once they find one of interest to view its details.\n6. The system shall enable users to review the items in their basket at any time.\n7. The system shall allow users from the basket to either return to the catalog or proceed to checkout.\n8. The system shall enable users to review their selections during checkout and proceed with the purchase.\n9. The system shall allow users to return to the catalog from the checkout page to make changes before completing the process.\n\nExample 2 PlantUML:\n@startuml\ntitle BrowseCatalog State Machine\n[*] --> BrowseCatalog\nstate BrowseCatalog {\n\n\n\n  state DisplayingItem\n\n  state DisplayingIndex {\n\n    [*] --> Alphabetical\n\n    state Alphabetical\n    state ByCategory\n\n    Alphabetical --> ByCategory : byCategory\n    ByCategory --> Alphabetical : alphabetical\n  }\n\n  state H <<history*>>\n\n  DisplayingItem --> DisplayingIndex : goToIndex\n  DisplayingIndex --> DisplayingItem : selectProduct\n\n  H --> DisplayingIndex\n}\n\nstate DisplayingBasket\nstate CheckingOut\n\nBrowseCatalog --> DisplayingBasket : goToBasket\nDisplayingIndex --> CheckingOut : goToCheckout\n\nDisplayingBasket --> H : goToCatalog\nCheckingOut --> H : goToCatalog\n\nBrowseCatalog --> [*] : exit\n\n@enduml\n\nExample 3 Requirement:\nStartup Meet — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to select their roll (investor, entrepreneur, or mentor).\n2. The system shall enable the user to sign in after choosing a role.\n3. The system shall allow the signed-in user to submit a startup idea.\n4. The system shall review the submitted startup idea.\n5. The system shall provide mentorship based on the review result.\n6. The system shall make an investment decision if the startup idea is presented to an investor.\n7. The system shall provide funding based on the investment decision.\n8. The system shall end the process once all actions are completed.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\n[*] --> UserType\n\nstate UserType <<choice>>\n\nUserType --> InvestorLogin : [Investor user]\nUserType --> EntrepreneurLogin : [Entrepreneur user]\nUserType --> MentorLogin : [Mentor user]\n\nstate \"Investor Login\" as InvestorLogin\nInvestorLogin : entry / Action needed\nInvestorLogin : do / enter login credentials\nInvestorLogin : exit / Entered into system\n\nstate \"Entrepreneur Login\" as EntrepreneurLogin\nEntrepreneurLogin : entry / Action needed\nEntrepreneurLogin : do / enter login credentials\nEntrepreneurLogin : exit / Entered into system\n\nstate \"Mentor Login\" as MentorLogin\nMentorLogin : entry / Action needed\nMentorLogin : do / enter login credentials\nMentorLogin : exit / Entered into system\n\nstate MergeLogin <<choice>>\n\nInvestorLogin --> MergeLogin\nEntrepreneurLogin --> MergeLogin\nMentorLogin --> MergeLogin\n\nstate \"Startup idea\" as StartupIdea\nStartupIdea : entry / Submitted by entrepreneur\nStartupIdea : do / file the idea\nStartupIdea : exit / accept or decline state\n\nMergeLogin --> StartupIdea\n\nstate \"Decision on Startup idea\" as DecisionIdea\nDecisionIdea : entry / startup idea state\nDecisionIdea : do / accept or decline\nDecisionIdea : exit / NIL\n\nStartupIdea --> DecisionIdea\n\nstate ChoiceDecision <<choice>>\nDecisionIdea --> ChoiceDecision\n\nstate \"Accept mentorship\" as AcceptMentorship\nAcceptMentorship : entry / decision on mentorship\nAcceptMentorship : do / mentorship\nAcceptMentorship : exit / NIL\n\nstate \"Present Idea\" as PresentIdea\nPresentIdea : entry / Decision on startup\nPresentIdea : do / present idea to investor\nPresentIdea : exit / Decision on investing\n\nstate \"Investment\" as Investment\nInvestment : entry / Decision to invest\nInvestment : do / give investment\nInvestment : exit / share in profit\n\nChoiceDecision --> AcceptMentorship\nChoiceDecision --> PresentIdea\n\nstate MergeEnd <<choice>>\n\nAcceptMentorship --> MergeEnd\nPresentIdea --> Investment\nInvestment --> MergeEnd\nChoiceDecision --> MergeEnd\nMergeEnd --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- PlantUML Structural Validation Patterns ---\n\nThe uppercase identifiers below are placeholders.\nReplace them with existing requirement-supported states, events, and guards.\nDo not copy placeholder names into the final diagram.\n\nPattern 1: never connect the initial pseudostate directly to the final pseudostate\n\n' Invalid\n[*] --> [*]\n\n' Valid\n[*] --> INITIAL_STATE\nINITIAL_STATE --> TERMINAL_STATE : SUPPORTED_EVENT\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 2: use exactly one top-level initial transition\n\n' Invalid\n[*] --> FIRST_STATE\n[*] --> SECOND_STATE\n\n' Valid\n[*] --> FIRST_STATE\nFIRST_STATE --> SECOND_STATE : SUPPORTED_EVENT\n\n\nPattern 3: add a missing initial transition\n\n[*] --> INITIAL_STATE\n\n\nPattern 4: add a missing final transition\n\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 5: connect every requirement-supported orphan state\n\nPREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT\nORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If ORPHAN_STATE is unsupported by the requirement, omit it.\n\n\nPattern 6: create a path to every requirement-supported unreachable state\n\nREACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT\nUNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If UNREACHABLE_STATE is unsupported by the requirement, omit it.\n\n\nPattern 7: keep only one transition for the same source and target\n\n' Invalid\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\n\n' Valid\nSOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT\n\n\nPattern 8: every choice node must have outgoing transitions\n\nstate DECISION_NODE <<choice>>\nSOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 9: choice-node outgoing transitions must use guards\n\n' Invalid\nDECISION_NODE --> FIRST_STATE\nDECISION_NODE --> SECOND_STATE\n\n' Valid\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 10: a fork node must have multiple outgoing branches\n\nstate FORK_NODE <<fork>>\nSOURCE_STATE --> FORK_NODE : SUPPORTED_EVENT\nFORK_NODE --> FIRST_PARALLEL_STATE\nFORK_NODE --> SECOND_PARALLEL_STATE\n\n\nPattern 11: a join node must have multiple incoming branches\n\nstate JOIN_NODE <<join>>\nFIRST_PARALLEL_STATE --> JOIN_NODE\nSECOND_PARALLEL_STATE --> JOIN_NODE\nJOIN_NODE --> NEXT_STATE\n\n\nPattern 12: use history only inside a composite state\n\nstate COMPOSITE_STATE {\n  [H] --> RESUMED_CHILD_STATE\n}\n\n\nPattern 13: do not add another [*] transition inside a composite state\n\n' Invalid\nstate PARENT_STATE {\n  [*] --> CHILD_STATE\n}\n\n' Valid\nstate PARENT_STATE {\n  state CHILD_STATE\n}\nPARENT_STATE --> CHILD_STATE : SUPPORTED_EVENT\n\n\n\n--- Task ---\n\nRequirement:\n\nWebsite Development — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to navigate from the homepage using a navigation bar.\n2. The system shall display information about projects when selected by the user.\n3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.\n4. The system shall display information about career opportunities when selected by the user.\n5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.\n6. The system shall check submitted job applications after they are submitted.\n",
+  "requirement_used": "Website Development — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to navigate from the homepage using a navigation bar.\n2. The system shall display information about projects when selected by the user.\n3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.\n4. The system shall display information about career opportunities when selected by the user.\n5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.\n6. The system shall check submitted job applications after they are submitted.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns\\case_39_website_development\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "multiple_initial_state_transitions (Homepage, Homepage)",
+      "missing_final_state_transition (state --> [*])",
+      "choice_node_without_guarded_outgoing_transitions (PhotosVideosChoice)",
+      "choice_node_without_guarded_outgoing_transitions (UpdatesOrApplication)"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 10,
+    "transition_count": 14
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "multiple_initial_state_transitions (Homepage, Homepage)",
+      "missing_final_state_transition (state --> [*])",
+      "choice_node_without_guarded_outgoing_transitions (PhotosVideosChoice)",
+      "choice_node_without_guarded_outgoing_transitions (UpdatesOrApplication)"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_42_cash_register",
+        "case_63_displayitem",
+        "case_40_startup_meet"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (Homepage, Homepage)",
+        "missing_final_state_transition (state --> [*])",
+        "choice_node_without_guarded_outgoing_transitions (PhotosVideosChoice)",
+        "choice_node_without_guarded_outgoing_transitions (UpdatesOrApplication)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (Homepage, Homepage)",
+        "missing_final_state_transition (state --> [*])",
+        "choice_node_without_guarded_outgoing_transitions (PhotosVideosChoice)",
+        "choice_node_without_guarded_outgoing_transitions (UpdatesOrApplication)"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (Homepage, Homepage)",
+          "missing_final_state_transition (state --> [*])",
+          "choice_node_without_guarded_outgoing_transitions (PhotosVideosChoice)",
+          "choice_node_without_guarded_outgoing_transitions (UpdatesOrApplication)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 10,
+        "transition_count": 14
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns\\case_39_website_development\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.3,
+    "state_recall": 0.21428571428571427,
+    "state_f1": 0.25,
+    "state_tp": 3,
+    "state_fp": 7,
+    "state_fn": 11,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 14,
+    "transition_fn": 19,
+    "state_precision_relaxed": 0.4,
+    "state_recall_relaxed": 0.2857142857142857,
+    "state_f1_relaxed": 0.3333333333333333,
+    "state_tp_relaxed": 4,
+    "state_fp_relaxed": 6,
+    "state_fn_relaxed": 10,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 14,
+    "transition_fn_relaxed": 19,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 14,
+    "transition_fn_semantic": 19,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "multiple_initial_state_transitions (Homepage, Homepage)",
+      "missing_final_state_transition (state --> [*])",
+      "choice_node_without_guarded_outgoing_transitions (PhotosVideosChoice)",
+      "choice_node_without_guarded_outgoing_transitions (UpdatesOrApplication)"
+    ],
+    "hallucination_state_rate": 0.7,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.6,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.125,
+    "overall_f1_relaxed": 0.16666666666666666,
+    "weighted_f1_relaxed_70_30": 0.2333333333333333,
+    "overall_f1_semantic": 0.16666666666666666,
+    "weighted_f1_semantic_70_30": 0.2333333333333333,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "multiple_initial_state_transitions (Homepage, Homepage)",
+      "missing_final_state_transition (state --> [*])",
+      "choice_node_without_guarded_outgoing_transitions (PhotosVideosChoice)",
+      "choice_node_without_guarded_outgoing_transitions (UpdatesOrApplication)"
+    ]
+  }
+}

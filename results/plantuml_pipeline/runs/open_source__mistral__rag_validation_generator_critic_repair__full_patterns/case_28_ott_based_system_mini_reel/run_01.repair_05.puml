@@ -1,0 +1,76 @@
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>>
+state EditorChoice <<choice>>
+state ReadFeedbackChoice <<choice>>
+state EndJoin <<choice>>
+
+[*] --> StartChoice
+StartChoice --> Register
+StartChoice --> Login
+
+Register --> AdminChoice
+Login --> EditorChoice
+
+AdminChoice --> ManageProfiles
+AdminChoice --> InvalidUser
+ManageProfiles --> Publishing
+InvalidUser --> [*]
+
+EditorChoice --> Writing
+EditorChoice --> Editing
+EditorChoice --> InvalidUser
+Writing --> Editing
+Editing --> Publishing
+
+Publishing --> Reading
+Reading --> Reading
+
+Search --> Search
+Reading --> ReadFeedbackChoice
+ReadFeedbackChoice --> Feedback
+Feedback --> EndJoin
+
+EndJoin --> [*]
+
+state Admin <<extends ManageProfiles>>
+Admin : do / Manage profile in database
+Admin : do / Add, delete or edit profiles if necessary
+
+state Editor <<extends Writing & Editing>>
+Editor : do / Write article
+Editor : do / Edit article
+
+state User <<extends Login>>
+User : entry / Registered user
+User : do / Enter login credentials
+User : exit / Valid username and password
+
+state Writer <<extends User>>
+Writer : entry / Writer logged in
+Writer : do / Write article
+Writer : exit / Send to editor
+
+state Moderator <<extends Editor>>
+Moderator : entry / Editor logged in and article to be edited
+Moderator : do / Edit article
+Moderator : exit / Send to moderator/admin
+
+state Publisher <<extends Admin & Moderator>>
+Publisher : entry / Admin logged in and article to be approved
+Publisher : do / Choose to approve and publish or reject article
+Publisher : do / Add article to database if approved
+Publisher : exit / Publish article
+
+state Reader <<extends User>>
+Reader : entry / Published article
+Reader : do / Read article
+Reader : exit / Completed reading
+
+state FeedbackGiver <<extends Reader>>
+FeedbackGiver : entry / Reader chosen to give feedback
+FeedbackGiver : do / Get feedback
+FeedbackGiver : exit / Feedback entry successful
+@enduml

@@ -1,0 +1,50 @@
+@startuml
+title Inventory State Diagram
+
+[*] --> Idle
+
+state Idle
+state AddingGoods
+state UpdatingPrice
+state RemovingGoods
+state ExpiredGoods
+state PlacingOrder
+state GeneratingInvoice
+state SearchingItems
+state CalculatingDiscountTax
+state GeneratingReceipt
+state ReplacingItem
+state CancelingReceipt
+state RecordingRequests
+state ViewingSummaryReport
+
+Idle --> AddingGoods : add_goods
+AddingGoods --> Idle : save_goods
+
+Idle --> UpdatingPrice : update_price
+UpdatingPrice --> Idle : save_price
+
+Idle --> RemovingGoods : remove_goods
+RemovingGoods --> ExpiredGoods : check_expiration_date
+
+ExpiredGoods --> Idle : notify_user
+
+Idle --> PlacingOrder : place_order
+PlacingOrder --> GeneratingInvoice : generate_invoice
+
+GeneratingInvoice --> CalculatingDiscountTax : calculate_discount_tax
+CalculatingDiscountTax --> GeneratingReceipt : generate_receipt
+
+GeneratingReceipt --> ReplacingItem : replace_item
+ReplacingItem --> CancelingReceipt : cancel_receipt
+
+CancelingReceipt --> Idle : save_changes
+
+Idle --> SearchingItems : search_items
+SearchingItems --> CalculatingDiscountTax : select_items
+
+RecordingRequests --> ViewingSummaryReport : view_summary_report
+
+ViewingSummaryReport --> [*] : exit_system
+
+@enduml

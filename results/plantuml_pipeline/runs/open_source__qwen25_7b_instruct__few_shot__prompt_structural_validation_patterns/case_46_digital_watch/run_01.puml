@@ -1,0 +1,63 @@
+@startuml
+title UML State Machine Diagram - Digital Watch
+
+[*] --> InitialState : [initial state]
+
+state "Initial" as InitialState {
+  [*] --> TimeAdjustment : [button pressed]
+}
+
+state "Time Adjustment" as TimeAdjustment {
+  state "Hour Adjustment" as HourAdjustment
+  state "Minute Adjustment" as MinuteAdjustment
+  state "Alarm Hour Adjustment" as AlarmHourAdjustment
+  state "Alarm Minute Adjustment" as AlarmMinuteAdjustment
+
+  TimeAdjustment --> HourAdjustment : [button pressed]
+  HourAdjustment --> TimeAdjustment : [button released]
+  TimeAdjustment --> MinuteAdjustment : [button pressed]
+  MinuteAdjustment --> TimeAdjustment : [button released]
+  TimeAdjustment --> AlarmHourAdjustment : [button pressed]
+  AlarmHourAdjustment --> TimeAdjustment : [button released]
+  TimeAdjustment --> AlarmMinuteAdjustment : [button pressed]
+  AlarmMinuteAdjustment --> TimeAdjustment : [button released]
+
+  HourAdjustment --> IncreaseValue : [increase button pressed]
+  MinuteAdjustment --> IncreaseValue : [increase button pressed]
+  AlarmHourAdjustment --> IncreaseValue : [increase button pressed]
+  AlarmMinuteAdjustment --> IncreaseValue : [increase button pressed]
+}
+
+state "Alarm On" as AlarmOn {
+  [*] --> AlarmOff : [alarm off button pressed]
+}
+
+state "Alarm Off" as AlarmOff {
+  [*] --> AlarmOn : [alarm on button pressed]
+}
+
+state "Light On" as LightOn {
+  state "Light On" <<history>>
+  LightOn --> LightOff : [button released]
+}
+
+state "Light Off" as LightOff {
+  [*] --> LightOn : [button pressed]
+}
+
+AlarmOn --> TriggerAlarm : [current time matches alarm time]
+
+TriggerAlarm --> AlarmOff : [alarm stop button pressed]
+
+InitialState --> TimeAdjustment
+TimeAdjustment --> AlarmOn : [alarm on button pressed]
+TimeAdjustment --> AlarmOff : [alarm off button pressed]
+TimeAdjustment --> LightOn : [light on button pressed]
+
+LightOn --> LightOff
+
+AlarmOn --> [*] : [alarm stopped and light turned off]
+AlarmOff --> [*] : [alarm turned off and light turned off]
+LightOn --> [*] : [light turned off]
+
+@enduml

@@ -1,0 +1,111 @@
+{
+  "run_id": "open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns",
+  "case_id": "case_70_atm_many_scenarios_7",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nControlpanel Class — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check the entered password.\n2. The system shall allow the user to continue making selections if the password is correct.\n3. The system shall limit the number of incorrect password attempts a user can make.\n4. The system shall lock and not allow further access for a certain period after too many incorrect attempts.\n5. The system shall allow users to try accessing again after the lockout period has passed.\n\nExample 1 PlantUML:\n@startuml\ntitle State Diagram - Control Panel\n\n[*] --> Reading : Key hit\n\nstate Reading\nstate Comparing\nstate Locked\nstate Selecting\n\n\nComparing : do / validatePassword\n\n\nReading --> Comparing : Password entered\n\n\nComparing --> Comparing : Password incorrect\\nnumberOfTries < maxTries\n\n\nComparing --> Locked : numberOfTries > maxTries\n\n\nComparing --> Selecting : Password correct\n\n\nLocked --> Locked : Timer <= lockedTime\n\n\nLocked --> Reading : Timer > lockedTime\n\n\nSelecting --> Reading : Activation successful\n\n@enduml\n\nExample 2 Requirement:\nInformation System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start a training request upon creation.\n2. The system shall send the request for approval after its creation.\n3. The system shall end the process if the request is rejected.\n4. The system shall look for a suitable session if the request is accepted.\n5. The system shall perform enrolment once a session is chosen.\n6. The system shall satisfy the request if enrolment is confirmed.\n7. The system shall allow completion of the session after enrolment confirmation.\n8. The system shall allow cancellation of a selected session and selection of a new one.\n9. The system shall end the process if the request is cancelled at any point before completion.\n\nExample 2 PlantUML:\n@startuml\ntitle Complete state diagram of the training request\n\n[*] --> Creation\n\nstate Creation\nstate \"WaitingForAcknowledgement\" as WaitingAck\nstate SearchForSession\nstate \"WaitingForEnrolment\" as WaitingEnrolment\nstate Satisfied\n\nstate rejected <<final>>\nstate cancelled <<final>>\nstate completed <<final>>\n\nCreation --> WaitingAck : validate / send personincharge.self\nCreation --> cancelled : cancel\n\nWaitingAck --> rejected : reject / send employee.rejection\nWaitingAck --> SearchForSession : accept / send employee.agreement\nWaitingAck --> cancelled : cancel\n\nSearchForSession --> WaitingEnrolment : sessionChoice / send body.order\nSearchForSession --> cancelled : cancel\n\nWaitingEnrolment --> Satisfied : enrolment / send employee.confirmation\nWaitingEnrolment --> cancelled : cancel / send body.cancellation\n\nSatisfied --> WaitingEnrolment : cancelSession / send employee.cancellation\nSatisfied --> cancelled : cancel / send body.cancellation\nSatisfied --> completed : endSession\n\n@enduml\n\nExample 3 Requirement:\nFor Online College Magazine System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall require a person to either create an account or log in.\n2. The system shall allow admins to add, edit, or remove user profiles.\n3. The system shall enable admins to review articles and decide on their publication or rejection.\n4. The system shall permit content creators to write articles and send them for editing.\n5. The system shall have editors review articles from content creators and pass them for approval.\n6. The system shall restrict access if a login attempt is invalid.\n7. The system shall make published articles available for user reading.\n8. The system shall allow users to search for more articles during their reading session.\n9. The system shall enable users to provide feedback after reading articles.\n10. The system shall end when users complete their search or provide feedback.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Machine Diagram\n\nstate StartChoice <<choice>>\nstate AdminChoice <<choice>>\nstate EditorChoice <<choice>>\nstate ReadFeedbackChoice <<choice>>\nstate EndJoin <<choice>>\n\n[*] --> StartChoice\n\nstate Register\nRegister : do / Fill details\nRegister : exit / Registration successful\n\nstate Login\nLogin : entry / Registered user\nLogin : do / Enter login credentials\nLogin : exit / Valid username and password\n\nstate \"Manage profiles\" as ManageProfiles\nManageProfiles : entry / Admin logged in\nManageProfiles : do / Manage profile in database\nManageProfiles : do / Add, delete or edit profiles if necessary\nManageProfiles : exit / Action completed\n\nstate \"Invalid user\" as InvalidUser\nInvalidUser : entry / Invalid login or invalid registration\nInvalidUser : do / Block entry to system\nInvalidUser : exit / Abnormal termination\n\nstate Writing\nWriting : entry / Writer logged in\nWriting : do / Write article\nWriting : exit / Send to editor\n\nstate Editing\nEditing : entry / Editor logged in and article to be edited\nEditing : do / Edit article\nEditing : exit / Send to moderator/admin\n\nstate Publishing\nPublishing : entry / Admin logged in and article to be approved\nPublishing : do / Choose to approve and publish or reject article\nPublishing : do / Add article to database if approved\nPublishing : exit / Publish article\n\nstate Search\nSearch : entry / Choose to search for articles\nSearch : do / Read searched articles\nSearch : exit / Completed reading\n\nstate Reading\nReading : entry / Published article\nReading : do / Read article\nReading : exit / Completed reading\n\nstate Feedback\nFeedback : entry / Reader chosen to give feedback\nFeedback : do / Get feedback\nFeedback : exit / Feedback entry successful\n\nStartChoice --> Register\nStartChoice --> Login\n\nRegister --> AdminChoice\nLogin --> EditorChoice\n\nAdminChoice --> ManageProfiles\nAdminChoice --> InvalidUser\n\nEditorChoice --> Writing\nEditorChoice --> Editing\nEditorChoice --> InvalidUser\n\nWriting --> Editing\nEditing --> Publishing\nManageProfiles --> Publishing\n\nInvalidUser --> [*]\n\nPublishing --> Reading\nReading --> Reading\n\nSearch --> Search\nReading --> ReadFeedbackChoice\n\nReadFeedbackChoice --> Search\nReadFeedbackChoice --> Feedback\n\nFeedback --> EndJoin\nSearch --> EndJoin\n\nEndJoin --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- PlantUML Structural Validation Patterns ---\n\nThe uppercase identifiers below are placeholders.\nReplace them with existing requirement-supported states, events, and guards.\nDo not copy placeholder names into the final diagram.\n\nPattern 1: never connect the initial pseudostate directly to the final pseudostate\n\n' Invalid\n[*] --> [*]\n\n' Valid\n[*] --> INITIAL_STATE\nINITIAL_STATE --> TERMINAL_STATE : SUPPORTED_EVENT\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 2: use exactly one top-level initial transition\n\n' Invalid\n[*] --> FIRST_STATE\n[*] --> SECOND_STATE\n\n' Valid\n[*] --> FIRST_STATE\nFIRST_STATE --> SECOND_STATE : SUPPORTED_EVENT\n\n\nPattern 3: add a missing initial transition\n\n[*] --> INITIAL_STATE\n\n\nPattern 4: add a missing final transition\n\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 5: connect every requirement-supported orphan state\n\nPREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT\nORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If ORPHAN_STATE is unsupported by the requirement, omit it.\n\n\nPattern 6: create a path to every requirement-supported unreachable state\n\nREACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT\nUNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If UNREACHABLE_STATE is unsupported by the requirement, omit it.\n\n\nPattern 7: keep only one transition for the same source and target\n\n' Invalid\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\n\n' Valid\nSOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT\n\n\nPattern 8: every choice node must have outgoing transitions\n\nstate DECISION_NODE <<choice>>\nSOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 9: choice-node outgoing transitions must use guards\n\n' Invalid\nDECISION_NODE --> FIRST_STATE\nDECISION_NODE --> SECOND_STATE\n\n' Valid\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 10: a fork node must have multiple outgoing branches\n\nstate FORK_NODE <<fork>>\nSOURCE_STATE --> FORK_NODE : SUPPORTED_EVENT\nFORK_NODE --> FIRST_PARALLEL_STATE\nFORK_NODE --> SECOND_PARALLEL_STATE\n\n\nPattern 11: a join node must have multiple incoming branches\n\nstate JOIN_NODE <<join>>\nFIRST_PARALLEL_STATE --> JOIN_NODE\nSECOND_PARALLEL_STATE --> JOIN_NODE\nJOIN_NODE --> NEXT_STATE\n\n\nPattern 12: use history only inside a composite state\n\nstate COMPOSITE_STATE {\n  [H] --> RESUMED_CHILD_STATE\n}\n\n\nPattern 13: do not add another [*] transition inside a composite state\n\n' Invalid\nstate PARENT_STATE {\n  [*] --> CHILD_STATE\n}\n\n' Valid\nstate PARENT_STATE {\n  state CHILD_STATE\n}\nPARENT_STATE --> CHILD_STATE : SUPPORTED_EVENT\n\n\n\n--- Task ---\n\nRequirement:\n\nAtm Many Scenarios Scenario 7 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall greet the user when they arrive.\n2. The system shall check the PIN after the card is inserted.\n3. The system shall allow the user to try again if the entered PIN is incorrect.\n4. The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times.\n5. The system shall return the card if the user cancels the operation.\n6. The system shall display available options (withdrawing money, checking information, or making a transfer) for the user to choose from if the PIN is correct.\n7. The system shall process the selected request after the user makes a choice.\n",
+  "requirement_used": "Atm Many Scenarios Scenario 7 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall greet the user when they arrive.\n2. The system shall check the PIN after the card is inserted.\n3. The system shall allow the user to try again if the entered PIN is incorrect.\n4. The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times.\n5. The system shall return the card if the user cancels the operation.\n6. The system shall display available options (withdrawing money, checking information, or making a transfer) for the user to choose from if the PIN is correct.\n7. The system shall process the selected request after the user makes a choice.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns\\case_70_atm_many_scenarios_7\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "Greeting",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 7,
+    "transition_count": 7
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_48_controlpanel_class",
+        "case_43_information_system",
+        "case_21_for_online_college_magazine_system"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "Greeting",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 7,
+        "transition_count": 7
+      },
+      "strict_state_diagram_valid": true,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns\\case_70_atm_many_scenarios_7\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 7,
+    "state_fn": 9,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 7,
+    "transition_fn": 10,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 7,
+    "state_fn_relaxed": 8,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 7,
+    "transition_fn_relaxed": 7,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 7,
+    "transition_fn_semantic": 10,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  }
+}

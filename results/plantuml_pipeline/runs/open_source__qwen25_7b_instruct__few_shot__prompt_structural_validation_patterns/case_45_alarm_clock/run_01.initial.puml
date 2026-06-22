@@ -1,0 +1,26 @@
+@startuml
+title Alarm Clock State Machine
+
+[*] --> OffState
+
+state "Off" as OffState
+state "Alarm Activated" as AlarmActivated
+state "Ringing" as Ringing
+
+OffState : entry/Initialize system
+OffState : do/Wait for alarm setting or shutdown
+OffState : exit/Shut down system
+
+AlarmActivated : entry/Set alarm time
+AlarmActivated : do/Activate alarm if current time matches set time
+AlarmActivated : exit/Ringing
+
+Ringing : entry/Ring the alarm
+Ringing : do/Ring until stopped by user
+Ringing : exit/Stop ringing and return to Alarm Activated state
+
+OffState --> AlarmActivated : [alarm set]
+AlarmActivated --> Ringing : [current time matches set time]
+Ringing --> OffState : [alarm stopped]
+
+@enduml

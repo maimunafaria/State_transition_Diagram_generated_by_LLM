@@ -1,0 +1,52 @@
+@startuml
+title Plane State Transition Diagram
+
+state Order
+Order : entry / newly acquired plane
+Order : do / placed in order state until delivery
+Order : exit / delivered to arrival
+
+state Arrival
+Arrival : entry / upon arrival
+Arrival : do / transition to preparation
+Arrival : exit / moved to preparation
+
+state Preparation <<choice>>
+Preparation : entry / after arrival
+Preparation : do / prepare the plane
+Preparation : exit / ready for assignment
+
+state Operations
+Operations : entry / assigned to operations
+Operations : do / check scheduled flights
+Operations : exit / remains in operations if flights exist
+
+state Maintenance
+Maintenance : entry / no more flights or maintenance needed
+Maintenance : do / servicing and checks
+Maintenance : exit / ready for preparation
+
+state Retired
+Retired : entry / permanently withdrawn from service
+Retired : do / removed from operations
+Retired : exit / final state
+
+[*] --> Order
+
+Order --> Arrival : delivered
+
+Arrival --> Preparation
+
+Preparation --> Operations : [condition met]
+Preparation --> Maintenance : [maintenance required]
+
+Operations --> Maintenance : [no more flights or maintenance needed]
+
+Maintenance --> Preparation : serviced and ready
+
+Preparation --> Retired : [plane retired]
+
+Operations --> Retired : [plane retired]
+
+Retired --> [*] : removed from service
+@enduml

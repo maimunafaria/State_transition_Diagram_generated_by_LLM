@@ -1,0 +1,65 @@
+@startuml
+title Weather Monitoring System State Diagram
+
+[*] --> RegisterOrLogin
+
+state "Register" as Register
+Register : entry / start state
+Register : do / create an account
+Register : exit / registration complete or unsuccessful
+
+state "Login" as Login
+Login : entry / user logs in with credentials
+Login : do / verify login details
+Login : exit / login successful or unsuccessful
+
+RegisterOrLogin --> Register
+RegisterOrLogin --> Login
+
+state "Check Weather" as CheckWeather
+CheckWeather : entry / user checks weather for a location
+CheckWeather : do / check if the entered location is valid
+CheckWeather : exit / location validation complete
+
+state "Invalid Location" as InvalidLocation
+InvalidLocation : entry / location not valid
+InvalidLocation : do / end process
+InvalidLocation : exit / session ends
+
+CheckWeather --> CheckWeather : [location valid]
+CheckWeather --> InvalidLocation : [location invalid]
+
+state "Select Weather Info" as SelectInfo
+SelectInfo : entry / user selects weather information to check
+SelectInfo : do / select temperature, humidity, rainfall, pressure, or dew point
+SelectInfo : exit / selection complete
+
+state "Show Weather Info" as ShowInfo
+ShowInfo : entry / display selected weather information
+ShowInfo : do / update and show the selected weather info
+ShowInfo : exit / info displayed
+
+CheckWeather --> SelectInfo : [location valid]
+SelectInfo --> ShowInfo
+
+state "View Additional Details" as ViewDetails
+ViewDetails : entry / user views additional details
+ViewDetails : do / view alerts, weekly analysis, future prediction, or graph
+ViewDetails : exit / details viewed
+
+state "Logout" as Logout
+Logout : entry / user logs out
+Logout : do / end session
+Logout : exit / session ends
+
+CheckWeather --> ViewDetails
+SelectInfo --> ViewDetails
+ShowInfo --> ViewDetails
+ViewDetails --> Logout
+
+Login --> CheckWeather
+Register --> Login
+
+InvalidLocation --> [*]
+
+@enduml

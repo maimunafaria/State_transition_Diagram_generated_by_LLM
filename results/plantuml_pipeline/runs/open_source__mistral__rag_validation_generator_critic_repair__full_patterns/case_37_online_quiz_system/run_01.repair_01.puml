@@ -1,0 +1,82 @@
+@startuml
+title UML State Machine Diagram
+
+@valid
+[*] --> INITIAL_STATE
+INITIAL_STATE --> Registration : "User Interaction"
+INITIAL_STATE --> Authentication : "User Interaction"
+INITIAL_STATE --> SearchBooks : "User Interaction"
+INITIAL_STATE --> GetBooksState : "User Interaction"
+INITIAL_STATE --> BuyBooks : "User Interaction"
+@
+
+state Registration {
+  state RegEnterDetails
+  state GetMemberID
+  state SuccessfulRegistration
+  state ReEnterDetails
+
+  RegEnterDetails --> GetMemberID : [Valid]
+  RegEnterDetails --> ReEnterDetails : [Invalid]
+  ReEnterDetails --> RegEnterDetails
+  GetMemberID --> SuccessfulRegistration
+}
+
+state Authentication {
+  state AuthEnterMemberID
+  state EnterPassword
+  state SuccessfulLogin
+  state InvalidCreds
+
+  AuthEnterMemberID --> EnterPassword
+  EnterPassword --> SuccessfulLogin : [Valid]
+  EnterPassword --> InvalidCreds : [Invalid]
+}
+
+state SearchBooks {
+  state EnterBookDetails
+  state DisplaySuggestion
+  state ChooseAlternate
+
+  EnterBookDetails --> DisplaySuggestion : [Found]
+  EnterBookDetails --> ChooseAlternate : [Not Found]
+}
+
+state GetBooksState {
+  state GetEnterBookID
+  state GetEnterMemberID
+  state ObtainBooks
+  state PayFineAmount
+
+  GetEnterBookID --> GetEnterMemberID
+  GetEnterMemberID --> ObtainBooks : [Active Member]
+  GetEnterMemberID --> PayFineAmount : [Inactive Member]
+}
+
+state BuyBooks {
+  state BuyEnterBookID
+  state DisplayBookAmount
+  state BuyGetBooks
+  state BuyNotPaidEnd <<choice>>
+
+  BuyEnterBookID --> DisplayBookAmount
+  DisplayBookAmount --> BuyGetBooks : [Paid]
+  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]
+}
+
+state StartJoin <<choice>>
+StartJoin --> Registration : "User Interaction"
+StartJoin --> Authentication : "User Interaction"
+StartJoin --> SearchBooks : "User Interaction"
+StartJoin --> GetBooksState : "User Interaction"
+StartJoin --> BuyBooks : "User Interaction"
+
+SuccessfulRegistration --> AuthEnterMemberID : "Continue as Teacher or Student"
+
+SuccessfulLogin --> EnterBookDetails : "Search Books"
+SuccessfulLogin --> GetEnterBookID : "Get Books"
+SuccessfulLogin --> BuyEnterBookID : "Buy Books"
+
+ObtainBooks --> [*] : "User Interaction"
+BuyGetBooks --> [*] : "User Interaction"
+@enduml

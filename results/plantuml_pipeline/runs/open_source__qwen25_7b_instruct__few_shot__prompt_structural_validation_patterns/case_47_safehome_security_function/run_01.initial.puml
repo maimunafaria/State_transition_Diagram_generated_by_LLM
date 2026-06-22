@@ -1,0 +1,33 @@
+@startuml
+title UML State Machine Diagram - Safehome Security Function
+
+[*] --> PowerOnCheck
+
+state "Power-On Check" as PowerOnCheck
+state "Startup Problem" as StartupProblem
+state "Ready To Use" as ReadyToUse
+
+PowerOnCheck --> StartupProblem : [Problem Detected]
+PowerOnCheck --> ReadyToUse : [Everything Fine]
+
+StartupProblem --> [*] : [Stop System]
+
+ReadyToUse --> Reset : [User Reset]
+ReadyToUse --> Activate : [User Activation]
+ReadyToUse --> TurnOff : [User Turn Off]
+
+state "Monitoring" as Monitoring
+state "Alarm Activated" as AlarmActivated
+
+Activate --> Monitoring : [Start Monitoring]
+Monitoring --> AlarmActivated : [Sensor Triggered]
+
+AlarmActivated --> [*] : [Stop and Send Alerts]
+
+Monitoring --> ContinueMonitoring : [False Alarm or Time Ends]
+
+ContinueMonitoring --> ReadyToUse : [Return to Normal]
+
+ReadyToUse --> [*] : [User Enters Password]
+
+@enduml

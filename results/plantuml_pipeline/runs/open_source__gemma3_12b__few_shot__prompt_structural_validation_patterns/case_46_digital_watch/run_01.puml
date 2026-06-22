@@ -1,0 +1,64 @@
+@startuml
+title Digital Watch State Diagram
+
+[*] --> TimeDisplay
+
+state TimeDisplay {
+    [*] --> AdjustingHour
+}
+
+AdjustingHour --> AdjustingMinutes : pressButton
+AdjustingHour --> AdjustingAlarmHour : pressButton
+AdjustingHour --> AdjustingAlarmMinutes : pressButton
+
+AdjustingMinutes --> AdjustingHour : pressButton
+AdjustingMinutes --> IncreaseValue : increase
+
+AdjustingAlarmHour --> AdjustingHour : pressButton
+AdjustingAlarmHour --> AdjustingAlarmMinutes : pressButton
+AdjustingAlarmHour --> IncreaseValue : increase
+
+AdjustingAlarmMinutes --> AdjustingAlarmHour : pressButton
+AdjustingAlarmMinutes --> IncreaseValue : increase
+
+IncreaseValue --> AdjustingHour
+IncreaseValue --> AdjustingMinutes
+IncreaseValue --> AdjustingAlarmHour
+IncreaseValue --> AdjustingAlarmMinutes
+
+state AlarmOff {
+    [*] --> TimeDisplay
+}
+
+state AlarmOn {
+    [*] --> TimeDisplay
+}
+
+TimeDisplay --> AlarmOff : toggleAlarm
+TimeDisplay --> AlarmOn : toggleAlarm
+
+AlarmOn --> Ringing : alarmTriggered
+
+Ringing --> StoppedAlarm : pressButton
+
+StoppedAlarm --> AlarmOn : pressButton
+StoppedAlarm --> AlarmOff : pressButton
+StoppedAlarm --> TimeDisplay
+
+state LightOn {
+    [*] --> TimeDisplay
+}
+
+LightOn --> LightOff : releaseButton
+
+state LightOff {
+    [*] --> TimeDisplay
+}
+
+LightOff --> LightOn : pressButton
+
+TimeDisplay --> LightOn : pressButton
+TimeDisplay --> LightOff : releaseButton
+
+
+@enduml

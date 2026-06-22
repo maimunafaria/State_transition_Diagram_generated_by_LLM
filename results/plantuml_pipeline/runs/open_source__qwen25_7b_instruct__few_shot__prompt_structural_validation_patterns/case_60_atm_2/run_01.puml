@@ -1,0 +1,35 @@
+@startuml
+title UML State Machine Diagram - ATM Withdrawal
+
+[*] --> SelectAmount
+
+state "Select Amount" as SelectAmount {
+    [*] --> [*]
+}
+
+state "Enter Custom Value" as EnterCustomValue
+
+SelectAmount --> VerifyTransaction : [verified]
+SelectAmount --> EnterCustomValue : [custom amount]
+
+state "Verify Transaction" as VerifyTransaction
+VerifyTransaction : entry / Verification process
+VerifyTransaction : do / Validate transaction
+VerifyTransaction : exit / Decision on transaction
+
+state "Transaction Rejected" as Rejected
+Rejected : entry / Transaction rejected
+Rejected : do / Prompt for re-entry
+Rejected : exit / User re-enters amount
+
+state "Re-enter Amount" as ReEnterAmount
+
+VerifyTransaction --> Rejected : [rejected]
+Rejected --> ReEnterAmount : [re-enter]
+
+ReEnterAmount --> SelectAmount : [selected new amount]
+ReEnterAmount --> VerifyTransaction : [verified after re-entry]
+
+VerifyTransaction --> [*] : [approved]
+
+@enduml

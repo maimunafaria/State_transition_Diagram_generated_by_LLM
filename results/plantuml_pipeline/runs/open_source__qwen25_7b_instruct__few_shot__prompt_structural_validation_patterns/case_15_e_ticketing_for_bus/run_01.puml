@@ -1,0 +1,66 @@
+@startuml
+
+title E-Ticketing for Bus State Diagram
+
+[*] --> AccountCreation
+
+state "Account Creation" as AccountCreation {
+  [*] --> ValidRegistration : [Valid]
+  [*] --> InvalidRegistration : [Invalid]
+}
+
+state "Login" as Login {
+  [*] --> EnterMemberID
+  EnterMemberID --> EnterPassword
+  EnterPassword --> SuccessfulLogin : [Valid Credentials]
+  EnterPassword --> InvalidCredentials : [Invalid Credentials]
+}
+
+state "Ticket Status Check" as TicketStatusCheck {
+  [*] --> CheckTicketStatus
+}
+
+state "Book and Pay Ticket" as BookAndPayTicket {
+  [*] --> EnterBookingDetails
+  EnterBookingDetails --> ConfirmBooking
+  ConfirmBooking --> MakePayment
+  MakePayment --> BookingConfirmed : [Paid]
+  MakePayment --> BookingFailed : [Not Paid]
+}
+
+state "Account Management" as AccountManagement {
+  [*] --> EditOrDeleteAccount
+}
+
+state "Logout" as Logout {
+  [*] --> LogOutAction
+}
+
+Login --> [*]
+
+AccountCreation --> ValidRegistration
+ValidRegistration --> EnterMemberID
+
+EnterMemberID --> EnterPassword
+EnterPassword --> SuccessfulLogin : [Valid Credentials]
+EnterPassword --> InvalidCredentials : [Invalid Credentials]
+
+SuccessfulLogin --> CheckTicketStatus
+SuccessfulLogin --> BookAndPayTicket
+SuccessfulLogin --> AccountManagement
+
+CheckTicketStatus --> [*]
+
+BookAndPayTicket --> EnterBookingDetails
+EnterBookingDetails --> ConfirmBooking
+ConfirmBooking --> MakePayment
+MakePayment --> BookingConfirmed : [Paid]
+MakePayment --> BookingFailed : [Not Paid]
+
+AccountManagement --> EditOrDeleteAccount
+
+EditOrDeleteAccount --> [*]
+
+Logout --> [*]
+
+@enduml

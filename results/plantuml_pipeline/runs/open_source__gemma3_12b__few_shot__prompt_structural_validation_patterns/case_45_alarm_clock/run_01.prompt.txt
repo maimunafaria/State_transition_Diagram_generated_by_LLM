@@ -1,0 +1,367 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Flight — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall schedule and assign a flight number when a new flight is created.
+2. The system shall change the flight status to 'on journey' once it takes off.
+3. The system shall mark the flight as inactive and record it as a past record upon landing.
+4. The system shall record cancelled flights in the same manner as landed flights if they are cancelled before starting.
+5. The system shall remove inactive flights over time.
+
+Example 1 PlantUML:
+@startuml
+title Statechart diagram of the class "Flight"
+
+[*] --> Planned : «M» Flight Defined/
+
+state Planned
+state "In Transit" as InTransit
+state Historic
+
+Planned : «M» New Flight Number/
+
+Planned --> InTransit : «M» Flight Started/
+InTransit --> Historic : «M» Flight Landed/
+
+Planned --> Historic : «M» Flight Cancelled/
+Historic --> [*] : «M» Flight Irrelevant/
+Planned --> [*] : «M» Flight Number Irrelevant/
+
+@enduml
+
+Example 2 Requirement:
+Atm Many Scenarios Scenario 8 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall keep the card if it is invalid, expired, or the PIN was entered incorrectly too many times.
+2. The system shall return the card with a message if the user cancels the operation or the request is rejected.
+3. The system shall print a receipt and dispense cash if needed before returning the card to the user after a successful transaction.
+4. The system shall consider the session finished once the card is ejected.
+5. The system shall move into a short ending phase before resetting itself after completing the transaction or cancellation process.
+6. The system shall return to its normal waiting condition or shut down depending on the situation.
+
+Example 2 PlantUML:
+@startuml
+title ATM Control - Terminating Transaction
+
+state "Closed Down" as ClosedDown
+ClosedDown : entry / Display System Down
+
+state Idle
+Idle : entry / Display Welcome
+
+state "Processing Customer Input" as ProcessingCustomerInput
+state "Processing Transaction" as ProcessingTransaction
+
+state "Terminating Transaction" as TerminatingTransaction {
+
+  state Terminating
+  state Confiscating
+  state Ejecting
+  state Printing
+  state Dispensing
+
+  Confiscating --> Terminating : Card Confiscated /\nDisplay Confiscated
+  Ejecting --> Terminating : Card Ejected /\nDisplay Ejected
+  Printing --> Ejecting : Receipt Printed /\nEject
+  Dispensing --> Printing : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+}
+
+ProcessingCustomerInput --> Confiscating : Stolen Card, Expired Card /\nConfiscate, Update Status
+ProcessingCustomerInput --> Confiscating : Third Invalid PIN /\nConfiscate
+ProcessingCustomerInput --> Ejecting : Cancel / Eject,\nDisplay Cancel
+
+ProcessingTransaction --> Ejecting : Rejected / Eject,\nDisplay Apology
+ProcessingTransaction --> Printing : Transfer Approved /\nPrint Receipt,\nUpdate Status
+ProcessingTransaction --> Printing : Query Approved /\nPrint Receipt,\nUpdate Status
+ProcessingTransaction --> Dispensing : Withdrawal Approved /\nDispense Cash,\nUpdate Status
+
+Dispensing --> ClosedDown : Insufficient Cash /\nEject,\nAbort Cash Dispensed
+
+Terminating --> Idle : After (Elapsed Time) [Closedown Not Requested]
+Terminating --> ClosedDown : After (Elapsed Time) [Closedown Was Requested]
+
+@enduml
+
+Example 3 Requirement:
+Book Bank Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to register by entering their details.
+2. The system shall issue a member ID and complete the registration upon correct entry of details.
+3. The system shall require the user to re-enter their details upon incorrect entry of details.
+4. The system shall allow a user to log in after successful registration using their member ID and password.
+5. The system shall allow the user to continue upon correct entry of member ID and password during login. Otherwise, they cannot log in.
+6. The system shall allow a user to search for a book by entering its details.
+7. The system shall show suggestions if a book is found during a search; otherwise, it shall allow the user to choose another option.
+8. The system shall allow a user to get a book by entering its ID and their member ID.
+9. The system shall allow the user to get the book if their membership is active; otherwise, it shall require them to pay the fine amount first.
+10. The system shall allow a user to buy a book by entering its ID and seeing the price.
+11. The system shall provide the book if the user pays; otherwise, it shall end the process there.
+
+Example 3 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+state "Registration" as Registration {
+  [*] --> RegEnterDetails
+
+  state "Enter Details" as RegEnterDetails
+  state "Get Member_ID" as GetMemberID
+  state "Successful Registration" as SuccessfulRegistration
+  state "Re-enter Details" as ReEnterDetails
+
+  RegEnterDetails --> GetMemberID : [Valid]
+  RegEnterDetails --> ReEnterDetails : [Invalid]
+  ReEnterDetails --> RegEnterDetails
+  GetMemberID --> SuccessfulRegistration
+}
+
+state "Authentication" as Authentication {
+  [*] --> AuthEnterMemberID
+
+  state "Enter Member_ID" as AuthEnterMemberID
+  state "Enter Password" as EnterPassword
+  state "successful Login" as SuccessfulLogin
+  state "Invalid Member_ID or Password" as InvalidCreds
+
+  AuthEnterMemberID --> EnterPassword
+  EnterPassword --> SuccessfulLogin : [Valid]
+  EnterPassword --> InvalidCreds : [Invalid]
+}
+
+state "Search Books" as SearchBooks {
+  [*] --> EnterBookDetails
+
+  state "Enter Book Details" as EnterBookDetails
+  state "Display Suggestion" as DisplaySuggestion
+  state "choose Alternate option" as ChooseAlternate
+
+  EnterBookDetails --> DisplaySuggestion : [Found]
+  EnterBookDetails --> ChooseAlternate : [Not Found]
+}
+
+state "Get Books" as GetBooksState {
+  [*] --> GetEnterBookID
+
+  state "Enter Book_ID" as GetEnterBookID
+  state "Enter Member_ID" as GetEnterMemberID
+  state "Obtain Books" as ObtainBooks
+  state "Pay Fine Amount" as PayFineAmount
+
+  GetEnterBookID --> GetEnterMemberID
+  GetEnterMemberID --> ObtainBooks : [Active Member]
+  GetEnterMemberID --> PayFineAmount : [Inactive Member]
+}
+
+state "Buy Books" as BuyBooks {
+  [*] --> BuyEnterBookID
+
+  state "Enter Book_ID" as BuyEnterBookID
+  state "Display Book Amount" as DisplayBookAmount
+  state "Get Books" as BuyGetBooks
+  state BuyNotPaidEnd <<choice>>
+
+  BuyEnterBookID --> DisplayBookAmount
+  DisplayBookAmount --> BuyGetBooks : [Paid]
+  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]
+  BuyNotPaidEnd --> [*]
+}
+
+state StartJoin <<choice>>
+
+[*] --> StartJoin
+StartJoin --> Registration
+StartJoin --> Authentication
+StartJoin --> SearchBooks
+StartJoin --> GetBooksState
+StartJoin --> BuyBooks
+
+SuccessfulRegistration --> AuthEnterMemberID
+
+SuccessfulLogin --> EnterBookDetails
+SuccessfulLogin --> GetEnterBookID
+SuccessfulLogin --> BuyEnterBookID
+
+
+ObtainBooks --> [*]
+BuyGetBooks --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- PlantUML Structural Validation Patterns ---
+
+The uppercase identifiers below are placeholders.
+Replace them with existing requirement-supported states, events, and guards.
+Do not copy placeholder names into the final diagram.
+
+Pattern 1: never connect the initial pseudostate directly to the final pseudostate
+
+' Invalid
+[*] --> [*]
+
+' Valid
+[*] --> INITIAL_STATE
+INITIAL_STATE --> TERMINAL_STATE : SUPPORTED_EVENT
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+
+Pattern 2: use exactly one top-level initial transition
+
+' Invalid
+[*] --> FIRST_STATE
+[*] --> SECOND_STATE
+
+' Valid
+[*] --> FIRST_STATE
+FIRST_STATE --> SECOND_STATE : SUPPORTED_EVENT
+
+
+Pattern 3: add a missing initial transition
+
+[*] --> INITIAL_STATE
+
+
+Pattern 4: add a missing final transition
+
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+
+Pattern 5: connect every requirement-supported orphan state
+
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+' If ORPHAN_STATE is unsupported by the requirement, omit it.
+
+
+Pattern 6: create a path to every requirement-supported unreachable state
+
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+' If UNREACHABLE_STATE is unsupported by the requirement, omit it.
+
+
+Pattern 7: keep only one transition for the same source and target
+
+' Invalid
+SOURCE_STATE --> TARGET_STATE : FIRST_EVENT
+SOURCE_STATE --> TARGET_STATE : FIRST_EVENT
+
+' Valid
+SOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT
+
+
+Pattern 8: every choice node must have outgoing transitions
+
+state DECISION_NODE <<choice>>
+SOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]
+
+
+Pattern 9: choice-node outgoing transitions must use guards
+
+' Invalid
+DECISION_NODE --> FIRST_STATE
+DECISION_NODE --> SECOND_STATE
+
+' Valid
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]
+
+
+Pattern 10: a fork node must have multiple outgoing branches
+
+state FORK_NODE <<fork>>
+SOURCE_STATE --> FORK_NODE : SUPPORTED_EVENT
+FORK_NODE --> FIRST_PARALLEL_STATE
+FORK_NODE --> SECOND_PARALLEL_STATE
+
+
+Pattern 11: a join node must have multiple incoming branches
+
+state JOIN_NODE <<join>>
+FIRST_PARALLEL_STATE --> JOIN_NODE
+SECOND_PARALLEL_STATE --> JOIN_NODE
+JOIN_NODE --> NEXT_STATE
+
+
+Pattern 12: use history only inside a composite state
+
+state COMPOSITE_STATE {
+  [H] --> RESUMED_CHILD_STATE
+}
+
+
+Pattern 13: do not add another [*] transition inside a composite state
+
+' Invalid
+state PARENT_STATE {
+  [*] --> CHILD_STATE
+}
+
+' Valid
+state PARENT_STATE {
+  state CHILD_STATE
+}
+PARENT_STATE --> CHILD_STATE : SUPPORTED_EVENT
+
+
+
+--- Task ---
+
+Requirement:
+
+Alarm Clock — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall be in an off state initially.
+2. The system shall support when the user sets an alarm time, the system shall activate the alarm.
+3. The system shall ensure that the user shall be able to turn off the activated alarm.
+4. The system shall support when the current time matches the set alarm time, the system shall start ringing the alarm.
+5. The system shall ensure that once the alarm is ringing, the user shall be able to stop it.
+6. The system shall support after stopping the alarm, the system shall remain active for the next scheduled alarm time.

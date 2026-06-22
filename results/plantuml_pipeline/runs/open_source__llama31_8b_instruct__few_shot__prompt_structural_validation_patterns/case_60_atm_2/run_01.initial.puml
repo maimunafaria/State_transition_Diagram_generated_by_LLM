@@ -1,0 +1,36 @@
+@startuml
+title ATM Withdrawal States
+
+[*] --> SelectAmount
+
+state "Select Amount" as SelectAmount
+state "Verify Transaction" as VerifyTransaction
+state "Invalid Amount" as InvalidAmount
+state "Successful Withdrawal" as SuccessfulWithdrawal
+
+SelectAmount : entry / Display amount options
+SelectAmount : do / User selects an option or enters custom value
+SelectAmount : exit / Proceed to verify transaction
+
+VerifyTransaction : entry / Validate user input
+VerifyTransaction : do / Check if transaction is valid
+VerifyTransaction : exit / Transaction accepted or rejected
+
+InvalidAmount : entry / Transaction rejected
+InvalidAmount : do / Display error message and allow re-entry
+InvalidAmount : exit / Re-enter amount or cancel
+
+SuccessfulWithdrawal : entry / Transaction successful
+SuccessfulWithdrawal : do / Dispense cash and update account balance
+SuccessfulWithdrawal : exit / End transaction
+
+SelectAmount --> VerifyTransaction : [Valid selection]
+VerifyTransaction --> InvalidAmount : [Invalid transaction]
+VerifyTransaction --> SuccessfulWithdrawal : [Valid transaction]
+
+InvalidAmount --> SelectAmount : [Re-enter amount]
+InvalidAmount --> [*] : [Cancel]
+
+SuccessfulWithdrawal --> [*]
+
+@enduml

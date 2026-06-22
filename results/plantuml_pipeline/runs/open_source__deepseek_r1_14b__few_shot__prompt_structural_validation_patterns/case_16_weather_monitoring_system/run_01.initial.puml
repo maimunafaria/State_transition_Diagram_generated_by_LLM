@@ -1,0 +1,62 @@
+@startuml
+title UML State Chart Diagram
+
+[*] --> CreateUser : [Create Account]
+[*] --> Login : [Login]
+
+state CreateUser
+CreateUser : entry / start registration
+CreateUser : do / verify details
+CreateUser : exit / account created or failed
+
+state Login
+Login : entry / enter credentials
+Login : do / validate user
+Login : exit / logged in or invalid
+
+CreateUser --> [*] : [Registration Failed]
+CreateUser --> Login : [Successful Registration]
+
+Login --> CheckLocation : [Valid Login]
+Login --> [*] : [Invalid Login]
+
+state CheckLocation
+CheckLocation : entry / enter location
+CheckLocation : do / validate location
+CheckLocation : exit / location status
+
+CheckLocation --> ChooseWeatherInfo : [Valid Location]
+CheckLocation --> [*] : [Invalid Location]
+
+state ChooseWeatherInfo
+ChooseWeatherInfo : entry / select weather info type
+ChooseWeatherInfo : do / retrieve selected data
+ChooseWeatherInfo : exit / data retrieved
+
+ChooseWeatherInfo --> ShowWeatherInfo : [Selected Data]
+
+state ShowWeatherInfo
+ShowWeatherInfo : entry / display data
+ShowWeatherInfo : do / allow actions
+ShowWeatherInfo : exit / action taken
+
+state ViewAdditionalDetails <<choice>>
+ShowWeatherInfo --> ViewAdditionalDetails : [View Additional Details]
+ShowWeatherInfo --> Logout : [Logout]
+
+state "View Additional Details" as ViewAdditionalDetails
+ViewAdditionalDetails : entry / display additional options
+ViewAdditionalDetails : do / show selected details
+ViewAdditionalDetails : exit / back to main
+
+ViewAdditionalDetails --> ShowWeatherInfo : [Back]
+ViewAdditionalDetails --> Logout : [Logout]
+
+state Logout
+Logout : entry / initiate logout
+Logout : do / terminate session
+Logout : exit / logged out
+
+Logout --> [*] : [Session Ended]
+
+@enduml

@@ -1,0 +1,42 @@
+@startuml
+title UML State Chart Diagram
+
+state "Initial" as InitialState
+InitialState : entry / User starts transaction
+InitialState : do / System ready for input
+
+state "SelectAmount" as SelectAmountState
+SelectAmountState : entry / Display predefined amounts
+SelectAmountState : do / User selects amount
+SelectAmountState : exit / Proceed to processing
+SelectAmountState : exit / Cancel selected
+
+state "EnterCustomAmount" as EnterCustomAmountState
+EnterCustomAmountState : entry / User chooses custom amount
+EnterCustomAmountState : do / Input custom amount
+EnterCustomAmountState : exit / Proceed to processing
+EnterCustomAmountState : exit / Cancel entered
+
+state "Processing" as ProcessingState
+ProcessingState : entry / System processes withdrawal
+ProcessingState : exit / Transaction completed
+ProcessingState : exit / Return card if canceled
+
+state "Final" as FinalState
+FinalState : entry / Card returned or transaction complete
+FinalState : do / End of process
+
+InitialState --> SelectAmountState : select predefined amount
+InitialState --> EnterCustomAmountState : enter custom amount
+
+SelectAmountState --> ProcessingState : proceed with selected amount
+SelectAmountState --> InitialState : cancel
+
+EnterCustomAmountState --> ProcessingState : proceed with entered amount
+EnterCustomAmountState --> InitialState : cancel
+
+ProcessingState --> FinalState : transaction completed
+ProcessingState --> InitialState : cancel during processing
+
+FinalState --> [*] : end of process
+@enduml

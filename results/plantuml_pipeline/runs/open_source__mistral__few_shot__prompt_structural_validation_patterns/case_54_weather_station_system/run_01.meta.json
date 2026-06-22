@@ -1,0 +1,125 @@
+{
+  "run_id": "open_source__mistral__few_shot__prompt_structural_validation_patterns",
+  "case_id": "case_54_weather_station_system",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nOnline Pharmacy Management System Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall display a list of available orders to the delivery person.\n2. The system shall allow the delivery person to contact the delivery address for coordination.\n3. The system shall enable the delivery person to update their profile as needed.\n\nExample 1 PlantUML:\n@startuml\ntitle UML State Machine Diagram - Delivery Man\n\n[*] --> ViewOrders\n\nstate \"View orders\" as ViewOrders\nstate \"Contact delivery address\" as ContactDeliveryAddress\nstate \"Update profile\" as UpdateProfile\n\nViewOrders --> ContactDeliveryAddress\nContactDeliveryAddress --> UpdateProfile\nUpdateProfile --> [*]\n\n@enduml\n\nExample 2 Requirement:\nE Province — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall register a new user.\n2. The system shall end the process if registration details are not accepted.\n3. The system shall allow a user to log in after successful registration.\n4. The system shall provide multiple login attempts if the details are incorrect.\n5. The system shall allow the user to cancel a certificate after logging in.\n6. The system shall allow the user to apply for certificates after logging in.\n7. The system shall allow the user to view their profile after logging in.\n8. The system shall allow the user to update their profile after logging in.\n9. The system shall require the user to fill in the form and upload required details when applying for certificates.\n10. The system shall allow users to apply for more certificates as needed.\n11. The system shall allow the user to continue applying or finish once a certificate request is processed.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Machine Diagram (Certificate Management)\n\n\n[*] --> Registration\n\nstate Registration\nRegistration : entry / Get the Registration Details\nRegistration : do / Validate the Details\nRegistration : exit / Valid or Invalid Registration\n\n\nRegistration --> [*] : [Invalid Registration]\n\n\nRegistration --> Login : [Valid Registration]\n\n\nstate Login\nLogin : entry / Get the Login Details\nLogin : do / Validate the Login Details\nLogin : exit / Valid or Invalid Login\n\n\nLogin --> Login : [Invalid Login]\n\n\nLogin --> Choice1 : [Valid Login]\n\n\nstate Choice1 <<choice>>\n\nChoice1 --> CancelCert : [Cancel the Certificate]\nChoice1 --> RequestCert : [Applying for Certificates]\nChoice1 --> ViewProfile : [Profile Viewing]\nChoice1 --> UpdateProfile : [Profile Updation]\n\n\nstate \"Cancellation of Certificates\" as CancelCert\nCancelCert : entry / Certificate is asked for Cancellation\nCancelCert : do / Certificate is Canceled\nCancelCert : exit / Move to End\n\nCancelCert --> EndMerge\n\nstate \"Request for Certificates\" as RequestCert\nRequestCert : entry / Fill the Form and Upload the Details\nRequestCert : do / Request for Certificates\nRequestCert : exit / Apply for another Certificate or Move to End\n\nRequestCert --> RequestCert : [Apply for another Certificate if needed]\n\nRequestCert --> IssueCert : [Certificates requested]\n\nstate \"Issuing the Certificates\" as IssueCert\nIssueCert : entry / Validating Details\nIssueCert : do / Issuing the Certificates\nIssueCert : exit / Updating the Database\n\nIssueCert --> RequestCert : [Certificate is issued]\nRequestCert --> EndMerge : [End]\n\nstate \"View Profile\" as ViewProfile\nViewProfile : entry / View the Profile\nViewProfile : do / Display the Profile\nViewProfile : exit / Exit from Profile Viewing\n\nViewProfile --> EndMerge : [End]\n\n\nstate \"Update the Profile\" as UpdateProfile\nUpdateProfile : entry / Update the User's Profile\nUpdateProfile : do / Citizen Profile is updated\nUpdateProfile : exit / Move to End\n\nUpdateProfile --> EndMerge : [End]\n\n\nstate EndMerge <<choice>>\n\nEndMerge --> [*]\n\n@enduml\n\nExample 3 Requirement:\nBusiness Process Outsourcing Bpo Management System Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to upload a new request.\n2. The system shall enable a BPO organization to save the details of a project.\n3. The system shall allow a client to search for a suitable project category.\n4. The system shall enable an BPO organization to accept or decline a request from a client.\n5. The system shall allow a client to decide whether to proceed with an accepted project or reject it.\n6. The system shall update the project status after acceptance by both parties.\n7. The system shall allow a client to track the progress of a project.\n8. The system shall enable an BPO organization to update the progress of a project.\n9. The system shall upload a final project once work is completed.\n10. The system shall perform a quality check on the final project.\n11. The system shall restart the process if a client is unsatisfied with the final project.\n12. The system shall make payment if the client is satisfied with the final project.\n13. The system shall deliver the project after payment.\n14. The system shall allow a client to provide a rating for the completed project.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Machine Diagram (Upload or Accept Request)\n\nstate \"Upload or Accept request\" as UAR {\n\n    [*] --> ChoiceUser\n\n\n    UAR : entry / Regarding request details\n    UAR : do / Project dealings\n    UAR : exit / After finishing rating\n\n\n    state ChoiceUser <<choice>>\n\n    ChoiceUser --> EnterDetails : [user = BPO organization]\n    ChoiceUser --> SearchCategory : [user = client]\n\n\n    state \"Enter project details\" as EnterDetails\n    state \"Update database\" as UpdateDB\n\n    EnterDetails --> UpdateDB\n    UpdateDB --> [*]\n\n\n    state \"Search project category\" as SearchCategory\n    state ChoiceBPO <<choice>>\n    state ChoiceClient <<choice>>\n\n    SearchCategory --> ChoiceBPO\n\n    ChoiceBPO --> EndDecline : [BPO org declines]\n    ChoiceBPO --> ChoiceClient : [BPO org accepts]\n\n    ChoiceClient --> EndReject : [client rejects]\n    ChoiceClient --> UpdateStatus : [client accepts]\n\n    state EndDecline <<choice>>\n    EndDecline --> [*]\n\n    state EndReject <<choice>>\n    EndReject --> [*]\n\n    state \"Update status of project\" as UpdateStatus\n\n    state ChoiceTracking <<choice>>\n\n    UpdateStatus --> ChoiceTracking\n\n    ChoiceTracking --> DisplayProgress : [client wishes to track]\n    ChoiceTracking --> UpdateProgress : [user = BPO org]\n\n    state \"Display progress\" as DisplayProgress\n    DisplayProgress --> [*]\n\n    state \"Update progress\" as UpdateProgress\n\n\n    UpdateProgress --> UploadFinal : [End of project]\n\n    state \"Upload final project\" as UploadFinal\n\n    state QualityCheck <<choice>>\n\n    UploadFinal --> QualityCheck : [Quality check]\n\n    QualityCheck --> Payment : [satisfied]\n    QualityCheck --> ChoiceTracking : [Not satisfied]\n\n    state Payment\n    state Shipment\n    state Rating\n\n    Payment --> Shipment\n    Shipment --> Rating\n\n    Rating --> [*]\n}\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- PlantUML Structural Validation Patterns ---\n\nThe uppercase identifiers below are placeholders.\nReplace them with existing requirement-supported states, events, and guards.\nDo not copy placeholder names into the final diagram.\n\nPattern 1: never connect the initial pseudostate directly to the final pseudostate\n\n' Invalid\n[*] --> [*]\n\n' Valid\n[*] --> INITIAL_STATE\nINITIAL_STATE --> TERMINAL_STATE : SUPPORTED_EVENT\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 2: use exactly one top-level initial transition\n\n' Invalid\n[*] --> FIRST_STATE\n[*] --> SECOND_STATE\n\n' Valid\n[*] --> FIRST_STATE\nFIRST_STATE --> SECOND_STATE : SUPPORTED_EVENT\n\n\nPattern 3: add a missing initial transition\n\n[*] --> INITIAL_STATE\n\n\nPattern 4: add a missing final transition\n\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 5: connect every requirement-supported orphan state\n\nPREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT\nORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If ORPHAN_STATE is unsupported by the requirement, omit it.\n\n\nPattern 6: create a path to every requirement-supported unreachable state\n\nREACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT\nUNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If UNREACHABLE_STATE is unsupported by the requirement, omit it.\n\n\nPattern 7: keep only one transition for the same source and target\n\n' Invalid\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\n\n' Valid\nSOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT\n\n\nPattern 8: every choice node must have outgoing transitions\n\nstate DECISION_NODE <<choice>>\nSOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 9: choice-node outgoing transitions must use guards\n\n' Invalid\nDECISION_NODE --> FIRST_STATE\nDECISION_NODE --> SECOND_STATE\n\n' Valid\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 10: a fork node must have multiple outgoing branches\n\nstate FORK_NODE <<fork>>\nSOURCE_STATE --> FORK_NODE : SUPPORTED_EVENT\nFORK_NODE --> FIRST_PARALLEL_STATE\nFORK_NODE --> SECOND_PARALLEL_STATE\n\n\nPattern 11: a join node must have multiple incoming branches\n\nstate JOIN_NODE <<join>>\nFIRST_PARALLEL_STATE --> JOIN_NODE\nSECOND_PARALLEL_STATE --> JOIN_NODE\nJOIN_NODE --> NEXT_STATE\n\n\nPattern 12: use history only inside a composite state\n\nstate COMPOSITE_STATE {\n  [H] --> RESUMED_CHILD_STATE\n}\n\n\nPattern 13: do not add another [*] transition inside a composite state\n\n' Invalid\nstate PARENT_STATE {\n  [*] --> CHILD_STATE\n}\n\n' Valid\nstate PARENT_STATE {\n  state CHILD_STATE\n}\nPARENT_STATE --> CHILD_STATE : SUPPORTED_EVENT\n\n\n\n--- Task ---\n\nRequirement:\n\nWeather Station System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall restart and begin running from a shut down condition.\n2. The system shall enter configuration mode when changes or power-saving settings are required.\n3. The system shall return to running state after configuration is completed.\n4. The system shall collect data when triggered by the clock while running.\n5. The system shall prepare and send out a weather summary upon request.\n6. The system shall check its own status and transmit the result upon request.\n7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).\n8. The system shall move into a controlled mode through remote control.\n9. The system shall return to shut down condition if a shutdown command is given while running.\n",
+  "requirement_used": "Weather Station System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall restart and begin running from a shut down condition.\n2. The system shall enter configuration mode when changes or power-saving settings are required.\n3. The system shall return to running state after configuration is completed.\n4. The system shall collect data when triggered by the clock while running.\n5. The system shall prepare and send out a weather summary upon request.\n6. The system shall check its own status and transmit the result upon request.\n7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).\n8. The system shall move into a controlled mode through remote control.\n9. The system shall return to shut down condition if a shutdown command is given while running.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__mistral__few_shot__prompt_structural_validation_patterns\\case_54_weather_station_system\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "missing_final_state_transition (state --> [*])"
+    ],
+    "initial_state": "Running",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 8,
+    "transition_count": 11
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "missing_final_state_transition (state --> [*])"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_26_online_pharmacy_management_system_3",
+        "case_17_e_province",
+        "case_13_business_process_outsourcing_bpo_management_system_3"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])"
+        ],
+        "initial_state": "Running",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 11
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__mistral__few_shot__prompt_structural_validation_patterns\\case_54_weather_station_system\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.375,
+    "state_recall": 0.3333333333333333,
+    "state_f1": 0.35294117647058826,
+    "state_tp": 3,
+    "state_fp": 5,
+    "state_fn": 6,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 11,
+    "transition_fn": 12,
+    "state_precision_relaxed": 0.375,
+    "state_recall_relaxed": 0.3333333333333333,
+    "state_f1_relaxed": 0.35294117647058826,
+    "state_tp_relaxed": 3,
+    "state_fp_relaxed": 5,
+    "state_fn_relaxed": 6,
+    "transition_precision_relaxed": 0.09090909090909091,
+    "transition_recall_relaxed": 0.08333333333333333,
+    "transition_f1_relaxed": 0.08695652173913043,
+    "transition_tp_relaxed": 1,
+    "transition_fp_relaxed": 10,
+    "transition_fn_relaxed": 11,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 11,
+    "transition_fn_semantic": 12,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "missing_final_state_transition (state --> [*])"
+    ],
+    "hallucination_state_rate": 0.625,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.625,
+    "hallucination_transition_rate_relaxed": 0.9090909090909091,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 0.9166666666666666,
+    "overall_f1": 0.17647058823529413,
+    "overall_f1_relaxed": 0.21994884910485935,
+    "weighted_f1_relaxed_70_30": 0.2731457800511509,
+    "overall_f1_semantic": 0.17647058823529413,
+    "weighted_f1_semantic_70_30": 0.24705882352941178,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "missing_final_state_transition (state --> [*])"
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+@startuml
+title UML state machine diagram
+
+[*] --> WaitingForNewSale : entry / nil
+
+state WaitingForNewSale {
+  WaitingForNewSale : do / wait for new sale
+}
+
+state AddingItems {
+  AddingItems : do / add items one by one
+}
+
+state Payment {
+  Payment : do / move to payment
+}
+
+state CashPayment <<final>> {
+    CashPayment : do / complete the sale immediately
+}
+
+state CardOrCheckPayment {
+    CardOrCheckPayment : do / verify the payment
+}
+
+state SaleCompleted <<final>> {
+    SaleCompleted : do / complete the sale once payment is approved
+}
+
+WaitingForNewSale --> AddingItems : customer selects items
+AddingItems --> Payment : all items added
+Payment --> CashPayment : customer pays with cash
+Payment --> CardOrCheckPayment : customer pays by card or check
+CardOrCheckPayment --> SaleCompleted : payment approved
+SaleCompleted --> WaitingForNewSale : payment finished
+
+@enduml

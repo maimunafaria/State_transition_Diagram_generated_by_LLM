@@ -1,0 +1,80 @@
+@startuml
+title UML State Chart Diagram - Weather Monitoring System
+
+[*] --> CreateAccount
+
+state "Create Account" as CreateAccount {
+    [*] --> EnterDetails
+    state EnterDetails as EnterDetails
+    state RegistrationSuccess as RegistrationSuccess
+    state RegistrationFailure as RegistrationFailure
+
+    EnterDetails --> RegistrationSuccess : [Valid Details]
+    EnterDetails --> RegistrationFailure : [Invalid Details]
+}
+
+RegistrationFailure --> [*] : End Process
+
+CreateAccount --> Login : RegistrationSuccess
+
+state "Login" as Login {
+    [*] --> EnterCredentials
+    state EnterCredentials as EnterCredentials
+    state SuccessfulLogin as SuccessfulLogin
+    state InvalidCredentials as InvalidCredentials
+
+    EnterCredentials --> SuccessfulLogin : [Valid Credentials]
+    EnterCredentials --> InvalidCredentials : [Invalid Credentials]
+}
+
+InvalidCredentials --> [*] : End Process
+
+SuccessfulLogin --> CheckWeather
+
+state "Check Weather" as CheckWeather {
+    [*] --> EnterLocation
+    state EnterLocation as EnterLocation
+    state ValidLocation as ValidLocation
+    state InvalidLocation as InvalidLocation
+
+    EnterLocation --> ValidLocation : [Valid Location]
+    EnterLocation --> InvalidLocation : [Invalid Location]
+}
+
+InvalidLocation --> [*] : End Process
+
+ValidLocation --> ChooseWeatherDetails
+
+state "Choose Weather Details" as ChooseWeatherDetails {
+    [*] --> SelectDetail
+    state SelectDetail as SelectDetail
+    state DisplayWeatherInfo as DisplayWeatherInfo
+
+    SelectDetail --> DisplayWeatherInfo : [Temperature, Humidity, Rainfall, Pressure, Dew Point]
+}
+
+DisplayWeatherInfo --> ViewAdditionalDetails : [User Request]
+DisplayWeatherInfo --> Logout : [User Request]
+
+state "View Additional Details" as ViewAdditionalDetails {
+    [*] --> SelectAdditionalDetail
+    state SelectAdditionalDetail as SelectAdditionalDetail
+
+    SelectAdditionalDetail --> Alerts : [Alerts Selected]
+    SelectAdditionalDetail --> WeeklyAnalysis : [Weekly Analysis Selected]
+    SelectAdditionalDetail --> FuturePrediction : [Future Prediction Selected]
+    SelectAdditionalDetail --> Graph : [Graph Selected]
+}
+
+Alerts --> [*] : End Session
+WeeklyAnalysis --> [*] : End Session
+FuturePrediction --> [*] : End Session
+Graph --> [*] : End Session
+
+state "Logout" as Logout {
+    [*] --> EndSession
+    EndSession --> [*] : End Session
+}
+
+
+@enduml

@@ -1,0 +1,58 @@
+@startuml
+title Statechart diagram of the class "ATM Transaction"
+
+[*] --> Greeting
+state Greeting {
+  state CardInserted
+  state PinCheck
+
+  CardInserted : «M» Insert Card/
+  CardInserted --> PinCheck : «M» Enter PIN/
+
+  state InvalidCard
+  state IncorrectPinAttempts
+  state ValidPin
+
+  PinCheck --> InvalidCard : «M» Invalid Card/
+  PinCheck --> IncorrectPinAttempts : «M» Incorrect PIN/
+  IncorrectPinAttempts --> IncorrectPinAttempts : «M» Try Again/
+  IncorrectPinAttempts --> ValidPin : «M» Correct PIN/
+
+  state TransactionOptions
+  state Processing
+
+  ValidPin --> TransactionOptions : «M» Select Option/
+  InvalidCard --> [*] : «M» Keep Card/
+  IncorrectPinAttempts --> [*] : «M» Keep Card/
+}
+
+TransactionOptions {
+  state WithdrawMoney
+  state CheckInfo
+  state MakeTransfer
+
+  state CancelOperation
+  state ReturnCard
+
+  TransactionOptions --> WithdrawMoney : «M» Withdraw Money/
+  TransactionOptions --> CheckInfo : «M» Check Info/
+  TransactionOptions --> MakeTransfer : «M» Make Transfer/
+
+  WithdrawMoney --> Processing : «M» Process Request/
+  CheckInfo --> Processing : «M» Process Request/
+  MakeTransfer --> Processing : «M» Process Request/
+
+  state Cancelled
+  CancelOperation --> Cancelled : «M» Cancel/
+  Cancelled --> [*] : «M» Return Card/
+}
+
+Processing {
+  state Completed
+  state Failed
+
+  Processing --> Completed : «M» Transaction Successful/
+  Processing --> Failed : «M» Transaction Failed/
+  Failed --> [*] : «M» Return Card/
+}
+@enduml

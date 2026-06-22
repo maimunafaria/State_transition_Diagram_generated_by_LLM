@@ -1,0 +1,44 @@
+@startuml
+title UML State Machine Diagram - Digidoclocker
+
+[*] --> IdentifyUser : /start
+
+state IdentifyUser <<choice>>
+IdentifyUser --> Register : [user not registered]
+IdentifyUser --> Login : [user is registered]
+
+state Register
+Register --> CitizenDashboard : registrationComplete\n/login
+
+state Login
+Login --> CitizenDashboard : loginSuccessful\n/authenticate
+
+state CitizenDashboard <<choice>>
+CitizenDashboard --> UploadDocuments : /uploadDocument
+CitizenDashboard --> ViewProfile : /viewProfile
+CitizenDashboard --> ApplyCertificate : /applyCertificate
+
+state UploadDocuments
+UploadDocuments --> UploadDocuments : /continueUpload
+UploadDocuments --> CitizenDashboard : uploadComplete
+
+state ApplyCertificate
+ApplyCertificate --> ApplyCertificate : /reapply\n/sendRequest
+ApplyCertificate --> CitizenDashboard : certificateRequested
+
+state RegistrarLogin
+RegistrarLogin --> RegistrarDashboard : loginSuccessful\n/authenticate
+
+state RegistrarDashboard <<choice>>
+RegistrarDashboard --> RequestCertificate : /requestCertificate
+
+state RequestCertificate
+RequestCertificate --> RequestCertificate : /continueRequest
+RequestCertificate --> RegistrarDashboard : certificateReceived
+
+CitizenDashboard --> Logout : /endSession
+RegistrarDashboard --> Logout : /endSession
+
+Logout --> [*]
+
+@enduml

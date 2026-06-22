@@ -1,0 +1,33 @@
+@startuml
+title State Diagram - ATM
+
+[*] --> Greeting : Card inserted
+
+state Greeting
+state PinCheck
+state "IncorrectPinAttempts" as IncorrectPinAttempts
+state Options
+state Processing
+state KeptCard <<final>>
+state ReturnedCard <<final>>
+
+PinCheck : do / validatePIN
+
+Greeting --> PinCheck : PIN entered
+
+PinCheck --> IncorrectPinAttempts : PIN incorrect\nattempts < maxAttempts
+
+PinCheck --> Options : PIN correct
+
+IncorrectPinAttempts --> PinCheck : Try again
+
+IncorrectPinAttempts --> KeptCard : attempts >= maxAttempts
+
+Options --> Processing : Request selected
+
+Processing --> ReturnedCard : User cancels
+
+ReturnedCard --> [*]
+KeptCard --> [*]
+
+@enduml

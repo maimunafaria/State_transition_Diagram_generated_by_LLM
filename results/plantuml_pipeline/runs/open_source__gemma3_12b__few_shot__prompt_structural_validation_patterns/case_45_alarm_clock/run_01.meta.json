@@ -1,0 +1,111 @@
+{
+  "run_id": "open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns",
+  "case_id": "case_45_alarm_clock",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nFlight — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall schedule and assign a flight number when a new flight is created.\n2. The system shall change the flight status to 'on journey' once it takes off.\n3. The system shall mark the flight as inactive and record it as a past record upon landing.\n4. The system shall record cancelled flights in the same manner as landed flights if they are cancelled before starting.\n5. The system shall remove inactive flights over time.\n\nExample 1 PlantUML:\n@startuml\ntitle Statechart diagram of the class \"Flight\"\n\n[*] --> Planned : «M» Flight Defined/\n\nstate Planned\nstate \"In Transit\" as InTransit\nstate Historic\n\nPlanned : «M» New Flight Number/\n\nPlanned --> InTransit : «M» Flight Started/\nInTransit --> Historic : «M» Flight Landed/\n\nPlanned --> Historic : «M» Flight Cancelled/\nHistoric --> [*] : «M» Flight Irrelevant/\nPlanned --> [*] : «M» Flight Number Irrelevant/\n\n@enduml\n\nExample 2 Requirement:\nAtm Many Scenarios Scenario 8 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall keep the card if it is invalid, expired, or the PIN was entered incorrectly too many times.\n2. The system shall return the card with a message if the user cancels the operation or the request is rejected.\n3. The system shall print a receipt and dispense cash if needed before returning the card to the user after a successful transaction.\n4. The system shall consider the session finished once the card is ejected.\n5. The system shall move into a short ending phase before resetting itself after completing the transaction or cancellation process.\n6. The system shall return to its normal waiting condition or shut down depending on the situation.\n\nExample 2 PlantUML:\n@startuml\ntitle ATM Control - Terminating Transaction\n\nstate \"Closed Down\" as ClosedDown\nClosedDown : entry / Display System Down\n\nstate Idle\nIdle : entry / Display Welcome\n\nstate \"Processing Customer Input\" as ProcessingCustomerInput\nstate \"Processing Transaction\" as ProcessingTransaction\n\nstate \"Terminating Transaction\" as TerminatingTransaction {\n\n  state Terminating\n  state Confiscating\n  state Ejecting\n  state Printing\n  state Dispensing\n\n  Confiscating --> Terminating : Card Confiscated /\\nDisplay Confiscated\n  Ejecting --> Terminating : Card Ejected /\\nDisplay Ejected\n  Printing --> Ejecting : Receipt Printed /\\nEject\n  Dispensing --> Printing : Cash Dispensed /\\nPrint Receipt,\\nDisplay Cash Dispensed,\\nConfirm Cash Dispensed\n}\n\nProcessingCustomerInput --> Confiscating : Stolen Card, Expired Card /\\nConfiscate, Update Status\nProcessingCustomerInput --> Confiscating : Third Invalid PIN /\\nConfiscate\nProcessingCustomerInput --> Ejecting : Cancel / Eject,\\nDisplay Cancel\n\nProcessingTransaction --> Ejecting : Rejected / Eject,\\nDisplay Apology\nProcessingTransaction --> Printing : Transfer Approved /\\nPrint Receipt,\\nUpdate Status\nProcessingTransaction --> Printing : Query Approved /\\nPrint Receipt,\\nUpdate Status\nProcessingTransaction --> Dispensing : Withdrawal Approved /\\nDispense Cash,\\nUpdate Status\n\nDispensing --> ClosedDown : Insufficient Cash /\\nEject,\\nAbort Cash Dispensed\n\nTerminating --> Idle : After (Elapsed Time) [Closedown Not Requested]\nTerminating --> ClosedDown : After (Elapsed Time) [Closedown Was Requested]\n\n@enduml\n\nExample 3 Requirement:\nBook Bank Management System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to register by entering their details.\n2. The system shall issue a member ID and complete the registration upon correct entry of details.\n3. The system shall require the user to re-enter their details upon incorrect entry of details.\n4. The system shall allow a user to log in after successful registration using their member ID and password.\n5. The system shall allow the user to continue upon correct entry of member ID and password during login. Otherwise, they cannot log in.\n6. The system shall allow a user to search for a book by entering its details.\n7. The system shall show suggestions if a book is found during a search; otherwise, it shall allow the user to choose another option.\n8. The system shall allow a user to get a book by entering its ID and their member ID.\n9. The system shall allow the user to get the book if their membership is active; otherwise, it shall require them to pay the fine amount first.\n10. The system shall allow a user to buy a book by entering its ID and seeing the price.\n11. The system shall provide the book if the user pays; otherwise, it shall end the process there.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\nstate \"Registration\" as Registration {\n  [*] --> RegEnterDetails\n\n  state \"Enter Details\" as RegEnterDetails\n  state \"Get Member_ID\" as GetMemberID\n  state \"Successful Registration\" as SuccessfulRegistration\n  state \"Re-enter Details\" as ReEnterDetails\n\n  RegEnterDetails --> GetMemberID : [Valid]\n  RegEnterDetails --> ReEnterDetails : [Invalid]\n  ReEnterDetails --> RegEnterDetails\n  GetMemberID --> SuccessfulRegistration\n}\n\nstate \"Authentication\" as Authentication {\n  [*] --> AuthEnterMemberID\n\n  state \"Enter Member_ID\" as AuthEnterMemberID\n  state \"Enter Password\" as EnterPassword\n  state \"successful Login\" as SuccessfulLogin\n  state \"Invalid Member_ID or Password\" as InvalidCreds\n\n  AuthEnterMemberID --> EnterPassword\n  EnterPassword --> SuccessfulLogin : [Valid]\n  EnterPassword --> InvalidCreds : [Invalid]\n}\n\nstate \"Search Books\" as SearchBooks {\n  [*] --> EnterBookDetails\n\n  state \"Enter Book Details\" as EnterBookDetails\n  state \"Display Suggestion\" as DisplaySuggestion\n  state \"choose Alternate option\" as ChooseAlternate\n\n  EnterBookDetails --> DisplaySuggestion : [Found]\n  EnterBookDetails --> ChooseAlternate : [Not Found]\n}\n\nstate \"Get Books\" as GetBooksState {\n  [*] --> GetEnterBookID\n\n  state \"Enter Book_ID\" as GetEnterBookID\n  state \"Enter Member_ID\" as GetEnterMemberID\n  state \"Obtain Books\" as ObtainBooks\n  state \"Pay Fine Amount\" as PayFineAmount\n\n  GetEnterBookID --> GetEnterMemberID\n  GetEnterMemberID --> ObtainBooks : [Active Member]\n  GetEnterMemberID --> PayFineAmount : [Inactive Member]\n}\n\nstate \"Buy Books\" as BuyBooks {\n  [*] --> BuyEnterBookID\n\n  state \"Enter Book_ID\" as BuyEnterBookID\n  state \"Display Book Amount\" as DisplayBookAmount\n  state \"Get Books\" as BuyGetBooks\n  state BuyNotPaidEnd <<choice>>\n\n  BuyEnterBookID --> DisplayBookAmount\n  DisplayBookAmount --> BuyGetBooks : [Paid]\n  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]\n  BuyNotPaidEnd --> [*]\n}\n\nstate StartJoin <<choice>>\n\n[*] --> StartJoin\nStartJoin --> Registration\nStartJoin --> Authentication\nStartJoin --> SearchBooks\nStartJoin --> GetBooksState\nStartJoin --> BuyBooks\n\nSuccessfulRegistration --> AuthEnterMemberID\n\nSuccessfulLogin --> EnterBookDetails\nSuccessfulLogin --> GetEnterBookID\nSuccessfulLogin --> BuyEnterBookID\n\n\nObtainBooks --> [*]\nBuyGetBooks --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- PlantUML Structural Validation Patterns ---\n\nThe uppercase identifiers below are placeholders.\nReplace them with existing requirement-supported states, events, and guards.\nDo not copy placeholder names into the final diagram.\n\nPattern 1: never connect the initial pseudostate directly to the final pseudostate\n\n' Invalid\n[*] --> [*]\n\n' Valid\n[*] --> INITIAL_STATE\nINITIAL_STATE --> TERMINAL_STATE : SUPPORTED_EVENT\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 2: use exactly one top-level initial transition\n\n' Invalid\n[*] --> FIRST_STATE\n[*] --> SECOND_STATE\n\n' Valid\n[*] --> FIRST_STATE\nFIRST_STATE --> SECOND_STATE : SUPPORTED_EVENT\n\n\nPattern 3: add a missing initial transition\n\n[*] --> INITIAL_STATE\n\n\nPattern 4: add a missing final transition\n\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 5: connect every requirement-supported orphan state\n\nPREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT\nORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If ORPHAN_STATE is unsupported by the requirement, omit it.\n\n\nPattern 6: create a path to every requirement-supported unreachable state\n\nREACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT\nUNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If UNREACHABLE_STATE is unsupported by the requirement, omit it.\n\n\nPattern 7: keep only one transition for the same source and target\n\n' Invalid\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\n\n' Valid\nSOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT\n\n\nPattern 8: every choice node must have outgoing transitions\n\nstate DECISION_NODE <<choice>>\nSOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 9: choice-node outgoing transitions must use guards\n\n' Invalid\nDECISION_NODE --> FIRST_STATE\nDECISION_NODE --> SECOND_STATE\n\n' Valid\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 10: a fork node must have multiple outgoing branches\n\nstate FORK_NODE <<fork>>\nSOURCE_STATE --> FORK_NODE : SUPPORTED_EVENT\nFORK_NODE --> FIRST_PARALLEL_STATE\nFORK_NODE --> SECOND_PARALLEL_STATE\n\n\nPattern 11: a join node must have multiple incoming branches\n\nstate JOIN_NODE <<join>>\nFIRST_PARALLEL_STATE --> JOIN_NODE\nSECOND_PARALLEL_STATE --> JOIN_NODE\nJOIN_NODE --> NEXT_STATE\n\n\nPattern 12: use history only inside a composite state\n\nstate COMPOSITE_STATE {\n  [H] --> RESUMED_CHILD_STATE\n}\n\n\nPattern 13: do not add another [*] transition inside a composite state\n\n' Invalid\nstate PARENT_STATE {\n  [*] --> CHILD_STATE\n}\n\n' Valid\nstate PARENT_STATE {\n  state CHILD_STATE\n}\nPARENT_STATE --> CHILD_STATE : SUPPORTED_EVENT\n\n\n\n--- Task ---\n\nRequirement:\n\nAlarm Clock — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall be in an off state initially.\n2. The system shall support when the user sets an alarm time, the system shall activate the alarm.\n3. The system shall ensure that the user shall be able to turn off the activated alarm.\n4. The system shall support when the current time matches the set alarm time, the system shall start ringing the alarm.\n5. The system shall ensure that once the alarm is ringing, the user shall be able to stop it.\n6. The system shall support after stopping the alarm, the system shall remain active for the next scheduled alarm time.\n",
+  "requirement_used": "Alarm Clock — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall be in an off state initially.\n2. The system shall support when the user sets an alarm time, the system shall activate the alarm.\n3. The system shall ensure that the user shall be able to turn off the activated alarm.\n4. The system shall support when the current time matches the set alarm time, the system shall start ringing the alarm.\n5. The system shall ensure that once the alarm is ringing, the user shall be able to stop it.\n6. The system shall support after stopping the alarm, the system shall remain active for the next scheduled alarm time.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns\\case_45_alarm_clock\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "Off",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 3,
+    "transition_count": 3
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_66_flight",
+        "case_71_atm_many_scenarios_8",
+        "case_38_book_bank_management_system"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "Off",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 3,
+        "transition_count": 3
+      },
+      "strict_state_diagram_valid": true,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__few_shot__prompt_structural_validation_patterns\\case_45_alarm_clock\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.3333333333333333,
+    "state_recall": 0.3333333333333333,
+    "state_f1": 0.3333333333333333,
+    "state_tp": 1,
+    "state_fp": 2,
+    "state_fn": 2,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 3,
+    "transition_fn": 4,
+    "state_precision_relaxed": 0.3333333333333333,
+    "state_recall_relaxed": 0.3333333333333333,
+    "state_f1_relaxed": 0.3333333333333333,
+    "state_tp_relaxed": 1,
+    "state_fp_relaxed": 2,
+    "state_fn_relaxed": 2,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 3,
+    "transition_fn_relaxed": 4,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 3,
+    "transition_fn_semantic": 4,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 0.6666666666666666,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.6666666666666666,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.16666666666666666,
+    "overall_f1_relaxed": 0.16666666666666666,
+    "weighted_f1_relaxed_70_30": 0.2333333333333333,
+    "overall_f1_semantic": 0.16666666666666666,
+    "weighted_f1_semantic_70_30": 0.2333333333333333,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  }
+}

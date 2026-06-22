@@ -1,0 +1,49 @@
+@startuml
+title UML State Machine Diagram for Campaign Version 2
+
+[*] --> InitialState
+
+state "InitialState" as InitialState
+InitialState : entry / Manager and Staff Assigned
+
+state "CampaignPreparation" as CampaignPreparation
+CampaignPreparation : entry / Adverts Prepared
+CampaignPreparation : do / Adverts Approved and Scheduled
+CampaignPreparation : exit / Campaign Activated
+
+state "CampaignRunning" as CampaignRunning
+CampaignRunning : entry / Adverts Running
+CampaignRunning : do / Campaign Extension or Adjustment Possible
+CampaignRunning : exit / Campaign Completed
+
+state "CampaignCompleted" as CampaignCompleted
+CampaignCompleted : entry / Final Statement Prepared
+CampaignCompleted : do / Payment Handled
+CampaignCompleted : exit / Campaign Archived and Staff Released
+
+InitialState --> CampaignPreparation : Manager and Staff Assigned
+CampaignPreparation --> CampaignRunning : Everything Approved and Contract Signed
+CampaignRunning --> CampaignCompleted : All Adverts Finished
+CampaignCompleted --> [*] : Full Amount Paid or Refund Generated
+
+state "Extension" as Extension
+Extension : entry / Campaign Extended
+Extension : do / New Adverts Prepared and Scheduled
+Extension : exit / Campaign Running Continued
+
+state "Adjustment" as Adjustment
+Adjustment : entry / Campaign Adjusted
+Adjustment : do / New Adverts Prepared and Scheduled
+Adjustment : exit / Campaign Running Continued
+
+CampaignRunning --> Extension : Campaign Extended
+CampaignRunning --> Adjustment : Campaign Adjusted
+
+state "PaymentHandling" as PaymentHandling
+PaymentHandling : entry / Payment Handled
+PaymentHandling : do / Refund Generated if Amount Paid Less than Required
+PaymentHandling : exit / Full Amount Paid or Refund Generated
+
+CampaignCompleted --> PaymentHandling : Payment Handled
+
+@enduml

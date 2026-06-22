@@ -1,0 +1,36 @@
+@startuml
+Digital Watch State Machine Diagram
+
+[*] --> Initial
+Initial --> Idle
+Idle --> ChangeTime
+ChangeTime --> HourAdjust
+HourAdjust --> MinuteAdjust
+MinuteAdjust --> AlarmHourAdjust
+AlarmHourAdjust --> AlarmMinuteAdjust
+AlarmMinuteAdjust --> LightOnOff
+LightOnOff --> LightOff : LIGHT_OFF_EVENT
+LightOff --> Idle : COMPLETION_EVENT
+LightOnOff --> LightOn : LIGHT_ON_EVENT
+LightOn --> Idle : SUPPORTED_EVENT
+
+state AlarmOn
+AlarmOn --> AlarmRinging
+AlarmRinging --> AlarmStopped
+AlarmStopped --> Idle : ALARM_STOPPED_EVENT
+
+state LightOn
+LightOn --> LightOff : LIGHT_OFF_EVENT
+LightOff --> Idle : COMPLETION_EVENT
+
+Idle --> AlarmOn : ALARM_ON_EVENT
+AlarmOn --> AlarmOff : ALARM_OFF_EVENT
+
+HourAdjust --> MinuteAdjust : HOUR_ADJUSTED_EVENT
+MinuteAdjust --> HourAdjust : MINUTE_ADJUSTED_EVENT
+AlarmHourAdjust --> AlarmMinuteAdjust : ALARM_HOUR_ADJUSTED_EVENT
+AlarmMinuteAdjust --> AlarmHourAdjust : ALARM_MINUTE_ADJUSTED_EVENT
+
+state TerminalState
+TerminalState --> [*] : COMPLETION_EVENT
+@enduml

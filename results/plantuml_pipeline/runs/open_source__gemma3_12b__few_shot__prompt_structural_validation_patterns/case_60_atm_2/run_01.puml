@@ -1,0 +1,31 @@
+@startuml
+title ATM Withdrawal State Diagram
+
+[*] --> SelectAmount
+
+state SelectAmount {
+  state PredefinedAmounts
+  PredefinedAmounts : do / Display predefined amounts
+  state CustomAmount
+  CustomAmount : do / Accept custom amount input
+}
+
+SelectAmount --> VerifyTransaction : predefined_amount_selected or custom_amount_entered
+
+state VerifyTransaction
+VerifyTransaction : do / Check account balance and PIN
+
+VerifyTransaction --> ReenterAmount : transaction_rejected
+VerifyTransaction --> DispenseCash : transaction_approved
+
+state ReenterAmount
+ReenterAmount : do / Display error message and return to SelectAmount
+
+state DispenseCash
+DispenseCash : do / Dispense cash and print receipt
+
+DispenseCash --> [*]
+
+ReenterAmount --> SelectAmount
+
+@enduml

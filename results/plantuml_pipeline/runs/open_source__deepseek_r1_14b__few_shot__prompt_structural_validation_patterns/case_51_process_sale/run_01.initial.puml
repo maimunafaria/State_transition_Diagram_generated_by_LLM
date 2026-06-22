@@ -1,0 +1,27 @@
+@startuml
+title Process Sale State Diagram
+
+[*] --> WaitingForSale : Start
+
+state "Waiting for sale" as WaitingForSale
+state "Adding items" as AddingItems
+state "Payment processing" as PaymentProcessing
+state "Cash payment" as CashPayment
+state "Card or Check payment" as CardOrCheckPayment
+state "Sale completed" as SaleCompleted
+
+WaitingForSale --> AddingItems : itemSelected
+
+AddingItems --> PaymentProcessing : allItemsAdded
+
+PaymentProcessing:
+  fork
+  PaymentProcessing --> CashPayment : cashSelected
+  PaymentProcessing --> CardOrCheckPayment : cardOrCheckSelected
+
+CashPayment --> SaleCompleted : paymentProcessed
+CardOrCheckPayment --> SaleCompleted : paymentApproved
+
+SaleCompleted --> WaitingForSale : nextCustomer
+
+@enduml

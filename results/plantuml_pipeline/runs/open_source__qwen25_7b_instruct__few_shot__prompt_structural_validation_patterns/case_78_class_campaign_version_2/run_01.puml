@@ -1,0 +1,55 @@
+@startuml
+title UML State Chart Diagram for Campaign Version 2
+
+state "Initial" as Initial {
+  [*] --> AssignStaffAndManager
+}
+
+state "AssignStaffAndManager"
+state "ApprovalPending" as ApprovalPending
+state "ContractSigned" as ContractSigned
+state "Preparation" as Preparation
+state "AdvertsApprovedAndScheduled" as AdvertsApprovedAndScheduled
+state "Running" as Running
+state "ExtensionOrAdjustment" as ExtensionOrAdjustment
+state "Completion" as Completion
+state "FinalStatementPrepared" as FinalStatementPrepared
+state "PaymentHandling" as PaymentHandling
+state "Paid" as Paid
+state "Archived" as Archived
+
+Initial --> ApprovalPending : [Campaign Assigned]
+
+ApprovalPending --> ContractSigned : [Everything Approved and Contract Signed]
+ContractSigned --> Preparation : [Campaign Activated]
+
+Preparation --> AdvertsApprovedAndScheduled : [Adverts Prepared]
+AdvertsApprovedAndScheduled --> Running : [Adverts Approved and Scheduled]
+
+Running --> ExtensionOrAdjustment : [Extension or Adjustment Required]
+Running --> FinalStatementPrepared : [All Adverts Finished]
+
+FinalStatementPrepared --> PaymentHandling : [Final Statement Ready]
+PaymentHandling --> Paid : [Correct Balance Settled]
+PaymentHandling --> Archived : [Amount Exceeds Required, Refund Generated]
+
+Paid --> Archived
+
+ExtensionOrAdjustment --> Running : [Campaign Resumed]
+
+Completion --> FinalStatementPrepared : [Campaign Completed]
+
+Archived --> [*] : [Campaign Released]
+
+state "FinalStatementPrepared" <<choice>>
+FinalStatementPrepared --> PaymentHandling : [Amount Paid Less Than Required]
+FinalStatementPrepared --> Archived : [Full Amount Paid Properly]
+
+state "PaymentHandling" <<fork>>
+PaymentHandling --> Paid : [Correct Balance Settled]
+PaymentHandling --> Archived : [Amount Exceeds Required, Refund Generated]
+
+state "Running" <<join>>
+Running --> [*] : [Campaign Completed]
+
+@enduml

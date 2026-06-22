@@ -1,0 +1,52 @@
+@startuml
+title Healthcare Portal - Service Center Login State Machine Diagram
+
+@startstate
+[*] --> INITIAL_STATE
+@endstate
+
+INITIAL_STATE --> SERVICE_CENTER_REGISTRATION : [New User Registration]
+
+state "Service Center Registration" as ServiceCenterRegistration
+ServiceCenterRegistration : entry / Unregistered service center
+ServiceCenterRegistration : do / Enter Valid Credentials
+ServiceCenterRegistration : exit / Account registered
+
+state SERVICE_CENTER_VERIFICATION
+SERVICE_CENTER_VERIFICATION : entry / Service Center account registered
+SERVICE_CENTER_VERIFICATION : do / Verify Service center
+SERVICE_CENTER_VERIFICATION : exit / Login Service center
+
+state SERVICE_CENTER_LOGIN <<choice>>
+SERVICE_CENTER_LOGIN : entry / Verified Service Center
+SERVICE_CENTER_LOGIN : entry / Service Center not logged in
+SERVICE_CENTER_LOGIN : do / Authenticate Service Center
+SERVICE_CENTER_LOGIN : exit / Logged In Successfully
+
+state SERVICE_CENTER_HOME
+SERVICE_CENTER_HOME : entry / Logged in Service Center
+SERVICE_CENTER_HOME : do / Display home page
+SERVICE_CENTER_HOME : exit / Enter Damaged parts list
+SERVICE_CENTER_HOME : exit / Expiry Notification page
+SERVICE_CENTER_HOME : exit / Updating Information list
+
+state EXPIRY_NOTIFICATION_PAGE
+EXPIRY_NOTIFICATION_PAGE : entry / To view expiry notification
+EXPIRY_NOTIFICATION_PAGE : do / Send service request to Car owner
+EXPIRY_NOTIFICATION_PAGE --> SERVICE_CENTER_HOME : [Service Request Sent]
+
+state ENTERING_DAMAGED_PARTS_LIST
+ENTERING_DAMAGED_PARTS_LIST : entry / To enter Damaged parts list
+ENTERING_DAMAGED_PARTS_LIST : do / Preparing and entering damaged parts list
+ENTERING_DAMAGED_PARTS_LIST --> SERVICE_CENTER_HOME : [Damaged Parts List Entered]
+
+state UPDATING_PARTS_INFORMATION
+UPDATING_PARTS_INFORMATION : entry / To update changed parts information
+UPDATING_PARTS_INFORMATION : do / Update Information
+UPDATING_PARTS_INFORMATION --> SERVICE_CENTER_HOME : [Information Updated]
+
+state LOGOUT
+LOGOUT : entry / To Logout
+LOGOUT : do / Logout
+LOGOUT --> TERMINAL_STATE : COMPLETION_EVENT
+@enduml

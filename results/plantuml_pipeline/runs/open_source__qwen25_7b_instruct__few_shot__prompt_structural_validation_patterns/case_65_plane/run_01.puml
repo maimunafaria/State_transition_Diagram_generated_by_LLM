@@ -1,0 +1,48 @@
+@startuml
+title Plane State Machine
+
+[*] --> Order
+
+state Order {
+  [*] --> Order : do/Remain in order state until delivery
+}
+
+Order --> Arrival : deliver
+
+state Arrival {
+  Arrival --> Preparation : plane arrives
+}
+
+Preparation {
+  Preparation --> Operations : assign to operations [condition met]
+  Preparation --> Maintenance : assign to maintenance [no more flights or maintenance required]
+}
+
+Operations {
+  [*] --> Operations : do/Remain in operation state if still has scheduled flights
+  Operations --> Maintenance : send for maintenance [no more scheduled flights or maintenance needed]
+}
+
+Maintenance {
+  Maintenance --> Preparation : check and service plane until ready [service completed]
+}
+
+state OutOfService {
+  [*] --> OutOfService : take out of service [plane is no longer available]
+}
+
+state Withdrawn {
+  [*] --> Withdrawn : remove from operations permanently
+}
+
+Arrival --> [*] : transition not supported
+
+Operations --> [*] : transition not supported
+
+Maintenance --> [*] : transition not supported
+
+OutOfService --> [*] : transition not supported
+
+Withdrawn --> [*] : transition not supported
+
+@enduml

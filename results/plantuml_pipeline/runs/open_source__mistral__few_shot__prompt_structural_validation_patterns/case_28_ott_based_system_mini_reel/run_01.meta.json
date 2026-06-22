@@ -1,0 +1,167 @@
+{
+  "run_id": "open_source__mistral__few_shot__prompt_structural_validation_patterns",
+  "case_id": "case_28_ott_based_system_mini_reel",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nFirst Person Shooter Fps Games — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall keep the troll in a calm state with no actions if there is no detected threat.\n2. The system shall determine the troll's reaction based on the perceived strength of the detected opponent.\n3. The system shall make the troll aggressive and start an attack if the opponent appears weak enough to defeat.\n4. The system shall continue the troll's fight while it can see the opponent.\n5. The system shall calm the troll and return it to a normal state if it loses sight of the opponent.\n6. The system shall make the troll scared and panic if the opponent appears too strong.\n7. The system shall calm the troll and return it to a normal state if it gets away from or loses sight of a stronger opponent.\n8. The system shall remove the troll from the game if it takes a fatal hit and its health reaches zero.\n\nExample 1 PlantUML:\n@startuml\ntitle Troll State Diagram\n\n[*] --> Neutral\n\nstate Neutral\nstate Attack\nstate Panic\nstate Die\n\nNeutral --> Attack : see opponent [defeatable]\nAttack --> Neutral : lost opponent\n\nNeutral --> Panic : see opponent [undefeatable]\nPanic --> Neutral : lost opponent\n\nAttack --> Die : receive blow [health = 0] / pray\nPanic --> Die : receive blow [health = 0] / pray\n\nDie --> [*]\n\n@enduml\n\nExample 2 Requirement:\nE Ration Shop — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to raise a complaint directly.\n2. The system shall end the process after a user raises a complaint.\n3. The system shall allow users to authenticate their identity using an OTP.\n4. The system shall allow multiple attempts for OTP authentication if the initial attempt fails.\n5. The system shall enable users to view items based on different categories once they are successfully authenticated.\n6. The system shall allow users to select items for purchase after viewing them.\n7. The system shall provide users with the option to pay either through an online method or by cash on delivery.\n8. The system shall deliver the product after the payment is completed.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Machine Diagram\n\n\n[*] --> C1\n\nstate C1 <<choice>>\nC1 --> Auth : [possibilities to start]\nC1 --> Complaints\n\n\nstate \"Authentication of aadhar card by OTP\" as Auth\nAuth : entry / card holder\nAuth : do / Generates OTP\nAuth : do / OTP should match\nAuth : exit / authentication completed\n\nstate Complaints\nComplaints : entry / fill\nComplaints : do / raise a complaint\nComplaints : exit / complaint send\n\nComplaints --> [*]\n\nAuth --> Auth\nAuth --> ViewItems\n\nstate \"View items\" as ViewItems\nViewItems : entry / from Authentication\nViewItems : do / items shown based on category\nViewItems : do / select items required\nViewItems : exit / after selecting\n\nViewItems --> Purchase\n\nstate \"make purchase\" as Purchase\nPurchase : entry / from view items\nPurchase : do / payment\nPurchase : exit / chose the mode of payment\n\n\nstate C2 <<choice>>\nPurchase --> C2 : [possibilities for payment]\n\nstate PAYTM\nPAYTM : entry / make purchase\nPAYTM : do / making payment\nPAYTM : exit / payment done\n\nstate COD\nCOD : entry / make purchase\nCOD : do / making payment\nCOD : exit / payment done\n\nC2 --> PAYTM\nC2 --> COD\n\n\nstate C3 <<choice>>\nPAYTM --> C3\nCOD --> C3\n\nC3 --> Delivery : [payment completed]\n\n\nstate Delivery\nDelivery : entry / COD\nDelivery : entry / PAYTM\nDelivery : do / product delivered\n\nDelivery --> [*]\n\n@enduml\n\nExample 3 Requirement:\nStartup Meet — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to select their roll (investor, entrepreneur, or mentor).\n2. The system shall enable the user to sign in after choosing a role.\n3. The system shall allow the signed-in user to submit a startup idea.\n4. The system shall review the submitted startup idea.\n5. The system shall provide mentorship based on the review result.\n6. The system shall make an investment decision if the startup idea is presented to an investor.\n7. The system shall provide funding based on the investment decision.\n8. The system shall end the process once all actions are completed.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\n[*] --> UserType\n\nstate UserType <<choice>>\n\nUserType --> InvestorLogin : [Investor user]\nUserType --> EntrepreneurLogin : [Entrepreneur user]\nUserType --> MentorLogin : [Mentor user]\n\nstate \"Investor Login\" as InvestorLogin\nInvestorLogin : entry / Action needed\nInvestorLogin : do / enter login credentials\nInvestorLogin : exit / Entered into system\n\nstate \"Entrepreneur Login\" as EntrepreneurLogin\nEntrepreneurLogin : entry / Action needed\nEntrepreneurLogin : do / enter login credentials\nEntrepreneurLogin : exit / Entered into system\n\nstate \"Mentor Login\" as MentorLogin\nMentorLogin : entry / Action needed\nMentorLogin : do / enter login credentials\nMentorLogin : exit / Entered into system\n\nstate MergeLogin <<choice>>\n\nInvestorLogin --> MergeLogin\nEntrepreneurLogin --> MergeLogin\nMentorLogin --> MergeLogin\n\nstate \"Startup idea\" as StartupIdea\nStartupIdea : entry / Submitted by entrepreneur\nStartupIdea : do / file the idea\nStartupIdea : exit / accept or decline state\n\nMergeLogin --> StartupIdea\n\nstate \"Decision on Startup idea\" as DecisionIdea\nDecisionIdea : entry / startup idea state\nDecisionIdea : do / accept or decline\nDecisionIdea : exit / NIL\n\nStartupIdea --> DecisionIdea\n\nstate ChoiceDecision <<choice>>\nDecisionIdea --> ChoiceDecision\n\nstate \"Accept mentorship\" as AcceptMentorship\nAcceptMentorship : entry / decision on mentorship\nAcceptMentorship : do / mentorship\nAcceptMentorship : exit / NIL\n\nstate \"Present Idea\" as PresentIdea\nPresentIdea : entry / Decision on startup\nPresentIdea : do / present idea to investor\nPresentIdea : exit / Decision on investing\n\nstate \"Investment\" as Investment\nInvestment : entry / Decision to invest\nInvestment : do / give investment\nInvestment : exit / share in profit\n\nChoiceDecision --> AcceptMentorship\nChoiceDecision --> PresentIdea\n\nstate MergeEnd <<choice>>\n\nAcceptMentorship --> MergeEnd\nPresentIdea --> Investment\nInvestment --> MergeEnd\nChoiceDecision --> MergeEnd\nMergeEnd --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- PlantUML Structural Validation Patterns ---\n\nThe uppercase identifiers below are placeholders.\nReplace them with existing requirement-supported states, events, and guards.\nDo not copy placeholder names into the final diagram.\n\nPattern 1: never connect the initial pseudostate directly to the final pseudostate\n\n' Invalid\n[*] --> [*]\n\n' Valid\n[*] --> INITIAL_STATE\nINITIAL_STATE --> TERMINAL_STATE : SUPPORTED_EVENT\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 2: use exactly one top-level initial transition\n\n' Invalid\n[*] --> FIRST_STATE\n[*] --> SECOND_STATE\n\n' Valid\n[*] --> FIRST_STATE\nFIRST_STATE --> SECOND_STATE : SUPPORTED_EVENT\n\n\nPattern 3: add a missing initial transition\n\n[*] --> INITIAL_STATE\n\n\nPattern 4: add a missing final transition\n\nTERMINAL_STATE --> [*] : COMPLETION_EVENT\n\n\nPattern 5: connect every requirement-supported orphan state\n\nPREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT\nORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If ORPHAN_STATE is unsupported by the requirement, omit it.\n\n\nPattern 6: create a path to every requirement-supported unreachable state\n\nREACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT\nUNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT\n\n' If UNREACHABLE_STATE is unsupported by the requirement, omit it.\n\n\nPattern 7: keep only one transition for the same source and target\n\n' Invalid\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\nSOURCE_STATE --> TARGET_STATE : FIRST_EVENT\n\n' Valid\nSOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT\n\n\nPattern 8: every choice node must have outgoing transitions\n\nstate DECISION_NODE <<choice>>\nSOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 9: choice-node outgoing transitions must use guards\n\n' Invalid\nDECISION_NODE --> FIRST_STATE\nDECISION_NODE --> SECOND_STATE\n\n' Valid\nDECISION_NODE --> FIRST_STATE : [FIRST_GUARD]\nDECISION_NODE --> SECOND_STATE : [SECOND_GUARD]\n\n\nPattern 10: a fork node must have multiple outgoing branches\n\nstate FORK_NODE <<fork>>\nSOURCE_STATE --> FORK_NODE : SUPPORTED_EVENT\nFORK_NODE --> FIRST_PARALLEL_STATE\nFORK_NODE --> SECOND_PARALLEL_STATE\n\n\nPattern 11: a join node must have multiple incoming branches\n\nstate JOIN_NODE <<join>>\nFIRST_PARALLEL_STATE --> JOIN_NODE\nSECOND_PARALLEL_STATE --> JOIN_NODE\nJOIN_NODE --> NEXT_STATE\n\n\nPattern 12: use history only inside a composite state\n\nstate COMPOSITE_STATE {\n  [H] --> RESUMED_CHILD_STATE\n}\n\n\nPattern 13: do not add another [*] transition inside a composite state\n\n' Invalid\nstate PARENT_STATE {\n  [*] --> CHILD_STATE\n}\n\n' Valid\nstate PARENT_STATE {\n  state CHILD_STATE\n}\nPARENT_STATE --> CHILD_STATE : SUPPORTED_EVENT\n\n\n\n--- Task ---\n\nRequirement:\n\nOtt Based System Mini Reel — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create an account.\n2. The system shall enable a user to watch videos after they have created an account.\n3. The system shall permit a user to upload videos.\n4. The system shall allow a user to save videos in their likes list during video viewing.\n5. The system shall enable a user to view their saved videos from the likes list.\n6. The system shall allow a user to enter the discussion option.\n",
+  "requirement_used": "Ott Based System Mini Reel — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create an account.\n2. The system shall enable a user to watch videos after they have created an account.\n3. The system shall permit a user to upload videos.\n4. The system shall allow a user to save videos in their likes list during video viewing.\n5. The system shall enable a user to view their saved videos from the likes list.\n6. The system shall allow a user to enter the discussion option.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__mistral__few_shot__prompt_structural_validation_patterns\\case_28_ott_based_system_mini_reel\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: Account Creation, DiscussionOption, LikesList, SaveVideo, UploadVideo, WatchVideos",
+      "orphan_states_detected",
+      "orphan: Account Creation"
+    ],
+    "initial_state": "AccountCreation",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [
+      "Account Creation",
+      "DiscussionOption",
+      "LikesList",
+      "SaveVideo",
+      "UploadVideo",
+      "WatchVideos"
+    ],
+    "state_count": 7,
+    "transition_count": 6
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: Account Creation, DiscussionOption, LikesList, SaveVideo, UploadVideo, WatchVideos",
+      "orphan_states_detected",
+      "orphan: Account Creation"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_58_first_person_shooter_fps_games",
+        "case_20_e_ration_shop",
+        "case_40_startup_meet"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: Account Creation, DiscussionOption, LikesList, SaveVideo, UploadVideo, WatchVideos",
+        "orphan_states_detected",
+        "orphan: Account Creation"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: Account Creation, DiscussionOption, LikesList, SaveVideo, UploadVideo, WatchVideos",
+        "orphan_states_detected",
+        "orphan: Account Creation"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])",
+          "unreachable_states_detected",
+          "unreachable: Account Creation, DiscussionOption, LikesList, SaveVideo, UploadVideo, WatchVideos",
+          "orphan_states_detected",
+          "orphan: Account Creation"
+        ],
+        "initial_state": "AccountCreation",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Account Creation",
+          "DiscussionOption",
+          "LikesList",
+          "SaveVideo",
+          "UploadVideo",
+          "WatchVideos"
+        ],
+        "state_count": 7,
+        "transition_count": 6
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__mistral__few_shot__prompt_structural_validation_patterns\\case_28_ott_based_system_mini_reel\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.2857142857142857,
+    "state_recall": 0.18181818181818182,
+    "state_f1": 0.2222222222222222,
+    "state_tp": 2,
+    "state_fp": 5,
+    "state_fn": 9,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 6,
+    "transition_fn": 11,
+    "state_precision_relaxed": 0.16666666666666666,
+    "state_recall_relaxed": 0.1,
+    "state_f1_relaxed": 0.125,
+    "state_tp_relaxed": 1,
+    "state_fp_relaxed": 5,
+    "state_fn_relaxed": 9,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 6,
+    "transition_fn_relaxed": 11,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 6,
+    "transition_fn_semantic": 11,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: Account Creation, DiscussionOption, LikesList, SaveVideo, UploadVideo, WatchVideos",
+      "orphan_states_detected",
+      "orphan: Account Creation"
+    ],
+    "hallucination_state_rate": 0.7142857142857143,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.8333333333333334,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.1111111111111111,
+    "overall_f1_relaxed": 0.0625,
+    "weighted_f1_relaxed_70_30": 0.0875,
+    "overall_f1_semantic": 0.0625,
+    "weighted_f1_semantic_70_30": 0.0875,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: Account Creation, DiscussionOption, LikesList, SaveVideo, UploadVideo, WatchVideos",
+      "orphan_states_detected",
+      "orphan: Account Creation"
+    ]
+  }
+}

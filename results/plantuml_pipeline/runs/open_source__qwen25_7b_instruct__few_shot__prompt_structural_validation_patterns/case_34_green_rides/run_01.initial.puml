@@ -1,0 +1,47 @@
+@startuml
+title State diagram for Green Rides
+
+[*] --> LoginAndSelectDestination : User logs in and selects destination
+
+state "LoginAndSelectDestination" as InitialState
+InitialState : entry / Journey details displayed
+InitialState --> DrivingModeChoice : Activate driving mode or choose other options
+
+state DrivingModeChoice <<choice>>
+DrivingModeChoice --> DrivingMode : Enter driving mode
+DrivingModeChoice --> OtherOptions : Choose other options
+
+state DrivingMode {
+  state "SelectPlaceToEat" as SelectPlaceToEat
+  state "ViewMenuAndOrder" as ViewMenuAndOrder
+  state "AccidentNotification" as AccidentNotification
+}
+
+DrivingMode --> SelectPlaceToEat : User selects a place to eat
+SelectPlaceToEat --> ViewMenuAndOrder : View menu and order if hungry
+
+state ViewMenuAndOrder {
+  state "PlacedOrder" as PlacedOrder
+  state "NotPlacedOrder" as NotPlacedOrder
+}
+
+ViewMenuAndOrder --> PlacedOrder : Place an order
+ViewMenuAndOrder --> NotPlacedOrder : Do not place an order
+
+DrivingModeChoice --> AccidentNotification : Inform authorities in case of accident
+
+state Notification {
+  state "SendingNotificationsDuringDrive" as SendingNotificationsDuringDrive
+  state "SendingNotificationsAfterAccident" as SendingNotificationsAfterAccident
+}
+
+DrivingMode --> SendingNotificationsDuringDrive : Send notifications during driving
+AccidentNotification --> SendingNotificationsAfterAccident : Send notifications after accident
+
+state FeedbackCollection <<choice>>
+FeedbackCollection --> ProvideFeedback : User provides feedback upon journey completion
+ProvideFeedback : entry / Feedback collected
+
+InitialState --> [*] : Exit system
+
+@enduml
