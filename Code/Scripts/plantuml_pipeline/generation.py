@@ -12,6 +12,7 @@ from .prompting import (
     build_chain_of_thought_generation_prompt,
     build_full_pattern_repair_prompt,
     build_generation_prompt,
+    build_hybrid_issue_guided_repair_prompt,
     build_repair_prompt,
     build_syntax_grounded_repair_prompt,
     build_syntax_grounded_pattern_rules_repair_prompt,
@@ -288,6 +289,13 @@ def run_single_generation(
                 )
             elif repair_mode_clean == "syntax_grounded":
                 repair_prompt = build_syntax_grounded_repair_prompt(
+                    requirement,
+                    final_puml,
+                    final_validation,
+                    critic_feedback,
+                )
+            elif repair_mode_clean == "hybrid_issue_guided":
+                repair_prompt = build_hybrid_issue_guided_repair_prompt(
                     requirement,
                     final_puml,
                     final_validation,

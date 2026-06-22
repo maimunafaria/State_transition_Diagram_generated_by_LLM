@@ -136,6 +136,172 @@ def format_syntax_patterns(issues: list[str]) -> str:
     return "\n\n".join(sections)
 
 
+def format_hybrid_issue_repair_blocks(issues: list[str]) -> str:
+    blocks: list[str] = []
+    seen: set[str] = set()
+
+    def add(
+        key: str,
+        issue_name: str,
+        objective: str,
+        pattern: str,
+        restriction: str,
+    ) -> None:
+        if key in seen:
+            return
+        seen.add(key)
+        blocks.append(
+            "\n".join(
+                [
+                    f"Issue: {issue_name}",
+                    "",
+                    "Repair objective:",
+                    objective,
+                    "",
+                    "Valid syntax pattern:",
+                    pattern.strip(),
+                    "",
+                    "Restriction:",
+                    restriction,
+                ]
+            )
+        )
+
+    for issue in issues:
+        low = issue.lower()
+        if "plantuml_syntax_error" in low or "empty src/dst" in low:
+            add(
+                "syntax_error",
+                "plantuml_syntax_error",
+                "Restore a valid PlantUML state-machine structure before repairing other issues.",
+                """@startuml
+[*] --> INITIAL_STATE
+INITIAL_STATE --> NEXT_STATE : SUPPORTED_EVENT
+NEXT_STATE --> [*] : COMPLETION_EVENT
+@enduml""",
+                "Preserve valid existing declarations and transitions; replace only malformed syntax.",
+            )
+        if "invalid [*]" in low:
+            add(
+                "invalid_pseudostate_transition",
+                "invalid_initial_to_final_transition",
+                "Replace every direct initial-to-final pseudostate transition with a real lifecycle path.",
+                """[*] --> INITIAL_STATE
+INITIAL_STATE --> TERMINAL_STATE : SUPPORTED_EVENT
+TERMINAL_STATE --> [*] : COMPLETION_EVENT""",
+                "Use existing requirement-supported lifecycle states and do not leave [*] --> [*].",
+            )
+        if "multiple_initial_state_transitions" in low:
+            add(
+                "multiple_initial",
+                "multiple_initial_state_transitions",
+                "Keep exactly one top-level initial transition and connect other entry states normally.",
+                """[*] --> INITIAL_STATE
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT""",
+                "Do not create a choice node or new state merely to remove an extra initial transition.",
+            )
+        if "missing_initial_state_transition" in low:
+            add(
+                "missing_initial",
+                "missing_initial_state_transition",
+                "Add exactly one transition from the initial pseudostate to the first lifecycle state.",
+                "[*] --> INITIAL_STATE",
+                "Use an existing requirement-supported first state and do not add another top-level initial transition.",
+            )
+        if "missing_final_state_transition" in low:
+            add(
+                "missing_final",
+                "missing_final_state_transition",
+                "Add at least one final transition from an existing natural terminal state.",
+                "TERMINAL_STATE --> [*] : COMPLETION_EVENT",
+                "Use an existing requirement-supported terminal state; do not create a new state when one can naturally terminate the lifecycle.",
+            )
+        if "orphan" in low:
+            add(
+                "orphan",
+                "orphan_states_detected",
+                "Connect every listed requirement-supported orphan state to the lifecycle with reasonable incoming or outgoing transitions.",
+                """PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT""",
+                "Use only requirement-supported transitions; remove an orphan state only when the requirement does not support it.",
+            )
+        if "unreachable" in low:
+            add(
+                "unreachable",
+                "unreachable_states_detected",
+                "Create a valid path from a reachable state to every listed requirement-supported unreachable state.",
+                """REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT""",
+                "Do not connect a state using invented or unsupported system behavior.",
+            )
+        if "duplicate_transitions" in low:
+            add(
+                "duplicate",
+                "duplicate_transitions_detected",
+                "Keep only one transition for each duplicated source-target-event combination.",
+                "SOURCE_STATE --> TARGET_STATE : SUPPORTED_EVENT",
+                "Remove an identical duplicate without changing unrelated transitions; merge labels only when both meanings are requirement-supported.",
+            )
+        if "choice_node_without_outgoing" in low:
+            add(
+                "choice_outgoing",
+                "choice_node_without_outgoing_transitions",
+                "Add requirement-supported outgoing alternatives to every listed choice node.",
+                """CHOICE_NODE --> FIRST_STATE : [FIRST_GUARD]
+CHOICE_NODE --> SECOND_STATE : [SECOND_GUARD]""",
+                "Do not invent branches; remove the choice stereotype if the requirement supports no decision.",
+            )
+        if "choice_node_without_guarded" in low:
+            add(
+                "choice_guards",
+                "choice_node_outgoing_transitions_without_guards",
+                "Add mutually meaningful guards to all outgoing transitions from the choice node.",
+                """CHOICE_NODE --> FIRST_STATE : [FIRST_GUARD]
+CHOICE_NODE --> SECOND_STATE : [SECOND_GUARD]""",
+                "Use guards supported by the requirement or existing transition meaning.",
+            )
+        if "fork_without_multiple_outgoing" in low:
+            add(
+                "fork",
+                "fork_without_multiple_outgoing_branches",
+                "Give each retained fork node at least two requirement-supported outgoing parallel branches.",
+                """SOURCE_STATE --> FORK_NODE : SUPPORTED_EVENT
+FORK_NODE --> FIRST_PARALLEL_STATE
+FORK_NODE --> SECOND_PARALLEL_STATE""",
+                "Remove the fork stereotype instead when the requirement does not describe parallel behavior.",
+            )
+        if "join_without_multiple_incoming" in low:
+            add(
+                "join",
+                "join_without_multiple_incoming_branches",
+                "Give each retained join node at least two incoming parallel branches.",
+                """FIRST_PARALLEL_STATE --> JOIN_NODE
+SECOND_PARALLEL_STATE --> JOIN_NODE
+JOIN_NODE --> NEXT_STATE""",
+                "Remove the join stereotype instead when the requirement does not merge parallel behavior.",
+            )
+        if "history_state_used_without_composite_state" in low:
+            add(
+                "history",
+                "history_state_used_without_composite_state",
+                "Place each retained history pseudostate inside its requirement-supported composite state.",
+                """state COMPOSITE_STATE {
+  [H] --> RESUMED_CHILD_STATE
+}""",
+                "Remove history behavior when the requirement does not support resuming a composite state.",
+            )
+
+    if not blocks:
+        add(
+            "generic",
+            "listed_validation_issue",
+            "Fix the listed issue with the smallest requirement-preserving transition edit.",
+            "SOURCE_STATE --> TARGET_STATE : SUPPORTED_EVENT",
+            "Do not change unrelated states, transitions, or labels.",
+        )
+    return "\n\n".join(blocks)
+
+
 def format_all_structural_validation_patterns() -> str:
     return """--- PlantUML Structural Validation Patterns ---
 

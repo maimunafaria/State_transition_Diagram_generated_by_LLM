@@ -9,7 +9,11 @@ from .constants import WORD_RE
 from .io_utils import read_text
 from .models import Case, ExperimentConfig, ValidationResult
 from .parser import parse_plantuml
-from .repair_patterns import format_all_structural_validation_patterns, format_syntax_patterns
+from .repair_patterns import (
+    format_all_structural_validation_patterns,
+    format_hybrid_issue_repair_blocks,
+    format_syntax_patterns,
+)
 
 DOMAIN_TOKEN_HINTS = {
     "accounts",
@@ -1401,6 +1405,59 @@ def build_syntax_grounded_repair_prompt(
         + structural_rules
         + "\n\nValid PlantUML repair patterns:\n"
         + syntax_patterns
+    )
+
+
+def build_hybrid_issue_guided_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+) -> str:
+    validation_issues = _prioritized_repair_issues(validation)
+    issue_details = _validation_issue_details(validation)
+    repair_blocks = format_hybrid_issue_repair_blocks(validation_issues)
+    return (
+        "You are a PlantUML state-machine repair assistant.\n\n"
+        "Your task is to fix all listed validation issues while preserving the rest of the diagram.\n\n"
+        "Follow these priorities in order:\n\n"
+        "1. Fix every listed validation issue.\n"
+        "2. Preserve the behavior described in the requirement.\n"
+        "3. Make the smallest possible edit.\n"
+        "4. Keep unaffected states, transitions, and labels unchanged.\n"
+        "5. Do not introduce any new validation issue.\n\n"
+        "Requirement:\n"
+        f"{requirement}\n\n"
+        "Candidate PlantUML:\n"
+        f"{candidate_puml}\n\n"
+        "Validation issues:\n"
+        + ("\n".join(f"- {issue}" for issue in validation_issues) if validation_issues else "- none")
+        + "\n\nValidator details:\n"
+        + "\n".join(f"- {detail}" for detail in issue_details)
+        + "\n\nIssue-specific repair instructions:\n"
+        + repair_blocks
+        + "\n\nGeneral repair constraints:\n\n"
+        "* Apply only the repair instructions corresponding to the listed validation issues.\n"
+        "* Fix every occurrence of each listed issue.\n"
+        "* Prefer using existing states and transitions.\n"
+        "* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.\n"
+        "* Do not remove a requirement-supported state only to make the diagram valid.\n"
+        "* Do not rename unaffected states.\n"
+        "* Do not change unaffected transition labels.\n"
+        "* Do not redesign or simplify unaffected parts of the diagram.\n"
+        "* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.\n"
+        "* Never copy placeholder identifiers into the corrected diagram.\n"
+        "* When several repairs are valid, choose the repair that changes the fewest lines.\n\n"
+        "Before producing the answer, silently verify:\n\n"
+        "* Every listed validation issue has been fixed.\n"
+        "* No new structural violation has been introduced.\n"
+        "* Exactly one top-level initial transition exists.\n"
+        "* At least one valid final transition exists.\n"
+        "* Every retained state is connected and reachable.\n"
+        "* No duplicate transition remains.\n"
+        "* Unaffected diagram behavior is unchanged.\n\n"
+        "Output only one corrected PlantUML diagram.\n"
+        "Do not output markdown fences, explanations, comments, or analysis."
     )
 
 
