@@ -10,9 +10,11 @@ from .parser import normalize_puml_text, parse_and_validate_puml_text
 from .prompting import (
     build_chain_of_thought_analysis_prompt,
     build_chain_of_thought_generation_prompt,
+    build_full_pattern_repair_prompt,
     build_generation_prompt,
     build_repair_prompt,
     build_syntax_grounded_repair_prompt,
+    build_syntax_grounded_pattern_rules_repair_prompt,
     build_targeted_repair_prompt,
     select_fewshot_examples,
 )
@@ -286,6 +288,20 @@ def run_single_generation(
                 )
             elif repair_mode_clean == "syntax_grounded":
                 repair_prompt = build_syntax_grounded_repair_prompt(
+                    requirement,
+                    final_puml,
+                    final_validation,
+                    critic_feedback,
+                )
+            elif repair_mode_clean == "syntax_grounded_pattern_rules":
+                repair_prompt = build_syntax_grounded_pattern_rules_repair_prompt(
+                    requirement,
+                    final_puml,
+                    final_validation,
+                    critic_feedback,
+                )
+            elif repair_mode_clean == "full_patterns":
+                repair_prompt = build_full_pattern_repair_prompt(
                     requirement,
                     final_puml,
                     final_validation,

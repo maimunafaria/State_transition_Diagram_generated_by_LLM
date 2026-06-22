@@ -100,7 +100,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_run.add_argument(
         "--repair-mode",
-        choices=["baseline", "targeted", "syntax_grounded"],
+        choices=[
+            "baseline",
+            "targeted",
+            "syntax_grounded",
+            "syntax_grounded_pattern_rules",
+            "full_patterns",
+        ],
         default="baseline",
         help="Repair prompt/acceptance mode for repair-enabled configs",
     )
@@ -189,6 +195,7 @@ def build_parser() -> argparse.ArgumentParser:
             "uml_elements",
             "uml_elements_structural_validation",
             "plantuml_example",
+            "structural_validation_patterns",
         ],
         default="original",
         help=(

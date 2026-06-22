@@ -9,7 +9,7 @@ from .constants import WORD_RE
 from .io_utils import read_text
 from .models import Case, ExperimentConfig, ValidationResult
 from .parser import parse_plantuml
-from .repair_patterns import format_syntax_patterns
+from .repair_patterns import format_all_structural_validation_patterns, format_syntax_patterns
 
 DOMAIN_TOKEN_HINTS = {
     "accounts",
@@ -917,6 +917,13 @@ def build_chain_of_thought_generation_prompt(
                 "",
             ]
         )
+    if prompt_structure == "structural_validation_patterns":
+        parts.extend(
+            [
+                format_all_structural_validation_patterns(),
+                "",
+            ]
+        )
     if prompt_structure == "plantuml_example" and example_requirement.strip() and example_puml.strip():
         parts.extend(
             [
@@ -1120,6 +1127,13 @@ def build_generation_prompt(
                 [
                     "--- Structural Validation Rules ---",
                     *[f"- {rule}" for rule in _repair_rules_for_generation_prompt()],
+                    "",
+                ]
+            )
+        if prompt_structure == "structural_validation_patterns":
+            parts.extend(
+                [
+                    format_all_structural_validation_patterns(),
                     "",
                 ]
             )
@@ -1387,6 +1401,66 @@ def build_syntax_grounded_repair_prompt(
         + structural_rules
         + "\n\nValid PlantUML repair patterns:\n"
         + syntax_patterns
+    )
+
+
+def build_syntax_grounded_pattern_rules_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+) -> str:
+    validation_issues = _prioritized_repair_issues(validation)
+    issue_details = _validation_issue_details(validation)
+    syntax_patterns = format_syntax_patterns(validation_issues)
+    structural_patterns = format_all_structural_validation_patterns()
+    return (
+        "You are a PlantUML repair assistant.\n"
+        "Repair the candidate using the valid PlantUML syntax patterns below.\n"
+        "The uppercase identifiers in the patterns are placeholders, not literal state names.\n"
+        "Replace placeholders only with existing or requirement-supported states, events, and guards.\n"
+        "Apply only patterns that correspond to the listed validation issues.\n"
+        "Keep unaffected states, transitions, labels, and behavior unchanged.\n"
+        "Do not copy placeholder identifiers into the final diagram.\n"
+        "Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.\n\n"
+        "Requirement:\n"
+        f"{requirement}\n\n"
+        "Candidate PlantUML:\n"
+        f"{candidate_puml}\n\n"
+        "Validation issues:\n"
+        + ("\n".join(f"- {issue}" for issue in validation_issues) if validation_issues else "- none")
+        + "\n\nValidator details:\n"
+        + "\n".join(f"- {detail}" for detail in issue_details)
+        + "\n\n"
+        + structural_patterns
+        + "\n\nValid PlantUML repair patterns:\n"
+        + syntax_patterns
+    )
+
+
+def build_full_pattern_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+) -> str:
+    validation_issues = _prioritized_repair_issues(validation)
+    pattern_block = format_all_structural_validation_patterns()
+    return (
+        "You are a PlantUML repair assistant.\n"
+        "Repair the candidate using the PlantUML structural-validation patterns below.\n"
+        "Apply only the patterns needed for the listed validation issues.\n"
+        "The uppercase identifiers are placeholders; replace them with requirement-supported identifiers.\n"
+        "Keep unaffected states, transitions, labels, and behavior unchanged.\n"
+        "Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.\n\n"
+        "Requirement:\n"
+        f"{requirement}\n\n"
+        "Candidate PlantUML:\n"
+        f"{candidate_puml}\n\n"
+        "Validation issues to fix:\n"
+        + ("\n".join(f"- {issue}" for issue in validation_issues) if validation_issues else "- none")
+        + "\n\n"
+        + pattern_block
     )
 
 
