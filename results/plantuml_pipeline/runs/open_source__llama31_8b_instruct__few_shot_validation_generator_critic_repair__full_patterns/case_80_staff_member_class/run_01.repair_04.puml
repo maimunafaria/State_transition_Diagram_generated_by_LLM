@@ -1,0 +1,64 @@
+@startuml
+title Staff Member State Machine
+
+state "Unassigned" as Unassigned {
+  [*] --> InitialState : [initial choice]
+  InitialState --> Choice : [initial choice]
+  Choice --> AssignToClient : [assign to client]
+  Choice --> AddToCampaign : [add to campaign]
+  Choice --> SwitchAssignments : [switch assignments]
+  Choice --> LeaveJob : [leave job]
+  Choice --> ArchiveRecord : [archive record]
+}
+
+state "Assigned to client" as AssignedToClient {
+  AssignToClient --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AssignedToCampaign : [switch to campaign]
+  LeaveJob --> Unemployed : [leave job]
+}
+
+state "Assigned to campaign" as AssignedToCampaign {
+  AssignedToCampaign --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AssignedToClient : [switch to client]
+  LeaveJob --> Unemployed : [leave job]
+}
+
+state "Unemployed" as Unemployed {
+  Unemployed --> ArchiveRecord : [archive record]
+  ArchiveRecord --> Archived : [archive record]
+}
+
+state "Archived" as Archived {
+  [*] --> Archived : [completion event]
+}
+
+state Choice <<choice>>
+Choice --> AssignToClient : [assign to client]
+Choice --> AddToCampaign : [add to campaign]
+Choice --> SwitchAssignments : [switch assignments]
+Choice --> LeaveJob : [leave job]
+Choice --> ArchiveRecord : [archive record]
+
+state InitialState {
+  [*] --> InitialState
+  InitialState --> Choice : [initial choice]
+}
+
+InitialState --> AssignToClient : [assign to client]
+InitialState --> AddToCampaign : [add to campaign]
+InitialState --> SwitchAssignments : [switch assignments]
+InitialState --> LeaveJob : [leave job]
+InitialState --> ArchiveRecord : [archive record]
+
+AssignedToClient --> Unassigned : [switch to unassigned]
+AssignedToClient --> AssignedToCampaign : [switch to campaign]
+AssignedToCampaign --> Unassigned : [switch to unassigned]
+AssignedToCampaign --> AssignedToClient : [switch to client]
+Unemployed --> Archived : [archive record]
+
+LeaveJob --> Unemployed : [leave job]
+ArchiveRecord --> Archived : [archive record]
+
+@enduml

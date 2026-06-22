@@ -1,0 +1,77 @@
+@startuml
+title Weather Monitoring System State Diagram
+
+state "Idle" as Idle
+[*] --> Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Create account / Login
+
+state "Create account" as CreateAccount
+CreateAccount : entry/Create account
+CreateAccount : do/Create account
+CreateAccount : exit/Login / Invalid registration
+Idle --> CreateAccount : Create account successful
+
+state "Invalid registration" as InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration --> Idle : Abnormal termination
+CreateAccount --> InvalidRegistration : Invalid registration
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login / To home page
+Idle --> Login : Login successful
+CreateAccount --> Login : Create account successful
+InvalidRegistration --> Login : Invalid registration
+InvalidLogin --> Login : Invalid login
+
+state "Invalid login" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin --> Idle : Abnormal termination
+
+state "Check weather" as CheckWeather
+CheckWeather : entry/To home page
+CheckWeather : entry/Check weather for current or new location
+Login --> CheckWeather : Login successful
+CheckWeather --> Invalid location : Invalid location entered
+Invalid location --> Idle : Abnormal termination
+CheckWeather --> SelectWeatherParameter : Valid location entered
+
+state "Select weather parameter" as SelectWeatherParameter
+SelectWeatherParameter : entry/Select weather parameter
+SelectWeatherParameter : do/Select temperature, humidity, rainfall, pressure, or dew point
+SelectWeatherParameter --> Invalid parameter : Invalid selection made
+Invalid parameter --> Idle : Abnormal termination
+CheckWeather --> SelectWeatherParameter : Valid location entered
+
+state "Update weather information" as UpdateWeatherInformation
+UpdateWeatherInformation : entry/Update weather information
+UpdateWeatherInformation : do/Update and show selected weather information
+SelectWeatherParameter --> UpdateWeatherInformation : Valid selection made
+UpdateWeatherInformation --> Logout : Successful update
+ViewAdditionalWeatherDetails --> UpdateWeatherInformation : Additional details viewed
+
+state "View additional weather details" as ViewAdditionalWeatherDetails
+ViewAdditionalWeatherDetails : entry/View additional weather details
+ViewAdditionalWeatherDetails : do/View alerts, weekly analysis, future prediction, or graph
+UpdateWeatherInformation --> ViewAdditionalWeatherDetails : Successful update
+ViewAdditionalWeatherDetails --> Logout : Additional details viewed
+
+state "Logout" as Logout
+Logout : entry/Logout
+Logout : do/End session
+UpdateWeatherInformation --> Logout : Successful update
+ViewAdditionalWeatherDetails --> Logout : Additional details viewed
+Logout --> Idle : End of session
+
+[*] --> Login
+
+Login --> CheckWeather
+CheckWeather --> SelectWeatherParameter : Valid location entered
+SelectWeatherParameter --> UpdateWeatherInformation : Valid selection made
+UpdateWeatherInformation --> ViewAdditionalWeatherDetails : Successful update
+
+@enduml

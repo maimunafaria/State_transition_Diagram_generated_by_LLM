@@ -1,0 +1,62 @@
+@startuml
+title State diagram for the Ott Based System Mini Reel class
+
+[*] --> CreateAccount
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Create Account / Watch Video
+
+state "Create Account" as CreateAccount
+CreateAccount : entry/Create account after validating
+CreateAccount : do/Create account after validating
+CreateAccount --> WatchVideo : login_required
+
+state "Watch Video" as WatchVideo
+WatchVideo : entry/Watch video after login
+WatchVideo : do/Watch video after login
+WatchVideo --> UploadVideo : upload_video_allowed
+
+state "Upload Video" as UploadVideo
+UploadVideo : entry/Upload video
+UploadVideo : do/Upload video
+UploadVideo --> SaveVideo : save_video_allowed
+
+state "Save Video" as SaveVideo
+SaveVideo : entry/Save video in likes list
+SaveVideo : do/Save video in likes list
+SaveVideo --> ViewSavedVideos : view_saved_videos_allowed
+
+state "View Saved Videos" as ViewSavedVideos
+ViewSavedVideos : entry/View saved videos
+ViewSavedVideos : do/View saved videos
+ViewSavedVideos --> Discussion : discussion_allowed
+
+state "Discussion" as Discussion
+Discussion : entry/Discussion
+Discussion : do/Enter discussion option
+Discussion --> End : end_discussion
+
+state "End" as End
+End : entry/End
+End : do/End
+End --> [*] : completion_event
+
+CreateAccount --> InvalidRegistration : invalid_registration
+InvalidRegistration --> AbnormalTermination : abnormal_termination
+
+state "Abnormal Termination" as AbnormalTermination
+AbnormalTermination : entry/Abnormal termination
+AbnormalTermination : do/Abnormal termination
+AbnormalTermination --> [*] : completion_event
+
+Idle --> CreateAccount
+CreateAccount --> WatchVideo
+WatchVideo --> UploadVideo
+UploadVideo --> SaveVideo
+SaveVideo --> ViewSavedVideos
+ViewSavedVideos --> Discussion
+Discussion --> End
+
+@enduml

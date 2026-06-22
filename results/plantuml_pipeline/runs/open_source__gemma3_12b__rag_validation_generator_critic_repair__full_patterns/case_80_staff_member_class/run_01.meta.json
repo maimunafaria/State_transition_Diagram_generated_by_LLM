@@ -1,0 +1,177 @@
+{
+  "run_id": "open_source__gemma3_12b__rag_validation_generator_critic_repair__full_patterns",
+  "case_id": "case_80_staff_member_class",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nStaff Member Class — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow assigning a staff member to a client or adding them to a campaign.\n2. The system shall allow removing assignments from staff members, returning them to an unassigned state.\n3. The system shall enable staff members to switch between different assignments during their work period.\n4. The system shall mark a staff member as unemployed when they leave the job.\n5. The system shall archive the record of a former employee after some time has passed.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Aliases, Notes, and Descriptions\n\nUse this document when state names are long or when the diagram needs annotations.\n\n## Long state names with alias\n\nUse aliases to keep transitions readable when state names are long.\n\n```plantuml\nstate \"Waiting for Payment Confirmation\" as WaitingPayment\nstate \"Order Completed Successfully\" as OrderComplete\n\nWaitingPayment --> OrderComplete : payment confirmed\n```\n\nAlternative alias form:\n\n```plantuml\nstate WaitingPayment as \"Waiting for Payment Confirmation\"\n```\n\n## Notes attached to states\n\nUse notes to add additional explanation without changing the state name.\n\n```plantuml\nnote right of Processing : validates request details\n```\n\nMulti-line notes:\n\n```plantuml\nnote left of Processing\nThe system checks the request,\n\n# PlantUML State Diagram Core Syntax\n\nUse this document when generating a basic UML state transition diagram in PlantUML.\n\n## Diagram wrapper\n\nPlantUML code should be enclosed between `@startuml` and `@enduml`.\n\n```plantuml\n@startuml\n[*] --> Idle\nIdle --> [*]\n@enduml\n```\n\n## Initial and final state\n\nThe initial and final pseudostate is written as `[*]`.\n\nInitial transition:\n\n```plantuml\n[*] --> State1\n```\n\nFinal transition:\n\n```plantuml\nState1 --> [*]\n```\n\n## Transitions\n\nUse arrows between states.\n\n```plantuml\nState1 --> State2\nState1 -> State2\n```\n\nTransitions can include labels after a colon.\n\n```plantuml\nIdle --> LoggedIn : login successful\nLoggedIn --> LoggedOut : logout\n```\n\nLabels may include event, guard, and action information.\n\n```plantuml\n\n# UML State Machine Core Concepts\n\nUse this document to decide what should become a state and what should become a transition.\n\n## Purpose\n\nA state machine diagram describes how a system, object, or controller behaves over time. It is useful when the object reacts differently depending on its current condition.\n\n## State\n\nA state is not just a variable value. In a state machine, a state means an abstract condition where the system reacts to events in a particular way.\n\nGood state names usually describe stable conditions:\n\n```text\nIdle\nWaiting for Payment\nVerifying User\nOrder Confirmed\nSession Active\n```\n\nAvoid making every action a state. Actions such as \"click button\" or \"enter password\" are often better as transition labels unless the system remains in that condition.\n\n# UML Transitions, Events, Guards, and Actions\n\nUse this document when labeling transitions in a state diagram.\n\n## Transition label structure\n\nA UML transition label can contain three conceptual parts:\n\n```text\nevent [guard] / action\n```\n\nIn PlantUML this can be written after a colon:\n\n```plantuml\nWaiting --> Approved : submit [valid] / approve request\n```\n\n## Event\n\nAn event is something that may trigger a change of state.\n\nExamples:\n\n```text\nlogin submitted\npayment received\ncard inserted\norder cancelled\nverification completed\ntimer expires\n```\n\n## Guard\n\nA guard is a Boolean condition that must be true for the transition to happen.\n\nExamples:\n\n```plantuml\nChecking --> Approved : [credentials valid]\nChecking --> Rejected : [credentials invalid]\n```\n\nExample requirement:\nClass Campaign Final Version — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall activate a campaign once a manager and staff are assigned, it is approved, and the contract is signed.\n2. The system shall allow surveys to be carried out and evaluated during the campaign.\n3. The system shall prepare, approve, schedule, and run adverts during the campaign.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Campaign State Machine (Final Version)\n\n[*] --> Commissioned : /assignManager; assignStaff\n\nstate Commissioned\nstate Suspended\nstate Completed\nstate Paid\n\nCommissioned --> Active : authorized(authorizationCode)\\n[contract signed]\\n/setCampaignActive\nCommissioned --> Completed : campaignCancelled;\\ncalculateCosts;\\nprepareFinalStatement\nstate Active {\n\n  state Monitoring {\n    [*] --> Survey\n\n    state Survey\n    state Evaluation\n    state H1 <<history>>\n\n    Survey --> Evaluation : surveyComplete\n    Evaluation --> Survey : runSurvey\n  }\n\n  --\n\n  state Running {\n    [*] --> AdvertPreparation\n\n    state AdvertPreparation\n    state Scheduling\n    state \"Running Adverts\" as RunningAdverts\n    state H2 <<history>>\n\n    AdvertPreparation --> Scheduling : advertsApproved\\n/authorize\n    Scheduling --> RunningAdverts : confirmSchedule\n    RunningAdverts --> AdvertPreparation : extendCampaign\\n/modifyBudget\n  }\n\n}\n\n\nActive --> Suspended : suspendCampaign\\n/stopAdverts\nSuspended --> Active : resumeCampaign\n\n\nActive --> Completed : campaignCancelled\\n/cancelSchedule;\\ncalculateCosts;\\nprepareFinalStatement\nAdvertPreparation --> Completed : campaignCompleted\\n/prepareFinalStatement\n\n\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment = 0]\nCompleted --> Completed : paymentReceived(payment)\\n[paymentDue - payment > 0]\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment < 0]\\n/generateRefund\n\n\nPaid --> [*] : archiveCampaign\\n/unassignStaff;\\nunassignManager\n\n@enduml\n```\n\nExample requirement:\nAdvocate Diary — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to explore blogs and news updates.\n2. The system shall permit users to leave at any time after viewing blogs and news updates.\n3. The system shall enable users to create an account by providing their details.\n4. The system shall check the provided details during account creation.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML state machine diagram\n\nstate \"View blogs as news updates\" as ViewBlogs\nViewBlogs : entry/Visit page\nViewBlogs : do/Shows blogs and news updates\nViewBlogs : exit/Leave the page\n\nstate \"Register\" as Register\nRegister : entry/New user\nRegister : do/Verify details\nRegister : exit/Verified details\n\nstate \"Login\" as Login\nLogin : entry/Registered\nLogin : do/Verify password\nLogin : exit/View details\n\nstate \"View details and logs\" as ViewDetails\nViewDetails : entry/Login\nViewDetails : do/Show details of case and logs\nViewDetails : exit/Do required function\n\nstate \"Add case\" as AddCase\nAddCase : entry/Wants to add case\nAddCase : do/Show Category\nAddCase : exit/Selects a category\n\nstate \"Civil\" as Civil\nCivil : entry/Selects this category\nCivil : do/update view table\nCivil : exit/Allows to add details\n\nstate \"Criminal\" as Criminal\nCriminal : entry/Selects this category\nCriminal : do/Update the view table\nCriminal : exit/Allows to add details\n\nstate \"Add details\" as AddDetails\nAddDetails : entry/Selects category\nAddDetails : do/Add details about case\nAddDetails : exit/Update view table\n\nstate \"Add remainder\" as AddReminder\nAddReminder : entry/Adds details\nAddReminder : do/Add remainder\nAddReminder : exit/Update calender\n\nstate \"Upload document\" as UploadDocument\nUploadDocument : entry/Add details\nUploadDocument : do/Upload documents\nUploadDocument : exit/leave page\n\nstate \"File online\" as FileOnline\nFileOnline : entry/Prefers online filing\nFileOnline : do/Select category\nFileOnline : exit/Click a link\n\nstate \"Redirect to page\" as RedirectPage\nRedirectPage : entry/Click a link\nRedirectPage : do/Redirects to page\nRedirectPage : exit/Returns to page\n\nstate \"Download model forms\" as DownloadForms\nDownloadForms : entry/wants to download forms\nDownloadForms : do/Select a form\nDownloadForms : exit/Downloads form\n\nstate \"Reference\" as Reference\nReference : entry/Pefers to refer\nReference : do/Select a category\nReference : exit/prefered categoried is showed\n\nstate \"Quick References\" as QuickReferences\nQuickReferences : entry/Selects quick references\nQuickReferences : do/Shows some Quick references\nQuickReferences : exit/Leave the page\n\nstate \"Books\" as Books\nBooks : entry/Selects books\nBooks : do/Shows books\nBooks : exit/Leave page\n\nstate \"Feedback\" as Feedback\nFeedback : entry/Wants to give feedback\nFeedback : do/Add feedback\nFeedback : exit/Exit page\n\nstate \"Logout\" as Logout\nLogout : entry/Wants to leave the site\nLogout : do/The session of logged in user ended\nLogout : exit/Leave the site\n\nstate J1 <<choice>>\nstate J2 <<choice>>\nstate J3 <<choice>>\nstate J4 <<choice>>\nstate J5 <<choice>>\nstate J6 <<choice>>\n\nstate J10 <<choice>>\n\n[*] --> J1\n\nJ1 --> ViewBlogs\nJ1 --> Register\n\nViewBlogs --> [*]\n\nRegister --> J2\nJ2 --> [*] : [Invalid Credentials]\nJ2 --> Login : [Valid]\n\nLogin --> [*] : [Improper]\nLogin --> ViewDetails : [Proper]\n\nViewDetails --> J3\n\nJ3 --> AddCase\nJ3 --> FileOnline\nJ3 --> DownloadForms\nJ3 --> Reference\nJ3 --> Feedback\n\nAddCase --> J4\nJ4 --> Civil\nJ4 --> Criminal\n\nCivil --> J5\nCriminal --> J5\nJ5 --> AddDetails\nAddDetails --> AddReminder\nAddReminder --> UploadDocument\nUploadDocument --> J10\n\nFileOnline --> RedirectPage\nRedirectPage --> J10\n\nDownloadForms --> J10\n\nReference --> J6\nJ6 --> QuickReferences\nJ6 --> Books\nQuickReferences --> J10\nBooks --> J10\n\nFeedback --> J10\n\nJ10 --> Logout\nLogout --> [*]\n\n@enduml\n```\n\nExample requirement:\nClass Campaign — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall begin a campaign once a manager and staff are assigned.\n2. The system shall activate and start running a campaign upon approval and signing of the contract.\n3. The system shall prepare a final statement when the campaign is finished and move the process toward completion.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle State machine for Campaign\n\nstate Commissioned\nstate Active\nstate Completed\nstate Paid\n\n[*] --> Commissioned : /assignManager;\\nassignStaff\n\nCommissioned --> Active : Authorized(authorizationCode)\\n[contract signed]\\n/setCampaignActive\n\nActive --> Completed : campaignCompleted\\n/prepareFinalStatement\n\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment = zero]\nCompleted --> Completed : paymentReceived(payment)\\n[paymentDue - payment > zero]\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment < zero]\\n/generateRefund\n\nPaid --> [*] : archiveCampaign\\n/unassignStaff;\\nunassignManager\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Staff Member Class — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow assigning a staff member to a client or adding them to a campaign.\n2. The system shall allow removing assignments from staff members, returning them to an unassigned state.\n3. The system shall enable staff members to switch between different assignments during their work period.\n4. The system shall mark a staff member as unemployed when they leave the job.\n5. The system shall archive the record of a former employee after some time has passed.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__full_patterns\\case_80_staff_member_class\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "Unassigned",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 5,
+    "transition_count": 5
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__gemma3_12b__rag",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": true,
+      "repair_mode": "full_patterns",
+      "repair_model_name": "gemma3:12b",
+      "previous_score": 1,
+      "repair_score": 0,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 5,
+        "repaired_state_count": 5,
+        "current_transition_count": 6,
+        "repaired_transition_count": 7,
+        "min_allowed_state_count": 3,
+        "min_allowed_transition_count": 4,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 1,
+      "strict_state_diagram_valid": true,
+      "remaining_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])"
+        ],
+        "initial_state": "Unassigned",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 5,
+        "transition_count": 5
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__full_patterns\\case_80_staff_member_class\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "repair_mode": "full_patterns",
+      "repair_model_name": "gemma3:12b",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "Unassigned",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 5,
+        "transition_count": 5
+      },
+      "strict_state_diagram_valid": true,
+      "accepted": true,
+      "previous_score": 1,
+      "repair_score": 0,
+      "preservation": {
+        "current_state_count": 5,
+        "repaired_state_count": 5,
+        "current_transition_count": 6,
+        "repaired_transition_count": 7,
+        "min_allowed_state_count": 3,
+        "min_allowed_transition_count": 4,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__full_patterns\\case_80_staff_member_class\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__full_patterns\\case_80_staff_member_class\\run_01.repair_01.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 5,
+    "state_fn": 8,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 5,
+    "transition_fn": 5,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 5,
+    "state_fn_relaxed": 7,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 5,
+    "transition_fn_relaxed": 5,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 5,
+    "transition_fn_semantic": 5,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  },
+  "reused_base_run": {
+    "run_id": "open_source__gemma3_12b__rag",
+    "strategy": "rag",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag\\case_80_staff_member_class\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag\\case_80_staff_member_class\\run_01.prompt.txt"
+  }
+}

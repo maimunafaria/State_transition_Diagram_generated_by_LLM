@@ -1,0 +1,69 @@
+@startuml
+title Staff Member State Machine
+
+state "Unassigned" as Unassigned {
+  [*] --> InitialState : [initial choice]
+  InitialState --> Choice : [initial choice]
+}
+
+state "Initial State" as InitialState {
+  InitialState --> AssignToClient : [assign to client]
+  InitialState --> AddToCampaign : [add to campaign]
+  InitialState --> SwitchAssignments : [switch assignments]
+  InitialState --> LeaveJob : [leave job]
+  InitialState --> ArchiveRecord : [archive record]
+}
+
+state "Choice" <<choice>> as Choice {
+  Choice --> AssignToClient : [assign to client]
+  Choice --> AddToCampaign : [add to campaign]
+  Choice --> SwitchAssignments : [switch assignments]
+  Choice --> LeaveJob : [leave job]
+  Choice --> ArchiveRecord : [archive record]
+}
+
+state "Assigned to client" as AssignedToClient {
+  AssignedToClient --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AssignedToCampaign : [switch to campaign]
+  AssignedToClient --> LeaveJob : [leave job]
+}
+
+state "Assigned to campaign" as AssignedToCampaign {
+  AssignedToCampaign --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AssignedToClient : [switch to client]
+  AssignedToCampaign --> LeaveJob : [leave job]
+}
+
+state "Unemployed" as Unemployed {
+  LeaveJob --> Unemployed : [leave job]
+  Unemployed --> ArchiveRecord : [archive record]
+}
+
+state "Archived" as Archived {
+  ArchiveRecord --> Archived : [archive record]
+}
+
+Unassigned : entry / staff member is unassigned
+AssignedToClient : entry / staff member is assigned to client
+AssignedToCampaign : entry / staff member is assigned to campaign
+Unemployed : entry / staff member is unemployed
+Archived : entry / staff member record is archived
+
+InitialState --> AssignToClient : [assign to client]
+InitialState --> AddToCampaign : [add to campaign]
+InitialState --> SwitchAssignments : [switch assignments]
+InitialState --> LeaveJob : [leave job]
+InitialState --> ArchiveRecord : [archive record]
+
+AssignedToClient --> Unassigned : [switch to unemployed]
+AssignedToClient --> AssignedToCampaign : [switch to campaign]
+AssignedToCampaign --> Unassigned : [switch to unemployed]
+AssignedToCampaign --> AssignedToClient : [switch to client]
+Unemployed --> Archived : [archive record]
+
+LeaveJob --> Unemployed : [leave job]
+ArchiveRecord --> Archived : [archive record]
+
+@enduml
