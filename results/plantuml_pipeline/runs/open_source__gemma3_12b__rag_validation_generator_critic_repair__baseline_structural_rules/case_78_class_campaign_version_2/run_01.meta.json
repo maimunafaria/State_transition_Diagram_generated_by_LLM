@@ -1,0 +1,114 @@
+{
+  "run_id": "open_source__gemma3_12b__rag_validation_generator_critic_repair__baseline_structural_rules",
+  "case_id": "case_78_class_campaign_version_2",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nClass Campaign Version 2 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start a campaign after a manager and staff are assigned.\n2. The system shall activate the campaign once everything is approved and the contract is signed.\n3. The system shall prepare adverts during the campaign.\n4. The system shall approve and schedule the adverts.\n5. The system shall run the adverts.\n6. The system shall allow extension or adjustment of the campaign while it is running.\n7. The system shall complete the campaign and prepare a final statement after all adverts have finished.\n8. The system shall handle payment after the campaign completion and generate a refund if the amount paid is less than required.\n9. The system shall wait for the correct balance to be settled if the amount paid exceeds the required amount.\n10. The system shall mark the campaign as paid once the full amount is properly paid.\n11. The system shall archive the campaign and release all assigned staff and managers.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Aliases, Notes, and Descriptions\n\nUse this document when state names are long or when the diagram needs annotations.\n\n## Long state names with alias\n\nUse aliases to keep transitions readable when state names are long.\n\n```plantuml\nstate \"Waiting for Payment Confirmation\" as WaitingPayment\nstate \"Order Completed Successfully\" as OrderComplete\n\nWaitingPayment --> OrderComplete : payment confirmed\n```\n\nAlternative alias form:\n\n```plantuml\nstate WaitingPayment as \"Waiting for Payment Confirmation\"\n```\n\n## Notes attached to states\n\nUse notes to add additional explanation without changing the state name.\n\n```plantuml\nnote right of Processing : validates request details\n```\n\nMulti-line notes:\n\n```plantuml\nnote left of Processing\nThe system checks the request,\n\n# PlantUML State Diagram Core Syntax\n\nUse this document when generating a basic UML state transition diagram in PlantUML.\n\n## Diagram wrapper\n\nPlantUML code should be enclosed between `@startuml` and `@enduml`.\n\n```plantuml\n@startuml\n[*] --> Idle\nIdle --> [*]\n@enduml\n```\n\n## Initial and final state\n\nThe initial and final pseudostate is written as `[*]`.\n\nInitial transition:\n\n```plantuml\n[*] --> State1\n```\n\nFinal transition:\n\n```plantuml\nState1 --> [*]\n```\n\n## Transitions\n\nUse arrows between states.\n\n```plantuml\nState1 --> State2\nState1 -> State2\n```\n\nTransitions can include labels after a colon.\n\n```plantuml\nIdle --> LoggedIn : login successful\nLoggedIn --> LoggedOut : logout\n```\n\nLabels may include event, guard, and action information.\n\n```plantuml\n\n# UML Transitions, Events, Guards, and Actions\n\nUse this document when labeling transitions in a state diagram.\n\n## Transition label structure\n\nA UML transition label can contain three conceptual parts:\n\n```text\nevent [guard] / action\n```\n\nIn PlantUML this can be written after a colon:\n\n```plantuml\nWaiting --> Approved : submit [valid] / approve request\n```\n\n## Event\n\nAn event is something that may trigger a change of state.\n\nExamples:\n\n```text\nlogin submitted\npayment received\ncard inserted\norder cancelled\nverification completed\ntimer expires\n```\n\n## Guard\n\nA guard is a Boolean condition that must be true for the transition to happen.\n\nExamples:\n\n```plantuml\nChecking --> Approved : [credentials valid]\nChecking --> Rejected : [credentials invalid]\n```\n\n# Event Types for State Transitions\n\nUse this document to choose better transition labels from requirements.\n\n## Event role\n\nAn event is a noteworthy occurrence that may trigger a transition. In generated PlantUML, events usually appear as transition labels.\n\n```plantuml\nIdle --> Authenticating : login submitted\nAuthenticating --> LoggedIn : credentials valid\nAuthenticating --> LoginFailed : credentials invalid\n```\n\n## Call events\n\nA call event represents a request for an operation or service.\n\nRequirement phrases that often indicate call events:\n\n```text\nuser submits\nadmin approves\nsystem validates\ncustomer requests\ndoctor confirms\n```\n\nExample:\n\n```plantuml\nWaiting --> Processing : submit request\n```\n\n## Signal events\n\nA signal event represents an asynchronous notification or message.\n\nExample requirement:\nClass Campaign Final Version — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall activate a campaign once a manager and staff are assigned, it is approved, and the contract is signed.\n2. The system shall allow surveys to be carried out and evaluated during the campaign.\n3. The system shall prepare, approve, schedule, and run adverts during the campaign.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Campaign State Machine (Final Version)\n\n[*] --> Commissioned : /assignManager; assignStaff\n\nstate Commissioned\nstate Suspended\nstate Completed\nstate Paid\n\nCommissioned --> Active : authorized(authorizationCode)\\n[contract signed]\\n/setCampaignActive\nCommissioned --> Completed : campaignCancelled;\\ncalculateCosts;\\nprepareFinalStatement\nstate Active {\n\n  state Monitoring {\n    [*] --> Survey\n\n    state Survey\n    state Evaluation\n    state H1 <<history>>\n\n    Survey --> Evaluation : surveyComplete\n    Evaluation --> Survey : runSurvey\n  }\n\n  --\n\n  state Running {\n    [*] --> AdvertPreparation\n\n    state AdvertPreparation\n    state Scheduling\n    state \"Running Adverts\" as RunningAdverts\n    state H2 <<history>>\n\n    AdvertPreparation --> Scheduling : advertsApproved\\n/authorize\n    Scheduling --> RunningAdverts : confirmSchedule\n    RunningAdverts --> AdvertPreparation : extendCampaign\\n/modifyBudget\n  }\n\n}\n\n\nActive --> Suspended : suspendCampaign\\n/stopAdverts\nSuspended --> Active : resumeCampaign\n\n\nActive --> Completed : campaignCancelled\\n/cancelSchedule;\\ncalculateCosts;\\nprepareFinalStatement\nAdvertPreparation --> Completed : campaignCompleted\\n/prepareFinalStatement\n\n\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment = 0]\nCompleted --> Completed : paymentReceived(payment)\\n[paymentDue - payment > 0]\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment < 0]\\n/generateRefund\n\n\nPaid --> [*] : archiveCampaign\\n/unassignStaff;\\nunassignManager\n\n@enduml\n```\n\nExample requirement:\nClass Campaign — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall begin a campaign once a manager and staff are assigned.\n2. The system shall activate and start running a campaign upon approval and signing of the contract.\n3. The system shall prepare a final statement when the campaign is finished and move the process toward completion.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle State machine for Campaign\n\nstate Commissioned\nstate Active\nstate Completed\nstate Paid\n\n[*] --> Commissioned : /assignManager;\\nassignStaff\n\nCommissioned --> Active : Authorized(authorizationCode)\\n[contract signed]\\n/setCampaignActive\n\nActive --> Completed : campaignCompleted\\n/prepareFinalStatement\n\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment = zero]\nCompleted --> Completed : paymentReceived(payment)\\n[paymentDue - payment > zero]\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment < zero]\\n/generateRefund\n\nPaid --> [*] : archiveCampaign\\n/unassignStaff;\\nunassignManager\n\n@enduml\n```\n\nExample requirement:\nTextile — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow customers to create an account by filling in required details.\n2. The system shall enable customers to place orders for garments once they are registered.\n3. The system shall send out sample materials if a customer needs them after placing an order.\n\nReference PlantUML:\n```plantuml\n@startuml\n\n[*] --> CustomerRegistration\nstate Choice1 <<choice>>\nstate Choice2 <<choice>>\nCustomerRegistration : entry / Start state\nCustomerRegistration : do / Fill in required details\nCustomerRegistration : exit / Getting garment orders\n\nCustomerRegistration --> GettingGarmentOrders : registration complete\n\nGettingGarmentOrders : entry / Customer registration\nGettingGarmentOrders : do / Place the orders\nGettingGarmentOrders : exit / Sampling / Stock checking\n\nGettingGarmentOrders --> Sampling : sampling required\nGettingGarmentOrders --> StockChecking : check stock\n\nSampling : entry / Getting garment orders\nSampling : do / Send out sample materials while ordering\nSampling : exit / decision\n\nSampling --> Choice1 : proceed\nStockChecking --> Choice1\n\nStockChecking : entry / Getting garment orders\nStockChecking : do / Check availability of raw material\nStockChecking : exit / decision making\n\nChoice1 --> PurchasingRawMaterials : not in stock\nChoice1 --> ProcessingRawMaterials : in stock\n\nPurchasingRawMaterials : entry / Stock checking\nPurchasingRawMaterials : do / Buy raw materials\nPurchasingRawMaterials : exit / Production of garments\n\nProcessingRawMaterials : entry / Stock checking\nProcessingRawMaterials : do / Processing\nProcessingRawMaterials : exit / Production of garments\nProcessingRawMaterials --> Choice2\nPurchasingRawMaterials --> Choice2\nChoice2 --> ProductionOfGarments\n\nProductionOfGarments : entry / Purchasing or processing of raw materials\nProductionOfGarments : do / Manufacturing\nProductionOfGarments : exit / Product checking\n\nProductionOfGarments --> ProductChecking\n\nProductChecking : entry / Production of garments\nProductChecking : do / Checking for defects and clearance\nProductChecking : exit / Receiving the ordered garments\n\nProductChecking --> ReceivingOrderedGarments\n\nReceivingOrderedGarments : entry / Product checking\nReceivingOrderedGarments : do / Garment delivered\nReceivingOrderedGarments : exit / Billing\n\nReceivingOrderedGarments --> Billing\n\nBilling : entry / Receiving the ordered garments\nBilling : do / Making payments\nBilling : exit / Report generation\n\nBilling --> ReportGeneration\n\nReportGeneration : entry / Billing\nReportGeneration : do / Giving feedback\nReportGeneration : exit / final state\n\nReportGeneration --> [*]\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Class Campaign Version 2 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start a campaign after a manager and staff are assigned.\n2. The system shall activate the campaign once everything is approved and the contract is signed.\n3. The system shall prepare adverts during the campaign.\n4. The system shall approve and schedule the adverts.\n5. The system shall run the adverts.\n6. The system shall allow extension or adjustment of the campaign while it is running.\n7. The system shall complete the campaign and prepare a final statement after all adverts have finished.\n8. The system shall handle payment after the campaign completion and generate a refund if the amount paid is less than required.\n9. The system shall wait for the correct balance to be settled if the amount paid exceeds the required amount.\n10. The system shall mark the campaign as paid once the full amount is properly paid.\n11. The system shall archive the campaign and release all assigned staff and managers.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__baseline_structural_rules\\case_78_class_campaign_version_2\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "Commissioned",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 8,
+    "transition_count": 11
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__gemma3_12b__rag",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 0,
+      "strict_state_diagram_valid": true,
+      "remaining_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "Commissioned",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 11
+      },
+      "strict_state_diagram_valid": true,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__baseline_structural_rules\\case_78_class_campaign_version_2\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.5,
+    "state_recall": 0.5714285714285714,
+    "state_f1": 0.5333333333333333,
+    "state_tp": 4,
+    "state_fp": 4,
+    "state_fn": 3,
+    "transition_precision": 0.36363636363636365,
+    "transition_recall": 0.5,
+    "transition_f1": 0.4210526315789474,
+    "transition_tp": 4,
+    "transition_fp": 7,
+    "transition_fn": 4,
+    "state_precision_relaxed": 0.625,
+    "state_recall_relaxed": 0.7142857142857143,
+    "state_f1_relaxed": 0.6666666666666666,
+    "state_tp_relaxed": 5,
+    "state_fp_relaxed": 3,
+    "state_fn_relaxed": 2,
+    "transition_precision_relaxed": 0.4,
+    "transition_recall_relaxed": 0.5714285714285714,
+    "transition_f1_relaxed": 0.47058823529411764,
+    "transition_tp_relaxed": 4,
+    "transition_fp_relaxed": 6,
+    "transition_fn_relaxed": 3,
+    "transition_precision_semantic": 0.45454545454545453,
+    "transition_recall_semantic": 0.625,
+    "transition_f1_semantic": 0.5263157894736842,
+    "transition_tp_semantic": 5,
+    "transition_fp_semantic": 6,
+    "transition_fn_semantic": 3,
+    "transition_event_similarity_mean": 0.9400000000000001,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 0.5,
+    "hallucination_transition_rate": 0.6363636363636364,
+    "hallucination_state_rate_relaxed": 0.375,
+    "hallucination_transition_rate_relaxed": 0.6,
+    "missing_transition_rate": 0.5,
+    "missing_transition_rate_relaxed": 0.42857142857142855,
+    "overall_f1": 0.4771929824561404,
+    "overall_f1_relaxed": 0.5686274509803921,
+    "weighted_f1_relaxed_70_30": 0.6078431372549019,
+    "overall_f1_semantic": 0.5964912280701754,
+    "weighted_f1_semantic_70_30": 0.6245614035087719,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  },
+  "reused_base_run": {
+    "run_id": "open_source__gemma3_12b__rag",
+    "strategy": "rag",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag\\case_78_class_campaign_version_2\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag\\case_78_class_campaign_version_2\\run_01.prompt.txt"
+  }
+}

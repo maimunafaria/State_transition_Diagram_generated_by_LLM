@@ -1,0 +1,155 @@
+@startuml
+title Campaign State Machine Diagram
+
+state "Idle" as Idle
+Idle : entry/No campaign assigned
+Idle : do/Remain in same state
+Idle : exit/Assign manager and staff / Start campaign
+
+state "Start Campaign" as StartCampaign
+StartCampaign : entry/Manager and staff assigned
+StartCampaign : do/Start campaign
+StartCampaign : exit/Activate campaign
+
+state "Activate Campaign" as ActivateCampaign
+ActivateCampaign : entry/Campaign activated
+ActivateCampaign : do/Prepare adverts
+ActivateCampaign : exit/Approve adverts
+
+state "Prepare Adverts" as PrepareAdverts
+PrepareAdverts : entry/Adverts prepared
+PrepareAdverts : do/Approve adverts
+PrepareAdverts : exit/Schedule adverts
+
+state "Schedule Adverts" as ScheduleAdverts
+ScheduleAdverts : entry/Adverts scheduled
+ScheduleAdverts : do/Run adverts
+ScheduleAdverts : exit/Adjust campaign
+
+state "Adjust Campaign" as AdjustCampaign
+AdjustCampaign : entry/Campaign adjusted
+AdjustCampaign : do/Run adverts
+AdjustCampaign : exit/Complete campaign
+
+state "Complete Campaign" as CompleteCampaign
+CompleteCampaign : entry/Campaign completed
+CompleteCampaign : do/Prepare final statement
+CompleteCampaign : exit/Pay campaign
+
+state "Pay Campaign" as PayCampaign
+PayCampaign : entry/Pay campaign
+PayCampaign : do/Handle payment
+PayCampaign : exit/Archive campaign
+
+state "Archive Campaign" as ArchiveCampaign
+ArchiveCampaign : entry/Campaign archived
+ArchiveCampaign : do/Release staff and managers
+ArchiveCampaign : exit/End
+
+state "Refund Campaign" as RefundCampaign
+RefundCampaign : entry/Refund campaign
+RefundCampaign : do/Generate refund
+RefundCampaign : exit/Wait for balance
+
+state "Wait for Balance" as WaitForBalance
+WaitForBalance : entry/Wait for balance
+WaitForBalance : do/Wait for balance
+WaitForBalance : exit/Mark campaign as paid
+
+state "Mark Campaign as Paid" as MarkCampaignAsPaid
+MarkCampaignAsPaid : entry/Mark campaign as paid
+MarkCampaignAsPaid : do/Mark campaign as paid
+MarkCampaignAsPaid : exit/End
+
+[*] --> Idle : START_EVENT
+
+Idle --> StartCampaign : [Manager and staff assigned]
+
+StartCampaign --> ActivateCampaign : ACTIVATE_CAMPAIGN_EVENT
+
+ActivateCampaign --> PrepareAdverts : PREPARE_ADVERTS_EVENT
+
+PrepareAdverts --> ScheduleAdverts : SCHEDULE_ADVERTS_EVENT
+
+ScheduleAdverts --> AdjustCampaign : ADJUST_CAMPAIGN_EVENT
+
+AdjustCampaign --> CompleteCampaign : COMPLETE_CAMPAIGN_EVENT
+
+CompleteCampaign --> PayCampaign : PAY_CAMPAIGN_EVENT
+
+PayCampaign --> ArchiveCampaign : ARCHIVE_CAMPAIGN_EVENT
+
+ArchiveCampaign --> [*] : COMPLETION_EVENT
+
+RefundCampaign --> WaitForBalance : REFUND_CAMPAIGN_EVENT
+
+WaitForBalance --> MarkCampaignAsPaid : MARK_CAMPAIGN_AS_PAID_EVENT
+
+state J1 <<choice>>
+J1 --> StartCampaign : [valid]
+J1 --> RefundCampaign : [invalid]
+
+state J2 <<choice>>
+J2 --> PrepareAdverts : [valid]
+J2 --> ScheduleAdverts : [invalid]
+
+state J3 <<choice>>
+J3 --> AdjustCampaign : [valid]
+J3 --> CompleteCampaign : [invalid]
+
+state J4 <<choice>>
+J4 --> PayCampaign : [valid]
+J4 --> ArchiveCampaign : [invalid]
+
+state J5 <<choice>>
+J5 --> WaitForBalance : [valid]
+J5 --> MarkCampaignAsPaid : [invalid]
+
+state J6 <<choice>>
+J6 --> Idle : [valid]
+J6 --> StartCampaign : [invalid]
+
+state J7 <<choice>>
+J7 --> ActivateCampaign : [valid]
+J7 --> PrepareAdverts : [invalid]
+
+state J8 <<choice>>
+J8 --> ScheduleAdverts : [valid]
+J8 --> AdjustCampaign : [invalid]
+
+state J9 <<choice>>
+J9 --> CompleteCampaign : [valid]
+J9 --> PayCampaign : [invalid]
+
+state J10 <<choice>>
+J10 --> ArchiveCampaign : [valid]
+J10 --> MarkCampaignAsPaid : [invalid]
+
+state J11 <<choice>>
+J11 --> RefundCampaign : [valid]
+J11 --> WaitForBalance : [invalid]
+
+state J12 <<choice>>
+J12 --> StartCampaign : [valid]
+J12 --> ActivateCampaign : [invalid]
+
+state J13 <<choice>>
+J13 --> PrepareAdverts : [valid]
+J13 --> ScheduleAdverts : [invalid]
+
+state J14 <<choice>>
+J14 --> AdjustCampaign : [valid]
+J14 --> CompleteCampaign : [invalid]
+
+state J15 <<choice>>
+J15 --> PayCampaign : [valid]
+J15 --> ArchiveCampaign : [invalid]
+
+state J16 <<choice>>
+J16 --> WaitForBalance : [valid]
+J16 --> MarkCampaignAsPaid : [invalid]
+
+state J17 <<choice>>
+J17 --> Idle : [valid]
+J
+@enduml

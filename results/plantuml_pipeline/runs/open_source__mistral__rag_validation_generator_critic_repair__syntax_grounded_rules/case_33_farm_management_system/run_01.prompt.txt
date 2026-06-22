@@ -1,0 +1,456 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Farm Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to log in.
+2. The system shall display the main area after a user signs in, allowing them to choose what to check.
+3. The system shall show market conditions when the user selects this option.
+4. The system shall show the market report if the customer selects market condition.
+4. The system shall require users to provide a photo when they choose pest control help.
+4. The system shall show the pest control techniques if the customer selects pest control help.
+5. The system shall provide soil-related suggestions ( which crops are suitable ) after receiving soil information from the user.
+6. The system shall offer weather insights based on the provided location.
+7. The system shall display labour availability details after receiving a location from the user.
+8. The system shall allow users to continue using the service after viewing any of these results.
+9. The system shall end the session when a user logs out.
+
+Reference context (use as support; the target requirement above is primary):
+
+# PlantUML Optional State Diagram Rendering and Style
+
+Use this document only when visual styling is requested. For normal generation, prioritize correct state and transition syntax over styling.
+
+## Hide empty descriptions
+
+Use `hide empty description` to render states as simple boxes when they have no internal text.
+
+```plantuml
+@startuml
+hide empty description
+[*] --> Idle
+Idle --> Processing
+Processing --> [*]
+@enduml
+```
+
+## Inline color
+
+Individual states may include inline color.
+
+```plantuml
+state CurrentSite #pink {
+  [*] --> Loading
+  Loading --> Ready
+}
+```
+
+## Skin parameters
+
+`skinparam` can control drawing style, colors, and fonts.
+
+```plantuml
+skinparam state {
+  BackgroundColor LightYellow
+  BorderColor Black
+}
+```
+
+## Practical rule for this project
+
+# PlantUML Composite States and Pseudostates
+
+Use this document when the requirement contains nested behavior, decisions, history, branching, or concurrent regions.
+
+## Composite states
+
+A composite state is declared with `state Name { ... }`.
+
+```plantuml
+@startuml
+[*] --> LoggedIn
+
+state LoggedIn {
+  [*] --> Dashboard
+  Dashboard --> Settings : open settings
+  Settings --> Dashboard : back
+}
+
+LoggedIn --> [*] : logout
+@enduml
+```
+
+## Nested substates
+
+Nested states may be declared inside a composite state.
+
+```plantuml
+state Parent {
+  state ChildA
+  state ChildB
+  ChildA --> ChildB
+}
+```
+
+## Substate-to-substate transitions
+
+Transitions between substates are allowed.
+
+```plantuml
+state A {
+  [*] --> X
+  X --> Y : next
+}
+```
+
+## History states
+
+# UML State Diagram Usage Guidelines
+
+Use this document to decide whether a requirement should be modeled as a state machine and how much detail to include.
+
+## When state diagrams are useful
+
+State diagrams are most useful when the same system or object behaves differently depending on its current state.
+
+Good candidates:
+
+```text
+ATM sessions
+login/authentication flows
+order/payment lifecycles
+device controllers
+approval workflows
+booking or registration workflows
+alarm/notification systems
+```
+
+## Scope
+
+A state diagram should focus on the lifecycle of one system, object, session, controller, or business process.
+
+Avoid mixing unrelated lifecycles into one diagram unless the requirement clearly describes them as one process.
+
+## Observability
+
+# Reactive Objects and Statechart Scope
+
+Use this document to decide whether a requirement is suitable for state-machine modeling and what lifecycle should be modeled.
+
+## Statechart purpose
+
+A statechart models the dynamic behavior of a reactive object. A reactive object can be a class, use case, subsystem, complete system, session, controller, or business process that responds to events.
+
+For this project, the reactive object is usually the system or process described by the requirement.
+
+## Reactive object characteristics
+
+A good state-machine candidate usually has:
+
+```text
+1. External or internal events that affect behavior.
+2. A clear lifecycle.
+3. Behavior that depends on previous behavior or current condition.
+4. Meaningful states and transitions.
+```
+
+Examples:
+
+```text
+
+Example requirement:
+Diet Care — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose between entering their information or consulting a professional nutritionist.
+2. The system shall enable users who choose consultation to speak with a nutritionist and rate the experience afterward.
+3. The system shall analyze the information entered by the user.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Chart Diagram
+
+
+
+state StartChoice <<choice>>
+
+state Input
+Input : entry / validate user
+Input : do / provide data to model
+Input : exit / processing of data
+
+state Consult
+Consult : entry / user's choice of consultation
+Consult : do / consult professional nutritionist
+Consult : exit / rate professional nutritionist
+
+state Analysis
+Analysis : entry / input data for processing
+Analysis : do / analyse data
+Analysis : exit / detect unhealthy diet or deficiencies
+
+state "Unhealthy diet" as UnhealthyDiet
+UnhealthyDiet : entry / detection of unhealthy diet
+UnhealthyDiet : do / find healthy diet
+UnhealthyDiet : exit / suggest to users
+
+state "Disease or deficiencies" as DiseaseDef
+DiseaseDef : entry / presence of disease or deficiencies
+DiseaseDef : do / find food that fights that disease
+DiseaseDef : exit / suggest to users
+
+state "Healthy diet" as HealthyDiet
+HealthyDiet : do / presence of healthy diet
+HealthyDiet : do / appreciate user's diet
+HealthyDiet : exit / terminate
+
+state Suggestion
+Suggestion : entry / presence of disease or deficiency or unhealthy diet
+Suggestion : do / search for nutrient food
+Suggestion : exit / suggest to users
+
+state AnalysisChoice <<choice>>
+state MergeSuggest <<choice>>
+
+[*] --> StartChoice
+StartChoice --> Input
+StartChoice --> Consult
+
+Input --> Analysis
+Analysis --> AnalysisChoice
+Analysis --> Analysis
+AnalysisChoice --> UnhealthyDiet
+AnalysisChoice --> DiseaseDef
+AnalysisChoice --> HealthyDiet
+
+UnhealthyDiet --> MergeSuggest
+DiseaseDef --> MergeSuggest
+
+MergeSuggest --> Suggestion
+
+Consult --> [*]
+HealthyDiet --> [*]
+Suggestion --> [*]
+
+@enduml
+```
+
+Example requirement:
+Art Gallery Mananement System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall verify login credentials upon submission.
+2. The system shall display an error message and prevent further interaction if login details are incorrect.
+3. The system shall allow users to view products or update their information after a successful login.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Chart Diagram
+
+
+[*] --> Login
+
+state Login
+Login : entry / getInfo
+Login : do / verifyData
+Login : exit / verified
+
+state LoginDecision <<choice>>
+Login --> LoginDecision
+
+state "Valid Login" as ValidLogin
+ValidLogin : entry / contain Info
+ValidLogin : do / allow Access to system
+ValidLogin : exit / gallery Entry
+
+state "Invalid Login" as InvalidLogin
+InvalidLogin : entry / wrong Info
+InvalidLogin : do / display Error message
+InvalidLogin : exit / return To Start
+
+LoginDecision --> ValidLogin
+LoginDecision --> InvalidLogin
+
+state NavChoice <<choice>>
+ValidLogin --> NavChoice
+
+state Gallery
+Gallery : entry / show Products
+Gallery : do / allow to select Products
+Gallery : exit / save Products
+
+state Update
+Update : entry / contain Info
+Update : do / take New Info
+Update : exit / save new Info
+
+NavChoice --> Gallery
+NavChoice --> Update
+
+Update --> [*]
+
+state Order
+Order : entry / select Items
+Order : do / allowto order If products In Stock
+Order : exit / verification
+
+state Cart
+Cart : entry / contain Selected Items
+Cart : do / all billing Info
+Cart : exit / payment Method
+
+Gallery --> Order
+Order --> Cart
+
+state Payment
+Payment : entry / get Payment Method
+Payment : do / confirm Payment
+Payment : exit / verify
+
+Cart --> Payment
+
+state PayDecision <<choice>>
+Payment --> PayDecision
+
+state "Valid Payment" as ValidPayment
+ValidPayment : entry / payment Method
+ValidPayment : do / get Cash
+ValidPayment : exit / confirmation of product
+
+state "Invalid Payment" as InvalidPayment
+InvalidPayment : entry / wrong Entry
+InvalidPayment : do / error Message
+InvalidPayment : exit / return
+
+PayDecision --> ValidPayment
+PayDecision --> InvalidPayment
+
+
+state Delivery
+Delivery : entry / take out Order
+Delivery : do / deliver Product
+Delivery : exit / exit System
+
+ValidPayment --> Delivery
+Delivery --> [*]
+
+InvalidPayment --> [*]
+
+@enduml
+```
+
+Example requirement:
+Guide Dropshipping Website — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to choose whether they are a seller or a customer.
+2. The system shall enable the seller to add or remove products from their list and finalize their offerings.
+3. The system shall allow the customer to view available products and select ones of interest.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Chart Diagram
+
+
+[*] --> StartChoice
+
+state StartChoice <<choice>>
+
+StartChoice --> SellerLogin
+StartChoice --> CustomerLogin
+
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry / seller should be registered
+SellerLogin : do / user provide Login Details
+SellerLogin : exit / login Successful
+
+state "Add/Remove Products" as ManageProducts
+ManageProducts : entry / seller should be LoggedIn
+ManageProducts : do / the seller should be able to add and remove products from the lists
+ManageProducts : exit / fthe seller finalise his products list 
+
+SellerLogin --> ManageProducts
+
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry / customer should be registered
+CustomerLogin : do / user provide Login Details
+CustomerLogin : exit / login Successful
+
+state "View Products" as ViewProducts
+ViewProducts : entry / customer should be LoggedIn
+ViewProducts : do / the customer view Product List
+ViewProducts : exit / customer decides to buy a product
+
+state "Purchase Products" as PurchaseProducts
+PurchaseProducts : entry / customer select a Product
+PurchaseProducts : do / customer contacts Seller via messaging
+PurchaseProducts : exit / customer should be able to message the seller
+CustomerLogin --> ViewProducts
+ViewProducts --> PurchaseProducts
+
+
+state MergePoint <<choice>>
+
+ManageProducts --> MergePoint
+PurchaseProducts --> MergePoint
+
+
+state Message
+Message : entry /customer wanting to purchase a product 
+Message : do / customer seller messaging each other discussing the deal 
+Message : exit / conclusion is drawn
+
+MergePoint --> Message
+
+state Decision <<choice>>
+Message --> Decision
+
+state "Purchase successful" as Success
+Success : entry / customer and the seller agrees on the deal
+Success : do / customer pays the seller through external means 
+Success : exit / customer asks for product feedback
+
+state "Purchase Unsuccessful" as Fail
+Fail : entry / customer not Interested in the offer
+Fail : do / customer decline sellers's Offer
+Fail : exit / end
+
+Decision --> Success
+Decision --> Fail
+
+
+state "Rate Products" as RateProducts
+RateProducts : entry / customer purchases the products
+RateProducts : do / customer gives Feedback for the transaction
+RateProducts : exit / end
+
+Success --> RateProducts
+
+RateProducts --> [*]
+Fail --> [*]
+
+@enduml
+```
+
+Now return only the final PlantUML.

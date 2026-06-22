@@ -1,0 +1,556 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Reference context (use as support; the target requirement above is primary):
+
+# PlantUML State Aliases, Notes, and Descriptions
+
+Use this document when state names are long or when the diagram needs annotations.
+
+## Long state names with alias
+
+Use aliases to keep transitions readable when state names are long.
+
+```plantuml
+state "Waiting for Payment Confirmation" as WaitingPayment
+state "Order Completed Successfully" as OrderComplete
+
+WaitingPayment --> OrderComplete : payment confirmed
+```
+
+Alternative alias form:
+
+```plantuml
+state WaitingPayment as "Waiting for Payment Confirmation"
+```
+
+## Notes attached to states
+
+Use notes to add additional explanation without changing the state name.
+
+```plantuml
+note right of Processing : validates request details
+```
+
+Multi-line notes:
+
+```plantuml
+note left of Processing
+The system checks the request,
+
+# PlantUML Optional State Diagram Rendering and Style
+
+Use this document only when visual styling is requested. For normal generation, prioritize correct state and transition syntax over styling.
+
+## Hide empty descriptions
+
+Use `hide empty description` to render states as simple boxes when they have no internal text.
+
+```plantuml
+@startuml
+hide empty description
+[*] --> Idle
+Idle --> Processing
+Processing --> [*]
+@enduml
+```
+
+## Inline color
+
+Individual states may include inline color.
+
+```plantuml
+state CurrentSite #pink {
+  [*] --> Loading
+  Loading --> Ready
+}
+```
+
+## Skin parameters
+
+`skinparam` can control drawing style, colors, and fonts.
+
+```plantuml
+skinparam state {
+  BackgroundColor LightYellow
+  BorderColor Black
+}
+```
+
+## Practical rule for this project
+
+# UML State Diagram Usage Guidelines
+
+Use this document to decide whether a requirement should be modeled as a state machine and how much detail to include.
+
+## When state diagrams are useful
+
+State diagrams are most useful when the same system or object behaves differently depending on its current state.
+
+Good candidates:
+
+```text
+ATM sessions
+login/authentication flows
+order/payment lifecycles
+device controllers
+approval workflows
+booking or registration workflows
+alarm/notification systems
+```
+
+## Scope
+
+A state diagram should focus on the lifecycle of one system, object, session, controller, or business process.
+
+Avoid mixing unrelated lifecycles into one diagram unless the requirement clearly describes them as one process.
+
+## Observability
+
+# UML Transitions, Events, Guards, and Actions
+
+Use this document when labeling transitions in a state diagram.
+
+## Transition label structure
+
+A UML transition label can contain three conceptual parts:
+
+```text
+event [guard] / action
+```
+
+In PlantUML this can be written after a colon:
+
+```plantuml
+Waiting --> Approved : submit [valid] / approve request
+```
+
+## Event
+
+An event is something that may trigger a change of state.
+
+Examples:
+
+```text
+login submitted
+payment received
+card inserted
+order cancelled
+verification completed
+timer expires
+```
+
+## Guard
+
+A guard is a Boolean condition that must be true for the transition to happen.
+
+Examples:
+
+```plantuml
+Checking --> Approved : [credentials valid]
+Checking --> Rejected : [credentials invalid]
+```
+
+Example requirement:
+For Online College Magazine System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall require a person to either create an account or log in.
+2. The system shall allow admins to add, edit, or remove user profiles.
+3. The system shall enable admins to review articles and decide on their publication or rejection.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>>
+state EditorChoice <<choice>>
+state ReadFeedbackChoice <<choice>>
+state EndJoin <<choice>>
+
+[*] --> StartChoice
+
+state Register
+Register : do / Fill details
+Register : exit / Registration successful
+
+state Login
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+state "Manage profiles" as ManageProfiles
+ManageProfiles : entry / Admin logged in
+ManageProfiles : do / Manage profile in database
+ManageProfiles : do / Add, delete or edit profiles if necessary
+ManageProfiles : exit / Action completed
+
+state "Invalid user" as InvalidUser
+InvalidUser : entry / Invalid login or invalid registration
+InvalidUser : do / Block entry to system
+InvalidUser : exit / Abnormal termination
+
+state Writing
+Writing : entry / Writer logged in
+Writing : do / Write article
+Writing : exit / Send to editor
+
+state Editing
+Editing : entry / Editor logged in and article to be edited
+Editing : do / Edit article
+Editing : exit / Send to moderator/admin
+
+state Publishing
+Publishing : entry / Admin logged in and article to be approved
+Publishing : do / Choose to approve and publish or reject article
+Publishing : do / Add article to database if approved
+Publishing : exit / Publish article
+
+state Search
+Search : entry / Choose to search for articles
+Search : do / Read searched articles
+Search : exit / Completed reading
+
+state Reading
+Reading : entry / Published article
+Reading : do / Read article
+Reading : exit / Completed reading
+
+state Feedback
+Feedback : entry / Reader chosen to give feedback
+Feedback : do / Get feedback
+Feedback : exit / Feedback entry successful
+
+StartChoice --> Register
+StartChoice --> Login
+
+Register --> AdminChoice
+Login --> EditorChoice
+
+AdminChoice --> ManageProfiles
+AdminChoice --> InvalidUser
+
+EditorChoice --> Writing
+EditorChoice --> Editing
+EditorChoice --> InvalidUser
+
+Writing --> Editing
+Editing --> Publishing
+ManageProfiles --> Publishing
+
+InvalidUser --> [*]
+
+Publishing --> Reading
+Reading --> Reading
+
+Search --> Search
+Reading --> ReadFeedbackChoice
+
+ReadFeedbackChoice --> Search
+ReadFeedbackChoice --> Feedback
+
+Feedback --> EndJoin
+Search --> EndJoin
+
+EndJoin --> [*]
+
+@enduml
+```
+
+Example requirement:
+Advocate Diary — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to explore blogs and news updates.
+2. The system shall permit users to leave at any time after viewing blogs and news updates.
+3. The system shall enable users to create an account by providing their details.
+4. The system shall check the provided details during account creation.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML state machine diagram
+
+state "View blogs as news updates" as ViewBlogs
+ViewBlogs : entry/Visit page
+ViewBlogs : do/Shows blogs and news updates
+ViewBlogs : exit/Leave the page
+
+state "Register" as Register
+Register : entry/New user
+Register : do/Verify details
+Register : exit/Verified details
+
+state "Login" as Login
+Login : entry/Registered
+Login : do/Verify password
+Login : exit/View details
+
+state "View details and logs" as ViewDetails
+ViewDetails : entry/Login
+ViewDetails : do/Show details of case and logs
+ViewDetails : exit/Do required function
+
+state "Add case" as AddCase
+AddCase : entry/Wants to add case
+AddCase : do/Show Category
+AddCase : exit/Selects a category
+
+state "Civil" as Civil
+Civil : entry/Selects this category
+Civil : do/update view table
+Civil : exit/Allows to add details
+
+state "Criminal" as Criminal
+Criminal : entry/Selects this category
+Criminal : do/Update the view table
+Criminal : exit/Allows to add details
+
+state "Add details" as AddDetails
+AddDetails : entry/Selects category
+AddDetails : do/Add details about case
+AddDetails : exit/Update view table
+
+state "Add remainder" as AddReminder
+AddReminder : entry/Adds details
+AddReminder : do/Add remainder
+AddReminder : exit/Update calender
+
+state "Upload document" as UploadDocument
+UploadDocument : entry/Add details
+UploadDocument : do/Upload documents
+UploadDocument : exit/leave page
+
+state "File online" as FileOnline
+FileOnline : entry/Prefers online filing
+FileOnline : do/Select category
+FileOnline : exit/Click a link
+
+state "Redirect to page" as RedirectPage
+RedirectPage : entry/Click a link
+RedirectPage : do/Redirects to page
+RedirectPage : exit/Returns to page
+
+state "Download model forms" as DownloadForms
+DownloadForms : entry/wants to download forms
+DownloadForms : do/Select a form
+DownloadForms : exit/Downloads form
+
+state "Reference" as Reference
+Reference : entry/Pefers to refer
+Reference : do/Select a category
+Reference : exit/prefered categoried is showed
+
+state "Quick References" as QuickReferences
+QuickReferences : entry/Selects quick references
+QuickReferences : do/Shows some Quick references
+QuickReferences : exit/Leave the page
+
+state "Books" as Books
+Books : entry/Selects books
+Books : do/Shows books
+Books : exit/Leave page
+
+state "Feedback" as Feedback
+Feedback : entry/Wants to give feedback
+Feedback : do/Add feedback
+Feedback : exit/Exit page
+
+state "Logout" as Logout
+Logout : entry/Wants to leave the site
+Logout : do/The session of logged in user ended
+Logout : exit/Leave the site
+
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+
+state J10 <<choice>>
+
+[*] --> J1
+
+J1 --> ViewBlogs
+J1 --> Register
+
+ViewBlogs --> [*]
+
+Register --> J2
+J2 --> [*] : [Invalid Credentials]
+J2 --> Login : [Valid]
+
+Login --> [*] : [Improper]
+Login --> ViewDetails : [Proper]
+
+ViewDetails --> J3
+
+J3 --> AddCase
+J3 --> FileOnline
+J3 --> DownloadForms
+J3 --> Reference
+J3 --> Feedback
+
+AddCase --> J4
+J4 --> Civil
+J4 --> Criminal
+
+Civil --> J5
+Criminal --> J5
+J5 --> AddDetails
+AddDetails --> AddReminder
+AddReminder --> UploadDocument
+UploadDocument --> J10
+
+FileOnline --> RedirectPage
+RedirectPage --> J10
+
+DownloadForms --> J10
+
+Reference --> J6
+J6 --> QuickReferences
+J6 --> Books
+QuickReferences --> J10
+Books --> J10
+
+Feedback --> J10
+
+J10 --> Logout
+Logout --> [*]
+
+@enduml
+```
+
+Example requirement:
+Book Bank Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to register by entering their details.
+2. The system shall issue a member ID and complete the registration upon correct entry of details.
+3. The system shall require the user to re-enter their details upon incorrect entry of details.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML State Chart Diagram
+
+state "Registration" as Registration {
+  [*] --> RegEnterDetails
+
+  state "Enter Details" as RegEnterDetails
+  state "Get Member_ID" as GetMemberID
+  state "Successful Registration" as SuccessfulRegistration
+  state "Re-enter Details" as ReEnterDetails
+
+  RegEnterDetails --> GetMemberID : [Valid]
+  RegEnterDetails --> ReEnterDetails : [Invalid]
+  ReEnterDetails --> RegEnterDetails
+  GetMemberID --> SuccessfulRegistration
+}
+
+state "Authentication" as Authentication {
+  [*] --> AuthEnterMemberID
+
+  state "Enter Member_ID" as AuthEnterMemberID
+  state "Enter Password" as EnterPassword
+  state "successful Login" as SuccessfulLogin
+  state "Invalid Member_ID or Password" as InvalidCreds
+
+  AuthEnterMemberID --> EnterPassword
+  EnterPassword --> SuccessfulLogin : [Valid]
+  EnterPassword --> InvalidCreds : [Invalid]
+}
+
+state "Search Books" as SearchBooks {
+  [*] --> EnterBookDetails
+
+  state "Enter Book Details" as EnterBookDetails
+  state "Display Suggestion" as DisplaySuggestion
+  state "choose Alternate option" as ChooseAlternate
+
+  EnterBookDetails --> DisplaySuggestion : [Found]
+  EnterBookDetails --> ChooseAlternate : [Not Found]
+}
+
+state "Get Books" as GetBooksState {
+  [*] --> GetEnterBookID
+
+  state "Enter Book_ID" as GetEnterBookID
+  state "Enter Member_ID" as GetEnterMemberID
+  state "Obtain Books" as ObtainBooks
+  state "Pay Fine Amount" as PayFineAmount
+
+  GetEnterBookID --> GetEnterMemberID
+  GetEnterMemberID --> ObtainBooks : [Active Member]
+  GetEnterMemberID --> PayFineAmount : [Inactive Member]
+}
+
+state "Buy Books" as BuyBooks {
+  [*] --> BuyEnterBookID
+
+  state "Enter Book_ID" as BuyEnterBookID
+  state "Display Book Amount" as DisplayBookAmount
+  state "Get Books" as BuyGetBooks
+  state BuyNotPaidEnd <<choice>>
+
+  BuyEnterBookID --> DisplayBookAmount
+  DisplayBookAmount --> BuyGetBooks : [Paid]
+  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]
+  BuyNotPaidEnd --> [*]
+}
+
+state StartJoin <<choice>>
+
+[*] --> StartJoin
+StartJoin --> Registration
+StartJoin --> Authentication
+StartJoin --> SearchBooks
+StartJoin --> GetBooksState
+StartJoin --> BuyBooks
+
+SuccessfulRegistration --> AuthEnterMemberID
+
+SuccessfulLogin --> EnterBookDetails
+SuccessfulLogin --> GetEnterBookID
+SuccessfulLogin --> BuyEnterBookID
+
+
+ObtainBooks --> [*]
+BuyGetBooks --> [*]
+
+@enduml
+```
+
+Now return only the final PlantUML.

@@ -1,0 +1,55 @@
+@startuml
+title Campaign State Machine (Final Version)
+
+[*] --> Commissioned
+Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+Commissioned --> Suspended : campaignCancelled;\ncalculateCosts;\nprepareFinalStatement
+
+state Active {
+  [*] --> Monitoring
+  state Monitoring {
+    [*] --> Survey
+
+    state Survey
+    state Evaluation
+    Survey --> Evaluation : surveyComplete
+    Evaluation --> Survey : runSurvey
+  }
+
+  --
+
+  state Running {
+    [*] --> AdvertPreparation
+
+    state AdvertPreparation
+    state Scheduling
+    state "Running Adverts" as RunningAdverts
+    state H1 <<history>>
+
+    AdvertPreparation --> Scheduling : advertsApproved\n/authorize
+    Scheduling --> RunningAdverts : confirmSchedule
+    RunningAdverts --> AdvertPreparation : extendCampaign\n/modifyBudget
+  }
+}
+
+Active --> Suspended : suspendCampaign\n/stopAdverts
+Suspended --> Active : resumeCampaign
+
+Active --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+AdvertPreparation --> Completed : campaignCompleted\n/prepareFinalStatement
+
+state Completed {
+  state Paid {
+    Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
+  }
+  state WaitingForPayment {
+    Completed --> WaitingForPayment : paymentReceived(payment)\n[paymentDue - payment > 0]
+  }
+  state Refund {
+    Completed --> Refund : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
+  }
+  Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+  WaitingForPayment --> [*] : waitForCorrectBalance
+  Refund --> [*] : handleExcessPayment
+}
+@enduml

@@ -1,0 +1,40 @@
+@startuml
+title Campaign State Machine (Final Version)
+
+[*] --> Commissioned
+Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+
+state Commissioned
+state Suspended
+state Completed
+state Paid
+
+Active --> Active_Monitoring : surveyStarted
+Active_Monitoring --> Survey
+Active_Monitoring --> Evaluation : surveyComplete
+Evaluation --> Evaluation
+Evaluation --> Active : runSurvey
+
+state Active
+Active --> Active_RunningAdverts : advertsPreparationStarted
+Active_RunningAdverts --> AdvertPreparation
+Active_RunningAdverts --> Scheduling : advertsApproved\n/authorize
+Scheduling --> RunningAdverts : confirmSchedule
+RunningAdverts --> RunningAdverts
+RunningAdverts --> AdvertPreparation : extendCampaign\n/modifyBudget
+
+state Active_RunningAdverts
+Active --> Active_Suspended : suspendCampaign\n/stopAdverts
+Active_Suspended --> Active : resumeCampaign
+
+Active --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+Active --> Completed : campaignCompleted\n/prepareFinalStatement
+
+state Completed
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > 0]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
+
+state Paid
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+@enduml

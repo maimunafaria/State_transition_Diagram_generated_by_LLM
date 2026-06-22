@@ -1,0 +1,87 @@
+@startuml
+title UML State Transition Diagram - Healthcare Portal
+
+[*] --> Idle
+
+state "Idle" as Idle
+Idle : entry/Welcome
+Idle : do/Waiting for user action
+Idle : exit/Register/Login
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register --> MainMenu [valid]
+Register --> InvalidRegister [invalid]
+
+state "InvalidRegister" as InvalidRegister
+InvalidRegister : entry/Invalid registration
+InvalidRegister : do/Cannot register
+InvalidRegister --> [*]
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid credentials
+Login --> MainMenu [valid]
+Login --> InvalidLogin [invalid]
+
+state "InvalidLogin" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin --> [*]
+
+state "MainMenu" as MainMenu
+MainMenu : entry/MainMenu
+MainMenu : do/Access facilities
+MainMenu : exit/Waiting for user choice
+
+state "ReadContent" as ReadContent
+ReadContent : entry/ReadContent
+ReadContent : do/View news/expert content
+ReadContent --> MainMenu
+
+state "HealthInfo" as HealthInfo
+HealthInfo : entry/HealthInfo
+HealthInfo : do/Check symptoms or fitness
+HealthInfo --> MainMenu
+
+state "ViewResult" as ViewResult
+ViewResult : entry/ViewResult
+ViewResult : do/View results
+ViewResult --> Continue [valid]
+ViewResult --> Logout [invalid]
+
+state "ProcessInsurance" as ProcessInsurance
+ProcessInsurance : entry/ProcessInsurance
+ProcessInsurance : do/Validate insurance
+ProcessInsurance --> InsuranceApproved [approved]
+ProcessInsurance --> InsuranceRejected [rejected]
+
+state "PaymentSelection" as PaymentSelection
+PaymentSelection : entry/PaymentSelection
+PaymentSelection : do/Choose payment method
+PaymentSelection --> CashPayment [cash]
+PaymentSelection --> InsurancePayment [insurance]
+
+state "CashPayment" as CashPayment
+CashPayment : entry/CashPayment
+CashPayment : do/Inform cash details
+CashPayment --> MainMenu
+
+state "InsurancePayment" as InsurancePayment
+InsurancePayment : entry/InsurancePayment
+InsurancePayment : do/Process insurance payment
+InsurancePayment --> MainMenu
+
+Idle --> Register
+Idle --> Login
+
+MainMenu --> ReadContent
+MainMenu --> HealthInfo
+MainMenu --> ProcessInsurance
+MainMenu --> PaymentSelection
+MainMenu --> ViewResult
+
+Continue --> MainMenu
+Logout --> [*]
+@enduml

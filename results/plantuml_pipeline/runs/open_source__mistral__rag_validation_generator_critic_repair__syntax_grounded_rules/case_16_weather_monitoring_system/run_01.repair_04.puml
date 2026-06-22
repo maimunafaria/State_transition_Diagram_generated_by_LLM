@@ -1,0 +1,58 @@
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle [*] --> Init
+
+state Init
+Init : entry/Initialization
+Init : do/Initialize system
+Init --> Idle : [initialization_completed]
+
+state INVALID_REGISTRATION
+INVALID_REGISTRATION : entry/Invalid registration
+INVALID_REGISTRATION : do/Cannot register
+INVALID_REGISTRATION : exit/Abnormal termination
+
+state LOGIN
+LOGIN : entry/Login
+LOGIN : do/Login using valid username and password
+LOGIN : exit/Invalid login/To home page
+LOGIN --> INVALID_LOGIN : [invalid_login]
+
+state INVALID_LOGIN
+INVALID_LOGIN : entry/Invalid login
+INVALID_LOGIN : do/Cannot login
+INVALID_LOGIN : exit/Abnormal termination
+
+state CHECK_WEATHER
+CHECK_WEATHER : entry/After login
+CHECK_WEATHER : do/Check weather for current location or another location
+CHECK_WEATHER : exit/Home / Invalid location
+CHECK_WEATHER --> VALID_LOCATION : [valid_location]
+CHECK_WEATHER --> INVALID_LOCATION : [invalid_location]
+
+state VALID_LOCATION
+VALID_LOCATION : entry/Valid location
+VALID_LOCATION : do/Choose what to check (temperature, humidity, rainfall, pressure, or dew point)
+VALID_LOCATION : exit/Update and show weather information
+VALID_LOCATION --> HOME : [user_choice]
+
+state INVALID_LOCATION
+INVALID_LOCATION : entry/Invalid location
+INVALID_LOCATION : do/End process
+INVALID_LOCATION : exit/Abnormal termination
+
+state HOME
+HOME : entry/Update
+HOME : do/Update selected weather information
+HOME : exit/View additional weather details / LOGOUT
+HOME --> LOGOUT : [logout]
+HOME : Update --> CHECK_WEATHER : [check_weather]
+
+state LOGOUT
+LOGOUT : entry/Logout
+LOGOUT : do/End session
+LOGOUT : exit/Idle
+LOGOUT --> Idle : COMPLETION_EVENT
+@enduml

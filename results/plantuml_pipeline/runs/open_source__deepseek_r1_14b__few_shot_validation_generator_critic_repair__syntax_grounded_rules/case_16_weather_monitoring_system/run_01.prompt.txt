@@ -1,0 +1,282 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Online Pharmacy Management System Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display a list of available orders to the delivery person.
+2. The system shall allow the delivery person to contact the delivery address for coordination.
+3. The system shall enable the delivery person to update their profile as needed.
+
+Example 1 PlantUML:
+@startuml
+title UML State Machine Diagram - Delivery Man
+
+[*] --> ViewOrders
+
+state "View orders" as ViewOrders
+state "Contact delivery address" as ContactDeliveryAddress
+state "Update profile" as UpdateProfile
+
+ViewOrders --> ContactDeliveryAddress
+ContactDeliveryAddress --> UpdateProfile
+UpdateProfile --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Art Gallery Mananement System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall verify login credentials upon submission.
+2. The system shall display an error message and prevent further interaction if login details are incorrect.
+3. The system shall allow users to view products or update their information after a successful login.
+4. The system shall allow users to select items and place an order when viewing products.
+5. The system shall add selected product items to the order and prepare billing details.
+6. The system shall allow users to choose a payment method after adding products to their order.
+7. The system shall process and deliver the order if the payment is successful.
+8. The system shall end the process without further action if the payment fails.
+9. The system shall allow users to save updated information after entering new details.
+
+Example 2 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+
+[*] --> Login
+
+state Login
+Login : entry / getInfo
+Login : do / verifyData
+Login : exit / verified
+
+state LoginDecision <<choice>>
+Login --> LoginDecision
+
+state "Valid Login" as ValidLogin
+ValidLogin : entry / contain Info
+ValidLogin : do / allow Access to system
+ValidLogin : exit / gallery Entry
+
+state "Invalid Login" as InvalidLogin
+InvalidLogin : entry / wrong Info
+InvalidLogin : do / display Error message
+InvalidLogin : exit / return To Start
+
+LoginDecision --> ValidLogin
+LoginDecision --> InvalidLogin
+
+state NavChoice <<choice>>
+ValidLogin --> NavChoice
+
+state Gallery
+Gallery : entry / show Products
+Gallery : do / allow to select Products
+Gallery : exit / save Products
+
+state Update
+Update : entry / contain Info
+Update : do / take New Info
+Update : exit / save new Info
+
+NavChoice --> Gallery
+NavChoice --> Update
+
+Update --> [*]
+
+state Order
+Order : entry / select Items
+Order : do / allowto order If products In Stock
+Order : exit / verification
+
+state Cart
+Cart : entry / contain Selected Items
+Cart : do / all billing Info
+Cart : exit / payment Method
+
+Gallery --> Order
+Order --> Cart
+
+state Payment
+Payment : entry / get Payment Method
+Payment : do / confirm Payment
+Payment : exit / verify
+
+Cart --> Payment
+
+state PayDecision <<choice>>
+Payment --> PayDecision
+
+state "Valid Payment" as ValidPayment
+ValidPayment : entry / payment Method
+ValidPayment : do / get Cash
+ValidPayment : exit / confirmation of product
+
+state "Invalid Payment" as InvalidPayment
+InvalidPayment : entry / wrong Entry
+InvalidPayment : do / error Message
+InvalidPayment : exit / return
+
+PayDecision --> ValidPayment
+PayDecision --> InvalidPayment
+
+
+state Delivery
+Delivery : entry / take out Order
+Delivery : do / deliver Product
+Delivery : exit / exit System
+
+ValidPayment --> Delivery
+Delivery --> [*]
+
+InvalidPayment --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Startup Meet — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select their roll (investor, entrepreneur, or mentor).
+2. The system shall enable the user to sign in after choosing a role.
+3. The system shall allow the signed-in user to submit a startup idea.
+4. The system shall review the submitted startup idea.
+5. The system shall provide mentorship based on the review result.
+6. The system shall make an investment decision if the startup idea is presented to an investor.
+7. The system shall provide funding based on the investment decision.
+8. The system shall end the process once all actions are completed.
+
+Example 3 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+[*] --> UserType
+
+state UserType <<choice>>
+
+UserType --> InvestorLogin : [Investor user]
+UserType --> EntrepreneurLogin : [Entrepreneur user]
+UserType --> MentorLogin : [Mentor user]
+
+state "Investor Login" as InvestorLogin
+InvestorLogin : entry / Action needed
+InvestorLogin : do / enter login credentials
+InvestorLogin : exit / Entered into system
+
+state "Entrepreneur Login" as EntrepreneurLogin
+EntrepreneurLogin : entry / Action needed
+EntrepreneurLogin : do / enter login credentials
+EntrepreneurLogin : exit / Entered into system
+
+state "Mentor Login" as MentorLogin
+MentorLogin : entry / Action needed
+MentorLogin : do / enter login credentials
+MentorLogin : exit / Entered into system
+
+state MergeLogin <<choice>>
+
+InvestorLogin --> MergeLogin
+EntrepreneurLogin --> MergeLogin
+MentorLogin --> MergeLogin
+
+state "Startup idea" as StartupIdea
+StartupIdea : entry / Submitted by entrepreneur
+StartupIdea : do / file the idea
+StartupIdea : exit / accept or decline state
+
+MergeLogin --> StartupIdea
+
+state "Decision on Startup idea" as DecisionIdea
+DecisionIdea : entry / startup idea state
+DecisionIdea : do / accept or decline
+DecisionIdea : exit / NIL
+
+StartupIdea --> DecisionIdea
+
+state ChoiceDecision <<choice>>
+DecisionIdea --> ChoiceDecision
+
+state "Accept mentorship" as AcceptMentorship
+AcceptMentorship : entry / decision on mentorship
+AcceptMentorship : do / mentorship
+AcceptMentorship : exit / NIL
+
+state "Present Idea" as PresentIdea
+PresentIdea : entry / Decision on startup
+PresentIdea : do / present idea to investor
+PresentIdea : exit / Decision on investing
+
+state "Investment" as Investment
+Investment : entry / Decision to invest
+Investment : do / give investment
+Investment : exit / share in profit
+
+ChoiceDecision --> AcceptMentorship
+ChoiceDecision --> PresentIdea
+
+state MergeEnd <<choice>>
+
+AcceptMentorship --> MergeEnd
+PresentIdea --> Investment
+Investment --> MergeEnd
+ChoiceDecision --> MergeEnd
+MergeEnd --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.

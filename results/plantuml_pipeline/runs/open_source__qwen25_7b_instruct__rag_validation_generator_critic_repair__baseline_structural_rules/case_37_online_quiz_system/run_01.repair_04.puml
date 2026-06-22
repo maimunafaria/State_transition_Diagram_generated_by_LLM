@@ -1,0 +1,96 @@
+@startuml
+title UML State Machine Diagram
+
+state "Register or Login" as RegisterOrLogin {
+  [*] --> Register
+  Register : do / Fill details
+  Register : exit / Registration successful
+
+  Register : --> Login
+  Login : entry / Registered user
+  Login : do / Enter login credentials
+  Login : exit / Valid username and password
+
+  Login --> TeacherChoice
+  Login --> StudentChoice
+}
+
+state "Teacher Choice" as TeacherChoice {
+  entry / Teacher logged in
+  do / Create, edit, or save quiz
+  exit / Action completed
+
+  TeacherChoice --> CreateQuiz
+  TeacherChoice --> EditQuiz
+  TeacherChoice --> SaveQuiz
+  TeacherChoice --> ViewResults
+}
+
+state "Student Choice" as StudentChoice {
+  entry / Student logged in
+  do / Select and answer quiz
+  exit / Quiz submitted
+
+  StudentChoice --> SelectQuiz
+  StudentChoice --> AnswerQuiz
+  StudentChoice --> SubmitQuiz
+  StudentChoice --> ViewResult
+}
+
+state "Create Quiz" as CreateQuiz {
+  entry / New quiz creation
+  do / Define questions, options, etc.
+  exit / Quiz saved or posted
+}
+
+state "Edit Quiz" as EditQuiz {
+  entry / Existing quiz editing
+  do / Modify questions, options, etc.
+  exit / Quiz updated
+
+  CreateQuiz --> SaveQuiz
+  EditQuiz --> SaveQuiz
+}
+
+state "View Results" as ViewResults {
+  entry / Quiz results available
+  do / Review student answers and scores
+  exit / Results reviewed
+
+  TeacherChoice --> ViewResults
+}
+
+state "Select Quiz" as SelectQuiz {
+  entry / Quizzes available for selection
+  do / Choose a quiz to take
+  exit / Quiz selected
+}
+
+state "Answer Quiz" as AnswerQuiz {
+  entry / Quiz questions displayed
+  do / Answer each question
+  exit / Answers submitted
+
+  SelectQuiz --> AnswerQuiz
+}
+
+state "Submit Quiz" as SubmitQuiz {
+  entry / Quiz submission
+  do / Finalize and submit answers
+  exit / Quiz submitted, results viewable
+
+  AnswerQuiz --> SubmitQuiz
+}
+
+state "View Result" as ViewResult {
+  entry / Results available
+  do / Review quiz score and feedback
+  exit / Results reviewed
+
+  SubmitQuiz --> ViewResult
+}
+
+[*] --> RegisterOrLogin
+RegisterOrLogin --> [*]
+
+@enduml

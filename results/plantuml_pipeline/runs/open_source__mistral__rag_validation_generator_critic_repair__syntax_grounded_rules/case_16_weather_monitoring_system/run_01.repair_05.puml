@@ -1,0 +1,70 @@
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle [*] --> Register
+Idle [*] --> Login
+
+state INITIAL_STATE
+INITIAL_STATE: entry/Initial state
+INITIAL_STATE: do/None
+INITIAL_STATE --> Idle : COMPLETION_EVENT
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+Register --> InvalidRegistration : [invalid_registration]
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+Login --> InvalidLogin : [invalid_login]
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state CheckWeather
+CheckWeather : entry/After login
+CheckWeather : do/Check weather for current location or another location
+CheckWeather : exit/Home / Invalid location
+CheckWeather --> ValidLocation : [valid_location]
+CheckWeather --> InvalidLocation : [invalid_location]
+
+state ValidLocation
+ValidLocation : entry/Valid location
+ValidLocation : do/Choose what to check (temperature, humidity, rainfall, pressure, or dew point)
+ValidLocation : exit/Update and show weather information
+ValidLocation --> Home : [user_choice]
+
+state InvalidLocation
+InvalidLocation : entry/Invalid location
+InvalidLocation : do/End process
+InvalidLocation : exit/Abnormal termination
+
+state Home
+Home : entry/Update
+Home : do/Update selected weather information
+Home : exit/View additional weather details / Logout
+Home --> Logout : [logout]
+Home : Update --> CheckWeather : [check_weather]
+
+state Logout
+Logout : entry/Logout
+Logout : do/End session
+Logout : exit/Idle
+Logout --> Idle : COMPLETION_EVENT
+
+state TerminalState
+TerminalState: entry/None
+TerminalState: do/None
+TerminalState --> Idle : COMPLETION_EVENT
+@enduml

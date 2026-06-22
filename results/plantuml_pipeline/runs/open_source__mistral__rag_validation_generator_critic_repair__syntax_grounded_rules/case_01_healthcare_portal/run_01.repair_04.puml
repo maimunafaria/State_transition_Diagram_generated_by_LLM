@@ -1,0 +1,73 @@
+@startuml
+title Healthcare Portal - User Registration and Login State Machine Diagram
+
+state PortalChoice1 <<choice>>
+state PortalChoice2 <<choice>>
+state PortalChoice3 <<choice>>
+state ServiceJoin <<choice>>
+state OwnerJoin <<choice>>
+state RegistrationFailed <<choice>>
+state SignInFailed <<choice>>
+state LoggedInUser <<choice>>
+state HealthInfo <<choice>>
+state Payment <<choice>>
+state Feedback <<choice>>
+state Logout <<choice>>
+
+[*] --> PortalChoice1
+
+PortalChoice1 --> PortalChoice2 : [Healthcare Portal]
+PortalChoice1 --> PortalChoice3 : [New User Registration]
+
+PortalChoice2 --> ServiceCenterRegistration : [Service Center Registration]
+PortalChoice2 --> ServiceJoin : [Registered Service center]
+PortalChoice3 --> CarOwnerRegistration : [New Car Owner Registration]
+PortalChoice3 --> OwnerJoin : [Registered Car Owner]
+
+state "Service Center Registration" as ServiceCenterRegistration
+ServiceCenterRegistration : entry / Unregistered service center
+ServiceCenterRegistration : do / Enter Valid Credentials
+ServiceCenterRegistration : exit / Account registered or RegistrationFailed
+
+state "Service Center Verification" as ServiceCenterVerification
+ServiceCenterVerification : entry / Service Center account registered
+ServiceCenterVerification : do / Verify Service center
+ServiceCenterVerification : exit / Login Service center or RegistrationFailed
+
+state "Service Center Login" as ServiceCenterLogin
+ServiceCenterLogin : entry / Verified Service Center
+ServiceCenterLogin : entry / Service Center not logged in
+ServiceCenterLogin : do / Authenticate Service Center
+ServiceCenterLogin : exit / Logged In Successfully or SignInFailed
+
+state "Service center Home" as ServiceCenterHome
+ServiceCenterHome : entry / Logged in Service Center
+ServiceCenterHome : do / Display home page
+ServiceCenterHome : exit / Enter Damaged parts list or HealthInfo or Payment or Feedback or Logout
+
+state "Entering Damaged parts list" as DamagedParts
+DamagedParts : entry / To enter Damaged parts list
+DamagedParts : do / Preparing and entering damaged parts list
+DamagedParts : exit / Return to Service center home page
+
+state "Updating parts Information" as UpdatingParts
+UpdatingParts : entry / To update changed parts information
+UpdatingParts : do / Update Information
+UpdatingParts : exit / Return to Service center home page
+
+state "Logout" as Logout
+Logout : entry / To Logout
+Logout : do / Logout
+Logout : exit / Logged out Successfully
+
+ServiceCenterRegistration --> RegistrationFailed : [Invalid Credentials]
+ServiceCenterVerification --> RegistrationFailed : [Invalid Service Center]
+ServiceCenterLogin --> SignInFailed : [Invalid Credentials]
+ServiceCenterHome --> HealthInfo : [View News and Expert Content]
+ServiceCenterHome --> Payment : [Select Payment Method]
+ServiceCenterHome --> Feedback : [Provide User Feedback]
+LoggedInUser --> HealthInfo : [Read News and Expert Content]
+LoggedInUser --> Payment : [Process and Validate Insurance for Available Finance-related Services]
+LoggedInUser --> Feedback : [Collect User Feedback after Service Completion]
+ServiceCenterHome --> Logout : [End Session or Continue Using the System]
+@enduml

@@ -1,0 +1,71 @@
+@startuml
+Here is the corrected PlantUML for the Ott Based System Mini Reel:
+
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>> [valid]
+state EditorChoice <<choice>> [valid]
+state ReadFeedbackChoice <<choice>> [valid]
+state EndJoin <<choice>> [invalid]
+
+[*] --> StartChoice
+
+state Register
+Register : do / Fill details
+Register : exit / Registration successful
+
+state Login
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+state "Manage profiles" as ManageProfiles
+ManageProfiles : entry / Admin logged in
+ManageProfiles : do / Manage profile in database
+ManageProfiles : do / Add, delete or edit profiles if necessary
+ManageProfiles : exit / Action completed
+
+state "Invalid user" as InvalidUser
+InvalidUser : entry / Invalid login or invalid registration
+InvalidUser : do / Block entry to system
+InvalidUser : exit / Abnormal termination
+
+AdminChoice --> ManageProfiles
+Login --> EditorChoice
+
+EditorChoice --> Writing
+EditorChoice --> Editing [invalid]
+
+Writing --> Editing
+Editing --> Publishing
+ManageProfiles --> Publishing
+
+Publishing --> Reading
+Reading : do / Watch video
+Reading : exit / Completed watching
+
+Search : entry / Choose to search for videos
+Search : do / Read searched videos
+Search : exit / Completed reading
+
+ReadFeedbackChoice --> Search [valid]
+ReadFeedbackChoice --> Feedback
+
+Feedback : entry / Give feedback
+Feedback : do / Save video in likes list
+Feedback : exit / Feedback entry successful
+
+StartChoice --> Register
+StartChoice --> Login
+
+InvalidUser --> [*]
+
+Publishing --> Reading
+Reading --> Reading
+
+Search --> Search
+Reading --> ReadFeedbackChoice
+
+EndJoin --> [*]
+@enduml

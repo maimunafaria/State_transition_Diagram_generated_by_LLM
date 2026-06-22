@@ -1,0 +1,99 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Green Rides — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display journey details upon user login and destination selection.
+2. The system shall allow users to activate driving mode or choose other options after viewing journey details.
+3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.
+4. The system shall inform relevant authorities in the event of an accident.
+5. The system shall send notifications during driving or in case of an accident.
+6. The system shall allow users to provide feedback upon completion of their journey.
+
+Candidate PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> InitialState
+InitialState : Display home page
+InitialState --> ServiceCenterHome : Logged in
+ServiceCenterHome : Display journey details upon user login and destination selection
+ServiceCenterHome --> JourneyDetails : Destination selected
+JourneyDetails : Allow users to activate driving mode or choose other options after viewing journey details
+JourneyDetails --> DrivingModeActivated : Driving mode activated
+JourneyDetails --> OtherOptions : Other options chosen
+OtherOptions : Enable users to select a place to eat, view its menu, and place an order if they are hungry
+OtherOptions --> FoodSelection : Place to eat selected
+FoodSelection : View menu
+FoodSelection --> MenuViewed : Menu viewed
+MenuViewed : Place order if user is hungry
+MenuViewed --> OrderPlaced : Order placed
+OrderPlaced : Inform relevant authorities in the event of an accident
+OrderPlaced --> Accident : Accident occurred
+Accident : Send notifications during driving or in case of an accident
+Accident --> NotificationSent : Notification sent
+NotificationSent : Allow users to provide feedback upon completion of their journey
+NotificationSent --> Feedback : Feedback provided
+Feedback : Return to initial state
+ServiceCenterHome : Expiry Notification page
+ServiceCenterHome --> ExpiryNotification : Expiry notification received
+ExpiryNotification : Send service request to Car owner
+ExpiryNotification --> ServiceRequestSent : Service request sent
+ExpiryNotification : Return to Service center home page
+ServiceCenterHome : Enter Damaged parts list
+ServiceCenterHome --> EnteringDamagedPartsList : Enter damaged parts list required
+EnteringDamagedPartsList : Preparing and entering damaged parts list
+EnteringDamagedPartsList --> DamagedPartsListEntered : Damaged parts list entered
+EnteringDamagedPartsList : Return to service center home page
+ServiceCenterHome : Updating Information list
+ServiceCenterHome --> UpdatingInformation : Changed parts information available for updating
+UpdatingInformation : Update Information
+UpdatingInformation --> InformationUpdated : Information updated
+UpdatingInformation : Return to Service center home page
+Logout : To Logout
+Logout --> LoggedOut : Logout completed
+Logout : Logged out Successfully
+@enduml
+
+
+Validation issues:
+- missing_final_state_transition (state --> [*])
+- unreachable: LoggedOut, Logout
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: InitialState
+- Unreachable states: LoggedOut, Logout
+- State count: 19
+- Transition count: 17
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Valid PlantUML repair patterns:
+Pattern 1: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 2: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT

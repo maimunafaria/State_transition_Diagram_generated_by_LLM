@@ -1,0 +1,85 @@
+@startuml
+title Healthcare Portal - User Registration and Login State Machine Diagram
+
+state PortalChoice1 <<choice>>
+state PortalChoice2 <<choice>>
+state PortalChoice3 <<choice>>
+state ServiceJoin <<choice>>
+state OwnerJoin <<choice>>
+state RegistrationFailure <<choice>>
+state SignInSuccess <<choice>>
+state FacilityAccess <<choice>>
+state NewsContentReading <<choice>>
+state HealthCheckup <<choice>>
+state PaymentSelection <<choice>>
+state CashPaymentDetails <<choice>>
+state InsurancePaymentCompletion <<choice>>
+state FeedbackCollection <<choice>>
+state Logout
+
+[*] --> PortalChoice1
+
+PortalChoice1 --> PortalChoice2 : [Healthcare Service Center Portal]
+PortalChoice1 --> PortalChoice3 : [Patient Portal]
+
+PortalChoice2 --> ServiceCenterRegistration : [New Healthcare Service Center]
+PortalChoice2 --> RegistrationFailure : [Registration Fails]
+PortalChoice3 --> CarOwnerRegistration : [New Patient]
+PortalChoice3 --> OwnerJoin : [Registered Patient]
+
+state "Healthcare Service Center Registration" as ServiceCenterRegistration
+ServiceCenterRegistration : entry / Unregistered healthcare service center
+ServiceCenterRegistration : do / Enter Valid Credentials
+ServiceCenterRegistration : exit / Account registered
+
+state "Healthcare Service Center Verification" as ServiceCenterVerification
+ServiceCenterVerification : entry / Healthcare service center account registered
+ServiceCenterVerification : do / Verify Healthcare service center
+ServiceCenterVerification : exit / Login Healthcare service center
+
+state "Healthcare Service Center Login" as ServiceCenterLogin
+ServiceCenterLogin : entry / Verified Healthcare Service Center
+ServiceCenterLogin : entry / Healthcare Service Center not logged in
+ServiceCenterLogin : do / Authenticate Healthcare Service Center
+ServiceCenterLogin : exit / Logged In Successfully
+
+state "Healthcare service center Home" as ServiceCenterHome
+ServiceCenterHome : entry / Logged in Healthcare Service Center
+ServiceCenterHome : do / Display home page
+ServiceCenterHome : exit / Enter Facility Access
+ServiceCenterHome : exit / Read News and Expert Content
+ServiceCenterHome : exit / Check Symptoms or Use Fitness Checking Options
+ServiceCenterHome : exit / Logout
+
+state "Entering Facility Access" as FacilityAccess
+FacilityAccess : entry / To enter Facility Access
+FacilityAccess : do / Preparing and entering facility access
+FacilityAccess : exit / Return to Healthcare service center home page
+
+state "Logout" as Logout
+Logout : entry / To Logout
+Logout : do / Logout
+Logout : exit / Logged out Successfully
+
+ServiceCenterRegistration --> ServiceCenterVerification : [Registration Success]
+ServiceCenterVerification --> ServiceCenterLogin : [Login Success]
+ServiceCenterLogin --> ServiceCenterHome : [Login Successful]
+ServiceCenterHome --> RegistrationFailure : [Registration Fails]
+ServiceCenterHome --> FacilityAccess : [Enter Facility Access]
+ServiceCenterHome --> NewsContentReading : [Read News and Expert Content]
+ServiceCenterHome --> HealthCheckup : [Check Symptoms or Use Fitness Checking Options]
+ServiceCenterHome --> PaymentSelection : [Select Payment Method]
+ServiceCenterHome --> CashPaymentDetails : [Cash Payment Details]
+ServiceCenterHome --> InsurancePaymentCompletion : [Insurance Payment Completion]
+ServiceCenterHome --> FeedbackCollection : [Collect User Feedback]
+RegistrationFailure --> PortalChoice1 : [Retry Registration or Exit]
+OwnerJoin --> SignInSuccess : [Sign In Successful]
+SignInSuccess --> FacilityAccess : [Enter Facility Access]
+SignInSuccess --> NewsContentReading : [Read News and Expert Content]
+SignInSuccess --> HealthCheckup : [Check Symptoms or Use Fitness Checking Options]
+SignInSuccess --> PaymentSelection : [Select Payment Method]
+SignInSuccess --> CashPaymentDetails : [Cash Payment Details]
+SignInSuccess --> InsurancePaymentCompletion : [Insurance Payment Completion]
+SignInSuccess --> FeedbackCollection : [Collect User Feedback]
+SignInSuccess --> Logout : [Logout]
+@enduml

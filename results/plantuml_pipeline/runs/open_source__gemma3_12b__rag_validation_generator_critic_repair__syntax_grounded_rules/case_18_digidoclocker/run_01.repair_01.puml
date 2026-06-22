@@ -1,0 +1,57 @@
+@startuml
+title UML State Machine Diagram (Certificate Management)
+
+
+[*] --> Registration
+
+state Registration
+Registration : entry / Get the Registration Details
+Registration : do / Validate the Details
+Registration : exit / Valid or Invalid Registration
+
+
+Registration --> [*] : [Invalid Registration]
+
+
+Registration --> Login : [Valid Registration]
+
+
+state Login
+Login : entry / Get the Login Details
+Login : do / Validate the Login Details
+Login : exit / Valid or Invalid Login
+
+
+Login --> Login : [Invalid Login]
+
+
+Login --> Choice1 : [Valid Login]
+
+
+state Choice1 <<choice>>
+
+Choice1 --> CancelCert : [Cancel the Certificate]
+Choice1 --> RequestCert : [Applying for Certificates]
+Choice1 --> ViewProfile : [Profile Viewing]
+Choice1 --> UpdateProfile : [Profile Updation]
+
+RequestCert --> RequestCert : [Apply for another Certificate if needed]
+RequestCert --> IssueCert : [Certificates requested]
+
+state "Issuing the Certificates" as IssueCert
+IssueCert : entry / Validating Details
+IssueCert : do / Issuing the Certificates
+IssueCert : exit / Updating the Database
+IssueCert --> RequestCert : [Certificate is issued]
+
+
+Choice1 --> EndMerge : [End Session]
+
+state EndMerge <<choice>>
+EndMerge --> [*] : [End]
+
+ViewProfile --> EndMerge : [End]
+UpdateProfile --> EndMerge : [End]
+CancelCert --> EndMerge : [Move to End]
+
+@enduml

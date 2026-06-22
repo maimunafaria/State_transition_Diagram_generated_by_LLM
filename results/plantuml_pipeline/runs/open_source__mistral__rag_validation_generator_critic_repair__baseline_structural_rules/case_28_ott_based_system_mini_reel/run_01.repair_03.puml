@@ -1,0 +1,83 @@
+@startuml
+Here is the corrected PlantUML for the Ott Based System Mini Reel:
+
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>> [valid]
+state EditorChoice <<choice>> [valid]
+state ReadFeedbackChoice <<choice>> [valid]
+state EndJoin <<choice>> [invalid]
+
+[*] --> StartChoice
+
+state Register
+Register : do / Fill details
+Register : exit / Registration successful
+
+state Login
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+state "Manage profiles" as ManageProfiles [valid]
+ManageProfiles : entry / Admin logged in
+ManageProfiles : do / Manage profile in database
+ManageProfiles : do / Add, delete or edit profiles if necessary
+ManageProfiles : exit / Action completed
+
+state Writing [valid]
+Writing : entry / Writer logged in
+Writing : do / Write article
+Writing : exit / Send to editor
+
+state Editing [valid]
+Editing : entry / Editor logged in and article to be edited
+Editing : do / Edit article
+Editing : exit / Send to Publishing
+
+state Publishing [valid]
+Publishing : entry / Admin logged in and article to be approved
+Publishing : do / Choose to approve and publish or reject article
+Publishing : do / Add article to database if approved
+Publishing : exit / Publish article
+
+state Search
+Search : entry / Choose to search for articles
+Search : do / Read searched articles
+Search : exit / Completed reading
+
+state Reading [valid]
+Reading : entry / Published article
+Reading : do / Read article
+Reading : exit / Completed reading
+
+state Feedback [valid]
+Feedback : entry / Reader chosen to give feedback
+Feedback : do / Get feedback
+Feedback : exit / Feedback entry successful
+
+StartChoice --> Register
+StartChoice --> Login
+
+Register --> AdminChoice [valid]
+Login --> EditorChoice [valid]
+
+AdminChoice --> ManageProfiles [valid]
+AdminChoice --> Publishing [valid]
+EditorChoice --> Writing [valid]
+EditorChoice --> Editing [valid]
+
+Writing --> Editing [valid]
+Editing --> Publishing [valid]
+ManageProfiles --> Publishing [valid]
+
+Publishing --> Reading [valid]
+Reading --> Search [valid]
+Reading --> Feedback [valid]
+
+Search --> EndJoin [invalid]
+Feedback --> EndJoin [invalid]
+
+EndJoin --> [*]
+@enduml

@@ -1,0 +1,177 @@
+{
+  "run_id": "open_source__gemma3_12b__rag_validation_generator_critic_repair__syntax_grounded_rules",
+  "case_id": "case_65_plane",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nPlane — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall place a newly acquired plane in an 'Order' state until it is delivered.\n2. The system shall transition a plane from 'Arrival' to 'Preparation' upon its arrival.\n3. The system shall assign a prepared plane to either 'Operations' or 'Maintenance' based on its condition and schedule.\n4. The system shall keep a plane in the 'Operations' state if it still has scheduled flights.\n5. The system shall send a plane to 'Maintenance' when there are no more scheduled flights or maintenance is required.\n6. The system shall transition a plane from 'Maintenance' to 'Preparation' after checking and servicing it until it is ready for operations.\n7. The system shall take a plane out of service if it is no longer available for use.\n8. The system shall remove a plane from its operations when it is permanently withdrawn from service.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Aliases, Notes, and Descriptions\n\nUse this document when state names are long or when the diagram needs annotations.\n\n## Long state names with alias\n\nUse aliases to keep transitions readable when state names are long.\n\n```plantuml\nstate \"Waiting for Payment Confirmation\" as WaitingPayment\nstate \"Order Completed Successfully\" as OrderComplete\n\nWaitingPayment --> OrderComplete : payment confirmed\n```\n\nAlternative alias form:\n\n```plantuml\nstate WaitingPayment as \"Waiting for Payment Confirmation\"\n```\n\n## Notes attached to states\n\nUse notes to add additional explanation without changing the state name.\n\n```plantuml\nnote right of Processing : validates request details\n```\n\nMulti-line notes:\n\n```plantuml\nnote left of Processing\nThe system checks the request,\n\n# PlantUML State Diagram Core Syntax\n\nUse this document when generating a basic UML state transition diagram in PlantUML.\n\n## Diagram wrapper\n\nPlantUML code should be enclosed between `@startuml` and `@enduml`.\n\n```plantuml\n@startuml\n[*] --> Idle\nIdle --> [*]\n@enduml\n```\n\n## Initial and final state\n\nThe initial and final pseudostate is written as `[*]`.\n\nInitial transition:\n\n```plantuml\n[*] --> State1\n```\n\nFinal transition:\n\n```plantuml\nState1 --> [*]\n```\n\n## Transitions\n\nUse arrows between states.\n\n```plantuml\nState1 --> State2\nState1 -> State2\n```\n\nTransitions can include labels after a colon.\n\n```plantuml\nIdle --> LoggedIn : login successful\nLoggedIn --> LoggedOut : logout\n```\n\nLabels may include event, guard, and action information.\n\n```plantuml\n\n# UML State Machine Core Concepts\n\nUse this document to decide what should become a state and what should become a transition.\n\n## Purpose\n\nA state machine diagram describes how a system, object, or controller behaves over time. It is useful when the object reacts differently depending on its current condition.\n\n## State\n\nA state is not just a variable value. In a state machine, a state means an abstract condition where the system reacts to events in a particular way.\n\nGood state names usually describe stable conditions:\n\n```text\nIdle\nWaiting for Payment\nVerifying User\nOrder Confirmed\nSession Active\n```\n\nAvoid making every action a state. Actions such as \"click button\" or \"enter password\" are often better as transition labels unless the system remains in that condition.\n\n# UML State Diagram Usage Guidelines\n\nUse this document to decide whether a requirement should be modeled as a state machine and how much detail to include.\n\n## When state diagrams are useful\n\nState diagrams are most useful when the same system or object behaves differently depending on its current state.\n\nGood candidates:\n\n```text\nATM sessions\nlogin/authentication flows\norder/payment lifecycles\ndevice controllers\napproval workflows\nbooking or registration workflows\nalarm/notification systems\n```\n\n## Scope\n\nA state diagram should focus on the lifecycle of one system, object, session, controller, or business process.\n\nAvoid mixing unrelated lifecycles into one diagram unless the requirement clearly describes them as one process.\n\n## Observability\n\nExample requirement:\nTextile — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow customers to create an account by filling in required details.\n2. The system shall enable customers to place orders for garments once they are registered.\n3. The system shall send out sample materials if a customer needs them after placing an order.\n\nReference PlantUML:\n```plantuml\n@startuml\n\n[*] --> CustomerRegistration\nstate Choice1 <<choice>>\nstate Choice2 <<choice>>\nCustomerRegistration : entry / Start state\nCustomerRegistration : do / Fill in required details\nCustomerRegistration : exit / Getting garment orders\n\nCustomerRegistration --> GettingGarmentOrders : registration complete\n\nGettingGarmentOrders : entry / Customer registration\nGettingGarmentOrders : do / Place the orders\nGettingGarmentOrders : exit / Sampling / Stock checking\n\nGettingGarmentOrders --> Sampling : sampling required\nGettingGarmentOrders --> StockChecking : check stock\n\nSampling : entry / Getting garment orders\nSampling : do / Send out sample materials while ordering\nSampling : exit / decision\n\nSampling --> Choice1 : proceed\nStockChecking --> Choice1\n\nStockChecking : entry / Getting garment orders\nStockChecking : do / Check availability of raw material\nStockChecking : exit / decision making\n\nChoice1 --> PurchasingRawMaterials : not in stock\nChoice1 --> ProcessingRawMaterials : in stock\n\nPurchasingRawMaterials : entry / Stock checking\nPurchasingRawMaterials : do / Buy raw materials\nPurchasingRawMaterials : exit / Production of garments\n\nProcessingRawMaterials : entry / Stock checking\nProcessingRawMaterials : do / Processing\nProcessingRawMaterials : exit / Production of garments\nProcessingRawMaterials --> Choice2\nPurchasingRawMaterials --> Choice2\nChoice2 --> ProductionOfGarments\n\nProductionOfGarments : entry / Purchasing or processing of raw materials\nProductionOfGarments : do / Manufacturing\nProductionOfGarments : exit / Product checking\n\nProductionOfGarments --> ProductChecking\n\nProductChecking : entry / Production of garments\nProductChecking : do / Checking for defects and clearance\nProductChecking : exit / Receiving the ordered garments\n\nProductChecking --> ReceivingOrderedGarments\n\nReceivingOrderedGarments : entry / Product checking\nReceivingOrderedGarments : do / Garment delivered\nReceivingOrderedGarments : exit / Billing\n\nReceivingOrderedGarments --> Billing\n\nBilling : entry / Receiving the ordered garments\nBilling : do / Making payments\nBilling : exit / Report generation\n\nBilling --> ReportGeneration\n\nReportGeneration : entry / Billing\nReportGeneration : do / Giving feedback\nReportGeneration : exit / final state\n\nReportGeneration --> [*]\n\n@enduml\n```\n\nExample requirement:\nArt Gallery Mananement System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall verify login credentials upon submission.\n2. The system shall display an error message and prevent further interaction if login details are incorrect.\n3. The system shall allow users to view products or update their information after a successful login.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Chart Diagram\n\n\n[*] --> Login\n\nstate Login\nLogin : entry / getInfo\nLogin : do / verifyData\nLogin : exit / verified\n\nstate LoginDecision <<choice>>\nLogin --> LoginDecision\n\nstate \"Valid Login\" as ValidLogin\nValidLogin : entry / contain Info\nValidLogin : do / allow Access to system\nValidLogin : exit / gallery Entry\n\nstate \"Invalid Login\" as InvalidLogin\nInvalidLogin : entry / wrong Info\nInvalidLogin : do / display Error message\nInvalidLogin : exit / return To Start\n\nLoginDecision --> ValidLogin\nLoginDecision --> InvalidLogin\n\nstate NavChoice <<choice>>\nValidLogin --> NavChoice\n\nstate Gallery\nGallery : entry / show Products\nGallery : do / allow to select Products\nGallery : exit / save Products\n\nstate Update\nUpdate : entry / contain Info\nUpdate : do / take New Info\nUpdate : exit / save new Info\n\nNavChoice --> Gallery\nNavChoice --> Update\n\nUpdate --> [*]\n\nstate Order\nOrder : entry / select Items\nOrder : do / allowto order If products In Stock\nOrder : exit / verification\n\nstate Cart\nCart : entry / contain Selected Items\nCart : do / all billing Info\nCart : exit / payment Method\n\nGallery --> Order\nOrder --> Cart\n\nstate Payment\nPayment : entry / get Payment Method\nPayment : do / confirm Payment\nPayment : exit / verify\n\nCart --> Payment\n\nstate PayDecision <<choice>>\nPayment --> PayDecision\n\nstate \"Valid Payment\" as ValidPayment\nValidPayment : entry / payment Method\nValidPayment : do / get Cash\nValidPayment : exit / confirmation of product\n\nstate \"Invalid Payment\" as InvalidPayment\nInvalidPayment : entry / wrong Entry\nInvalidPayment : do / error Message\nInvalidPayment : exit / return\n\nPayDecision --> ValidPayment\nPayDecision --> InvalidPayment\n\n\nstate Delivery\nDelivery : entry / take out Order\nDelivery : do / deliver Product\nDelivery : exit / exit System\n\nValidPayment --> Delivery\nDelivery --> [*]\n\nInvalidPayment --> [*]\n\n@enduml\n```\n\nExample requirement:\nFor Online College Magazine System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall require a person to either create an account or log in.\n2. The system shall allow admins to add, edit, or remove user profiles.\n3. The system shall enable admins to review articles and decide on their publication or rejection.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Machine Diagram\n\nstate StartChoice <<choice>>\nstate AdminChoice <<choice>>\nstate EditorChoice <<choice>>\nstate ReadFeedbackChoice <<choice>>\nstate EndJoin <<choice>>\n\n[*] --> StartChoice\n\nstate Register\nRegister : do / Fill details\nRegister : exit / Registration successful\n\nstate Login\nLogin : entry / Registered user\nLogin : do / Enter login credentials\nLogin : exit / Valid username and password\n\nstate \"Manage profiles\" as ManageProfiles\nManageProfiles : entry / Admin logged in\nManageProfiles : do / Manage profile in database\nManageProfiles : do / Add, delete or edit profiles if necessary\nManageProfiles : exit / Action completed\n\nstate \"Invalid user\" as InvalidUser\nInvalidUser : entry / Invalid login or invalid registration\nInvalidUser : do / Block entry to system\nInvalidUser : exit / Abnormal termination\n\nstate Writing\nWriting : entry / Writer logged in\nWriting : do / Write article\nWriting : exit / Send to editor\n\nstate Editing\nEditing : entry / Editor logged in and article to be edited\nEditing : do / Edit article\nEditing : exit / Send to moderator/admin\n\nstate Publishing\nPublishing : entry / Admin logged in and article to be approved\nPublishing : do / Choose to approve and publish or reject article\nPublishing : do / Add article to database if approved\nPublishing : exit / Publish article\n\nstate Search\nSearch : entry / Choose to search for articles\nSearch : do / Read searched articles\nSearch : exit / Completed reading\n\nstate Reading\nReading : entry / Published article\nReading : do / Read article\nReading : exit / Completed reading\n\nstate Feedback\nFeedback : entry / Reader chosen to give feedback\nFeedback : do / Get feedback\nFeedback : exit / Feedback entry successful\n\nStartChoice --> Register\nStartChoice --> Login\n\nRegister --> AdminChoice\nLogin --> EditorChoice\n\nAdminChoice --> ManageProfiles\nAdminChoice --> InvalidUser\n\nEditorChoice --> Writing\nEditorChoice --> Editing\nEditorChoice --> InvalidUser\n\nWriting --> Editing\nEditing --> Publishing\nManageProfiles --> Publishing\n\nInvalidUser --> [*]\n\nPublishing --> Reading\nReading --> Reading\n\nSearch --> Search\nReading --> ReadFeedbackChoice\n\nReadFeedbackChoice --> Search\nReadFeedbackChoice --> Feedback\n\nFeedback --> EndJoin\nSearch --> EndJoin\n\nEndJoin --> [*]\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Plane — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall place a newly acquired plane in an 'Order' state until it is delivered.\n2. The system shall transition a plane from 'Arrival' to 'Preparation' upon its arrival.\n3. The system shall assign a prepared plane to either 'Operations' or 'Maintenance' based on its condition and schedule.\n4. The system shall keep a plane in the 'Operations' state if it still has scheduled flights.\n5. The system shall send a plane to 'Maintenance' when there are no more scheduled flights or maintenance is required.\n6. The system shall transition a plane from 'Maintenance' to 'Preparation' after checking and servicing it until it is ready for operations.\n7. The system shall take a plane out of service if it is no longer available for use.\n8. The system shall remove a plane from its operations when it is permanently withdrawn from service.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__syntax_grounded_rules\\case_65_plane\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "Order",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 6,
+    "transition_count": 8
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__gemma3_12b__rag",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": true,
+      "repair_mode": "syntax_grounded",
+      "repair_model_name": "gemma3:12b",
+      "previous_score": 1,
+      "repair_score": 0,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 6,
+        "repaired_state_count": 6,
+        "current_transition_count": 9,
+        "repaired_transition_count": 10,
+        "min_allowed_state_count": 4,
+        "min_allowed_transition_count": 6,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 1,
+      "strict_state_diagram_valid": true,
+      "remaining_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])"
+        ],
+        "initial_state": "Order",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 6,
+        "transition_count": 8
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__syntax_grounded_rules\\case_65_plane\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "repair_mode": "syntax_grounded",
+      "repair_model_name": "gemma3:12b",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "Order",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 6,
+        "transition_count": 8
+      },
+      "strict_state_diagram_valid": true,
+      "accepted": true,
+      "previous_score": 1,
+      "repair_score": 0,
+      "preservation": {
+        "current_state_count": 6,
+        "repaired_state_count": 6,
+        "current_transition_count": 9,
+        "repaired_transition_count": 10,
+        "min_allowed_state_count": 4,
+        "min_allowed_transition_count": 6,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__syntax_grounded_rules\\case_65_plane\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__syntax_grounded_rules\\case_65_plane\\run_01.repair_01.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 6,
+    "state_fn": 4,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 8,
+    "transition_fn": 5,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 6,
+    "state_fn_relaxed": 4,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 8,
+    "transition_fn_relaxed": 5,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 8,
+    "transition_fn_semantic": 5,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  },
+  "reused_base_run": {
+    "run_id": "open_source__gemma3_12b__rag",
+    "strategy": "rag",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag\\case_65_plane\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag\\case_65_plane\\run_01.prompt.txt"
+  }
+}

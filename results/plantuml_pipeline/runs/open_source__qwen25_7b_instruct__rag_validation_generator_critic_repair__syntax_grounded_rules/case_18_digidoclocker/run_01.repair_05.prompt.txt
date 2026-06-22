@@ -1,0 +1,126 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram (Digidoclocker)
+
+[*] --> Registration
+
+state Registration {
+  [*] --> CitizenLogin
+  CitizenLogin : entry / Get Citizen Login Details
+  CitizenLogin : do / Validate Login Details
+  CitizenLogin : exit / Valid or Invalid Login
+}
+
+Registration --> [*] : [Invalid Registration]
+
+Registration --> CitizenDashboard : [Valid Registration]
+
+state CitizenDashboard <<choice>>
+
+Choice1 --> UploadDocuments : [Upload Documents]
+Choice1 --> ViewProfile : [View Profile]
+Choice1 --> ApplyForCertificate : [Apply for Certificate]
+
+state "Upload Documents" as UploadDocuments
+UploadDocuments : entry / Get Document Details
+UploadDocuments : do / Validate Document Details
+UploadDocuments : exit / Document Uploaded
+
+UploadDocuments --> CitizenDashboard : [Document Uploaded Successfully]
+
+state ViewProfile {
+  [*] --> ViewProfileDetails : [View Profile]
+  ViewProfileDetails : entry / Display Profile
+  ViewProfileDetails : do / Show Profile Information
+  ViewProfileDetails : exit / Exit from Profile Viewing
+}
+
+ViewProfile --> CitizenDashboard
+
+state ApplyForCertificate <<choice>>
+
+Choice1 --> RequestCertificate : [Request Certificate]
+Choice1 --> ReapplyForCertificate : [Reapply for Certificate]
+
+state "Request Certificate" as RequestCertificate
+RequestCertificate : entry / Get Certificate Details
+RequestCertificate : do / Validate Certificate Details
+RequestCertificate : exit / Certificate Requested
+
+RequestCertificate --> CitizenDashboard : [Certificate Requested Successfully]
+
+state "Reapply for Certificate" as ReapplyForCertificate
+ReapplyForCertificate : entry / Send Request to Issuer
+ReapplyForCertificate : do / Wait for Response
+ReapplyForCertificate : exit / Continue Requesting Certificates
+
+CitizenDashboard --> [*] : [Logout]
+@enduml
+
+
+Validation issues:
+- multiple_initial_state_transitions (Registration, CitizenLogin, ViewProfileDetails)
+- orphan: Reapply for Certificate
+- orphan_states_detected
+- choice_node_without_outgoing_transitions (ApplyForCertificate)
+- choice_node_without_outgoing_transitions (CitizenDashboard)
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 13
+- Transition count: 9
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Valid PlantUML repair patterns:
+Pattern 1: exactly one top-level initial transition
+[*] --> INITIAL_STATE
+
+' Replace every additional [*] --> OTHER_STATE with a normal supported transition
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Pattern 2: connect a requirement-supported orphan state
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Pattern 3: valid guarded choice node
+state DECISION_NODE <<choice>>
+SOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]

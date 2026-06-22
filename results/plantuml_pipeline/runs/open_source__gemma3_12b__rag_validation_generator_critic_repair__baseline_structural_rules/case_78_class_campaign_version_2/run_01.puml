@@ -1,0 +1,26 @@
+@startuml
+title Campaign State Machine
+
+[*] --> Commissioned : /assignManager; assignStaff
+Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+
+state Active {
+  state PreparingAdverts
+  state ApprovingAndScheduling
+  state RunningAdverts
+  state ExtendingOrAdjusting
+
+  Active --> PreparingAdverts : /prepareAdverts
+  PreparingAdverts --> ApprovingAndScheduling : advertsApproved\n/authorize
+  ApprovingAndScheduling --> RunningAdverts : confirmSchedule
+  RunningAdverts --> PreparingAdverts : /extendCampaign; /modifyBudget
+  RunningAdverts --> ExtendingOrAdjusting : /adjustCampaign
+  ExtendingOrAdjusting --> RunningAdverts : /resumeCampaign
+}
+
+Active --> Completed : campaignCompleted\n/prepareFinalStatement
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > 0]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+@enduml

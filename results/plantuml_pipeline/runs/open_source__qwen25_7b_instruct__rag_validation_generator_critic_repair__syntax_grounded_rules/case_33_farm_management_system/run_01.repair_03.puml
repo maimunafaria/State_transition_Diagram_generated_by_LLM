@@ -1,0 +1,86 @@
+@startuml
+title UML State Chart Diagram
+
+[*] --> Login
+
+state Login {
+  [*] --> ValidLogin
+  ValidLogin : entry / verifyData
+  ValidLogin : do / allow Access to system
+  ValidLogin : exit / mainArea
+}
+
+state MainArea <<choice>> {
+  MainArea --> MarketConditions : [valid]
+  MainArea --> PestControlHelp : [valid]
+  MainArea --> SoilSuggestions : [valid]
+  MainArea --> WeatherInsights : [valid]
+  MainArea --> LabourAvailability : [valid]
+}
+
+state MarketConditions {
+  ValidLogin --> MarketConditions
+}
+
+state PestControlHelp {
+  ValidLogin --> Techniques : provideTechniques
+  Techniques : entry / provideTechniques
+  Techniques : do / showTechniques
+  Techniques : exit / mainArea
+}
+
+state SoilSuggestions {
+  ValidLogin --> Suggestions : provideSuggestions
+  Suggestions : entry / receiveSoilInfo
+  Suggestions : do / suggestCrops
+  Suggestions : exit / mainArea
+}
+
+state WeatherInsights {
+  ValidLogin --> Insights : provideInsights
+  Insights : entry / receiveLocation
+  Insights : do / showWeather
+  Insights : exit / mainArea
+}
+
+state LabourAvailability {
+  ValidLogin --> Availability : provideAvailability
+  Availability : entry / receiveLocation
+  Availability : do / showLabour
+  Availability : exit / mainArea
+}
+
+Login --> ValidLogin
+
+ValidLogin --> MainArea
+
+MainArea --> MarketConditions : [valid]
+MainArea --> PestControlHelp : [valid]
+MainArea --> SoilSuggestions : [valid]
+MainArea --> WeatherInsights : [valid]
+MainArea --> LabourAvailability : [valid]
+
+PestControlHelp --> Techniques : provideTechniques
+Techniques : exit / mainArea
+
+SoilSuggestions --> Suggestions : provideSuggestions
+Suggestions : exit / mainArea
+
+WeatherInsights --> Insights : provideInsights
+Insights : exit / mainArea
+
+LabourAvailability --> Availability : provideAvailability
+Availability : exit / mainArea
+
+Techniques --> [*] : COMPLETION_EVENT
+
+Suggestions --> [*] : COMPLETION_EVENT
+
+Insights --> [*] : COMPLETION_EVENT
+
+Availability --> [*] : COMPLETION_EVENT
+
+[*] --> Logout
+
+Logout : entry / endSession
+@enduml

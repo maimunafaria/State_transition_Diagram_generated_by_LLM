@@ -1,0 +1,101 @@
+@startuml
+title Campaign State Machine Diagram
+
+state "Idle" as Idle
+[*] --> Idle : entry/No campaign assigned
+Idle : do/Remain in same state
+Idle : exit/Assign manager and staff / Start campaign
+
+state "Start Campaign" as StartCampaign
+StartCampaign : entry/Manager and staff assigned
+StartCampaign : do/Start campaign
+StartCampaign : exit/Activate campaign
+
+state "Activate Campaign" as ActivateCampaign
+[*] --> ActivateCampaign : entry/Campaign activated
+ActivateCampaign : do/Prepare adverts
+ActivateCampaign : exit/Approve adverts
+
+state "Prepare Adverts" as PrepareAdverts
+PrepareAdverts : entry/Adverts prepared
+PrepareAdverts : do/Approve adverts
+PrepareAdverts : exit/Schedule adverts
+
+state "Schedule Adverts" as ScheduleAdverts
+[*] --> ScheduleAdverts : entry/Adverts scheduled
+ScheduleAdverts : do/Run adverts
+ScheduleAdverts : exit/Adjust campaign
+
+state "Adjust Campaign" as AdjustCampaign
+AdjustCampaign : entry/Campaign adjusted
+AdjustCampaign : do/Run adverts
+AdjustCampaign : exit/Complete campaign
+
+state "Complete Campaign" as CompleteCampaign
+[*] --> CompleteCampaign : entry/Campaign completed
+CompleteCampaign : do/Prepare final statement
+CompleteCampaign : exit/Pay campaign
+
+state "Pay Campaign" as PayCampaign
+PayCampaign : entry/Pay campaign
+PayCampaign : do/Handle payment
+PayCampaign : exit/Archive campaign
+
+state "Archive Campaign" as ArchiveCampaign
+[*] --> ArchiveCampaign : entry/Campaign archived
+ArchiveCampaign : do/Release staff and managers
+ArchiveCampaign : exit/End
+
+state "Refund Campaign" as RefundCampaign
+RefundCampaign : entry/Refund campaign
+RefundCampaign : do/Generate refund
+RefundCampaign : exit/Wait for balance
+
+state "Wait for Balance" as WaitForBalance
+[*] --> WaitForBalance : entry/Wait for balance
+WaitForBalance : do/Wait for balance
+WaitForBalance : exit/Mark campaign as paid
+
+state "Mark Campaign as Paid" as MarkCampaignAsPaid
+MarkCampaignAsPaid : entry/Mark campaign as paid
+MarkCampaignAsPaid : do/Mark campaign as paid
+MarkCampaignAsPaid : exit/End
+
+[*] --> StartCampaign : entry/Manager and staff assigned
+StartCampaign : do/Start campaign
+StartCampaign : exit/Activate campaign
+
+state "J1" as J1
+[*] --> J1 : choice
+J1 : [valid] --> ActivateCampaign : entry/Campaign activated
+J1 : [invalid] --> ScheduleAdverts : entry/Adverts scheduled
+
+state "J2" as J2
+[*] --> J2 : choice
+J2 : [valid] --> PrepareAdverts : entry/Adverts prepared
+J2 : [invalid] --> CompleteCampaign : entry/Campaign completed
+
+state "J3" as J3
+[*] --> J3 : choice
+J3 : [valid] --> AdjustCampaign : entry/Campaign adjusted
+J3 : [invalid] --> RefundCampaign : entry/Refund campaign
+
+state "J4" as J4
+[*] --> J4 : choice
+J4 : [valid] --> PayCampaign : entry/Pay campaign
+J4 : [invalid] --> WaitForBalance : entry/Wait for balance
+
+state "J5" as J5
+[*] --> J5 : choice
+J5 : [valid] --> ArchiveCampaign : entry/Campaign archived
+J5 : [invalid] --> MarkCampaignAsPaid : entry/Mark campaign as paid
+
+Idle --> StartCampaign : Assign manager and staff / Start campaign
+CompleteCampaign --> [*] : Pay campaign
+ArchiveCampaign --> [*] : End
+WaitForBalance --> [*] : Mark campaign as paid
+PayCampaign --> ArchiveCampaign : Archive campaign
+RefundCampaign --> WaitForBalance : Wait for balance
+ScheduleAdverts --> AdjustCampaign : Adjust campaign
+
+@enduml

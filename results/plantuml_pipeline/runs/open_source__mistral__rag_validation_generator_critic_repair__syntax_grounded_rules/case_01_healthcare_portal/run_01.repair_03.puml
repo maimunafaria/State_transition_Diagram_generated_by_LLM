@@ -1,0 +1,82 @@
+@startuml
+title Healthcare Portal - User Login State Machine Diagram
+
+state InitialState <<choice>>
+state RegistrationChoice1 <<choice>>
+state RegistrationChoice2 <<choice>>
+state SignInChoice1 <<choice>>
+state SignInChoice2 <<choice>>
+state FacilityAccess
+state NewsContent
+state HealthCheck
+state PaymentMethodSelection
+state CashPaymentDetails
+state InsurancePayment
+state FeedbackCollection
+state Logout
+
+InitialState --> RegistrationChoice1
+InitialState --> SignInChoice1
+
+RegistrationChoice1 --> Registration1 : [New User]
+RegistrationChoice1 --> Registration2 : [Existing User]
+SignInChoice1 --> SignIn1 : [Registered User with Invalid Credentials]
+SignInChoice1 --> SignIn2 : [Registered User with Valid Credentials]
+
+state "User Registration" as Registration1
+Registration1 : entry / Unregistered user
+Registration1 : do / Enter Valid Credentials and Personal Information
+Registration1 : exit / Account registered
+
+state "User Verification" as UserVerification
+UserVerification : entry / User account registered
+UserVerification : do / Verify User
+UserVerification : exit / Login User
+
+state "User Login" as UserLogin
+UserLogin : entry / Verified User
+UserLogin : entry / User not logged in
+UserLogin : do / Authenticate User
+UserLogin : exit / Logged In Successfully
+
+state "User Home" as UserHome
+UserHome : entry / Logged in User
+UserHome : do / Display home page
+UserHome : exit / Access Facilities
+UserHome : exit / Read News and Expert Content
+UserHome : exit / Check Health-related Information
+UserHome : exit / Continue Session or Finish Session after Viewing Result
+
+state "Facility Access" as FacilityAccess
+FacilityAccess : entry / Logged in User
+FacilityAccess : do / Provide access to available facilities
+FacilityAccess : exit / Return to User Home
+
+state "Health Check" as HealthCheck
+HealthCheck : entry / To check symptoms or use fitness checking options
+HealthCheck : do / Process and Validate Insurance for Health-related Services
+HealthCheck : exit / Return to User Home
+
+state "Payment Method Selection" as PaymentMethodSelection
+PaymentMethodSelection : entry / To select payment methods (cash or insurance) for drug and supplement purchases
+PaymentMethodSelection : do / Select Payment Method
+PaymentMethodSelection : exit / Return to User Home
+
+state "Cash Payment Details" as CashPaymentDetails
+CashPaymentDetails : entry / Chosen cash payment method
+CashPaymentDetails : do / Inform user about cash payment details
+CashPaymentDetails : exit / Return to User Home
+
+state "Insurance Payment" as InsurancePayment
+InsurancePayment : entry / To process insurance-based payments for doctor consultations
+InsurancePayment : do / Check Payment with Insurance and Complete the Payment Process
+InsurancePayment : exit / Return to User Home
+
+state "Feedback Collection" as FeedbackCollection
+FeedbackCollection : entry / After service completion
+FeedbackCollection : do / Collect user feedback
+FeedbackCollection : exit / Return to User Home
+
+Logout --> InitialState : COMPLETION_EVENT
+
+@enduml

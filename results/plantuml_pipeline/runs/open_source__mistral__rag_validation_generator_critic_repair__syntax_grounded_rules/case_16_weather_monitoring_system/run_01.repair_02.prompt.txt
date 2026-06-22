@@ -1,0 +1,122 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.
+
+Candidate PlantUML:
+@startuml
+Here is the repaired PlantUML:
+
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Login / Register
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state CheckWeather
+CheckWeather : entry/After login
+CheckWeather : do/Check weather for current location or another location
+CheckWeather : exit/Home / Invalid location
+
+state ValidLocation
+ValidLocation : entry/Valid location
+ValidLocation : do/Choose what to check (temperature, humidity, rainfall, pressure, or dew point)
+ValidLocation : exit/Update and show weather information
+
+state InvalidLocation
+InvalidLocation : entry/Invalid location
+InvalidLocation : do/End process
+InvalidLocation : exit/Abnormal termination
+
+state Home
+Home : entry/Update
+Home : do/Update selected weather information
+Home : exit/View additional weather details / Logout
+
+state Logout
+Logout : entry/Logout
+Logout : do/End session
+Logout : exit/Idle
+
+CheckWeather --> ValidLocation : [valid]
+ValidLocation --> Home : [user_choice]
+InvalidLocation --> InvalidLocation : [invalid]
+Home --> Logout : [logout]
+@enduml
+
+
+Validation issues:
+- missing_initial_state_transition ([*] --> state)
+- missing_final_state_transition (state --> [*])
+- orphan: Idle, InvalidLogin, InvalidRegistration, Login, Register
+- orphan_states_detected
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 10
+- Transition count: 4
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Valid PlantUML repair patterns:
+Pattern 1: missing initial transition
+[*] --> INITIAL_STATE
+
+Pattern 2: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 3: connect a requirement-supported orphan state
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT
