@@ -1,0 +1,79 @@
+@startuml
+title UML State Chart Diagram
+
+[*] --> Login
+
+state Login {
+  [*] --> ValidLogin
+  ValidLogin : entry / verifyData
+  ValidLogin : do / allow Access to system
+  ValidLogin : exit / MainArea
+}
+
+state MainArea <<choice>> {
+  Login --> MainArea
+  MainArea --> MarketConditions : showMarketConditions
+  MainArea --> PestControlHelp : provideTechniques
+  MainArea --> SoilSuggestions : provideSuggestions
+  MainArea --> WeatherInsights : provideInsights
+  MainArea --> LabourAvailability : provideAvailability
+}
+
+state MarketConditions {
+  [*] --> [*]
+}
+
+state PestControlHelp {
+  ValidLogin --> Techniques : requirePhoto
+  Techniques : entry / provideTechniques
+  Techniques : do / showTechniques
+  Techniques : exit / MainArea
+}
+
+state SoilSuggestions {
+  ValidLogin --> Suggestions : receiveSoilInfo
+  Suggestions : entry / suggestCrops
+  Suggestions : do / suggestCrops
+  Suggestions : exit / MainArea
+}
+
+state WeatherInsights {
+  ValidLogin --> Insights : receiveLocation
+  Insights : entry / showWeather
+  Insights : do / showWeather
+  Insights : exit / MainArea
+}
+
+state LabourAvailability {
+  ValidLogin --> Availability : receiveLocation
+  Availability : entry / showLabour
+  Availability : do / showLabour
+  Availability : exit / MainArea
+}
+
+Login --> ValidLogin
+
+ValidLogin --> MainArea
+
+MarketConditions --> [*]
+
+PestControlHelp --> Techniques
+
+SoilSuggestions --> Suggestions
+
+WeatherInsights --> Insights
+
+LabourAvailability --> Availability
+
+Techniques --> [*]
+
+Suggestions --> [*]
+
+Insights --> [*]
+
+Availability --> [*]
+
+[*] --> Logout
+
+Logout : entry / endSession
+@enduml

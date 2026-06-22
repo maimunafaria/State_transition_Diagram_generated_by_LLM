@@ -1,0 +1,134 @@
+You are a PlantUML state-machine repair assistant.
+
+Your task is to fix all listed validation issues while preserving the rest of the diagram.
+
+Follow these priorities in order:
+
+1. Fix every listed validation issue.
+2. Preserve the behavior described in the requirement.
+3. Make the smallest possible edit.
+4. Keep unaffected states, transitions, and labels unchanged.
+5. Do not introduce any new validation issue.
+
+Requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Candidate PlantUML:
+@startuml
+[*] --> LoggedIn
+
+state LoggedIn {
+  [*] --> Dashboard
+  Dashboard --> Settings : open settings
+  Settings --> Dashboard : back
+  Dashboard --> ViewStatus : view status
+  ViewStatus --> ViewStatus : check status
+  ViewStatus --> CancelApp : cancel application
+  ViewStatus --> ModifyDetails : modify details
+  ViewStatus --> ViewDetails : view details
+  ViewDetails --> ViewPurpose : view purpose of application
+  ViewPurpose --> ViewPurpose : update status based on document check
+  ViewPurpose --> Feedback : give feedback
+}
+
+LoggedIn --> [*] : logout
+
+state CancelApp {
+  CancelApp --> ViewStatus : back to view status
+}
+
+state ModifyDetails {
+  ModifyDetails --> ViewDetails : back to view details
+  ModifyDetails --> ViewPurpose : view purpose of application
+  ModifyDetails --> Feedback : give feedback
+  ModifyDetails --> ViewStatus : update status
+}
+
+state ViewDetails {
+  ViewDetails --> ViewPurpose : view purpose of application
+  ViewDetails --> Feedback : give feedback
+  ViewDetails --> ViewStatus : update status
+}
+
+state ViewPurpose {
+  ViewPurpose --> ViewStatus : update status
+}
+
+Feedback --> ViewStatus
+
+@enduml
+
+
+Validation issues:
+- multiple_initial_state_transitions (LoggedIn, Dashboard)
+- duplicate_transitions_detected (1)
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 9
+- Transition count: 19
+- Duplicate transition count: 1
+
+Issue-specific repair instructions:
+Issue: multiple_initial_state_transitions
+
+Repair objective:
+Keep exactly one top-level initial transition and connect other entry states normally.
+
+Valid syntax pattern:
+[*] --> INITIAL_STATE
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Restriction:
+Do not create a choice node or new state merely to remove an extra initial transition.
+
+Issue: duplicate_transitions_detected
+
+Repair objective:
+Keep only one transition for each duplicated source-target-event combination.
+
+Valid syntax pattern:
+SOURCE_STATE --> TARGET_STATE : SUPPORTED_EVENT
+
+Restriction:
+Remove an identical duplicate without changing unrelated transitions; merge labels only when both meanings are requirement-supported.
+
+General repair constraints:
+
+* Apply only the repair instructions corresponding to the listed validation issues.
+* Fix every occurrence of each listed issue.
+* Prefer using existing states and transitions.
+* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.
+* Do not remove a requirement-supported state only to make the diagram valid.
+* Do not rename unaffected states.
+* Do not change unaffected transition labels.
+* Do not redesign or simplify unaffected parts of the diagram.
+* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.
+* Never copy placeholder identifiers into the corrected diagram.
+* When several repairs are valid, choose the repair that changes the fewest lines.
+
+Before producing the answer, silently verify:
+
+* Every listed validation issue has been fixed.
+* No new structural violation has been introduced.
+* Exactly one top-level initial transition exists.
+* At least one valid final transition exists.
+* Every retained state is connected and reachable.
+* No duplicate transition remains.
+* Unaffected diagram behavior is unchanged.
+
+Output only one corrected PlantUML diagram.
+Do not output markdown fences, explanations, comments, or analysis.

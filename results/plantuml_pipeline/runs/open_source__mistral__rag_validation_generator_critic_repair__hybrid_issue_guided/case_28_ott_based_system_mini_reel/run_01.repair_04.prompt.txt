@@ -1,0 +1,186 @@
+You are a PlantUML state-machine repair assistant.
+
+Your task is to fix all listed validation issues while preserving the rest of the diagram.
+
+Follow these priorities in order:
+
+1. Fix every listed validation issue.
+2. Preserve the behavior described in the requirement.
+3. Make the smallest possible edit.
+4. Keep unaffected states, transitions, and labels unchanged.
+5. Do not introduce any new validation issue.
+
+Requirement:
+Ott Based System Mini Reel — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall enable a user to watch videos after they have created an account.
+3. The system shall permit a user to upload videos.
+4. The system shall allow a user to save videos in their likes list during video viewing.
+5. The system shall enable a user to view their saved videos from the likes list.
+6. The system shall allow a user to enter the discussion option.
+
+Candidate PlantUML:
+@startuml
+Here is the final PlantUML for the Online College Magazine System:
+
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>>
+state EditorChoice <<choice>>
+state ReadFeedbackChoice <<choice>>
+state EndJoin <<choice>>
+
+[*] --> StartChoice
+
+state Register
+Register : do / Fill details
+Register : exit / Registration successful
+
+state Login
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+state "Manage profiles" as ManageProfiles
+ManageProfiles : entry / Admin logged in
+ManageProfiles : do / Manage profile in database
+ManageProfiles : do / Add, delete or edit profiles if necessary
+ManageProfiles : exit / Action completed
+
+state "Invalid user" as InvalidUser
+InvalidUser : entry / Invalid login or invalid registration
+InvalidUser : do / Block entry to system
+InvalidUser : exit / Abnormal termination
+
+state Writing
+Writing : entry / Writer logged in
+Writing : do / Write article
+Writing : exit / Send to editor
+
+state Editing
+Editing : entry / Editor logged in and article to be edited
+Editing : do / Edit article
+Editing : exit / Send to moderator/admin
+
+state Publishing
+Publishing : entry / Admin logged in and article to be approved
+Publishing : do / Choose to approve and publish or reject article
+Publishing : do / Add article to database if approved
+Publishing : exit / Publish article
+
+state Search
+Search : entry / Choose to search for articles
+Search : do / Read searched articles
+Search : exit / Completed reading
+
+state Reading
+Reading : entry / Published article
+Reading : do / Read article
+Reading : exit / Completed reading
+
+state Feedback
+Feedback : entry / Reader chosen to give feedback
+Feedback : do / Get feedback
+Feedback : exit / Feedback entry successful
+
+StartChoice --> Register
+StartChoice --> Login
+
+Register --> AdminChoice
+Login --> EditorChoice
+
+AdminChoice --> ManageProfiles
+AdminChoice --> InvalidUser
+
+EditorChoice --> Writing
+EditorChoice --> Editing
+EditorChoice --> InvalidUser
+
+Writing --> Editing
+Editing --> Publishing
+ManageProfiles --> Publishing
+
+InvalidUser --> [*]
+
+Publishing --> Reading
+Reading --> Reading
+
+Search --> Search
+Reading --> ReadFeedbackChoice
+
+ReadFeedbackChoice --> Search
+ReadFeedbackChoice --> Feedback
+
+Feedback --> EndJoin
+Search --> EndJoin
+
+EndJoin --> [*]
+@enduml
+
+
+Validation issues:
+- choice_node_without_guarded_outgoing_transitions (AdminChoice)
+- choice_node_without_guarded_outgoing_transitions (EditorChoice)
+- choice_node_without_guarded_outgoing_transitions (ReadFeedbackChoice)
+- choice_node_without_guarded_outgoing_transitions (StartChoice)
+- choice_node_without_outgoing_transitions (EndJoin)
+
+Validator details:
+- Current initial state: StartChoice
+- State count: 15
+- Transition count: 20
+
+Issue-specific repair instructions:
+Issue: choice_node_outgoing_transitions_without_guards
+
+Repair objective:
+Add mutually meaningful guards to all outgoing transitions from the choice node.
+
+Valid syntax pattern:
+CHOICE_NODE --> FIRST_STATE : [FIRST_GUARD]
+CHOICE_NODE --> SECOND_STATE : [SECOND_GUARD]
+
+Restriction:
+Use guards supported by the requirement or existing transition meaning.
+
+Issue: choice_node_without_outgoing_transitions
+
+Repair objective:
+Add requirement-supported outgoing alternatives to every listed choice node.
+
+Valid syntax pattern:
+CHOICE_NODE --> FIRST_STATE : [FIRST_GUARD]
+CHOICE_NODE --> SECOND_STATE : [SECOND_GUARD]
+
+Restriction:
+Do not invent branches; remove the choice stereotype if the requirement supports no decision.
+
+General repair constraints:
+
+* Apply only the repair instructions corresponding to the listed validation issues.
+* Fix every occurrence of each listed issue.
+* Prefer using existing states and transitions.
+* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.
+* Do not remove a requirement-supported state only to make the diagram valid.
+* Do not rename unaffected states.
+* Do not change unaffected transition labels.
+* Do not redesign or simplify unaffected parts of the diagram.
+* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.
+* Never copy placeholder identifiers into the corrected diagram.
+* When several repairs are valid, choose the repair that changes the fewest lines.
+
+Before producing the answer, silently verify:
+
+* Every listed validation issue has been fixed.
+* No new structural violation has been introduced.
+* Exactly one top-level initial transition exists.
+* At least one valid final transition exists.
+* Every retained state is connected and reachable.
+* No duplicate transition remains.
+* Unaffected diagram behavior is unchanged.
+
+Output only one corrected PlantUML diagram.
+Do not output markdown fences, explanations, comments, or analysis.

@@ -1,0 +1,171 @@
+You are a PlantUML state-machine repair assistant.
+
+Your task is to fix all listed validation issues while preserving the rest of the diagram.
+
+Follow these priorities in order:
+
+1. Fix every listed validation issue.
+2. Preserve the behavior described in the requirement.
+3. Make the smallest possible edit.
+4. Keep unaffected states, transitions, and labels unchanged.
+5. Do not introduce any new validation issue.
+
+Requirement:
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.
+
+Candidate PlantUML:
+@startuml
+title Weather Monitoring System State Diagram
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Create account / Login
+
+state "Create account" as CreateAccount
+CreateAccount : entry/Create account
+CreateAccount : do/Create account
+CreateAccount : exit/Login / Invalid registration
+
+state "Invalid registration" as InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login / To home page
+
+state "Invalid login" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state "Check weather" as CheckWeather
+CheckWeather : entry/To home page
+CheckWeather : entry/Check weather for current or new location
+CheckWeather : exit/Invalid location / Select weather parameter
+
+state "Select weather parameter" as SelectWeatherParameter
+SelectWeatherParameter : entry/Select weather parameter
+SelectWeatherParameter : do/Select temperature, humidity, rainfall, pressure, or dew point
+SelectWeatherParameter : exit/Update weather information
+
+state "Update weather information" as UpdateWeatherInformation
+UpdateWeatherInformation : entry/Update weather information
+UpdateWeatherInformation : do/Update and show selected weather information
+UpdateWeatherInformation : exit/View additional weather details
+
+state "View additional weather details" as ViewAdditionalWeatherDetails
+ViewAdditionalWeatherDetails : entry/View additional weather details
+ViewAdditionalWeatherDetails : do/View alerts, weekly analysis, future prediction, or graph
+ViewAdditionalWeatherDetails : exit/Logout
+
+state "Logout" as Logout
+Logout : entry/Logout
+Logout : do/End session
+Logout : exit/End
+
+state J1 <<choice>>
+J1 --> CreateAccount : [Create account]
+J1 --> Login : [Login]
+
+state J2 <<choice>>
+J2 --> InvalidRegistration : [Invalid registration]
+J2 --> Login : [Valid login]
+
+state J3 <<choice>>
+J3 --> CheckWeather : [Check weather for current or new location]
+J3 --> Logout : [Logout]
+
+state J4 <<choice>>
+J4 --> SelectWeatherParameter : [Select temperature, humidity, rainfall, pressure, or dew point]
+J4 --> Invalid location : [Invalid location]
+
+state J5 <<choice>>
+J5 --> UpdateWeatherInformation : [Update and show selected weather information]
+J5 --> Invalid parameter : [Invalid parameter]
+
+state J6 <<choice>>
+J6 --> ViewAdditionalWeatherDetails : [View alerts, weekly analysis, future prediction, or graph]
+J6 --> Logout : [Logout]
+
+state J7 <<choice>>
+J7 --> Logout : [End session]
+
+[*] --> Idle
+
+Idle --> J1
+Login --> J2
+CheckWeather --> J3
+SelectWeatherParameter --> J4
+UpdateWeatherInformation --> J5
+ViewAdditionalWeatherDetails --> J6
+InvalidRegistration --> [*]
+InvalidLogin --> [*]
+Logout --> [*]
+
+@enduml
+
+
+Validation issues:
+- unreachable: Check weather, Invalid login, J3, J4, J5, J6, J7, Logout, Select weather parameter, Update weather information, View additional weather details
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: Idle
+- Unreachable states: Check weather, Invalid login, J3, J4, J5, J6, J7, Logout, Select weather parameter, Update weather information, View additional weather details
+- State count: 17
+- Transition count: 17
+
+Issue-specific repair instructions:
+Issue: unreachable_states_detected
+
+Repair objective:
+Create a valid path from a reachable state to every listed requirement-supported unreachable state.
+
+Valid syntax pattern:
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Restriction:
+Do not connect a state using invented or unsupported system behavior.
+
+General repair constraints:
+
+* Apply only the repair instructions corresponding to the listed validation issues.
+* Fix every occurrence of each listed issue.
+* Prefer using existing states and transitions.
+* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.
+* Do not remove a requirement-supported state only to make the diagram valid.
+* Do not rename unaffected states.
+* Do not change unaffected transition labels.
+* Do not redesign or simplify unaffected parts of the diagram.
+* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.
+* Never copy placeholder identifiers into the corrected diagram.
+* When several repairs are valid, choose the repair that changes the fewest lines.
+
+Before producing the answer, silently verify:
+
+* Every listed validation issue has been fixed.
+* No new structural violation has been introduced.
+* Exactly one top-level initial transition exists.
+* At least one valid final transition exists.
+* Every retained state is connected and reachable.
+* No duplicate transition remains.
+* Unaffected diagram behavior is unchanged.
+
+Output only one corrected PlantUML diagram.
+Do not output markdown fences, explanations, comments, or analysis.

@@ -1,0 +1,56 @@
+@startuml
+title UML State Machine Diagram
+
+state "Registration" as Registration {
+  [*] --> RegEnterDetails : Valid
+  RegEnterDetails --> GetMemberID
+  RegEnterDetails --> ReEnterDetails : Invalid
+  ReEnterDetails --> RegEnterDetails
+  GetMemberID --> SuccessfulRegistration
+}
+
+state "Authentication" as Authentication {
+  [*] --> AuthEnterMemberID : Valid
+  AuthEnterMemberID --> EnterPassword : Active Member
+  EnterPassword --> SuccessfulLogin
+  EnterPassword --> InvalidCreds : Inactive Member
+}
+
+state "Search Books" as SearchBooks {
+  [*] --> EnterBookDetails : Found
+  EnterBookDetails --> DisplaySuggestion
+  EnterBookDetails --> ChooseAlternate : Not Found
+}
+
+state "Get Books" as GetBooksState {
+  [*] --> GetEnterBookID : Active Member
+  GetEnterBookID --> ObtainBooks
+  GetEnterBookID --> PayFineAmount : Inactive Member
+}
+
+state "Buy Books" as BuyBooks {
+  [*] --> BuyEnterBookID : Paid
+  BuyEnterBookID --> DisplayBookAmount
+  DisplayBookAmount --> BuyGetBooks
+  DisplayBookAmount --> BuyNotPaidEnd : Not Paid
+}
+
+state StartJoin <<choice>> Active Member or Inactive Member or Found or Not Found
+
+[*] --> StartJoin
+StartJoin --> Registration : Registering if Found = "Registering"
+StartJoin --> Authentication : Logging in if Found = "Active Member"
+StartJoin --> SearchBooks : Searching Books if Found = "Not Found"
+StartJoin --> GetBooksState : Getting Books if Found = "Active Member"
+StartJoin --> BuyBooks : Buying Books if Found = "Found"
+
+SuccessfulRegistration --> AuthEnterMemberID : Successfully Registered
+
+SuccessfulLogin --> EnterBookDetails : Ready to search books
+SuccessfulLogin --> GetEnterBookID : Ready to buy books
+SuccessfulLogin --> BuyEnterBookID : Ready to pay for books
+
+ObtainBooks --> [*] : Books obtained
+BuyGetBooks --> [*] : Books received
+BuyNotPaidEnd --> [*] : Not paid, return to main menu
+@enduml

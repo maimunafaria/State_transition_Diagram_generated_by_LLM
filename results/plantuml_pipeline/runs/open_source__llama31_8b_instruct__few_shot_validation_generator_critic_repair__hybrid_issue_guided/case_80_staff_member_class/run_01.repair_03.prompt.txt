@@ -1,0 +1,138 @@
+You are a PlantUML state-machine repair assistant.
+
+Your task is to fix all listed validation issues while preserving the rest of the diagram.
+
+Follow these priorities in order:
+
+1. Fix every listed validation issue.
+2. Preserve the behavior described in the requirement.
+3. Make the smallest possible edit.
+4. Keep unaffected states, transitions, and labels unchanged.
+5. Do not introduce any new validation issue.
+
+Requirement:
+Staff Member Class — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow assigning a staff member to a client or adding them to a campaign.
+2. The system shall allow removing assignments from staff members, returning them to an unassigned state.
+3. The system shall enable staff members to switch between different assignments during their work period.
+4. The system shall mark a staff member as unemployed when they leave the job.
+5. The system shall archive the record of a former employee after some time has passed.
+
+Candidate PlantUML:
+@startuml
+title Staff Member State Machine
+
+state "Unassigned" as Unassigned {
+  [*] --> AssignToClient : [assign to client]
+  AssignToClient --> AssignedToClient : [assigned to client]
+  AssignToClient --> AddToCampaign : [add to campaign]
+  AddToCampaign --> AssignedToCampaign : [assigned to campaign]
+}
+
+state "Assigned to client" as AssignedToClient {
+  AssignedToClient --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AssignedToCampaign : [switch to campaign]
+  LeaveJob --> Unemployed : [leave job]
+}
+
+state "Assigned to campaign" as AssignedToCampaign {
+  AssignedToCampaign --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AssignedToClient : [switch to client]
+  LeaveJob --> Unemployed : [leave job]
+}
+
+state "Unemployed" as Unemployed {
+  Unemployed --> ArchiveRecord : [archive record]
+  ArchiveRecord --> Archived : [archive record]
+}
+
+state "Archived" as Archived {
+  [*] --> Archived : [archived]
+}
+
+state Choice <<choice>>
+Choice --> AssignToClient : [assign to client]
+Choice --> AddToCampaign : [add to campaign]
+Choice --> SwitchAssignments : [switch assignments]
+Choice --> LeaveJob : [leave job]
+Choice --> ArchiveRecord : [archive record]
+
+@enduml
+
+
+Validation issues:
+- multiple_initial_state_transitions (AssignToClient, Archived)
+- missing_final_state_transition (state --> [*])
+- duplicate_transitions_detected (2)
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 13
+- Transition count: 16
+- Duplicate transition count: 2
+
+Issue-specific repair instructions:
+Issue: multiple_initial_state_transitions
+
+Repair objective:
+Keep exactly one top-level initial transition and connect other entry states normally.
+
+Valid syntax pattern:
+[*] --> INITIAL_STATE
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Restriction:
+Do not create a choice node or new state merely to remove an extra initial transition.
+
+Issue: missing_final_state_transition
+
+Repair objective:
+Add at least one final transition from an existing natural terminal state.
+
+Valid syntax pattern:
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Restriction:
+Use an existing requirement-supported terminal state; do not create a new state when one can naturally terminate the lifecycle.
+
+Issue: duplicate_transitions_detected
+
+Repair objective:
+Keep only one transition for each duplicated source-target-event combination.
+
+Valid syntax pattern:
+SOURCE_STATE --> TARGET_STATE : SUPPORTED_EVENT
+
+Restriction:
+Remove an identical duplicate without changing unrelated transitions; merge labels only when both meanings are requirement-supported.
+
+General repair constraints:
+
+* Apply only the repair instructions corresponding to the listed validation issues.
+* Fix every occurrence of each listed issue.
+* Prefer using existing states and transitions.
+* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.
+* Do not remove a requirement-supported state only to make the diagram valid.
+* Do not rename unaffected states.
+* Do not change unaffected transition labels.
+* Do not redesign or simplify unaffected parts of the diagram.
+* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.
+* Never copy placeholder identifiers into the corrected diagram.
+* When several repairs are valid, choose the repair that changes the fewest lines.
+
+Before producing the answer, silently verify:
+
+* Every listed validation issue has been fixed.
+* No new structural violation has been introduced.
+* Exactly one top-level initial transition exists.
+* At least one valid final transition exists.
+* Every retained state is connected and reachable.
+* No duplicate transition remains.
+* Unaffected diagram behavior is unchanged.
+
+Output only one corrected PlantUML diagram.
+Do not output markdown fences, explanations, comments, or analysis.

@@ -1,0 +1,69 @@
+@startuml
+title State diagram for the Ott Based System Mini Reel class
+
+[*] --> Idle
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Create Account / Watch Video
+
+state "Create Account" as CreateAccount
+CreateAccount : entry/Create Account
+CreateAccount : do/Create account after validating
+CreateAccount : exit/Watch Video / Invalid registration
+
+state "Invalid registration" as InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state "Watch Video" as WatchVideo
+WatchVideo : entry/Watch Video
+WatchVideo : do/Watch video after login
+WatchVideo --> UploadVideo : watch_video_event
+WatchVideo : exit/Upload Video / Save Video
+
+state "Upload Video" as UploadVideo
+UploadVideo : entry/Upload Video
+UploadVideo : do/Upload video
+UploadVideo --> SaveVideo : upload_video_event
+UploadVideo : exit/Save Video / Discussion
+
+state "Save Video" as SaveVideo
+SaveVideo : entry/Save Video
+SaveVideo : do/Save video in likes list
+SaveVideo --> ViewSavedVideos : save_video_event
+SaveVideo : exit/View Saved Videos / Discussion
+
+state "View Saved Videos" as ViewSavedVideos
+ViewSavedVideos : entry/View Saved Videos
+ViewSavedVideos : do/View saved videos
+ViewSavedVideos --> Discussion : view_saved_videos_event
+ViewSavedVideos : exit/Discussion
+
+state "Discussion" as Discussion
+Discussion : entry/Discussion
+Discussion : do/Enter discussion option
+Discussion --> End : discussion_event
+Discussion : exit/End
+
+state "End" as End
+End : entry/End
+End : do/End
+End : exit/[*]
+
+Idle --> CreateAccount
+CreateAccount --> WatchVideo
+UploadVideo --> SaveVideo
+SaveVideo --> ViewSavedVideos
+ViewSavedVideos --> Discussion
+Discussion --> End
+InvalidRegistration --> Abnormal termination
+
+state "Abnormal termination" as AbnormalTermination
+AbnormalTermination : entry/Abnormal termination
+AbnormalTermination : do/End
+AbnormalTermination : exit/[*]
+
+@enduml

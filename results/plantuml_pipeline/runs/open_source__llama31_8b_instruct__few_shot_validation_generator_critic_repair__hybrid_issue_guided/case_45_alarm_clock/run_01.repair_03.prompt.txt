@@ -1,0 +1,94 @@
+You are a PlantUML state-machine repair assistant.
+
+Your task is to fix all listed validation issues while preserving the rest of the diagram.
+
+Follow these priorities in order:
+
+1. Fix every listed validation issue.
+2. Preserve the behavior described in the requirement.
+3. Make the smallest possible edit.
+4. Keep unaffected states, transitions, and labels unchanged.
+5. Do not introduce any new validation issue.
+
+Requirement:
+Alarm Clock — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall be in an off state initially.
+2. The system shall support when the user sets an alarm time, the system shall activate the alarm.
+3. The system shall ensure that the user shall be able to turn off the activated alarm.
+4. The system shall support when the current time matches the set alarm time, the system shall start ringing the alarm.
+5. The system shall ensure that once the alarm is ringing, the user shall be able to stop it.
+6. The system shall support after stopping the alarm, the system shall remain active for the next scheduled alarm time.
+
+Candidate PlantUML:
+@startuml
+title Alarm Clock State Machine
+
+[*] --> Off
+
+state Activated
+Activated : entry / Alarm activated
+Activated : do / Alarm ringing
+Activated : exit / Alarm stopped
+
+state Stopped
+Stopped : entry / Alarm stopped
+Stopped : do / Alarm remains active for next scheduled alarm time
+Stopped : exit / Alarm activated
+
+Off --> Activated : set alarm time
+
+Activated --> Stopped : stop alarm
+
+Stopped --> Activated : next scheduled alarm time
+
+@enduml
+
+
+Validation issues:
+- missing_final_state_transition (state --> [*])
+
+Validator details:
+- Current initial state: Off
+- State count: 3
+- Transition count: 3
+
+Issue-specific repair instructions:
+Issue: missing_final_state_transition
+
+Repair objective:
+Add at least one final transition from an existing natural terminal state.
+
+Valid syntax pattern:
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Restriction:
+Use an existing requirement-supported terminal state; do not create a new state when one can naturally terminate the lifecycle.
+
+General repair constraints:
+
+* Apply only the repair instructions corresponding to the listed validation issues.
+* Fix every occurrence of each listed issue.
+* Prefer using existing states and transitions.
+* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.
+* Do not remove a requirement-supported state only to make the diagram valid.
+* Do not rename unaffected states.
+* Do not change unaffected transition labels.
+* Do not redesign or simplify unaffected parts of the diagram.
+* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.
+* Never copy placeholder identifiers into the corrected diagram.
+* When several repairs are valid, choose the repair that changes the fewest lines.
+
+Before producing the answer, silently verify:
+
+* Every listed validation issue has been fixed.
+* No new structural violation has been introduced.
+* Exactly one top-level initial transition exists.
+* At least one valid final transition exists.
+* Every retained state is connected and reachable.
+* No duplicate transition remains.
+* Unaffected diagram behavior is unchanged.
+
+Output only one corrected PlantUML diagram.
+Do not output markdown fences, explanations, comments, or analysis.

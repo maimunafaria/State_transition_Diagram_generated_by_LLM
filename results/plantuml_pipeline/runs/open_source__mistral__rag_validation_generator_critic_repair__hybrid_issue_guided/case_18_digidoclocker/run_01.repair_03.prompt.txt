@@ -1,0 +1,111 @@
+You are a PlantUML state-machine repair assistant.
+
+Your task is to fix all listed validation issues while preserving the rest of the diagram.
+
+Follow these priorities in order:
+
+1. Fix every listed validation issue.
+2. Preserve the behavior described in the requirement.
+3. Make the smallest possible edit.
+4. Keep unaffected states, transitions, and labels unchanged.
+5. Do not introduce any new validation issue.
+
+Requirement:
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram (Digidoclocker)
+
+[*] --> LoggedIn
+MemberRegistration --> EnterMemberDetails
+EnterMemberDetails --> CheckMemberDetails
+CheckMemberDetails --> IssueMemberID
+IssueMemberDetails --> SuccessfulRegistration
+SuccessfulRegistration --> Authentication
+Authentication --> EnterMemberID
+EnterMemberID --> EnterPassword
+EnterPassword --> SuccessfulLogin
+SuccessfulLogin --> LoggedIn
+Authentication --> InvalidCredentials
+InvalidCredentials --> [*]
+
+LoggedIn {
+  Dashboard --> LoggedIn : open settings
+  Settings --> LoggedIn : back
+  CitizenUploadDocs : upload documents
+  CitizenUploadDocs --> CitizenViewDocs : success
+  CitizenViewDocs --> CitizenEditDocs : edit documents
+  CitizenEditDocs --> CitizenSaveEdits : save edits
+  CitizenSaveEdits --> CitizenViewDocs : success
+  CitizenLogout --> [*]
+}
+
+LoggedIn --> MemberIDCheck : active member
+MemberIDCheck --> [*]
+LoggedIn --> InactiveMember : inactive member
+InactiveMember --> PayFineAmount
+PayFineAmount --> LoggedIn
+@enduml
+
+
+Validation issues:
+- unreachable: Authentication, CheckMemberDetails, CitizenEditDocs, CitizenLogout, CitizenSaveEdits, CitizenUploadDocs, CitizenViewDocs, Dashboard, EnterMemberDetails, EnterMemberID, EnterPassword, InvalidCredentials, IssueMemberDetails, IssueMemberID, MemberRegistration, Settings, SuccessfulLogin, SuccessfulRegistration
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: LoggedIn
+- Unreachable states: Authentication, CheckMemberDetails, CitizenEditDocs, CitizenLogout, CitizenSaveEdits, CitizenUploadDocs, CitizenViewDocs, Dashboard, EnterMemberDetails, EnterMemberID, EnterPassword, InvalidCredentials, IssueMemberDetails, IssueMemberID, MemberRegistration, Settings, SuccessfulLogin, SuccessfulRegistration
+- State count: 22
+- Transition count: 20
+
+Issue-specific repair instructions:
+Issue: unreachable_states_detected
+
+Repair objective:
+Create a valid path from a reachable state to every listed requirement-supported unreachable state.
+
+Valid syntax pattern:
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Restriction:
+Do not connect a state using invented or unsupported system behavior.
+
+General repair constraints:
+
+* Apply only the repair instructions corresponding to the listed validation issues.
+* Fix every occurrence of each listed issue.
+* Prefer using existing states and transitions.
+* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.
+* Do not remove a requirement-supported state only to make the diagram valid.
+* Do not rename unaffected states.
+* Do not change unaffected transition labels.
+* Do not redesign or simplify unaffected parts of the diagram.
+* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.
+* Never copy placeholder identifiers into the corrected diagram.
+* When several repairs are valid, choose the repair that changes the fewest lines.
+
+Before producing the answer, silently verify:
+
+* Every listed validation issue has been fixed.
+* No new structural violation has been introduced.
+* Exactly one top-level initial transition exists.
+* At least one valid final transition exists.
+* Every retained state is connected and reachable.
+* No duplicate transition remains.
+* Unaffected diagram behavior is unchanged.
+
+Output only one corrected PlantUML diagram.
+Do not output markdown fences, explanations, comments, or analysis.

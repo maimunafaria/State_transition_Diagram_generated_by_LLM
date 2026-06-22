@@ -1,0 +1,164 @@
+You are a PlantUML state-machine repair assistant.
+
+Your task is to fix all listed validation issues while preserving the rest of the diagram.
+
+Follow these priorities in order:
+
+1. Fix every listed validation issue.
+2. Preserve the behavior described in the requirement.
+3. Make the smallest possible edit.
+4. Keep unaffected states, transitions, and labels unchanged.
+5. Do not introduce any new validation issue.
+
+Requirement:
+Atm Many Scenarios Scenario 7 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall greet the user when they arrive.
+2. The system shall check the PIN after the card is inserted.
+3. The system shall allow the user to try again if the entered PIN is incorrect.
+4. The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times.
+5. The system shall return the card if the user cancels the operation.
+6. The system shall display available options (withdrawing money, checking information, or making a transfer) for the user to choose from if the PIN is correct.
+7. The system shall process the selected request after the user makes a choice.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram
+
+state "Arrival" as Arrival
+state "PIN Verification" as PINVerification
+state "Invalid PIN" as InvalidPIN
+state "Card Held" as CardHeld
+state "Return Card" as ReturnCard
+state "Options Displayed" as OptionsDisplayed
+state "Request Processing" as RequestProcessing
+
+state "Greeting" as Greeting
+Greeting : entry / User arrives
+Greeting : do / Display greeting
+Greeting : exit / User proceeds
+
+state "Card Insertion" as CardInsertion
+CardInsertion : entry / User inserts card
+CardInsertion : do / Check card validity
+CardInsertion : exit / Proceed to PIN verification
+
+state "PIN Entry" as PINEntry
+PINEntry : entry / User enters PIN
+PINEntry : do / Verify PIN
+PINEntry : exit / Proceed to next state
+
+state "Cancel Operation" as CancelOperation
+CancelOperation : entry / User cancels operation
+CancelOperation : do / Return card
+CancelOperation : exit / Operation cancelled
+
+state "Too Many Incorrect PINs" as TooManyIncorrectPINs
+TooManyIncorrectPINs : entry / User enters incorrect PIN too many times
+TooManyIncorrectPINs : do / Hold card for security
+TooManyIncorrectPINs : exit / Card held
+
+state "Correct PIN" as CorrectPIN
+CorrectPIN : entry / User enters correct PIN
+CorrectPIN : do / Display options
+CorrectPIN : exit / Options displayed
+
+state "Withdraw Money" as WithdrawMoney
+WithdrawMoney : entry / User selects withdraw money
+WithdrawMoney : do / Process withdraw money request
+WithdrawMoney : exit / Request processed
+
+state "Check Information" as CheckInformation
+CheckInformation : entry / User selects check information
+CheckInformation : do / Process check information request
+CheckInformation : exit / Request processed
+
+state "Make Transfer" as MakeTransfer
+MakeTransfer : entry / User selects make transfer
+MakeTransfer : do / Process make transfer request
+MakeTransfer : exit / Request processed
+
+state "Invalid Request" as InvalidRequest
+InvalidRequest : entry / User selects invalid request
+InvalidRequest : do / Display error message
+InvalidRequest : exit / Request not processed
+
+Arrival --> Greeting
+Greeting --> CardInsertion
+
+CardInsertion --> PINVerification
+PINVerification --> PINEntry
+
+PINEntry --> PINVerification : Incorrect PIN
+PINVerification --> CorrectPIN : Correct PIN
+PINVerification --> InvalidPIN : Invalid PIN
+PINVerification --> CancelOperation : Cancel operation
+
+CorrectPIN --> OptionsDisplayed
+OptionsDisplayed --> WithdrawMoney
+OptionsDisplayed --> CheckInformation
+OptionsDisplayed --> MakeTransfer
+OptionsDisplayed --> InvalidRequest
+
+WithdrawMoney --> RequestProcessing
+CheckInformation --> RequestProcessing
+MakeTransfer --> RequestProcessing
+
+InvalidPIN --> InvalidPIN
+CancelOperation --> ReturnCard
+TooManyIncorrectPINs --> CardHeld
+
+CardHeld --> [*]
+ReturnCard --> [*]
+RequestProcessing --> [*]
+
+@enduml
+
+
+Validation issues:
+- missing_initial_state_transition ([*] --> state)
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 17
+- Transition count: 19
+
+Issue-specific repair instructions:
+Issue: missing_initial_state_transition
+
+Repair objective:
+Add exactly one transition from the initial pseudostate to the first lifecycle state.
+
+Valid syntax pattern:
+[*] --> INITIAL_STATE
+
+Restriction:
+Use an existing requirement-supported first state and do not add another top-level initial transition.
+
+General repair constraints:
+
+* Apply only the repair instructions corresponding to the listed validation issues.
+* Fix every occurrence of each listed issue.
+* Prefer using existing states and transitions.
+* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.
+* Do not remove a requirement-supported state only to make the diagram valid.
+* Do not rename unaffected states.
+* Do not change unaffected transition labels.
+* Do not redesign or simplify unaffected parts of the diagram.
+* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.
+* Never copy placeholder identifiers into the corrected diagram.
+* When several repairs are valid, choose the repair that changes the fewest lines.
+
+Before producing the answer, silently verify:
+
+* Every listed validation issue has been fixed.
+* No new structural violation has been introduced.
+* Exactly one top-level initial transition exists.
+* At least one valid final transition exists.
+* Every retained state is connected and reachable.
+* No duplicate transition remains.
+* Unaffected diagram behavior is unchanged.
+
+Output only one corrected PlantUML diagram.
+Do not output markdown fences, explanations, comments, or analysis.

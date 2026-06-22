@@ -1,0 +1,53 @@
+@startuml
+title Campaign State Machine (Fixed Version)
+
+[*] --> Commissioned : assignManager; assignStaff
+
+state Commissioned
+state Suspended
+state Completed
+state Paid
+
+Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+Commissioned --> Survey : surveyInitiated ;
+
+state Active {
+  state Monitoring {
+    Survey --> Evaluation : surveyComplete
+    Evaluation --> Survey : runSurvey
+    state Suspended {
+      Survey --> Suspended : suspendCampaign\n/stopAdverts
+      Suspended --> Survey : resumeCampaign
+    }
+    Monitoring * Suspended
+  }
+
+  state Running {
+    [*] --> AdvertPreparation
+    state AdvertPreparation {
+      AdvertPreparation --> Scheduling : advertsApproved\n/authorize
+      Scheduling --> RunningAdverts : confirmSchedule
+      state Suspended {
+        RunningAdverts --> Suspended : suspendCampaign\n/stopAdverts
+        Suspended --> RunningAdverts : resumeCampaign
+      }
+      RunningAdverts * Suspended
+    }
+    Running * AdvertPreparation
+  }
+}
+
+Active --> Active : extendCampaign\n/modifyBudget
+Active --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+AdvertPreparation --> Completed : campaignCompleted\n/prepareFinalStatement
+
+state Completed {
+  state Paid {
+    Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
+    Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+  }
+  Completed * Paid
+  Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > 0]
+  Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
+}
+@enduml

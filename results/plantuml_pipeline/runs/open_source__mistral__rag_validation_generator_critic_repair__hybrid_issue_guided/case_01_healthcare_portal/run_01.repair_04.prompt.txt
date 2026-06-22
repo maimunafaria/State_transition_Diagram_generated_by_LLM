@@ -1,0 +1,177 @@
+You are a PlantUML state-machine repair assistant.
+
+Your task is to fix all listed validation issues while preserving the rest of the diagram.
+
+Follow these priorities in order:
+
+1. Fix every listed validation issue.
+2. Preserve the behavior described in the requirement.
+3. Make the smallest possible edit.
+4. Keep unaffected states, transitions, and labels unchanged.
+5. Do not introduce any new validation issue.
+
+Requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Candidate PlantUML:
+@startuml
+title Healthcare Portal - State Machine Diagram
+
+state PortalChoice1 <<choice>>
+state PortalChoice2 <<choice>>
+state PortalChoice3 <<choice>>
+state ServiceJoin <<choice>>
+state OwnerJoin <<choice>>
+state ServiceCenterRegistration
+state ServiceCenterVerification
+state ServiceCenterLogin
+state ServiceCenterHome
+state ExpiryNotification
+state DamagedParts
+state UpdatingParts
+state Logout
+
+[*] --> PortalChoice1
+
+PortalChoice1 --> PortalChoice2 : [Service Center Portal]
+PortalChoice1 --> PortalChoice3 : [Car Owner Portal]
+
+PortalChoice2 --> ServiceCenterRegistration : [New Service Center]
+PortalChoice2 --> ServiceJoin : [Registered Service center]
+PortalChoice3 --> CarOwnerRegistration : [New Car Owner]
+PortalChoice3 --> OwnerJoin : [Registered Car Owner]
+
+state "Service Center Registration" as ServiceCenterRegistration
+ServiceCenterRegistration : entry / Unregistered service center
+ServiceCenterRegistration : do / Enter Valid Credentials
+ServiceCenterRegistration : exit / Account registered
+
+state "Service Center Verification" as ServiceCenterVerification
+ServiceCenterVerification : entry / Service Center account registered
+ServiceCenterVerification : do / Verify Service center
+ServiceCenterVerification : exit / Login Service center
+
+state "Service Center Login" as ServiceCenterLogin
+ServiceCenterLogin : entry / Verified Service Center
+ServiceCenterLogin : entry / Service Center not logged in
+ServiceCenterLogin : do / Authenticate Service Center
+ServiceCenterLogin : exit / Logged In Successfully
+
+state "Service center Home" as ServiceCenterHome
+ServiceCenterHome : entry / Logged in Service Center
+ServiceCenterHome : do / Display home page
+ServiceCenterHome : exit / Enter Damaged parts list
+ServiceCenterHome : exit / Expiry Notification page
+ServiceCenterHome : exit / Updating Information list
+ServiceCenterHome --> DamagedParts : [Enter damaged parts]
+ServiceCenterHome --> ExpiryNotification : [View expiry notification]
+ServiceCenterHome --> UpdatingParts : [Update information]
+
+state "Expiry Notification page" as ExpiryNotification
+ExpiryNotification : entry / To view expiry notification
+ExpiryNotification : do / Send service request to Car owner
+ExpiryNotification : exit / Return to Service center home page
+
+state "Entering Damaged parts list" as DamagedParts
+DamagedParts : entry / To enter Damaged parts list
+DamagedParts : do / Preparing and entering damaged parts list
+DamagedParts : exit / Return to service center home page
+
+state "Updating parts Information" as UpdatingParts
+UpdatingParts : entry / To update changed parts information
+UpdatingParts : do / Update Information
+UpdatingParts : exit / Return to Service center home page
+
+state "Logout" as Logout
+Logout : entry / To Logout
+Logout : do / Logout
+Logout : exit / Logged out Successfully
+
+ServiceJoin --> ServiceCenterVerification : [Registered service center]
+OwnerJoin --> CarOwnerRegistration : [Registered car owner]
+ExpiryNotification --> ServiceCenterHome : [View expiry notification]
+DamagedParts --> ServiceCenterHome : [Enter damaged parts]
+UpdatingParts --> ServiceCenterHome : [Update information]
+Logout --> [*] : COMPLETION_EVENT
+@enduml
+
+
+Validation issues:
+- orphan: Service Center Login, Service Center Registration, ServiceCenterHome, ServiceCenterLogin, ServiceCenterVerification
+- orphan_states_detected
+- unreachable: DamagedParts, Entering Damaged parts list, Expiry Notification page, ExpiryNotification, Logout, Service Center Login, Service Center Registration, Service center Home, ServiceCenterHome, ServiceCenterLogin, ServiceCenterVerification, Updating parts Information, UpdatingParts
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: PortalChoice1
+- Unreachable states: DamagedParts, Entering Damaged parts list, Expiry Notification page, ExpiryNotification, Logout, Service Center Login, Service Center Registration, Service center Home, ServiceCenterHome, ServiceCenterLogin, ServiceCenterVerification, Updating parts Information, UpdatingParts
+- State count: 21
+- Transition count: 14
+
+Issue-specific repair instructions:
+Issue: orphan_states_detected
+
+Repair objective:
+Connect every listed requirement-supported orphan state to the lifecycle with reasonable incoming or outgoing transitions.
+
+Valid syntax pattern:
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Restriction:
+Use only requirement-supported transitions; remove an orphan state only when the requirement does not support it.
+
+Issue: unreachable_states_detected
+
+Repair objective:
+Create a valid path from a reachable state to every listed requirement-supported unreachable state.
+
+Valid syntax pattern:
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Restriction:
+Do not connect a state using invented or unsupported system behavior.
+
+General repair constraints:
+
+* Apply only the repair instructions corresponding to the listed validation issues.
+* Fix every occurrence of each listed issue.
+* Prefer using existing states and transitions.
+* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.
+* Do not remove a requirement-supported state only to make the diagram valid.
+* Do not rename unaffected states.
+* Do not change unaffected transition labels.
+* Do not redesign or simplify unaffected parts of the diagram.
+* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.
+* Never copy placeholder identifiers into the corrected diagram.
+* When several repairs are valid, choose the repair that changes the fewest lines.
+
+Before producing the answer, silently verify:
+
+* Every listed validation issue has been fixed.
+* No new structural violation has been introduced.
+* Exactly one top-level initial transition exists.
+* At least one valid final transition exists.
+* Every retained state is connected and reachable.
+* No duplicate transition remains.
+* Unaffected diagram behavior is unchanged.
+
+Output only one corrected PlantUML diagram.
+Do not output markdown fences, explanations, comments, or analysis.

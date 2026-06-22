@@ -1,0 +1,132 @@
+You are a PlantUML state-machine repair assistant.
+
+Your task is to fix all listed validation issues while preserving the rest of the diagram.
+
+Follow these priorities in order:
+
+1. Fix every listed validation issue.
+2. Preserve the behavior described in the requirement.
+3. Make the smallest possible edit.
+4. Keep unaffected states, transitions, and labels unchanged.
+5. Do not introduce any new validation issue.
+
+Requirement:
+Plane — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall place a newly acquired plane in an 'Order' state until it is delivered.
+2. The system shall transition a plane from 'Arrival' to 'Preparation' upon its arrival.
+3. The system shall assign a prepared plane to either 'Operations' or 'Maintenance' based on its condition and schedule.
+4. The system shall keep a plane in the 'Operations' state if it still has scheduled flights.
+5. The system shall send a plane to 'Maintenance' when there are no more scheduled flights or maintenance is required.
+6. The system shall transition a plane from 'Maintenance' to 'Preparation' after checking and servicing it until it is ready for operations.
+7. The system shall take a plane out of service if it is no longer available for use.
+8. The system shall remove a plane from its operations when it is permanently withdrawn from service.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram (Plane Management)
+
+[*] --> Order
+
+state Order
+Order : entry / Plane is placed in order
+Order : do / Wait for delivery
+Order : exit / Plane is delivered
+
+Order --> Arrival
+
+state Arrival
+Arrival : entry / Plane arrives
+Arrival : do / Transition to preparation
+Arrival : exit / Plane is prepared
+
+Arrival --> Preparation
+
+state Preparation
+Preparation : entry / Plane is prepared
+Preparation : do / Assign to operations or maintenance
+Preparation : exit / Plane is assigned
+
+Preparation --> Operations
+Preparation --> Maintenance
+
+state Operations
+Operations : entry / Plane is in operations
+Operations : do / Check for scheduled flights
+Operations : exit / Plane is still in operations
+
+Operations --> Operations : Scheduled flights available
+
+Operations --> Maintenance : No scheduled flights or maintenance required
+
+state Maintenance
+Maintenance : entry / Plane is in maintenance
+Maintenance : do / Check and service plane
+Maintenance : exit / Plane is ready for operations
+
+Maintenance --> Preparation : Plane is ready for operations
+
+state "Plane is no longer available" as NoLongerAvailable
+NoLongerAvailable : entry / Plane is no longer available
+NoLongerAvailable : do / Take plane out of service
+NoLongerAvailable : exit / Plane is removed from operations
+
+Order --> NoLongerAvailable : Withdrawal from service
+
+state End <<choice>>
+End --> [*]
+
+Maintenance --> NoLongerAvailable : Withdrawal from service
+NoLongerAvailable --> End : Permanent withdrawal
+
+@enduml
+
+
+Validation issues:
+- choice_node_without_outgoing_transitions (End)
+
+Validator details:
+- Current initial state: Order
+- State count: 7
+- Transition count: 10
+
+Issue-specific repair instructions:
+Issue: choice_node_without_outgoing_transitions
+
+Repair objective:
+Add requirement-supported outgoing alternatives to every listed choice node.
+
+Valid syntax pattern:
+CHOICE_NODE --> FIRST_STATE : [FIRST_GUARD]
+CHOICE_NODE --> SECOND_STATE : [SECOND_GUARD]
+
+Restriction:
+Do not invent branches; remove the choice stereotype if the requirement supports no decision.
+
+General repair constraints:
+
+* Apply only the repair instructions corresponding to the listed validation issues.
+* Fix every occurrence of each listed issue.
+* Prefer using existing states and transitions.
+* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.
+* Do not remove a requirement-supported state only to make the diagram valid.
+* Do not rename unaffected states.
+* Do not change unaffected transition labels.
+* Do not redesign or simplify unaffected parts of the diagram.
+* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.
+* Never copy placeholder identifiers into the corrected diagram.
+* When several repairs are valid, choose the repair that changes the fewest lines.
+
+Before producing the answer, silently verify:
+
+* Every listed validation issue has been fixed.
+* No new structural violation has been introduced.
+* Exactly one top-level initial transition exists.
+* At least one valid final transition exists.
+* Every retained state is connected and reachable.
+* No duplicate transition remains.
+* Unaffected diagram behavior is unchanged.
+
+Output only one corrected PlantUML diagram.
+Do not output markdown fences, explanations, comments, or analysis.

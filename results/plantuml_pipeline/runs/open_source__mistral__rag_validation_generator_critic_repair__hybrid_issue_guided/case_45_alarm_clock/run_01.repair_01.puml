@@ -1,0 +1,29 @@
+@startuml
+title Alarm Clock State Diagram
+
+state Off {
+  [*] --> Off
+}
+
+state SetAlarmTime {
+  Off --> SetAlarmTime
+}
+
+state ActiveAlarm {
+  state Ringing {
+    SetAlarmTime --> Ringing : current time matches set alarm time
+    Ringing --> StoppedByUser : user stops alarm
+    Ringing --> NextScheduledAlarm : time passes
+  }
+
+  state Stopped {
+    [*] --> Stopped
+    Stopped --> ActiveAlarm : next scheduled alarm time
+  }
+}
+
+Off --> ActiveAlarm : user sets an alarm time
+ActiveAlarm --> Off : no active alarms
+ActiveAlarm --> Stopped : user turns off activated alarm
+Ringing --> Ringing : time does not pass or current time matches set alarm time
+@enduml

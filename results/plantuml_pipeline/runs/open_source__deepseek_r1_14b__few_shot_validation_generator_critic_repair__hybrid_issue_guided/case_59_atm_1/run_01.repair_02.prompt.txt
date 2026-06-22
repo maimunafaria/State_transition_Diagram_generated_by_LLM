@@ -1,0 +1,132 @@
+You are a PlantUML state-machine repair assistant.
+
+Your task is to fix all listed validation issues while preserving the rest of the diagram.
+
+Follow these priorities in order:
+
+1. Fix every listed validation issue.
+2. Preserve the behavior described in the requirement.
+3. Make the smallest possible edit.
+4. Keep unaffected states, transitions, and labels unchanged.
+5. Do not introduce any new validation issue.
+
+Requirement:
+Atm Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose or enter a withdrawal amount.
+2. The system shall support predefined amounts for selection by the user.
+3. The system shall allow users to input their own custom withdrawal amount.
+4. The system shall provide an option for the user to cancel the transaction at any point.
+5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.
+
+Candidate PlantUML:
+@startuml
+title UML State Chart Diagram
+
+state "Insert Card" as InsertCard
+InsertCard : entry / Insert the card
+InsertCard : do / Verify card
+InsertCard : exit / Card verified
+
+state "Select Amount" as SelectAmount
+SelectAmount : entry / Select amount options
+SelectAmount : do / Display predefined amounts and custom option
+SelectAmount : exit / User selects an option
+
+state "Select Predefined Amount" as SelectPredefined
+SelectPredefined : entry / Predefined amount selected
+SelectPredefined : do / Verify amount
+SelectPredefined : exit / Amount selected
+
+state "Enter Custom Amount" as EnterCustomAmount
+EnterCustomAmount : entry / Custom amount selected
+EnterCustomAmount : do / Validate custom amount
+EnterCustomAmount : exit / Amount entered
+
+state "Check Balance" as CheckBalance
+CheckBalance : entry / Amount selected
+CheckBalance : do / Check available balance
+CheckBalance : exit / Balance sufficient or not
+
+state "Dispense Cash" as DispenseCash
+DispenseCash : entry / Sufficient balance
+DispenseCash : do / Dispense the cash
+DispenseCash : exit / Transaction complete
+
+state "Cancel Transaction" as CancelTransaction
+CancelTransaction : entry / Cancel option selected
+CancelTransaction : do / Stop transaction
+CancelTransaction : exit / Transaction aborted
+
+state "Return Card" as ReturnCard
+ReturnCard : entry / Transaction completed or aborted
+ReturnCard : do / Return the card
+ReturnCard : exit / Card returned
+
+InsertCard --> SelectAmount : proceed to select amount
+InsertCard --> CancelTransaction : cancel immediately
+
+SelectAmount --> SelectPredefined : select predefined amount
+SelectAmount --> EnterCustomAmount : enter custom amount
+SelectAmount --> CancelTransaction : cancel transaction
+
+SelectPredefined --> CheckBalance : check balance for predefined amount
+EnterCustomAmount --> CheckBalance : check balance for custom amount
+
+CheckBalance --> DispenseCash : balance sufficient
+CheckBalance --> CheckBalance : balance insufficient (loop)
+
+DispenseCash --> ReturnCard : transaction complete
+CancelTransaction --> ReturnCard : transaction aborted
+
+ReturnCard --> [*] : process complete
+@enduml
+
+
+Validation issues:
+- missing_initial_state_transition ([*] --> state)
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 8
+- Transition count: 11
+
+Issue-specific repair instructions:
+Issue: missing_initial_state_transition
+
+Repair objective:
+Add exactly one transition from the initial pseudostate to the first lifecycle state.
+
+Valid syntax pattern:
+[*] --> INITIAL_STATE
+
+Restriction:
+Use an existing requirement-supported first state and do not add another top-level initial transition.
+
+General repair constraints:
+
+* Apply only the repair instructions corresponding to the listed validation issues.
+* Fix every occurrence of each listed issue.
+* Prefer using existing states and transitions.
+* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.
+* Do not remove a requirement-supported state only to make the diagram valid.
+* Do not rename unaffected states.
+* Do not change unaffected transition labels.
+* Do not redesign or simplify unaffected parts of the diagram.
+* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.
+* Never copy placeholder identifiers into the corrected diagram.
+* When several repairs are valid, choose the repair that changes the fewest lines.
+
+Before producing the answer, silently verify:
+
+* Every listed validation issue has been fixed.
+* No new structural violation has been introduced.
+* Exactly one top-level initial transition exists.
+* At least one valid final transition exists.
+* Every retained state is connected and reachable.
+* No duplicate transition remains.
+* Unaffected diagram behavior is unchanged.
+
+Output only one corrected PlantUML diagram.
+Do not output markdown fences, explanations, comments, or analysis.

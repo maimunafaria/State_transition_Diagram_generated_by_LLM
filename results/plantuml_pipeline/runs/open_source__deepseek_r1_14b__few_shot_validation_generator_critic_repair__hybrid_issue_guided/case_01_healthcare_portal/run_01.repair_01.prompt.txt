@@ -1,0 +1,171 @@
+You are a PlantUML state-machine repair assistant.
+
+Your task is to fix all listed validation issues while preserving the rest of the diagram.
+
+Follow these priorities in order:
+
+1. Fix every listed validation issue.
+2. Preserve the behavior described in the requirement.
+3. Make the smallest possible edit.
+4. Keep unaffected states, transitions, and labels unchanged.
+5. Do not introduce any new validation issue.
+
+Requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Candidate PlantUML:
+@startuml
+title UML State Transition Diagram - Healthcare Portal
+
+state "Idle" as Idle
+Idle : entry/Welcome
+Idle : do/Waiting for user action
+Idle : exit/Register/Login
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/MainMenu/InvalidRegister
+
+state "InvalidRegister" as InvalidRegister
+InvalidRegister : entry/Invalid registration
+InvalidRegister : do/Cannot register
+InvalidRegister : exit/Abnormal termination
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid credentials
+Login : exit/MainMenu/InvalidLogin
+
+state "InvalidLogin" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state "MainMenu" as MainMenu
+MainMenu : entry/MainMenu
+MainMenu : do/Access facilities
+MainMenu : exit/Waiting for user choice
+
+state "ReadContent" as ReadContent
+ReadContent : entry/ReadContent
+ReadContent : do/View news/expert content
+ReadContent : exit/MainMenu
+
+state "HealthInfo" as HealthInfo
+HealthInfo : entry/HealthInfo
+HealthInfo : do/Check symptoms or fitness
+HealthInfo : exit/MainMenu
+
+state "ViewResult" as ViewResult
+ViewResult : entry/ViewResult
+ViewResult : do/View results
+ViewResult : exit/Continue/Logout
+
+state "ProcessInsurance" as ProcessInsurance
+ProcessInsurance : entry/ProcessInsurance
+ProcessInsurance : do/Validate insurance
+ProcessInsurance : exit/InsuranceApproved/InsuranceRejected
+
+state "PaymentSelection" as PaymentSelection
+PaymentSelection : entry/PaymentSelection
+PaymentSelection : do/Choose payment method
+PaymentSelection : exit/CashPayment/InsurancePayment
+
+state "CashPayment" as CashPayment
+CashPayment : entry/CashPayment
+CashPayment : do/Inform cash details
+CashPayment : exit/CompletePayment
+
+state "InsurancePayment" as InsurancePayment
+@enduml
+
+
+Validation issues:
+- missing_initial_state_transition ([*] --> state)
+- missing_final_state_transition (state --> [*])
+- orphan: CashPayment, HealthInfo, Idle, InsurancePayment, InvalidLogin, InvalidRegister, Login, MainMenu, PaymentSelection, ProcessInsurance, ReadContent, Register, ViewResult
+- orphan_states_detected
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 13
+- Transition count: 0
+
+Issue-specific repair instructions:
+Issue: missing_initial_state_transition
+
+Repair objective:
+Add exactly one transition from the initial pseudostate to the first lifecycle state.
+
+Valid syntax pattern:
+[*] --> INITIAL_STATE
+
+Restriction:
+Use an existing requirement-supported first state and do not add another top-level initial transition.
+
+Issue: missing_final_state_transition
+
+Repair objective:
+Add at least one final transition from an existing natural terminal state.
+
+Valid syntax pattern:
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Restriction:
+Use an existing requirement-supported terminal state; do not create a new state when one can naturally terminate the lifecycle.
+
+Issue: orphan_states_detected
+
+Repair objective:
+Connect every listed requirement-supported orphan state to the lifecycle with reasonable incoming or outgoing transitions.
+
+Valid syntax pattern:
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Restriction:
+Use only requirement-supported transitions; remove an orphan state only when the requirement does not support it.
+
+General repair constraints:
+
+* Apply only the repair instructions corresponding to the listed validation issues.
+* Fix every occurrence of each listed issue.
+* Prefer using existing states and transitions.
+* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.
+* Do not remove a requirement-supported state only to make the diagram valid.
+* Do not rename unaffected states.
+* Do not change unaffected transition labels.
+* Do not redesign or simplify unaffected parts of the diagram.
+* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.
+* Never copy placeholder identifiers into the corrected diagram.
+* When several repairs are valid, choose the repair that changes the fewest lines.
+
+Before producing the answer, silently verify:
+
+* Every listed validation issue has been fixed.
+* No new structural violation has been introduced.
+* Exactly one top-level initial transition exists.
+* At least one valid final transition exists.
+* Every retained state is connected and reachable.
+* No duplicate transition remains.
+* Unaffected diagram behavior is unchanged.
+
+Output only one corrected PlantUML diagram.
+Do not output markdown fences, explanations, comments, or analysis.

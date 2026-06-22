@@ -1,0 +1,145 @@
+You are a PlantUML state-machine repair assistant.
+
+Your task is to fix all listed validation issues while preserving the rest of the diagram.
+
+Follow these priorities in order:
+
+1. Fix every listed validation issue.
+2. Preserve the behavior described in the requirement.
+3. Make the smallest possible edit.
+4. Keep unaffected states, transitions, and labels unchanged.
+5. Do not introduce any new validation issue.
+
+Requirement:
+Microwave Oven — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display the current time when it is waiting for user input.
+2. The system shall allow the user to choose between full power and half power levels.
+3. The system shall enable the user to set cooking time by entering a number.
+4. The system shall remain inactive if the door is open during operation.
+5. The system shall stop immediately when the door is opened during the cooking process.
+6. The system shall allow the user to cancel the cooking process.
+7. The system shall return to displaying the current time after stopping or cancelling and wait for the next use.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram - Microwave Oven
+
+[*] --> Idle
+
+state "Idle" as Idle
+Idle : entry / Display current time
+Idle : do / Wait for user input
+
+Idle --> WaitingForInput : [User selects power level or enters cooking time]
+
+state "Waiting for input" as WaitingForInput
+WaitingForInput : entry / Display power level options
+WaitingForInput : do / Get user input
+WaitingForInput : exit / Start cooking or cancel
+
+WaitingForInput --> Cooking : [User selects power level and enters cooking time]
+WaitingForInput --> Cancel : [User cancels cooking process]
+
+state "Cooking" as Cooking
+Cooking : entry / Start cooking process
+Cooking : do / Monitor cooking time
+Cooking : exit / Cooking complete or door opened
+
+Cooking --> Stopped : [Cooking complete]
+Cooking --> DoorOpened : [Door opened during cooking]
+
+state "Stopped" as Stopped
+Stopped : entry / Display current time
+Stopped : do / Wait for next use
+
+Stopped --> Idle : [User stops or cancels cooking process]
+
+state "Door opened" as DoorOpened
+DoorOpened : entry / Stop cooking process
+DoorOpened : do / Return to idle state
+
+DoorOpened --> Idle : [Door opened during cooking process]
+
+state "Cancel" as Cancel
+Cancel : entry / Cancel cooking process
+Cancel : do / Return to idle state
+
+Cancel --> Idle : [User cancels cooking process]
+
+state End <<choice>>
+End --> [*]
+
+Idle --> End : [System is idle]
+WaitingForInput --> End : [User input is received]
+Cooking --> End : [Cooking process is complete or interrupted]
+Stopped --> End : [Cooking process is stopped]
+DoorOpened --> End : [Door is opened during cooking process]
+Cancel --> End : [Cooking process is cancelled]
+
+@enduml
+
+
+Validation issues:
+- unreachable: Cancel, Cooking, Door opened, DoorOpened, Stopped, Waiting for input
+- unreachable_states_detected
+- choice_node_without_outgoing_transitions (End)
+
+Validator details:
+- Current initial state: Idle
+- Unreachable states: Cancel, Cooking, Door opened, DoorOpened, Stopped, Waiting for input
+- State count: 9
+- Transition count: 14
+
+Issue-specific repair instructions:
+Issue: unreachable_states_detected
+
+Repair objective:
+Create a valid path from a reachable state to every listed requirement-supported unreachable state.
+
+Valid syntax pattern:
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Restriction:
+Do not connect a state using invented or unsupported system behavior.
+
+Issue: choice_node_without_outgoing_transitions
+
+Repair objective:
+Add requirement-supported outgoing alternatives to every listed choice node.
+
+Valid syntax pattern:
+CHOICE_NODE --> FIRST_STATE : [FIRST_GUARD]
+CHOICE_NODE --> SECOND_STATE : [SECOND_GUARD]
+
+Restriction:
+Do not invent branches; remove the choice stereotype if the requirement supports no decision.
+
+General repair constraints:
+
+* Apply only the repair instructions corresponding to the listed validation issues.
+* Fix every occurrence of each listed issue.
+* Prefer using existing states and transitions.
+* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.
+* Do not remove a requirement-supported state only to make the diagram valid.
+* Do not rename unaffected states.
+* Do not change unaffected transition labels.
+* Do not redesign or simplify unaffected parts of the diagram.
+* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.
+* Never copy placeholder identifiers into the corrected diagram.
+* When several repairs are valid, choose the repair that changes the fewest lines.
+
+Before producing the answer, silently verify:
+
+* Every listed validation issue has been fixed.
+* No new structural violation has been introduced.
+* Exactly one top-level initial transition exists.
+* At least one valid final transition exists.
+* Every retained state is connected and reachable.
+* No duplicate transition remains.
+* Unaffected diagram behavior is unchanged.
+
+Output only one corrected PlantUML diagram.
+Do not output markdown fences, explanations, comments, or analysis.

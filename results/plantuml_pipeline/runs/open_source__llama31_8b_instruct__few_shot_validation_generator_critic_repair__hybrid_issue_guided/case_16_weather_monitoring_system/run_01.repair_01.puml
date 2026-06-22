@@ -1,0 +1,93 @@
+@startuml
+title Weather Monitoring System State Diagram
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Create account / Login
+
+state "Create account" as CreateAccount
+CreateAccount : entry/Create account
+CreateAccount : do/Create account
+CreateAccount : exit/Login / Invalid registration
+
+state "Invalid registration" as InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login / To home page
+
+state "Invalid login" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state "Check weather" as CheckWeather
+CheckWeather : entry/To home page
+CheckWeather : entry/Check weather for current or new location
+CheckWeather : exit/Invalid location / Select weather parameter
+
+state "Select weather parameter" as SelectWeatherParameter
+SelectWeatherParameter : entry/Select weather parameter
+SelectWeatherParameter : do/Select temperature, humidity, rainfall, pressure, or dew point
+SelectWeatherParameter : exit/Update weather information
+
+state "Update weather information" as UpdateWeatherInformation
+UpdateWeatherInformation : entry/Update weather information
+UpdateWeatherInformation : do/Update and show selected weather information
+UpdateWeatherInformation : exit/View additional weather details
+
+state "View additional weather details" as ViewAdditionalWeatherDetails
+ViewAdditionalWeatherDetails : entry/View additional weather details
+ViewAdditionalWeatherDetails : do/View alerts, weekly analysis, future prediction, or graph
+ViewAdditionalWeatherDetails : exit/Logout
+
+state "Logout" as Logout
+Logout : entry/Logout
+Logout : do/End session
+Logout : exit/End
+
+state J1 <<choice>>
+J1 --> CreateAccount : [Create account]
+J1 --> Login : [Login]
+
+state J2 <<choice>>
+J2 --> InvalidRegistration : [Invalid registration]
+J2 --> Login : [Valid login]
+
+state J3 <<choice>>
+J3 --> CheckWeather : [Check weather for current or new location]
+J3 --> Logout : [Logout]
+
+state J4 <<choice>>
+J4 --> SelectWeatherParameter : [Select temperature, humidity, rainfall, pressure, or dew point]
+J4 --> Invalid location : [Invalid location]
+
+state J5 <<choice>>
+J5 --> UpdateWeatherInformation : [Update and show selected weather information]
+J5 --> Invalid parameter : [Invalid parameter]
+
+state J6 <<choice>>
+J6 --> ViewAdditionalWeatherDetails : [View alerts, weekly analysis, future prediction, or graph]
+J6 --> Logout : [Logout]
+
+state J7 <<choice>>
+J7 --> Logout : [End session]
+
+[*] --> Idle
+
+Idle --> J1
+Login --> J2
+CheckWeather --> J3
+SelectWeatherParameter --> J4
+UpdateWeatherInformation --> J5
+ViewAdditionalWeatherDetails --> J6
+InvalidRegistration --> [*]
+InvalidLogin --> [*]
+Logout --> [*]
+
+@enduml

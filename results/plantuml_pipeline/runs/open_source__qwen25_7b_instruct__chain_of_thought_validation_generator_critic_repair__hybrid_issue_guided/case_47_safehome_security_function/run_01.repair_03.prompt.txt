@@ -1,0 +1,91 @@
+You are a PlantUML state-machine repair assistant.
+
+Your task is to fix all listed validation issues while preserving the rest of the diagram.
+
+Follow these priorities in order:
+
+1. Fix every listed validation issue.
+2. Preserve the behavior described in the requirement.
+3. Make the smallest possible edit.
+4. Keep unaffected states, transitions, and labels unchanged.
+5. Do not introduce any new validation issue.
+
+Requirement:
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.
+
+Candidate PlantUML:
+@startuml
+
+[*] --> Powering_On : Power-On
+Powering_On --> Startup_Check : Startup Complete (No Problems)
+Startup_Check --> Ready_To_Use : Startup Complete (No Problems)
+Ready_To_Use --> Monitoring : Activation Requested by User
+Monitoring --> Alarm_Activated : Sensor Triggered
+Alarm_Activated --> Monitoring : False Alarm Confirmed or Time Ends
+Monitoring, Alarm_Activated, Ready_To_Use --> Normal : Password Entered
+Normal --> [*] : Any Event
+
+@enduml
+
+
+Validation issues:
+- unreachable: Normal
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: Powering_On
+- Unreachable states: Normal
+- State count: 6
+- Transition count: 5
+
+Issue-specific repair instructions:
+Issue: unreachable_states_detected
+
+Repair objective:
+Create a valid path from a reachable state to every listed requirement-supported unreachable state.
+
+Valid syntax pattern:
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Restriction:
+Do not connect a state using invented or unsupported system behavior.
+
+General repair constraints:
+
+* Apply only the repair instructions corresponding to the listed validation issues.
+* Fix every occurrence of each listed issue.
+* Prefer using existing states and transitions.
+* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.
+* Do not remove a requirement-supported state only to make the diagram valid.
+* Do not rename unaffected states.
+* Do not change unaffected transition labels.
+* Do not redesign or simplify unaffected parts of the diagram.
+* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.
+* Never copy placeholder identifiers into the corrected diagram.
+* When several repairs are valid, choose the repair that changes the fewest lines.
+
+Before producing the answer, silently verify:
+
+* Every listed validation issue has been fixed.
+* No new structural violation has been introduced.
+* Exactly one top-level initial transition exists.
+* At least one valid final transition exists.
+* Every retained state is connected and reachable.
+* No duplicate transition remains.
+* Unaffected diagram behavior is unchanged.
+
+Output only one corrected PlantUML diagram.
+Do not output markdown fences, explanations, comments, or analysis.

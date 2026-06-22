@@ -1,0 +1,32 @@
+@startuml
+title Microwave Oven State Machine Diagram
+
+state Idle {
+  [*] --> TimeDisplay
+}
+
+state TimeDisplay {
+  state PowerLevelSelection {
+    [*] --> CookingTimeInput
+    state CookingTimeInput {
+      [*] --> DoorOpen
+      state DoorOpen {
+        [*] --> Cancel : cancelButtonClicked()
+        state Inactive : doorOpenDuringOperation()
+        Inactive --> Idle : doorClosed()
+        DoorOpen --> Stop : doorOpenedDuringCooking()
+      }
+    }
+  }
+}
+
+state Inactive {
+  [*] --> Idle : powerLevelSelectionOrCookingTimeInput()
+}
+
+state Cooking {
+  state Stop {
+    [*] --> Idle : cookingCompletedOrCanceled()
+  }
+}
+@enduml

@@ -1,0 +1,107 @@
+You are a PlantUML state-machine repair assistant.
+
+Your task is to fix all listed validation issues while preserving the rest of the diagram.
+
+Follow these priorities in order:
+
+1. Fix every listed validation issue.
+2. Preserve the behavior described in the requirement.
+3. Make the smallest possible edit.
+4. Keep unaffected states, transitions, and labels unchanged.
+5. Do not introduce any new validation issue.
+
+Requirement:
+E Ticketing For Bus — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create a new account.
+2. The system shall validate the registration of a new user.
+3. The system shall allow the user to log in upon successful registration.
+4. The system shall provide options for logged-in users to check their ticket status.
+5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.
+6. The system shall enable users to manage their account details such as editing or deleting them.
+7. The system shall log out the user after they complete any action.
+
+Candidate PlantUML:
+@startuml
+title E Ticketing For Bus - State Diagram
+
+[*] --> CreateUser
+
+state "Create User" as CreateUser
+state "Validate User" as ValidateUser
+state "Login" as Login
+state "Check Ticket Status" as CheckTicketStatus
+state "Book Ticket" as BookTicket
+state "Manage Account" as ManageAccount
+state "Logout" as Logout
+
+CreateUser --> ValidateUser : Registration Successful
+ValidateUser --> Login : Login Successful
+
+[*] --> CreateUser : New User Creation Initiated
+CreateUser --> ValidateUser : Registration Initiated
+
+Login --> CheckTicketStatus : Ticket Status Checked
+CheckTicketStatus --> Login : Return to Login
+
+Login --> BookTicket : Book Ticket
+BookTicket --> Login : Payment Successful
+
+Login --> ManageAccount : Manage Account
+ManageAccount --> Login : Return to Login
+
+Login --> Logout : Logout Successful
+
+Logout --> [*] : Logout Completed
+
+@enduml
+
+
+Validation issues:
+- multiple_initial_state_transitions (CreateUser, Create User)
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 8
+- Transition count: 10
+
+Issue-specific repair instructions:
+Issue: multiple_initial_state_transitions
+
+Repair objective:
+Keep exactly one top-level initial transition and connect other entry states normally.
+
+Valid syntax pattern:
+[*] --> INITIAL_STATE
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Restriction:
+Do not create a choice node or new state merely to remove an extra initial transition.
+
+General repair constraints:
+
+* Apply only the repair instructions corresponding to the listed validation issues.
+* Fix every occurrence of each listed issue.
+* Prefer using existing states and transitions.
+* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.
+* Do not remove a requirement-supported state only to make the diagram valid.
+* Do not rename unaffected states.
+* Do not change unaffected transition labels.
+* Do not redesign or simplify unaffected parts of the diagram.
+* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.
+* Never copy placeholder identifiers into the corrected diagram.
+* When several repairs are valid, choose the repair that changes the fewest lines.
+
+Before producing the answer, silently verify:
+
+* Every listed validation issue has been fixed.
+* No new structural violation has been introduced.
+* Exactly one top-level initial transition exists.
+* At least one valid final transition exists.
+* Every retained state is connected and reachable.
+* No duplicate transition remains.
+* Unaffected diagram behavior is unchanged.
+
+Output only one corrected PlantUML diagram.
+Do not output markdown fences, explanations, comments, or analysis.

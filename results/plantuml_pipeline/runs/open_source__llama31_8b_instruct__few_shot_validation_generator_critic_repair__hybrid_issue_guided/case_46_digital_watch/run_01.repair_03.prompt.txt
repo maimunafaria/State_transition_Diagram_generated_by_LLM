@@ -1,0 +1,129 @@
+You are a PlantUML state-machine repair assistant.
+
+Your task is to fix all listed validation issues while preserving the rest of the diagram.
+
+Follow these priorities in order:
+
+1. Fix every listed validation issue.
+2. Preserve the behavior described in the requirement.
+3. Make the smallest possible edit.
+4. Keep unaffected states, transitions, and labels unchanged.
+5. Do not introduce any new validation issue.
+
+Requirement:
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.
+
+Candidate PlantUML:
+@startuml
+title Digital Watch System States
+
+[*] --> AdjustTime
+
+state "Adjust Time" as AdjustTime
+state "Switch Mode" as SwitchMode
+state "Increase Value" as IncreaseValue
+state "Alarm On/Off" as AlarmOnOff
+state "Alarm Triggered" as AlarmTriggered
+state "Alarm Stopped" as AlarmStopped
+state "Light On/Off" as LightOnOff
+
+AdjustTime : entry / View time
+AdjustTime : do / Adjust time settings
+AdjustTime : exit / Time adjusted
+
+SwitchMode : entry / Switch mode
+SwitchMode : do / Switch mode
+SwitchMode : exit / Mode switched
+
+IncreaseValue : entry / Increase value
+IncreaseValue : do / Increase value
+IncreaseValue : exit / Value increased
+
+AlarmOnOff : entry / Turn alarm on/off
+AlarmOnOff : do / Alarm on/off
+AlarmOnOff : exit / Alarm status updated
+
+AlarmTriggered : entry / Alarm triggered
+AlarmTriggered : do / Alarm triggered
+AlarmTriggered : exit / Alarm triggered
+
+AlarmStopped : entry / Alarm stopped
+AlarmStopped : do / Alarm stopped
+AlarmStopped : exit / Alarm stopped
+
+LightOnOff : entry / Turn light on/off
+LightOnOff : do / Light on/off
+LightOnOff : exit / Light status updated
+
+AdjustTime --> SwitchMode : [press button]
+SwitchMode --> IncreaseValue : [press button]
+IncreaseValue --> AdjustTime : [press button]
+AdjustTime --> AlarmOnOff : [press button]
+AlarmOnOff --> AlarmTriggered : [alarm on]
+AlarmTriggered --> AlarmStopped : [alarm off]
+AlarmStopped --> AdjustTime : [press button]
+AdjustTime --> LightOnOff : [press button]
+LightOnOff --> AlarmOnOff : [press button]
+AlarmStopped --> [*] : alarm stopped
+
+@enduml
+
+
+Validation issues:
+- unreachable: Adjust Time, Alarm On/Off, Alarm Stopped, Alarm Triggered, Increase Value, Light On/Off, Switch Mode
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: AdjustTime
+- Unreachable states: Adjust Time, Alarm On/Off, Alarm Stopped, Alarm Triggered, Increase Value, Light On/Off, Switch Mode
+- State count: 8
+- Transition count: 9
+
+Issue-specific repair instructions:
+Issue: unreachable_states_detected
+
+Repair objective:
+Create a valid path from a reachable state to every listed requirement-supported unreachable state.
+
+Valid syntax pattern:
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Restriction:
+Do not connect a state using invented or unsupported system behavior.
+
+General repair constraints:
+
+* Apply only the repair instructions corresponding to the listed validation issues.
+* Fix every occurrence of each listed issue.
+* Prefer using existing states and transitions.
+* Add a new state or transition only when necessary to fix a listed issue and supported by the requirement.
+* Do not remove a requirement-supported state only to make the diagram valid.
+* Do not rename unaffected states.
+* Do not change unaffected transition labels.
+* Do not redesign or simplify unaffected parts of the diagram.
+* Uppercase identifiers in syntax patterns are placeholders. Replace them with candidate- and requirement-supported identifiers.
+* Never copy placeholder identifiers into the corrected diagram.
+* When several repairs are valid, choose the repair that changes the fewest lines.
+
+Before producing the answer, silently verify:
+
+* Every listed validation issue has been fixed.
+* No new structural violation has been introduced.
+* Exactly one top-level initial transition exists.
+* At least one valid final transition exists.
+* Every retained state is connected and reachable.
+* No duplicate transition remains.
+* Unaffected diagram behavior is unchanged.
+
+Output only one corrected PlantUML diagram.
+Do not output markdown fences, explanations, comments, or analysis.

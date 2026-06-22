@@ -1,0 +1,84 @@
+@startuml
+title UML State Machine Diagram
+
+state "Registration" as Registration {
+  [*] --> RegEnterDetails : ValidEntry
+
+  state "Enter Details" as RegEnterDetails
+  state "Get Member_ID" as GetMemberID
+  state "Successful Registration" as SuccessfulRegistration
+  state "Re-enter Details" as ReEnterDetails
+
+  RegEnterDetails --> GetMemberID : [Valid]
+  RegEnterDetails[Invalid] --> ReEnterDetails
+  ReEnterDetails --> RegEnterDetails
+  GetMemberID --> SuccessfulRegistration
+}
+
+state "Authentication" as Authentication {
+  [*] --> AuthEnterMemberID : ValidCredentials
+
+  state "Enter Member_ID" as AuthEnterMemberID
+  state "Enter Password" as EnterPassword
+  state "successful Login" as SuccessfulLogin
+  state "Invalid Member_ID or Password" as InvalidCreds
+
+  AuthEnterMemberID --> EnterPassword : ValidCredentials
+  EnterPassword[Invalid] --> InvalidCreds : [Invalid]
+  EnterPassword --> SuccessfulLogin
+}
+
+state "Search Books" as SearchBooks {
+  [*] --> EnterBookDetails : FoundBook
+
+  state "Enter Book Details" as EnterBookDetails
+  state "Display Suggestion" as DisplaySuggestion
+  state "choose Alternate option" as ChooseAlternate
+
+  EnterBookDetails[Not Found] --> ChooseAlternate : [Not Found]
+  EnterBookDetails --> DisplaySuggestion : [Found]
+}
+
+state "Get Books" as GetBooksState {
+  [*] --> GetEnterBookID : ActiveMember
+
+  state "Enter Book_ID" as GetEnterBookID
+  state "Enter Member_ID" as GetEnterMemberID
+  state "Obtain Books" as ObtainBooks
+  state PayFineAmount
+
+  GetEnterBookID --> GetEnterMemberID
+  GetEnterMemberID[Active Member] --> ObtainBooks : [Active Member]
+  GetEnterMemberID[Inactive Member] --> PayFineAmount : [Inactive Member]
+}
+
+state "Buy Books" as BuyBooks {
+  [*] --> BuyEnterBookID : Paid
+
+  state "Enter Book_ID" as BuyEnterBookID
+  state "Display Book Amount" as DisplayBookAmount
+  state "Get Books" as BuyGetBooks
+  state BuyNotPaidEnd <<choice>>
+
+  BuyEnterBookID --> DisplayBookAmount : [Paid]
+  DisplayBookAmount[Not Paid] --> BuyNotPaidEnd : [Not Paid]
+}
+
+state StartJoin <<choice>> [Active Member or Student]
+
+[*] --> StartJoin
+StartJoin --> Registration : [Student]
+StartJoin --> Authentication : [Teacher]
+StartJoin --> SearchBooks : [Both]
+StartJoin --> GetBooksState : [Both]
+StartJoin --> BuyBooks : [Both]
+
+SuccessfulRegistration --> AuthEnterMemberID : Student
+
+SuccessfulLogin --> EnterBookDetails : Teacher
+SuccessfulLogin --> GetEnterBookID : Teacher
+SuccessfulLogin --> BuyEnterBookID : Teacher
+
+ObtainBooks --> [*] : ObtainedBooks
+BuyGetBooks --> [*] : BoughtBooks
+@enduml
