@@ -131,6 +131,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path where the generated train/test split metadata is saved",
     )
     p_run.add_argument(
+        "--split-input",
+        default="",
+        help=(
+            "Optional existing split JSON to use instead of creating a new split. "
+            "The file must contain test_case_ids and rag_case_ids."
+        ),
+    )
+    p_run.add_argument(
         "--use-case-rag",
         action="store_true",
         help="Use non-test dataset cases as RAG documents in addition to --rag-docs-dir docs",

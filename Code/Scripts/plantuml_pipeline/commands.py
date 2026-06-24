@@ -475,11 +475,13 @@ def command_run(args: argparse.Namespace) -> int:
     rag_docs_dir = _resolve_root(args.rag_docs_dir)
     rag_db_dir = _resolve_root(args.rag_db_dir)
     split_output = _resolve_root(args.split_output)
+    split_input = _resolve_root(args.split_input) if str(getattr(args, "split_input", "")).strip() else None
     rag_mode = str(args.rag_mode).strip().lower()
     rag_profile = str(args.rag_profile).strip().lower()
     rag_domain_hints = {s.strip().lower() for s in (args.rag_domain_hint or []) if s.strip()}
 
     cases = load_cases(dataset_root)
+    cases_by_id = {case.case_id: case for case in cases}
     for case in cases:
         if not case.gold_validation.valid:
             print(
@@ -488,11 +490,31 @@ def command_run(args: argparse.Namespace) -> int:
                 file=sys.stderr,
             )
 
-    test_cases, rag_cases, split_meta = stratified_split_cases(
-        cases=cases,
-        test_size=args.test_size,
-        seed=args.seed,
-    )
+    if split_input is not None:
+        split_meta = json.loads(read_text(split_input))
+        test_ids = list(split_meta.get("test_case_ids") or [])
+        rag_ids = list(split_meta.get("rag_case_ids") or [])
+        missing_ids = sorted(set(test_ids + rag_ids) - set(cases_by_id))
+        if missing_ids:
+            print(
+                "Split input contains unknown case IDs: " + ", ".join(missing_ids),
+                file=sys.stderr,
+            )
+            return 1
+        test_cases = [cases_by_id[case_id] for case_id in test_ids]
+        rag_cases = [cases_by_id[case_id] for case_id in rag_ids]
+        split_meta = {
+            **split_meta,
+            "loaded_from": str(split_input),
+            "test_count": len(test_cases),
+            "rag_count": len(rag_cases),
+        }
+    else:
+        test_cases, rag_cases, split_meta = stratified_split_cases(
+            cases=cases,
+            test_size=args.test_size,
+            seed=args.seed,
+        )
     write_json(split_output, split_meta)
 
     baseline_cases = balanced_subset(
