@@ -13,20 +13,16 @@ CaptureVehicleDetails --> VerifyRules : [No traffic rule broken]
 VerifyRules --> EndProcess : [No action needed]
 
 state CaptureVehicleDetails <<choice>>
-CaptureVehicleDetails --> VerifyRules : [No emergency or no vehicle passing]
+CaptureVehicleDetails --> VerifyRules : [Traffic rule broken]
+VerifyRules --> RecordViolation : [Fine not paid]
+RecordViolation --> PayFine : [Fine paid]
+PayFine --> CompleteProcess : [Fine paid]
+RecordViolation --> SendWarning : [Fine not paid]
+SendWarning --> ExceedLimit : [Violations exceed limit]
+ExceedLimit --> HoldLicense : [Fine cleared or probation period over]
 
 state VerifyRules <<choice>>
-VerifyRules --> RecordViolation : [Traffic rule broken]
-VerifyRules --> EndProcess : [No violation]
-
-state RecordViolation <<choice>>
-RecordViolation --> IssueFine : [Fine paid]
-IssueFine --> CompleteProcess : [Fine not paid]
-IssueFine --> SendWarning : [Fine not paid]
-
-state SendWarning <<choice>>
-SendWarning --> CheckViolations : [Violations exceed limit]
-CheckViolations --> HoldLicense : [Fine cleared or probation period over]
-HoldLicense --> CompleteProcess : [Fine cleared or probation period over]
+VerifyRules --> EndProcess : [No action needed]
+VerifyRules --> RecordViolation : [Fine not paid]
 
 @enduml
