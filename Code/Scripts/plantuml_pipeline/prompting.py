@@ -1485,8 +1485,8 @@ def _format_compact_repair_examples(examples: list[dict[str, Any]]) -> str:
             (
                 f"Historical repair example {index}\n"
                 f"Violation:\n{errors}\n\n"
-                f"Invalid PlantUML:\n{_clip_section(invalid, 900)}\n\n"
-                f"Repaired PlantUML:\n{_clip_section(repaired, 1200)}"
+                f"Invalid PlantUML:\n{invalid.strip()}\n\n"
+                f"Repaired PlantUML:\n{repaired.strip()}"
             ).strip()
         )
     return "\n\n---\n\n".join(blocks)
