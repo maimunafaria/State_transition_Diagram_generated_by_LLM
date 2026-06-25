@@ -1,0 +1,184 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using the validation issues, repair guidance, and historical repair examples below.
+The historical examples show how similar violations were repaired in past diagrams.
+Use them as repair patterns only; do not copy domain-specific states, transitions, or labels unless supported by the target requirement.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Alert Notifier — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall initialize a component to detect updates upon initial loading.
+2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.
+3. The system shall process detected updates by storing them and evaluating their significance.
+4. The system shall notify appropriate operators of changes based on evaluation results if certain conditions are met.
+5. The system shall return to a waiting state after processing an update.
+6. The system shall enter an unloading phase if initialization fails or if the system is shut down while the component is running.
+7. The system shall perform necessary cleanup operations and inform the component manager of successful removal during unloading.
+8. The system shall terminate the component's operation after unloading is complete.
+
+Candidate PlantUML to repair:
+@startuml
+
+[*] --> Registration
+
+state Registration {
+  Registration : entry / Get the Registration Details
+  Registration : do / Validate the Details
+  Registration : exit / Valid or Invalid Registration
+
+  Registration --> SuccessfulRegistration : valid details
+  Registration --> ReEnterMemberDetails : invalid details
+}
+
+state SuccessfulRegistration {
+  SuccessfulRegistration : entry / Issue Member ID
+  SuccessfulRegistration : do / Issue Member ID
+  SuccessfulRegistration : exit / Issue successful
+
+  SuccessfulRegistration --> Authentication : [valid member]
+}
+
+state Authentication {
+  Authentication : entry / Enter Member Details
+  Authentication : do / Validate Credentials
+  Authentication : exit / Valid or Invalid Login
+
+  Authentication --> SuccessfulLogin : valid credentials
+  Authentication --> InvalidCredentials : invalid credentials
+}
+
+state SuccessfulLogin {
+  SuccessfulLogin : entry / User logged in successfully
+  SuccessfulLogin : do / Display Dashboard
+  SuccessfulLogin : exit / [logout]
+
+  SuccessfulLogin --> Dashboard : [user actions complete]
+}
+
+state Dashboard {
+  Dashboard : entry / User dashboard displayed
+  Dashboard : do / Manage account, check ticket status, book tickets, make payments
+  Dashboard : exit / [logout]
+
+  Dashboard --> Settings : open settings
+  Dashboard --> TicketStatus : check ticket status
+  Dashboard --> BookTicket : book a ticket
+  Dashboard --> MakePayment : make payment
+}
+
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Violation-Specific Repair Examples ---
+Historical Repair Example 1 (Gemma 3 12B, few_shot, baseline, case_32_e_visa_processing_and_follow_up_system)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Example invalid PlantUML:
+@startuml
+title E-Visa Processing and Follow-Up System
+
+[*] --> CreateAccount
+CreateAccount --> LoggedOut : Account Created
+
+state CreateAccount {
+    entry / Display Registration Form
+    exit / Validate and Save User Details
+}
+
+state LoggedOut {
+    entry / Display Login Form
+}
+
+LoggedOut --> LoggedIn : Valid Credentials
+
+state LoggedIn {
+
+---
+
+Historical Repair Example 2 (Qwen 2.5 7B Instruct, rag, hybrid_issue_guided, case_01_healthcare_portal)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Example invalid PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Registered : [registration successful]
+  Registered --> Login : [user signed in]
+}
+
+state Login {
+  Login --> Dashboard : [user logged in]
+}
+
+state Dashboard <<choice>>
+Dashboard --> PatientDashboard : [patient user]
+
+Now repair the target candidate PlantUML. Return only one corrected PlantUML diagram.

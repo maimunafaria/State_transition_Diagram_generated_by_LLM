@@ -1,0 +1,178 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using the validation issues, repair guidance, and historical repair examples below.
+The historical examples show how similar violations were repaired in past diagrams.
+Use them as repair patterns only; do not copy domain-specific states, transitions, or labels unless supported by the target requirement.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Covid — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to create an account by entering their details.
+2. The system shall allow users to sign in using a correct username and password.
+3. The system shall enable logged-in users to read blogs shared by recovered patients.
+4. The system shall allow users to update the number of infected people in their area, triggering updates on infection statistics and mask demand.
+5. The system shall enable users in home quarantine to share their information.
+6. The system shall allow doctors to view shared information from quarantined users and suggest medicines.
+7. The system shall enable users to view a list of nearby medical shops and purchase medicines online.
+8. The system shall allow assigning workers to clean an area, updating the cleanliness status accordingly.
+
+Candidate PlantUML to repair:
+@startuml
+title UML State Machine Diagram - Vehicle Tracking System
+
+[*] --> Start : initial
+
+state "Start" as Start
+state "Select Amount" as SelectAmount
+state "Enter Custom Amount" as EnterCustomAmount
+state "Verify Transaction" as VerifyTransaction
+state "Re-enter Amount" as ReEnterAmount
+state "Transaction Successful" as TransactionSuccessful
+state "Transaction Rejected" as TransactionRejected
+
+Start --> SelectAmount : [select amount from list]
+
+SelectAmount --> EnterCustomAmount : [enter custom value]
+SelectAmount --> VerifyTransaction : [amount selected]
+
+state "Verify Transaction" <<choice>>
+
+VerifyTransaction --> TransactionSuccessful : [valid transaction]
+VerifyTransaction --> TransactionRejected : [invalid transaction]
+
+TransactionRejected --> ReEnterAmount
+
+ReEnterAmount --> SelectAmount : [re-enter amount]
+
+TransactionSuccessful --> End : [end transaction]
+
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Violation-Specific Repair Examples ---
+Historical Repair Example 1 (Qwen 2.5 7B Instruct, few_shot, deepseek_repair, case_60_atm_2)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Atm Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select an amount to withdraw from a list of options.
+2. The system shall permit the user to enter a custom value if they want a different amount.
+3. The system shall verify the transaction after the user enters an amount.
+4. The system shall allow the user to re-enter the amount if the transaction is rejected.
+
+Example invalid PlantUML:
+@startuml
+title UML State Machine Diagram - ATM Withdrawal
+
+[*] --> SelectAmount
+
+state "Select Amount" as SelectAmount
+state "Enter Custom Amount" as EnterCustomAmount
+state "Verify Transaction" as VerifyTransaction
+state "Re-enter Amount" as ReEnterAmount
+state "Transaction Successful" as TransactionSuccessful
+state "Transaction Rejected" as TransactionRejected
+state "End" as End
+
+SelectAmount --> EnterCustomAmount
+SelectAmount --> VerifyTransaction
+
+state "Transaction Verification" <<choice>>
+
+VerifyTransaction --> TransactionSuccessful : [valid]
+VerifyTransaction --> TransactionRejected : [invalid]
+
+TransactionRejected --> ReEnterAmount
+
+ReEnterAmount --> VerifyTransaction
+
+TransactionSuccessful --> End
+
+TransactionRejected --> End
+
+@enduml
+
+Example repaired PlantUML:
+@startuml
+title UML State Machine Diagram - ATM Withdrawal
+
+[*] --> Start : initial
+
+state "Start" as Start
+state "Select Amount" as SelectAmount
+state "Enter Custom Amount" as EnterCustomAmount
+state "Verify Transaction" as VerifyTransaction
+state "Re-enter Amount" as ReEnterAmount
+state "Transaction Successful" as TransactionSuccessful
+state "Transaction Rejected" as TransactionRejected
+
+---
+
+Historical Repair Example 2 (Mistral, rag, syntax_grounded_rules, case_34_green_rides)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Green Rides — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display journey details upon user login and destination selection.
+2. The system shall allow users to activate driving mode or choose other options after viewing journey details.
+3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.
+4. The system shall inform relevant authorities in the event of an accident.
+5. The system shall send notifications during driving or in case of an accident.
+6. The system shall allow users to provide feedback upon completion of their journey.
+
+Example invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> InitialState
+InitialState : Display home page
+InitialState --> ServiceCenterHome : Logged in
+ServiceCenterHome : Display journey details upon user login and destination selection
+ServiceCenterHome --> JourneyDetails : Destination selected
+JourneyDetails : Allow users to activate driving mode or choose other options after viewing journey details
+JourneyDetails --> DrivingModeActivated : Driving mode activated
+JourneyDetails --> OtherOptions : Other options chosen
+OtherOptions : Enable users to select a place to eat, view its menu, and place an order if they are hungry
+OtherOptions --> FoodSelection : Place to eat selected
+FoodSelection : View menu
+FoodSelection --> MenuViewed : Menu viewed
+MenuViewed : Place order if user is hungry
+MenuViewed --> OrderPlaced : Order placed
+OrderPlaced : Inform relevant authorities in the event of an accident
+OrderPlaced --> Accident : Accident occurred
+
+Now repair the target candidate PlantUML. Return only one corrected PlantUML diagram.

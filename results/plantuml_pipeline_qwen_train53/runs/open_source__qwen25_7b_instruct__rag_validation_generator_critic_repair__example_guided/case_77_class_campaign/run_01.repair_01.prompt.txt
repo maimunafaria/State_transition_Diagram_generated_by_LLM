@@ -1,0 +1,170 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using the validation issues, repair guidance, and historical repair examples below.
+The historical examples show how similar violations were repaired in past diagrams.
+Use them as repair patterns only; do not copy domain-specific states, transitions, or labels unless supported by the target requirement.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Class Campaign — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall begin a campaign once a manager and staff are assigned.
+2. The system shall activate and start running a campaign upon approval and signing of the contract.
+3. The system shall prepare a final statement when the campaign is finished and move the process toward completion.
+4. The system shall handle payment after the final statement is prepared.
+5. The system shall generate a refund if the payment is less than what is due.
+6. The system shall wait for the correct amount to be settled if the payment exceeds the due amount.
+7. The system shall mark the campaign as fully paid when the payment matches exactly.
+8. The system shall archive the campaign and release the assigned staff and manager after everything is settled.
+
+Candidate PlantUML to repair:
+@startuml
+title UML State Chart Diagram for Campaign
+
+[*] --> ManagerAssigned
+
+ManagerAssigned --> StaffAssigned : "Staff Assigned"
+
+StaffAssigned --> ContractApproved : "Contract Approved and Signed"
+
+ContractApproved --> FinalStatementPrepared : "Campaign Finished"
+
+FinalStatementPrepared --> PaymentHandled : "Prepare Final Statement"
+
+PaymentHandled --> RefundGenerated : "Payment < Due Amount"
+
+RefundGenerated --> CampaignArchived : "Payment < Due Amount, Process Completed"
+
+PaymentHandled --> ExcessAmountSettled : "Payment > Due Amount"
+
+ExcessAmountSettled --> CampaignArchived : "Wait for Correct Amount, Process Completed"
+
+CampaignArchived --> StaffReleased : "Campaign Fully Paid and Process Completed"
+
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Violation-Specific Repair Examples ---
+Historical Repair Example 1 (Qwen 2.5 7B Instruct, few_shot, deepseek_repair, case_02_inventory)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Inventory — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to add new goods to the inventory.
+2. The system shall allow the user to update the price of existing items in the inventory.
+3. The system shall allow the user to remove goods from the inventory that are no longer required.
+4. The system shall identify expired goods and notify the user about their removal from the inventory.
+5. The system shall allow the user to place an order to a supplier for additional goods when required.
+6. The system shall generate an invoice for the order once it is placed.
+7. The system shall allow the user to search for items available in the inventory and select them for purchase.
+8. The system shall calculate the applicable discount and tax based on the selected items.
+9. The system shall generate a receipt for the customer after the purchase.
+10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.
+11. The system shall record customer requests for items that may not be currently available.
+12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.
+
+Example invalid PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> InventoryMenu
+
+state AddGoods {
+  entry / start state
+  do / add new goods
+  exit / goods added
+  AddGoods --> InventoryMenu
+}
+
+state UpdatePrice {
+  entry / start state
+  do / update price of existing items
+  exit / price updated
+  UpdatePrice --> InventoryMenu
+}
+
+state RemoveGoods {
+  entry / start state
+
+---
+
+Historical Repair Example 2 (Qwen 2.5 7B Instruct, few_shot, deepseek_repair, case_54_weather_station_system)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.
+
+Example invalid PlantUML:
+@startuml
+title Weather Station System State Diagram
+
+[*] --> Shutdown
+
+state Shutdown
+state Running
+state ConfigMode
+state Prepared
+state Controlled
+
+Shutdown --> Running : restart
+Shutdown --> ConfigMode : config required
+Running --> ConfigMode : config required
+Running --> Running : clock trigger
+Running --> Prepared : data collection
+Prepared --> Running : summary sent
+Running --> Running : status check
+ConfigMode --> Running : config completed
+ConfigMode --> ConfigMode : config changes
+Running --> Shutdown : shutdown command
+ConfigMode --> Shutdown : shutdown command
+Prepared --> Running : activity completed
+Controlled --> Running : remote control
+
+@enduml
+
+Example repaired PlantUML:
+@startuml
+
+Now repair the target candidate PlantUML. Return only one corrected PlantUML diagram.

@@ -1,0 +1,191 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using the validation issues, repair guidance, and historical repair examples below.
+The historical examples show how similar violations were repaired in past diagrams.
+Use them as repair patterns only; do not copy domain-specific states, transitions, or labels unless supported by the target requirement.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Coin Operated Pay Phone — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start when it is not in use.
+2. The system shall require inserting coins when the user picks up the receiver.
+3. The system shall allow dialing a number only after sufficient credit has been added.
+4. The system shall start the call when the dialed number is valid and the other party answers.
+5. The system shall continue the call as long as there is sufficient credit.
+6. The system shall end the call if the credit runs out during the call.
+7. The system shall allow adding more coins to continue the call.
+8. The system shall return any unused coins when the user hangs up.
+9. The system shall return to an unused state after a call ends.
+
+Candidate PlantUML to repair:
+@startuml
+title Coin Operated Pay Phone State Machine
+
+[*] --> Idle
+
+state Idle {
+    Idle --> Active : lift receiver / get dial tone
+}
+
+state Active {
+    Active --> DialTone : lift receiver / get dial tone
+}
+
+state DialTone {
+    DialTone --> CreditCheck : enter coins
+}
+
+state CreditCheck {
+    CreditCheck --> CallStart : valid number dialed and answered
+}
+
+state CallStart {
+    CallStart --> Calling : call in progress
+}
+
+state Calling {
+    Calling --> CreditCheck : check credit during call
+    Calling --> EndCall : credit runs out
+}
+
+state EndCall {
+    EndCall --> Idle : hang up
+}
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Violation-Specific Repair Examples ---
+Historical Repair Example 1 (DeepSeek R1 14B, few_shot, hybrid_issue_guided, case_47_safehome_security_function)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.
+
+Example invalid PlantUML:
+@startuml
+title Safehome Security Function State Machine
+
+state "PowerOnCheck" as POC
+state "StartupProblem" as SP
+state "ReadyToUse" as RTU
+state "Monitoring" as M
+state "Normal" as N
+
+[*] --> POC  // Initial transition added
+
+POC --> RTU : everything working
+POC --> SP : problem detected
+
+SP --> POC : problem resolved
+SP --> N : system stops
+
+RTU --> POC : user resets
+RTU --> M : user activates
+RTU --> N : user turns off
+
+M --> M : false alarm or time ends
+M --> N : user enters password
+
+N --> [*]  // Final transition added
+@enduml
+
+Example repaired PlantUML:
+@startuml
+title Safehome Security Function State Machine
+
+state "PowerOnCheck" as POC
+state "StartupProblem" as SP
+state "ReadyToUse" as RTU
+
+---
+
+Historical Repair Example 2 (Qwen 2.5 7B Instruct, few_shot, deepseek_repair, case_47_safehome_security_function)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.
+
+Example invalid PlantUML:
+@startuml
+title UML State Machine Diagram - Safehome Security
+
+[*] --> StartupCheck
+
+state StartupCheck
+state "Ready to use" as ReadyToUse
+state "Monitoring" as Monitoring
+state "Alarm" as Alarm
+state "False Alarm" as FalseAlarm
+state "Off" as Off
+state "Password Entry" as PasswordEntry
+state "Stopped" as Stopped
+
+StartupCheck --> ReadyToUse : check successful
+StartupCheck --> Stopped : check failed
+
+ReadyToUse --> Reset : reset
+ReadyToUse --> Activate : activate
+ReadyToUse --> Off : turn off
+
+Activate --> Monitoring : start monitoring
+Monitoring --> Alarm : sensor triggered
+Monitoring --> FalseAlarm : false alarm
+Monitoring --> Monitoring : time ends
+
+Alarm --> Monitoring : clear alarm
+
+Now repair the target candidate PlantUML. Return only one corrected PlantUML diagram.

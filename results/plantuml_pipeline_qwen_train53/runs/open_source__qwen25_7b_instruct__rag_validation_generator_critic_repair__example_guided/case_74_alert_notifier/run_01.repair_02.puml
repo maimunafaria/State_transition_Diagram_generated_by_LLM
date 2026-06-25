@@ -1,0 +1,63 @@
+@startuml
+
+[*] --> Registration
+
+state Registration {
+  Registration : entry / Get the Registration Details
+  Registration : do / Validate the Details
+  Registration : exit / Valid or Invalid Registration
+
+  Registration --> SuccessfulRegistration : valid details
+  Registration --> ReEnterMemberDetails : invalid details
+}
+
+state SuccessfulRegistration {
+  SuccessfulRegistration : entry / Issue Member ID
+  SuccessfulRegistration : do / Issue Member ID
+  SuccessfulRegistration : exit / Issue successful
+
+  SuccessfulRegistration --> Authentication : [valid member]
+}
+
+state Authentication {
+  Authentication : entry / Enter Member Details
+  Authentication : do / Validate Credentials
+  Authentication : exit / Valid or Invalid Login
+
+  Authentication --> SuccessfulLogin : valid credentials
+  Authentication --> InvalidCredentials : invalid credentials
+}
+
+state SuccessfulLogin {
+  SuccessfulLogin : entry / User logged in successfully
+  SuccessfulLogin : do / Display Dashboard
+  SuccessfulLogin : exit / [logout]
+
+  SuccessfulLogin --> Dashboard : [user actions complete]
+}
+
+state Dashboard {
+  Dashboard : entry / User dashboard displayed
+  Dashboard : do / Manage account, check ticket status, book tickets, make payments
+  Dashboard : exit / [logout]
+
+  Dashboard --> Settings : open settings
+  Dashboard --> TicketStatus : check ticket status
+  Dashboard --> BookTicket : book a ticket
+  Dashboard --> MakePayment : make payment
+}
+
+state Unloading {
+  Unloading : entry / Perform cleanup operations
+  Unloading : do / Cleanup and notify component manager
+  Unloading : exit / Component unloaded successfully
+
+  Unloading --> [*] : [unloading complete]
+}
+
+SuccessfulRegistration --> Authentication : [valid member]
+Authentication --> SuccessfulLogin : valid credentials
+SuccessfulLogin --> Dashboard : [user actions complete]
+Dashboard --> Unloading : [system shutdown or unload]
+
+@enduml
