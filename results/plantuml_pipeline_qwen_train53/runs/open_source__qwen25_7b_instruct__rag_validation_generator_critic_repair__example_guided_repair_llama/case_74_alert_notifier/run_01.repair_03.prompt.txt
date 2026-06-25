@@ -1,0 +1,607 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using the validation issues, repair guidance, and historical repair examples below.
+The historical examples show how similar violations were repaired in past diagrams.
+Use them as repair patterns only; do not copy domain-specific states, transitions, or labels unless supported by the target requirement.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Alert Notifier — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall initialize a component to detect updates upon initial loading.
+2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.
+3. The system shall process detected updates by storing them and evaluating their significance.
+4. The system shall notify appropriate operators of changes based on evaluation results if certain conditions are met.
+5. The system shall return to a waiting state after processing an update.
+6. The system shall enter an unloading phase if initialization fails or if the system is shut down while the component is running.
+7. The system shall perform necessary cleanup operations and inform the component manager of successful removal during unloading.
+8. The system shall terminate the component's operation after unloading is complete.
+
+Candidate PlantUML to repair:
+@startuml
+[*] --> J1 : [check user]
+state J1 <<choice>> {
+  state "Register" as Register
+  Register : entry/when the user are user
+  Register : do/Register process
+  Register : exit/ successful registration
+  Register : exit/ invalid registration
+
+  state "Login" as Login
+  Login : entry/when the user is logged in
+  Login : do/Login process
+  Login : exit/ successful login
+  Login : exit/ failed login
+}
+
+J1 --> J2 : [new user]
+state J2 <<choice>> {
+  state "Patient dashboard" as PatientDashboard
+  PatientDashboard : entry/if the user is logged in as patient
+  PatientDashboard : do/dashboard is displayed
+  PatientDashboard : exit/when user logout
+
+  state "Health worker Dashboard" as HealthWorkerDashboard
+  HealthWorkerDashboard : entry/if the user is logged in as health worker
+  HealthWorkerDashboard : do/display the health worker dashboard
+
+  state "Government dashboard" as GovernmentDashboard
+  GovernmentDashboard : entry/if the user is government official
+  GovernmentDashboard : do/display government dashboard
+}
+
+J2 --> J3 : [logged-in user]
+state J3 <<choice>> {
+  state "Book ticket" as BookTicket
+  BookTicket : entry/when user wants to book a ticket
+  BookTicket : do/book ticket process
+  BookTicket : exit/ successful booking
+  BookTicket : exit/ failed booking
+
+  state "Manage account" as ManageAccount
+  ManageAccount : entry/when user wants to manage their account
+  ManageAccount : do/manage account process
+  ManageAccount : exit/ successful management
+  ManageAccount : exit/ failed management
+}
+
+J3 --> Logout : [logout]
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+- orphan: Book ticket, Government dashboard, Health worker Dashboard, Login, Manage account, Patient dashboard, Register
+- orphan_states_detected
+- unreachable: Book ticket, Government dashboard, Health worker Dashboard, Login, Manage account, Patient dashboard, Register
+- unreachable_states_detected
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+
+--- Historical Violation-Specific Repair Examples ---
+Historical Repair Example 1 (Qwen 2.5 7B Instruct, rag, hybrid_issue_guided, case_01_healthcare_portal)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Example invalid PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Registered : [registration successful]
+  Registered --> Login : [user signed in]
+}
+
+state Login {
+  Login --> Dashboard : [user logged in]
+}
+
+state Dashboard <<choice>>
+Dashboard --> PatientDashboard : [patient user]
+
+---
+
+Historical Repair Example 2 (Gemma 3 12B, few_shot, baseline, case_32_e_visa_processing_and_follow_up_system)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Example invalid PlantUML:
+@startuml
+title E-Visa Processing and Follow-Up System
+
+[*] --> CreateAccount
+CreateAccount --> LoggedOut : Account Created
+
+state CreateAccount {
+    entry / Display Registration Form
+    exit / Validate and Save User Details
+}
+
+state LoggedOut {
+    entry / Display Login Form
+}
+
+LoggedOut --> LoggedIn : Valid Credentials
+
+state LoggedIn {
+
+---
+
+Historical Repair Example 3 (DeepSeek R1 14B, few_shot, full_patterns, case_01_healthcare_portal)
+Violation type:
+- orphan_state
+
+Example requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Example invalid PlantUML:
+@startuml
+title UML State Transition Diagram - Healthcare Portal
+
+[*] --> Idle : Start
+
+state "Idle" as Idle
+Idle : entry/Welcome
+Idle : do/Waiting for user action
+Idle : exit/Register/Login
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/MainMenu/InvalidRegister
+
+state "InvalidRegister" as InvalidRegister
+
+---
+
+Historical Repair Example 4 (DeepSeek R1 14B, few_shot, baseline, case_15_e_ticketing_for_bus)
+Violation type:
+- orphan_state
+
+Example requirement:
+E Ticketing For Bus — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create a new account.
+2. The system shall validate the registration of a new user.
+3. The system shall allow the user to log in upon successful registration.
+4. The system shall provide options for logged-in users to check their ticket status.
+5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.
+6. The system shall enable users to manage their account details such as editing or deleting them.
+7. The system shall log out the user after they complete any action.
+
+Example invalid PlantUML:
+@startuml
+title E-Ticketing System State Transition Diagram
+
+[*] --> Start
+
+state Start
+state CreateUser
+state ValidateRegistration
+state Login
+state MainMenu
+state CheckTicketStatus
+state BookTicket
+state ConfirmPayment
+state ManageAccount
+state Logout
+state End
+
+Start --> CreateUser : Create Account
+CreateUser --> ValidateRegistration : Submit Registration
+ValidateRegistration --> Login : Successful Registration
+Login --> MainMenu : Log In
+
+MainMenu --> CheckTicketStatus : Check Status
+MainMenu --> BookTicket : Book Ticket
+MainMenu --> ManageAccount : Manage Account
+MainMenu --> Logout : Log Out
+
+CheckTicketStatus --> MainMenu : Back to Menu
+BookTicket --> ConfirmPayment : Book Now
+ConfirmPayment --> MainMenu : Payment Complete
+ManageAccount --> MainMenu : Account Updated
+
+Logout --> [*] : Log Out
+
+@enduml
+
+Example repaired PlantUML:
+@startuml
+title E-Ticketing System State Transition Diagram
+
+[*] --> Start
+
+state Start
+state CreateUser
+state ValidateRegistration
+state Login
+
+---
+
+Historical Repair Example 5 (Mistral, rag, syntax_grounded, case_16_weather_monitoring_system)
+Violation type:
+- orphan_state
+
+Example requirement:
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.
+
+Example invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Login / Register
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state CheckWeather
+
+---
+
+Historical Repair Example 6 (Llama 3.1 8B Instruct, few_shot, deepseek_repair, case_32_e_visa_processing_and_follow_up_system)
+Violation type:
+- orphan_state
+
+Example requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Example invalid PlantUML:
+@startuml
+[*] --> CreateUser
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+state Choice3 <<choice>>
+state Choice4 <<choice>>
+state Choice5 <<choice>>
+state Choice6 <<choice>>
+state Choice7 <<choice>>
+state Choice8 <<choice>>
+state Choice9 <<choice>>
+state Choice10 <<choice>>
+state Choice11 <<choice>>
+
+CreateUser : entry / nil
+
+---
+
+Historical Repair Example 7 (Gemma 3 12B, rag, baseline_structural_rules, case_37_online_quiz_system)
+Violation type:
+- unreachable_state
+
+Example requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Example invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+state "Seller Registration" as SellerRegistration
+SellerRegistration : entry/Unregistered Seller
+SellerRegistration : do/Get Valid Seller Credentials
+SellerRegistration : exit/Seller Account Registered
+
+state "Seller Verification" as SellerVerification
+SellerVerification : entry/Seller Account Registered
+SellerVerification : do/Verify Seller
+SellerVerification : exit/Login Seller
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry/Unverified Seller
+SellerLogin : entry/Seller not logged in
+SellerLogin : do/Authenticate Seller
+SellerLogin : exit/Logged In Successfully
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry/Not Logged In
+CustomerLogin : do/Authenticate Customer
+
+---
+
+Historical Repair Example 8 (Qwen 2.5 7B Instruct, few_shot, deepseek_repair, case_02_inventory)
+Violation type:
+- unreachable_state
+
+Example requirement:
+Inventory — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to add new goods to the inventory.
+2. The system shall allow the user to update the price of existing items in the inventory.
+3. The system shall allow the user to remove goods from the inventory that are no longer required.
+4. The system shall identify expired goods and notify the user about their removal from the inventory.
+5. The system shall allow the user to place an order to a supplier for additional goods when required.
+6. The system shall generate an invoice for the order once it is placed.
+7. The system shall allow the user to search for items available in the inventory and select them for purchase.
+8. The system shall calculate the applicable discount and tax based on the selected items.
+9. The system shall generate a receipt for the customer after the purchase.
+10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.
+11. The system shall record customer requests for items that may not be currently available.
+12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.
+
+Example invalid PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> InventoryMenu
+
+state AddGoods {
+  entry / start state
+  do / add new goods
+  exit / goods added
+  AddGoods --> InventoryMenu
+}
+
+state UpdatePrice {
+  entry / start state
+  do / update price of existing items
+  exit / price updated
+  UpdatePrice --> InventoryMenu
+}
+
+state RemoveGoods {
+  entry / start state
+  do / remove goods from inventory
+
+---
+
+Historical Repair Example 9 (Qwen 2.5 7B Instruct, few_shot, targeted, case_15_e_ticketing_for_bus)
+Violation type:
+- unreachable_state
+
+Example requirement:
+E Ticketing For Bus — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create a new account.
+2. The system shall validate the registration of a new user.
+3. The system shall allow the user to log in upon successful registration.
+4. The system shall provide options for logged-in users to check their ticket status.
+5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.
+6. The system shall enable users to manage their account details such as editing or deleting them.
+7. The system shall log out the user after they complete any action.
+
+Example invalid PlantUML:
+@startuml
+title E-Ticketing for Bus State Diagram
+
+state "Start" as Start
+state "Create Account" as CreateAccount
+state "Validate Registration" as ValidateRegistration
+state "Login" as Login
+state "Logged In" as LoggedIn
+state "Check Ticket Status" as CheckTicketStatus
+state "Book Ticket" as BookTicket
+state "Confirm Booking" as ConfirmBooking
+state "Make Payment" as MakePayment
+state "Manage Account" as ManageAccount
+state "Logout" as Logout
+state "Final" as Final
+
+[*] --> Start
+
+Start --> CreateAccount
+
+CreateAccount --> ValidateRegistration
+
+ValidateRegistration --> Login
+
+Login --> LoggedIn
+
+LoggedIn --> CheckTicketStatus
+LoggedIn --> BookTicket
+LoggedIn --> ManageAccount
+
+CheckTicketStatus --> [*]
+
+BookTicket --> ConfirmBooking
+
+ConfirmBooking --> MakePayment
+
+MakePayment --> [*]
+
+ManageAccount --> [*]
+
+Logout --> Final
+
+Final --> Start
+
+@enduml
+
+Example repaired PlantUML:
+@startuml
+title E-Ticketing for Bus State Diagram
+
+state "Start" as Start
+
+---
+
+Historical Repair Example 10 (Gemma 3 12B, rag, syntax_grounded_pattern_rules, case_18_digidoclocker)
+Violation type:
+- unreachable_state
+
+Example requirement:
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
+
+Example invalid PlantUML:
+@startuml
+title UML State Machine Diagram (Certificate Management)
+
+
+[*] --> Registration
+
+state Registration
+Registration : entry / Get the Registration Details
+Registration : do / Validate the Details
+Registration : exit / Valid or Invalid Registration
+
+
+Registration --> [*] : [Invalid Registration]
+
+
+Registration --> Login : [Valid Registration]
+
+
+state Login
+Login : entry / Get the Login Details
+Login : do / Validate the Login Details
+Login : exit / Valid or Invalid Login
+
+
+Login --> Login : [Invalid Login]
+
+
+Login --> Choice1 : [Valid Login]
+
+
+state Choice1 <<choice>>
+
+Choice1 --> CancelCert : [Cancel the Certificate]
+Choice1 --> RequestCert : [Applying for Certificates]
+
+Now repair the target candidate PlantUML. Return only one corrected PlantUML diagram.

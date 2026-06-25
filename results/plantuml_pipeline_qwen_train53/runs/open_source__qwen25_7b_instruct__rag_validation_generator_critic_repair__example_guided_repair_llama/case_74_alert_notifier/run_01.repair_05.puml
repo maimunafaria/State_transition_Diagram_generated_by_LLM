@@ -1,0 +1,60 @@
+@startuml
+[*] --> Start
+
+state "Start" as Start
+Start : entry / start state
+
+state "Registration" as Registration
+Registration : entry / get registration details
+Registration : do / validate registration details
+Registration : exit / valid or invalid registration
+
+Registration --> Login : [valid registration]
+
+state "Login" as Login
+Login : entry / get login details
+Login : do / validate login details
+Login : exit / valid or invalid login
+
+Login --> Choice1 : [valid login]
+
+state "Choice1" <<choice>>
+Choice1 : entry / choice made
+Choice1 : do / apply for certificate or cancel
+Choice1 : exit / certificate applied or cancelled
+
+Choice1 --> ApplyForCert : [apply for certificate]
+ApplyForCert : entry / get certificate details
+ApplyForCert : do / validate certificate details
+ApplyForCert : exit / valid or invalid certificate
+
+ApplyForCert --> RequestCert : [valid certificate]
+
+state "RequestCert" as RequestCert
+RequestCert : entry / request certificate
+RequestCert : do / send request to issuer
+RequestCert : exit / request sent or failed
+
+RequestCert --> CancelCert : [request failed]
+
+state "CancelCert" as CancelCert
+CancelCert : entry / cancel certificate
+CancelCert : do / cancel request
+CancelCert : exit / cancelled or failed
+
+CancelCert --> Logout : [cancelled]
+
+state "Logout" as Logout
+Logout : entry / log out
+Logout : do / end session
+Logout : exit / logged out
+
+Logout --> Start : [logged out]
+Start --> Registration : [start registration]
+Registration --> Logout : [invalid registration]
+Login --> Logout : [invalid login]
+ApplyForCert --> Logout : [invalid certificate]
+RequestCert --> Logout : [request failed]
+CancelCert --> Logout : [cancelled]
+
+@enduml

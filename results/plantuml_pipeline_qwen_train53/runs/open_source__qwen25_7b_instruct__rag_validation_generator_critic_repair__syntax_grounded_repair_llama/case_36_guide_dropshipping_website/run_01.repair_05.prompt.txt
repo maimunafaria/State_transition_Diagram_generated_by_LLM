@@ -1,0 +1,103 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Guide Dropshipping Website — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to choose whether they are a seller or a customer.
+2. The system shall enable the seller to add or remove products from their list and finalize their offerings.
+3. The system shall allow the customer to view available products and select ones of interest.
+4. The system shall facilitate communication between customers and sellers for deal discussions.
+5. The system shall determine whether a purchase is completed based on the discussion or if it does not proceed.
+6. The system shall allow the customer to make payment after a purchase is completed and provide feedback later.
+7. The system shall end the interaction if no deal occurs.
+
+Candidate PlantUML:
+@startuml
+
+[*] --> Login
+
+state "Login" as L1
+L1 --> SellerRegistration : [seller]
+L1 --> CustomerRegistration : [customer]
+
+state "Seller Registration" as S1
+S1 --> WorkspaceAccess : [complete registration and verification]
+
+state "Customer Registration" as C1
+C1 --> DashboardAccess : [complete registration and verification]
+
+state "Workspace Access" as W1
+W1 --> AddProducts : [add new products]
+W1 --> PromoteProducts : [promote existing products]
+W1 --> CommunicateWithCustomers : [communicate with customers]
+W1 --> Logout : [log out]
+W1 --> [*] : PurchaseCompletion
+
+state "Dashboard Access" as D1
+D1 --> ExploreProducts : [explore products]
+D1 --> ViewAvailableProducts : [view available products]
+D1 --> BrowseAndPurchase : [browse and purchase]
+
+state "Add Products" as AP
+AP --> W1
+
+state "Promote Products" as PP
+PP --> W1
+
+state "Communicate With Customers" as CC
+CC --> W1
+
+state "Logout" as L2
+L2 --> W1
+
+state "Explore Products" as EP
+EP --> D1
+
+state "View Available Products" as VAP
+VAP --> D1
+
+state "Browse And Purchase" as BAP
+BAP --> D1
+
+W1 --> Login : NoDealOccured
+
+@enduml
+
+
+Validation issues:
+- unreachable: Add Products, AddProducts, Browse And Purchase, BrowseAndPurchase, Communicate With Customers, CommunicateWithCustomers, Customer Registration, Dashboard Access, DashboardAccess, Explore Products, ExploreProducts, Logout, Promote Products, PromoteProducts, Seller Registration, View Available Products, ViewAvailableProducts, Workspace Access, WorkspaceAccess
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: Login
+- Unreachable states: Add Products, AddProducts, Browse And Purchase, BrowseAndPurchase, Communicate With Customers, CommunicateWithCustomers, Customer Registration, Dashboard Access, DashboardAccess, Explore Products, ExploreProducts, Logout, Promote Products, PromoteProducts, Seller Registration, View Available Products, ViewAvailableProducts, Workspace Access, WorkspaceAccess
+- State count: 22
+- Transition count: 19
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Valid PlantUML repair patterns:
+Pattern 1: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT

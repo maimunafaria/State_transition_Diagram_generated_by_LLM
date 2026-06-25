@@ -1,0 +1,50 @@
+@startuml
+title ATM Control - Polished Requirement Specification
+
+[*] --> Idle : Initial State
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForChoice
+state Confiscating
+state Ejecting
+state SystemOutOfCash
+state Resetting
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> InvalidPIN : Incorrect PIN / Invalid PIN Prompt
+ValidatingPIN --> ValidPIN : Correct PIN / Display Options
+
+InvalidPIN --> Confiscating : Too Many Incorrect Pins / Keep Card
+Confiscating --> Ejecting : Card Confiscated / Return Card
+
+ValidPIN --> WaitingForChoice : Correct PIN / Show Options
+
+WaitingForChoice --> TransferOption : Choose Transfer / Process Transfer
+TransferOption --> ProcessingTransaction : Approved Transfer / Print Receipt, Dispense Cash, Return Card
+ProcessingTransaction --> RejectedOperation : Rejected Request / Cancel Operation, Return Card
+RejectedOperation --> Ejecting : Operation Rejected / Return Card
+
+WaitingForChoice --> QueryOption : Choose Query / Process Query
+QueryOption --> ProcessingTransaction : Approved Query / Print Receipt, Return Card
+
+WaitingForChoice --> WithdrawOption : Choose Withdrawal / Process Withdrawal
+WithdrawOption --> ProcessingTransaction : Approved Withdrawal / Print Receipt, Dispense Cash, Return Card
+
+ProcessingTransaction --> Ejecting : Transaction Complete / Return Card
+
+SystemOutOfCash --> Idle : No Cash / Display Low Cash Message
+
+Idle --> SystemOutOfCash : No Cash / Display Low Cash Message
+
+ProcessingTransaction --> Resetting : Session Ended / Reset System
+Resetting --> Idle : Session Ended / Reset System
+
+[*] --> Ejecting : Completion Event
+
+Ejecting --> [*] : Card Ejected / Reset System
+
+@enduml

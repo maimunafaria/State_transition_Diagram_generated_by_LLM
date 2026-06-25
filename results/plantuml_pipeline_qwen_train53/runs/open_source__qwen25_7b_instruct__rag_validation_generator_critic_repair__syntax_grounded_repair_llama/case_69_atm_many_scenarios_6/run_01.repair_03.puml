@@ -1,0 +1,53 @@
+@startuml
+title ATM Control - Polished Requirement Specification
+
+[*] --> WaitingForPIN : Card Inserted / Get PIN
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForChoice
+state Confiscating
+state Ejecting
+state SystemOutOfCash
+state Resetting
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> InvalidPIN : Incorrect PIN / Invalid PIN Prompt
+ValidatingPIN --> ValidPIN : Correct PIN / Display Options
+
+InvalidPIN --> Confiscating : Too Many Incorrect Pins / Keep Card
+Confiscating --> Ejecting : Card Confiscated / Return Card
+
+ValidPIN --> WaitingForChoice : Correct PIN / Show Options
+
+WaitingForChoice --> TransferOption : Choose Transfer / Process Transfer
+TransferOption --> ProcessingTransaction : Approved Transfer / Print Receipt, Dispense Cash, Return Card
+ProcessingTransaction --> RejectedOperation : Rejected Request / Cancel Operation, Return Card
+RejectedOperation --> Ejecting : Operation Rejected / Return Card
+
+WaitingForChoice --> QueryOption : Choose Query / Process Query
+QueryOption --> ProcessingTransaction : Approved Query / Print Receipt, Return Card
+
+WaitingForChoice --> WithdrawOption : Choose Withdrawal / Process Withdrawal
+WithdrawOption --> ProcessingTransaction : Approved Withdrawal / Print Receipt, Dispense Cash, Return Card
+
+ProcessingTransaction --> Resetting : Session Ended / Reset System
+Resetting --> Idle : Session Ended / Reset System
+
+SystemOutOfCash --> Idle : No Cash / Display Low Cash Message
+
+Ejecting --> Idle : Card Ejected / Reset System
+
+[*] --> Ejecting : Completion Event
+
+state "Invalid PIN" as InvalidPIN
+state "Correct PIN" as ValidPIN
+state "Too Many Incorrect Pins" as Confiscating
+state "Card Confiscated" as Ejecting
+state "Approved Transfer" as ProcessingTransaction
+state "Rejected Request" as RejectedOperation
+state "Approved Query" as ProcessingTransaction
+state "Approved Withdrawal" as ProcessingTransaction
+
+@enduml

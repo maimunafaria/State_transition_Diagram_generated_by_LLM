@@ -1,0 +1,87 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Covid — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to create an account by entering their details.
+2. The system shall allow users to sign in using a correct username and password.
+3. The system shall enable logged-in users to read blogs shared by recovered patients.
+4. The system shall allow users to update the number of infected people in their area, triggering updates on infection statistics and mask demand.
+5. The system shall enable users in home quarantine to share their information.
+6. The system shall allow doctors to view shared information from quarantined users and suggest medicines.
+7. The system shall enable users to view a list of nearby medical shops and purchase medicines online.
+8. The system shall allow assigning workers to clean an area, updating the cleanliness status accordingly.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state UserChoice <<choice>>
+
+[*] --> CreateAccount : "Create an account"
+CreateAccount --> SignedIn : "Sign in with correct username and password"
+SignedIn --> ReadBlogs : "Read blogs shared by recovered patients"
+SignedIn --> UpdateInfectedPeople : "Update number of infected people"
+SignedIn --> ShareInfo : "Share information from home quarantine"
+SignedIn --> ViewMedicalShops : "View nearby medical shops and purchase medicines"
+SignedIn --> AssignCleaners : "Assign workers to clean an area"
+
+@enduml
+
+
+Validation issues:
+- missing_final_state_transition (state --> [*])
+- orphan: StartChoice, UserChoice
+- orphan_states_detected
+- unreachable: StartChoice, UserChoice
+- unreachable_states_detected
+- choice_node_without_outgoing_transitions (StartChoice)
+- choice_node_without_outgoing_transitions (UserChoice)
+
+Validator details:
+- Current initial state: CreateAccount
+- Unreachable states: StartChoice, UserChoice
+- State count: 9
+- Transition count: 6
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Valid PlantUML repair patterns:
+Pattern 1: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 2: connect a requirement-supported orphan state
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Pattern 3: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Pattern 4: valid guarded choice node
+state DECISION_NODE <<choice>>
+SOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]

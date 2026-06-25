@@ -1,0 +1,51 @@
+@startuml
+[*] --> UserRegistration : Start
+UserRegistration --> SignIn : successful registration
+SignIn --> FacilityAccess : after signing in
+FacilityAccess --> NewsReading : read news/expert content
+NewsReading --> HealthInfo : check symptoms or fitness options
+
+state "Patient dashboard" as PatientDashboard
+PatientDashboard : entry/if the user is logged in as patient
+PatientDashboard : do/dashboard is displayed
+PatientDashboard : exit/when user logout
+
+state "Health worker Dashboard" as HealthWorkerDashboard
+HealthWorkerDashboard : entry/if the user is logged in as health worker
+HealthWorkerDashboard : do/display the health worker dashboard
+HealthWorkerDashboard --> Logout : when health worker logs out
+
+state "Government dashboard" as GovernmentDashboard
+GovernmentDashboard : entry/if the user is government official
+GovernmentDashboard : do/display government dashboard
+GovernmentDashboard --> Logout : when government official logs out
+
+Login --> PatientDashboard : if logged in as patient
+Login --> HealthWorkerDashboard : if logged in as health worker
+Login --> GovernmentDashboard : if logged in as government official
+
+Logout --> [*] : after logout
+
+state "Login" as Login
+UserRegistration -> Login : Register/Login
+
+state "Unauthenticated" as Unauthenticated
+[*] --> Unauthenticated : Start
+Unauthenticated --> UserRegistration : No user logged in
+
+state "Authenticated" as Authenticated
+SignIn --> Authenticated : Successful login
+
+Authenticated --> PatientDashboard : if logged in as patient
+Authenticated --> HealthWorkerDashboard : if logged in as health worker
+Authenticated --> GovernmentDashboard : if logged in as government official
+
+Authenticated --> Logout : when user logs out
+
+PatientDashboard --> Authenticated : if user is still logged in as patient
+HealthWorkerDashboard --> Authenticated : if user is still logged in as health worker
+GovernmentDashboard --> Authenticated : if user is still logged in as government official
+
+Logout --> Unauthenticated : after logout
+
+@enduml
