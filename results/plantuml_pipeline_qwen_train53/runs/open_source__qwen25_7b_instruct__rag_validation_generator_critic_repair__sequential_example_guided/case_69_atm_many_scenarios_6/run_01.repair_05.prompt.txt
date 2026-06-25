@@ -1,0 +1,207 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Atm Many Scenarios Scenario 6 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if the entered PIN is correct.
+2. The system shall ask for the PIN again if it is incorrect.
+3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.
+4. The system shall return the card if the user cancels the process at any moment during this stage.
+5. The system shall display options for the user to choose from if the PIN is correct.
+6. The system shall process the withdrawal request and check if it can approve the transaction.
+7. The system shall cancel everything and return the card if the withdrawal request is rejected.
+8. The system shall dispense cash, print a receipt, and return the card if the withdrawal request is approved.
+9. The system shall stop the operation if it runs out of cash during the process.
+10. The system shall reset itself to be ready for the next user after completing or ending the session.
+
+Candidate PlantUML to repair:
+@startuml
+title ATM Control - Polished Requirement Specification
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForChoice
+state Confiscating
+state Ejecting
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> InvalidPIN : Incorrect PIN / Invalid PIN Prompt
+ValidatingPIN --> ValidPIN : Correct PIN / Display Options
+
+InvalidPIN --> Confiscating : Too Many Incorrect Pins / Keep Card
+Confiscating --> Ejecting : Card Confiscated / Return Card
+
+ValidPIN --> WaitingForChoice : Correct PIN / Show Options
+
+WaitingForChoice --> TransferOption : Choose Transfer / Process Transfer
+WaitingForChoice --> QueryOption : Choose Query / Process Query
+WaitingForChoice --> WithdrawOption : Choose Withdrawal / Process Withdrawal
+
+TransferOption --> ProcessingTransaction : Approved Transfer / Print Receipt, Dispense Cash, Return Card
+ProcessingTransaction --> Ejecting : Transaction Complete / Return Card
+
+QueryOption --> ProcessingTransaction : Approved Query / Print Receipt, Return Card
+
+WithdrawOption --> ProcessingTransaction : Approved Withdrawal / Print Receipt, Dispense Cash, Return Card
+
+ProcessingTransaction --> RejectedOperation : Rejected Request / Cancel Operation, Return Card
+
+RejectedOperation --> Ejecting : Operation Rejected / Return Card
+
+Ejecting --> Idle : Card Ejected / Reset System
+
+state "System Out of Cash" as SystemOutOfCash
+SystemOutOfCash --> Idle : No Cash / Display Low Cash Message
+
+state "Resetting" as Resetting
+Resetting --> Idle : Session Ended / Reset System
+
+Idle --> [*] : End Session / Reset System
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- unreachable: Resetting, System Out of Cash
+
+Other current validation issues, leave for later attempts unless naturally fixed:
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: Idle
+- Unreachable states: Resetting, System Out of Cash
+- State count: 15
+- Transition count: 19
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for the target issue:
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical Repair Example 1 (Mistral, rag, baseline_structural_rules, case_70_atm_many_scenarios_7)
+Violation type:
+- unreachable_state
+
+Example requirement:
+Atm Many Scenarios Scenario 7 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall greet the user when they arrive.
+2. The system shall check the PIN after the card is inserted.
+3. The system shall allow the user to try again if the entered PIN is incorrect.
+4. The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times.
+5. The system shall return the card if the user cancels the operation.
+6. The system shall display available options (withdrawing money, checking information, or making a transfer) for the user to choose from if the PIN is correct.
+7. The system shall process the selected request after the user makes a choice.
+
+Example invalid PlantUML:
+@startuml
+title ATM Control - Validate PIN and Process Requests
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForCustomerChoice
+state ProcessingWithdrawal
+state Dispensing
+state Printing
+state Ejecting
+state Confiscating
+state Terminating
+state ClosedDown
+state LoggedOut
+
+Idle : entry / Display Welcome
+ClosedDown : entry / Display System Down
+LoggedOut : entry /
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+WaitingForPIN --> Confiscating : Card Confiscated / display Confiscated
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> Confiscating : Card Stolen, Card Expired /\nConfiscate, Update Status
+ValidatingPIN --> Confiscating : Third Invalid PIN /\nConfiscate
+
+ValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu
+
+---
+
+Historical Repair Example 2 (Mistral, rag, targeted, case_67_atm_many_scenarios_1)
+Violation type:
+- unreachable_state
+
+Example requirement:
+Atm Many Scenarios Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall prompt the user to enter their PIN after the card is inserted.
+2. The system shall verify the entered PIN against the stored information.
+3. The system shall ensure that if the PIN is verified successfully, the system shall provide options to the user.
+4. The system shall support upon user approval, the system shall process the withdrawal request.
+5. The system shall support after dispensing cash, the system shall print a receipt for the transaction.
+6. The system shall support after completing the transaction, the system shall return the user's card.
+7. The system shall support after a brief moment, the system shall reset itself and become ready for the next user.
+
+Example invalid PlantUML:
+@startuml
+title ATM Control - Validate PIN and Withdraw Funds
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForCustomerChoice
+state ProcessingWithdrawal
+state Dispensing
+state Printing
+state Ejecting
+state Confiscating
+state Terminating
+state ClosedDown
+state LoggedOut
+
+Idle : entry / Display Welcome
+ClosedDown : entry / Display System Down
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+WaitingForPIN --> Confiscating : Card Confiscated / display Confiscated
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> Confiscating : Card Stolen, Card Expired /\nConfiscate, Update Status
+ValidatingPIN --> Confiscating : Third Invalid PIN /\nConfiscate
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

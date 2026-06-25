@@ -1,0 +1,469 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using the validation issues, repair guidance, and historical repair examples below.
+The historical examples show how similar violations were repaired in past diagrams.
+Use them as repair patterns only; do not copy domain-specific states, transitions, or labels unless supported by the target requirement.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Alert Notifier — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall initialize a component to detect updates upon initial loading.
+2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.
+3. The system shall process detected updates by storing them and evaluating their significance.
+4. The system shall notify appropriate operators of changes based on evaluation results if certain conditions are met.
+5. The system shall return to a waiting state after processing an update.
+6. The system shall enter an unloading phase if initialization fails or if the system is shut down while the component is running.
+7. The system shall perform necessary cleanup operations and inform the component manager of successful removal during unloading.
+8. The system shall terminate the component's operation after unloading is complete.
+
+Candidate PlantUML to repair:
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [check user]
+state J1 <<choice>> {
+  J1 --> Register : [ new user ]
+  J1 --> Login
+}
+
+state "Register" as Register
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/ successful registration
+Register : exit/ invalid registration
+
+state "Login" {
+  state "Patient dashboard" as PatientDashboard
+  PatientDashboard : entry/if the user is logged in as patient
+  PatientDashboard : do/dashboard is displayed
+  PatientDashboard : exit/when user logout
+
+  state "Health worker Dashboard" as HealthWorkerDashboard
+  HealthWorkerDashboard : entry/if the user is logged in as health worker
+  HealthWorkerDashboard : do/display the health worker dashboard
+  HealthWorkerDashboard : exit/if health worker logout
+
+  state "Government dashboard" as GovernmentDashboard
+  GovernmentDashboard : entry/if the user is government official
+  GovernmentDashboard : do/display government dashboard
+}
+
+state "LoggedIn" {
+  LoggedIn --> PatientDashboard
+  LoggedIn --> HealthWorkerDashboard
+  LoggedIn --> GovernmentDashboard
+  LoggedIn --> Logout
+}
+
+state "Logout"
+Logout : entry/when user logout
+Logout : do/logout process
+Logout : exit/successful logout
+
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+- unreachable: Government dashboard, Health worker Dashboard, LoggedIn, Logout, Patient dashboard
+- unreachable_states_detected
+- choice_node_without_guarded_outgoing_transitions (J1)
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].
+
+--- Historical Violation-Specific Repair Examples ---
+Historical Repair Example 1 (Qwen 2.5 7B Instruct, rag, hybrid_issue_guided, case_01_healthcare_portal)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Example invalid PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Registered : [registration successful]
+  Registered --> Login : [user signed in]
+}
+
+state Login {
+  Login --> Dashboard : [user logged in]
+}
+
+state Dashboard <<choice>>
+Dashboard --> PatientDashboard : [patient user]
+
+---
+
+Historical Repair Example 2 (Qwen 2.5 7B Instruct, rag, baseline, case_01_healthcare_portal)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Example invalid PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Login : [registration successful]
+  Login : [registration failed]
+}
+
+state Login {
+  Login --> Dashboard : [login successful]
+  Dashboard : [logout]
+}
+
+state Dashboard {
+  Dashboard --> News : [read news]
+  News --> Dashboard : [back to dashboard]
+
+---
+
+Historical Repair Example 3 (DeepSeek R1 14B, few_shot, full_patterns, case_01_healthcare_portal)
+Violation type:
+- unreachable_state
+
+Example requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Example invalid PlantUML:
+@startuml
+title UML State Transition Diagram - Healthcare Portal
+
+[*] --> Idle : Start
+
+state "Idle" as Idle
+Idle : entry/Welcome
+Idle : do/Waiting for user action
+Idle : exit/Register/Login
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/MainMenu/InvalidRegister
+
+state "InvalidRegister" as InvalidRegister
+
+---
+
+Historical Repair Example 4 (Gemma 3 12B, rag, baseline_structural_rules, case_37_online_quiz_system)
+Violation type:
+- unreachable_state
+
+Example requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Example invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+state "Seller Registration" as SellerRegistration
+SellerRegistration : entry/Unregistered Seller
+SellerRegistration : do/Get Valid Seller Credentials
+SellerRegistration : exit/Seller Account Registered
+
+state "Seller Verification" as SellerVerification
+SellerVerification : entry/Seller Account Registered
+SellerVerification : do/Verify Seller
+SellerVerification : exit/Login Seller
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry/Unverified Seller
+SellerLogin : entry/Seller not logged in
+SellerLogin : do/Authenticate Seller
+SellerLogin : exit/Logged In Successfully
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry/Not Logged In
+CustomerLogin : do/Authenticate Customer
+
+---
+
+Historical Repair Example 5 (Qwen 2.5 7B Instruct, few_shot, deepseek_repair, case_02_inventory)
+Violation type:
+- unreachable_state
+
+Example requirement:
+Inventory — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to add new goods to the inventory.
+2. The system shall allow the user to update the price of existing items in the inventory.
+3. The system shall allow the user to remove goods from the inventory that are no longer required.
+4. The system shall identify expired goods and notify the user about their removal from the inventory.
+5. The system shall allow the user to place an order to a supplier for additional goods when required.
+6. The system shall generate an invoice for the order once it is placed.
+7. The system shall allow the user to search for items available in the inventory and select them for purchase.
+8. The system shall calculate the applicable discount and tax based on the selected items.
+9. The system shall generate a receipt for the customer after the purchase.
+10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.
+11. The system shall record customer requests for items that may not be currently available.
+12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.
+
+Example invalid PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> InventoryMenu
+
+state AddGoods {
+  entry / start state
+  do / add new goods
+  exit / goods added
+  AddGoods --> InventoryMenu
+}
+
+state UpdatePrice {
+  entry / start state
+  do / update price of existing items
+  exit / price updated
+  UpdatePrice --> InventoryMenu
+}
+
+state RemoveGoods {
+  entry / start state
+  do / remove goods from inventory
+
+---
+
+Historical Repair Example 6 (Mistral, rag, targeted, case_34_green_rides)
+Violation type:
+- unreachable_state
+
+Example requirement:
+Green Rides — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display journey details upon user login and destination selection.
+2. The system shall allow users to activate driving mode or choose other options after viewing journey details.
+3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.
+4. The system shall inform relevant authorities in the event of an accident.
+5. The system shall send notifications during driving or in case of an accident.
+6. The system shall allow users to provide feedback upon completion of their journey.
+
+Example invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+state ServiceCenterHome
+ServiceCenterHome : entry / Logged in Service Center
+ServiceCenterHome : do / Display home page
+ServiceCenterHome : exit / Enter Damaged parts list
+ServiceCenterHome : exit / Expiry Notification page
+ServiceCenterHome : exit / Updating Information list
+ServiceCenterHome : exit / Logout
+
+state ExpiryNotification
+ExpiryNotification : entry / To view expiry notification
+ExpiryNotification : do / Send service request to Car owner
+ExpiryNotification : exit / Return to Service center home page
+ExpiryNotification : exit / Logout
+
+state Entering Damaged parts list
+Entering Damaged parts list : entry / To enter Damaged parts list
+Entering Damaged parts list : do / Preparing and entering damaged parts list
+Entering Damaged parts list : exit / Return to service center home page
+Entering Damaged parts list : exit / Logout
+
+state Updating parts Information
+Updating parts Information : entry / To update changed parts information
+
+---
+
+Historical Repair Example 7 (Gemma 3 12B, rag, full_patterns, case_15_e_ticketing_for_bus)
+Violation type:
+- choice_without_outgoing
+
+Example requirement:
+E Ticketing For Bus — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create a new account.
+2. The system shall validate the registration of a new user.
+3. The system shall allow the user to log in upon successful registration.
+4. The system shall provide options for logged-in users to check their ticket status.
+5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.
+6. The system shall enable users to manage their account details such as editing or deleting them.
+7. The system shall log out the user after they complete any action.
+
+Example invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [check user]
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state "Register" as Register
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/ successful registration
+Register : exit/ invalid registration
+
+state "Login" as Login {
+
+  state "Patient dashboard" as PatientDashboard
+  PatientDashboard : entry/if the user is logged in as patient
+  PatientDashboard : do/dashboard is displayed
+  PatientDashboard : exit/when user logout
+
+  state "Health worker Dashboard" as HealthWorkerDashboard
+  HealthWorkerDashboard : entry/if the user is logged in as health worker
+  HealthWorkerDashboard : do/display the health worker dashboard
+  HealthWorkerDashboard : exit/if health worker logout
+
+  state "Government dashboard" as GovernmentDashboard
+  GovernmentDashboard : entry/if the user is government official
+  GovernmentDashboard : do/display government dashboard
+
+---
+
+Historical Repair Example 8 (Gemma 3 12B, rag, baseline, case_39_website_development)
+Violation type:
+- choice_without_outgoing
+
+Example requirement:
+Website Development — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to navigate from the homepage using a navigation bar.
+2. The system shall display information about projects when selected by the user.
+3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.
+4. The system shall display information about career opportunities when selected by the user.
+5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.
+6. The system shall check submitted job applications after they are submitted.
+
+Example invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [check user]
+state J1 <<choice>> {
+  J1 --> Register : [ new user ]
+  J1 --> J2
+}
+state J2 <<choice>> {
+  J2 --> J3
+  J2 --> [*]
+}
+state J3 <<choice>> {
+  J3 --> Login
+  J3 --> J4
+}
+state J4 <<choice>> {
+  Login --> J4
+  J4 --> Logout
+}
+state "Register" as Register
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/ successful registration
+Register : exit/ invalid registration
+
+state "Login" {
+
+  state "Patient dashboard" as PatientDashboard
+  PatientDashboard : entry/if the user is logged in as patient
+  PatientDashboard : do/dashboard is displayed
+  PatientDashboard : exit/when user logout
+
+  state "Health worker Dashboard" as HealthWorkerDashboard
+  HealthWorkerDashboard : entry/if the user is logged in as health worker
+  HealthWorkerDashboard : do/display the health worker dashboard
+
+Now repair the target candidate PlantUML. Return only one corrected PlantUML diagram.
