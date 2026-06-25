@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import json
 import re
 from pathlib import Path
 from typing import Any
@@ -1303,6 +1304,161 @@ def _prioritized_repair_issues(validation: ValidationResult) -> list[str]:
     return sorted(issues, key=lambda issue: (_repair_issue_priority(issue), issue))
 
 
+def _normalize_repair_issue_name(issue: str) -> str:
+    issue = issue.strip().lower()
+    issue = re.sub(r"\s*\(.*?\)\s*$", "", issue)
+    issue = issue.replace(" ", "_")
+    if issue.startswith("orphan"):
+        return "orphan_state"
+    if issue.startswith("unreachable"):
+        return "unreachable_state"
+    if issue.startswith("duplicate"):
+        return "duplicate_transitions_detected"
+    if "missing_initial" in issue:
+        return "missing_initial_state_transition"
+    if "missing_final" in issue:
+        return "missing_final_state_transition"
+    if "multiple_initial" in issue:
+        return "multiple_initial_state_transitions"
+    if "[*]" in issue and "[*]" in issue.replace("[*]", "", 1):
+        return "invalid_initial_to_final_transition"
+    if "choice" in issue and "outgoing" in issue:
+        return "choice_without_outgoing"
+    if "choice" in issue and "guard" in issue:
+        return "choice_without_guard"
+    if "fork" in issue:
+        return "fork_without_multiple_outgoing"
+    if "join" in issue:
+        return "join_without_multiple_incoming"
+    if "history" in issue:
+        return "history_state_used_without_composite_state"
+    return issue
+
+
+def _section_between(text: str, start_label: str, end_labels: list[str]) -> str:
+    start = text.find(start_label)
+    if start < 0:
+        return ""
+    start += len(start_label)
+    end_positions = [text.find(label, start) for label in end_labels]
+    end_positions = [pos for pos in end_positions if pos >= 0]
+    end = min(end_positions) if end_positions else len(text)
+    return text[start:end].strip()
+
+
+def _load_repair_examples(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    examples: list[dict[str, Any]] = []
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        metadata = row.get("metadata") or {}
+        issue_names = [
+            _normalize_repair_issue_name(str(issue))
+            for issue in metadata.get("violation_types", [])
+        ]
+        if not issue_names:
+            continue
+        examples.append(
+            {
+                "issue_names": issue_names,
+                "input": str(row.get("input", "")),
+                "output": str(row.get("output", "")),
+                "source_llm": metadata.get("source_llm", ""),
+                "source_method": metadata.get("source_method", ""),
+                "source_repair_variant": metadata.get("source_repair_variant", ""),
+                "case_id": metadata.get("case_id", ""),
+            }
+        )
+    return examples
+
+
+def _select_repair_examples(
+    repair_example_dataset: Path,
+    issues: list[str],
+    requirement: str,
+    candidate_puml: str,
+    examples_per_issue: int,
+) -> list[dict[str, Any]]:
+    examples = _load_repair_examples(repair_example_dataset)
+    if not examples or examples_per_issue <= 0:
+        return []
+
+    query_tokens = tokenize(requirement + "\n" + candidate_puml)
+    selected: list[dict[str, Any]] = []
+    selected_keys: set[tuple[str, str, str]] = set()
+
+    for issue in issues:
+        normalized_issue = _normalize_repair_issue_name(issue)
+        candidates = [
+            example
+            for example in examples
+            if normalized_issue in set(example["issue_names"])
+        ]
+        scored: list[tuple[int, str, dict[str, Any]]] = []
+        for example in candidates:
+            score = len(query_tokens & tokenize(example["input"]))
+            scored.append((score, str(example.get("case_id", "")), example))
+        scored.sort(key=lambda item: (-item[0], item[1]))
+        taken = 0
+        for _, _, example in scored:
+            key = (
+                str(example.get("case_id", "")),
+                str(example.get("source_llm", "")),
+                str(example.get("output", ""))[:120],
+            )
+            if key in selected_keys:
+                continue
+            selected_keys.add(key)
+            selected.append(example)
+            taken += 1
+            if taken >= examples_per_issue:
+                break
+    return selected
+
+
+def _format_repair_examples(examples: list[dict[str, Any]], max_chars_per_example: int = 1800) -> str:
+    if not examples:
+        return "[No matching historical repair examples were found.]"
+    blocks: list[str] = []
+    for index, example in enumerate(examples, start=1):
+        source = ", ".join(
+            part
+            for part in [
+                str(example.get("source_llm", "")),
+                str(example.get("source_method", "")),
+                str(example.get("source_repair_variant", "")),
+                str(example.get("case_id", "")),
+            ]
+            if part
+        )
+        inp = example["input"]
+        requirement = _section_between(inp, "Requirement:", ["Invalid PlantUML:"])
+        invalid = _section_between(inp, "Invalid PlantUML:", ["Validation Errors:"])
+        errors = _section_between(inp, "Validation Errors:", ["Relevant Rule:"])
+        rule = _section_between(inp, "Relevant Rule:", [])
+        block = (
+            f"Historical Repair Example {index}"
+            + (f" ({source})" if source else "")
+            + "\n"
+            f"Violation type:\n{errors}\n\n"
+            f"Example requirement:\n{requirement}\n\n"
+            f"Example invalid PlantUML:\n{invalid}\n\n"
+            f"Example repaired PlantUML:\n{example['output'].strip()}\n\n"
+            f"Example rule:\n{rule}"
+        ).strip()
+        if len(block) > max_chars_per_example:
+            block = block[:max_chars_per_example].rsplit("\n", 1)[0].strip()
+        blocks.append(block)
+    return "\n\n---\n\n".join(blocks)
+
+
 def _validation_issue_details(validation: ValidationResult) -> list[str]:
     details: list[str] = []
     if not validation.valid:
@@ -1518,6 +1674,55 @@ def build_full_pattern_repair_prompt(
         + ("\n".join(f"- {issue}" for issue in validation_issues) if validation_issues else "- none")
         + "\n\n"
         + pattern_block
+    )
+
+
+def build_example_guided_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+    repair_example_dataset: Path | None = None,
+    examples_per_issue: int = 2,
+) -> str:
+    validation_issues = _prioritized_repair_issues(validation)
+    repair_guidance = _repair_guidance_for_issues(validation_issues)
+    structural_rules = _format_structural_validation_rules()
+    examples: list[dict[str, Any]] = []
+    if repair_example_dataset is not None:
+        examples = _select_repair_examples(
+            repair_example_dataset=repair_example_dataset,
+            issues=validation_issues,
+            requirement=requirement,
+            candidate_puml=candidate_puml,
+            examples_per_issue=examples_per_issue,
+        )
+    example_block = _format_repair_examples(examples)
+    return (
+        "You are a UML repair assistant.\n"
+        "Fix the candidate PlantUML using the validation issues, repair guidance, and historical repair examples below.\n"
+        "The historical examples show how similar violations were repaired in past diagrams.\n"
+        "Use them as repair patterns only; do not copy domain-specific states, transitions, or labels unless supported by the target requirement.\n"
+        "Make the smallest possible edit.\n"
+        "Do not add new states or transitions unless a listed issue cannot be fixed without doing so.\n"
+        "Do not remove or rename unaffected states.\n"
+        "Do not change unaffected transition labels.\n"
+        "Do not redesign or simplify the diagram.\n"
+        "Only change the lines needed to fix the listed validation issues.\n"
+        "Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.\n\n"
+        "Target requirement:\n"
+        f"{requirement}\n\n"
+        "Candidate PlantUML to repair:\n"
+        f"{candidate_puml}\n\n"
+        "Validation issues to fix:\n"
+        + ("\n".join(f"- {err}" for err in validation_issues) if validation_issues else "- none")
+        + "\n\n--- Structural Validation Rules ---\n"
+        + structural_rules
+        + "\n\nRepair guidance for these issues:\n"
+        + "\n".join(f"- {hint}" for hint in repair_guidance)
+        + "\n\n--- Historical Violation-Specific Repair Examples ---\n"
+        + example_block
+        + "\n\nNow repair the target candidate PlantUML. Return only one corrected PlantUML diagram."
     )
 
 

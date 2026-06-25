@@ -107,6 +107,7 @@ def build_parser() -> argparse.ArgumentParser:
             "hybrid_issue_guided",
             "syntax_grounded_pattern_rules",
             "full_patterns",
+            "example_guided",
         ],
         default="baseline",
         help="Repair prompt/acceptance mode for repair-enabled configs",
@@ -115,6 +116,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--repair-model",
         default="",
         help="Optional model id used only for repair calls; default repairs with the generator model",
+    )
+    p_run.add_argument(
+        "--repair-example-dataset",
+        default="data/sft/all_llm_violation_repair_sft.cleaned.jsonl",
+        help="JSONL repair dataset used by --repair-mode example_guided.",
+    )
+    p_run.add_argument(
+        "--repair-examples-per-issue",
+        type=int,
+        default=2,
+        help="Historical repair examples retrieved per validation issue for example_guided repair.",
     )
     p_run.add_argument(
         "--test-size",

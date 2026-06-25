@@ -10,6 +10,7 @@ from .parser import normalize_puml_text, parse_and_validate_puml_text
 from .prompting import (
     build_chain_of_thought_analysis_prompt,
     build_chain_of_thought_generation_prompt,
+    build_example_guided_repair_prompt,
     build_full_pattern_repair_prompt,
     build_generation_prompt,
     build_hybrid_issue_guided_repair_prompt,
@@ -94,6 +95,8 @@ def run_single_generation(
     repair_attempts: int = DEFAULT_REPAIR_ATTEMPTS,
     repair_mode: str = "baseline",
     repair_model_name: str = "",
+    repair_example_dataset: Path | None = None,
+    repair_examples_per_issue: int = 2,
     initial_puml: str | None = None,
     initial_prompt: str = "",
     initial_source: str = "",
@@ -314,6 +317,15 @@ def run_single_generation(
                     final_puml,
                     final_validation,
                     critic_feedback,
+                )
+            elif repair_mode_clean == "example_guided":
+                repair_prompt = build_example_guided_repair_prompt(
+                    requirement,
+                    final_puml,
+                    final_validation,
+                    critic_feedback,
+                    repair_example_dataset=repair_example_dataset,
+                    examples_per_issue=repair_examples_per_issue,
                 )
             else:
                 repair_prompt = build_repair_prompt(

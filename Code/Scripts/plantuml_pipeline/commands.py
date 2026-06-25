@@ -476,6 +476,7 @@ def command_run(args: argparse.Namespace) -> int:
     rag_db_dir = _resolve_root(args.rag_db_dir)
     split_output = _resolve_root(args.split_output)
     split_input = _resolve_root(args.split_input) if str(getattr(args, "split_input", "")).strip() else None
+    repair_example_dataset = _resolve_root(args.repair_example_dataset)
     rag_mode = str(args.rag_mode).strip().lower()
     rag_profile = str(args.rag_profile).strip().lower()
     rag_domain_hints = {s.strip().lower() for s in (args.rag_domain_hint or []) if s.strip()}
@@ -635,6 +636,8 @@ def command_run(args: argparse.Namespace) -> int:
         "repair_attempts": args.repair_attempts,
         "repair_mode": args.repair_mode,
         "repair_model": args.repair_model,
+        "repair_example_dataset": str(repair_example_dataset),
+        "repair_examples_per_issue": args.repair_examples_per_issue,
         "baseline_subset_size_target": args.baseline_subset_size,
         "baseline_subset_size_actual": len(baseline_cases),
         "baseline_subset_case_ids": [c.case_id for c in baseline_cases],
@@ -707,6 +710,8 @@ def command_run(args: argparse.Namespace) -> int:
                             repair_attempts=args.repair_attempts,
                             repair_mode=args.repair_mode,
                             repair_model_name=args.repair_model,
+                            repair_example_dataset=repair_example_dataset,
+                            repair_examples_per_issue=args.repair_examples_per_issue,
                             initial_puml=read_text(Path(reused_base["puml_path"]))
                             if reused_base
                             else None,
