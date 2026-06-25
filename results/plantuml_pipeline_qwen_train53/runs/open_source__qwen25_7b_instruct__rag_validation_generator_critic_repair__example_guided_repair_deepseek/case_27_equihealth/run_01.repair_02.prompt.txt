@@ -1,0 +1,320 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using the validation issues, repair guidance, and historical repair examples below.
+The historical examples show how similar violations were repaired in past diagrams.
+Use them as repair patterns only; do not copy domain-specific states, transitions, or labels unless supported by the target requirement.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Equihealth — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to create an account.
+2. The system shall check if a user's registration is completed before allowing them to sign in.
+3. The system shall display different dashboards based on the user type after they sign in (patient, health worker, or government official).
+4. The system shall show a patient dashboard to users who enter as patients, allowing them to provide medical information.
+5. The system shall allow health workers to check and use the medical information provided by patients for further analysis.
+6. The system shall prepare alerts based on the analyzed information, which may be sent to either the patient or the health worker.
+7. The system shall show planned activities (from the analysis) to health workers.
+8. The system shall display health planning results (from the analysis) to government officials.
+9. The system shall allow users to log out after they complete their tasks.
+
+Candidate PlantUML to repair:
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [check user]
+state J1 <<choice>> {
+  J1 --> Register : [ new user ]
+  J1 --> J4 : [ existing user ]
+}
+
+state Register {
+  entry/when the user are user
+  do/Register process
+  exit/ successful registration
+  exit/ invalid registration
+}
+
+state J4 <<choice>> {
+  J4 --> PatientDashboard : [ patient login ]
+  J4 --> HealthWorkerDashboard : [ health worker login ]
+  J4 --> GovernmentDashboard : [ government official login ]
+  J4 --> [*] : [ logout ]
+}
+
+state PatientDashboard {
+  entry/if the user is logged in as patient
+  do/dashboard is displayed
+  exit/when user logout
+}
+
+state HealthWorkerDashboard {
+  entry/if the user is logged in as health worker
+  do/display the health worker dashboard
+  exit/when user logout
+}
+
+state GovernmentDashboard {
+  entry/if the user is government official
+  do/display government dashboard
+  exit/when user logout
+}
+
+state J2 <<choice>> {
+  J2 --> ProjectInfo : [ view project ]
+  J2 --> Homepage : [ navigate away ]
+}
+
+state ProjectInfo {
+  entry/ display information about projects
+  do/projects information displayed
+  exit/ when user done viewing
+}
+
+state J3 <<choice>> {
+  J3 --> ViewUpdates : [ view updates ]
+  J3 --> ApplicationForm : [ open application form ]
+}
+
+state ViewUpdates {
+  entry/ display career opportunities updates
+  do/display updates
+  exit/ when user done viewing
+}
+
+state ApplicationForm {
+  entry/ display employment/internship application form
+  do/form displayed
+  exit/ when form submitted or closed
+}
+
+state Homepage {
+  entry/ display homepage
+  do/homepage displayed
+  exit/ when user navigates away
+}
+@enduml
+
+
+Validation issues to fix:
+- unreachable: ApplicationForm, Homepage, J2, J3, ProjectInfo, ViewUpdates
+- unreachable_states_detected
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+
+--- Historical Violation-Specific Repair Examples ---
+Historical Repair Example 1 (Gemma 3 12B, rag, baseline_structural_rules, case_37_online_quiz_system)
+Violation type:
+- unreachable_state
+
+Example requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Example invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+state "Seller Registration" as SellerRegistration
+SellerRegistration : entry/Unregistered Seller
+SellerRegistration : do/Get Valid Seller Credentials
+SellerRegistration : exit/Seller Account Registered
+
+state "Seller Verification" as SellerVerification
+SellerVerification : entry/Seller Account Registered
+SellerVerification : do/Verify Seller
+SellerVerification : exit/Login Seller
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry/Unverified Seller
+SellerLogin : entry/Seller not logged in
+SellerLogin : do/Authenticate Seller
+SellerLogin : exit/Logged In Successfully
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry/Not Logged In
+CustomerLogin : do/Authenticate Customer
+
+---
+
+Historical Repair Example 2 (DeepSeek R1 14B, few_shot, full_patterns, case_01_healthcare_portal)
+Violation type:
+- unreachable_state
+
+Example requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Example invalid PlantUML:
+@startuml
+title UML State Transition Diagram - Healthcare Portal
+
+[*] --> Idle : Start
+
+state "Idle" as Idle
+Idle : entry/Welcome
+Idle : do/Waiting for user action
+Idle : exit/Register/Login
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/MainMenu/InvalidRegister
+
+state "InvalidRegister" as InvalidRegister
+
+---
+
+Historical Repair Example 3 (Qwen 2.5 7B Instruct, few_shot, deepseek_repair, case_39_website_development)
+Violation type:
+- unreachable_state
+
+Example requirement:
+Website Development — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to navigate from the homepage using a navigation bar.
+2. The system shall display information about projects when selected by the user.
+3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.
+4. The system shall display information about career opportunities when selected by the user.
+5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.
+6. The system shall check submitted job applications after they are submitted.
+
+Example invalid PlantUML:
+@startuml
+title State diagram for the Website Development class
+
+state "Homepage" as Homepage
+Homepage : entry/Initial State
+
+state "Projects" as Projects
+Projects : entry/View Projects
+Projects : do/Select Project
+Projects : exit/View Project Details
+
+state "View Project Details" as ViewProjectDetails
+ViewProjectDetails : entry/View Project
+ViewProjectDetails : do/Choose Media
+ViewProjectDetails : exit/View Photos
+ViewProjectDetails : exit/View Videos
+
+state "View Photos" as ViewPhotos
+ViewPhotos : entry/View Photos
+
+state "View Videos" as ViewVideos
+ViewVideos : entry/View Videos
+
+state "Career Opportunities" as CareerOpportunities
+CareerOpportunities : entry/View Career Opportunities
+CareerOpportunities : do/Select Opportunity
+CareerOpportunities : exit/View Updates
+CareerOpportunities : exit/Apply for Job
+
+state "View Updates" as ViewUpdates
+ViewUpdates : entry/View Updates
+
+---
+
+Historical Repair Example 4 (Gemma 3 12B, rag, syntax_grounded_pattern_rules, case_18_digidoclocker)
+Violation type:
+- unreachable_state
+
+Example requirement:
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
+
+Example invalid PlantUML:
+@startuml
+title UML State Machine Diagram (Certificate Management)
+
+
+[*] --> Registration
+
+state Registration
+Registration : entry / Get the Registration Details
+Registration : do / Validate the Details
+Registration : exit / Valid or Invalid Registration
+
+
+Registration --> [*] : [Invalid Registration]
+
+
+Registration --> Login : [Valid Registration]
+
+
+state Login
+Login : entry / Get the Login Details
+Login : do / Validate the Login Details
+Login : exit / Valid or Invalid Login
+
+
+Login --> Login : [Invalid Login]
+
+
+Login --> Choice1 : [Valid Login]
+
+
+state Choice1 <<choice>>
+
+Choice1 --> CancelCert : [Cancel the Certificate]
+Choice1 --> RequestCert : [Applying for Certificates]
+
+Now repair the target candidate PlantUML. Return only one corrected PlantUML diagram.

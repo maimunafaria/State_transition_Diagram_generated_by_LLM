@@ -1,0 +1,50 @@
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [check user]
+state J1 <<choice>> {
+  J1 --> Register : [new user]
+  J1 --> Login : [existing user]
+}
+
+state "Register" as Register {
+  entry/when the user are user
+  do/Register process
+  exit/ successful registration
+  exit/ invalid registration
+}
+
+state Register --> [*] : [invalid registration]
+
+state Register --> J2 : [successful registration]
+
+state J2 <<choice>> {
+  J2 --> PatientDashboard : [patient]
+  J2 --> HealthWorkerDashboard : [health worker]
+  J2 --> GovernmentDashboard : [government official]
+}
+
+state "Patient dashboard" as PatientDashboard {
+  entry/if the user is logged in as patient
+  do/dashboard is displayed
+  exit/when user logout
+}
+
+state "Health worker Dashboard" as HealthWorkerDashboard {
+  entry/if the user is logged in as health worker
+  do/display the health worker dashboard
+  exit/if health worker logout
+}
+
+state "Government dashboard" as GovernmentDashboard {
+  entry/if the user is logged in as government official
+  do/display government dashboard
+  exit/when government official logout
+}
+
+state PatientDashboard --> [*] : [logout]
+
+state HealthWorkerDashboard --> [*] : [logout]
+
+state GovernmentDashboard --> [*] : [logout]
+@enduml

@@ -1,0 +1,50 @@
+@startuml
+title ATM Control - Polished Requirement Specification
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForChoice
+state Confiscating
+state Ejecting
+state Resetting
+state SystemOutOfCash
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> InvalidPIN : Incorrect PIN / Invalid PIN Prompt
+ValidatingPIN --> ValidPIN : Correct PIN / Display Options
+
+InvalidPIN --> Confiscating : Too Many Incorrect Pins / Keep Card
+Confiscating --> Ejecting : Card Confiscated / Return Card
+
+ValidPIN --> WaitingForChoice : Correct PIN / Show Options
+
+WaitingForChoice --> TransferOption : Choose Transfer / Process Transfer
+WaitingForChoice --> QueryOption : Choose Query / Process Query
+WaitingForChoice --> WithdrawOption : Choose Withdrawal / Process Withdrawal
+
+TransferOption --> ProcessingTransaction : Approved Transfer / Print Receipt, Dispense Cash, Return Card
+ProcessingTransaction --> Ejecting : Transaction Complete / Return Card
+
+QueryOption --> ProcessingTransaction : Approved Query / Print Receipt, Return Card
+
+WithdrawOption --> ProcessingTransaction : Approved Withdrawal / Print Receipt, Dispense Cash, Return Card
+
+ProcessingTransaction --> RejectedOperation : Rejected Request / Cancel Operation, Return Card
+
+RejectedOperation --> Ejecting : Operation Rejected / Return Card
+
+Ejecting --> Resetting : Card Ejected / Reset System
+Resetting --> [*] : Session Reset Complete
+
+SystemOutOfCash --> Idle : No Cash / Display Low Cash Message
+
+Ejecting --> SystemOutOfCash : Out of Cash Handling
+
+Resetting --> [*] : System Reset Complete
+SystemOutOfCash --> [*] : Low Cash Handling Complete
+@enduml

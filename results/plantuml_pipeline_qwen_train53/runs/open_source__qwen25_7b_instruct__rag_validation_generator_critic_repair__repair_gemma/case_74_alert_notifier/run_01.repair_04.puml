@@ -1,0 +1,36 @@
+@startuml
+title UML State Machine Diagram (Alert Notifier)
+
+[*] --> Initialization
+
+state Initialization <<choice>>
+Initialization --> Success : [Initialization successful]
+Initialization --> Failure : [Initialization fails]
+
+state WaitingMode
+WaitingMode --> ProcessUpdate : [Detected update]
+ProcessUpdate --> NotifyOperators : [Conditions met for notification]
+NotifyOperators --> ReturnToWait : [After processing an update]
+ReturnToWait --> WaitingMode
+
+state UnloadingPhase
+UnloadingPhase --> CleanupOperations : [System is shutting down while running or unloading complete]
+
+state UnloadFailure <<choice>>
+UnloadFailure --> Unloading : [System is shutting down while running]
+UnloadFailure --> End : [Unloading complete]
+
+state SuccessState
+SuccessState --> End : [Unloading complete]
+
+state FailureState
+FailureState --> End : [Unloading complete]
+
+CleanupOperations --> [*]
+End --> [*]
+WaitingMode --> [*]
+Unloading --> [*]
+Initialization -> WaitingMode : [Initialization successful]
+Failure --> UnloadFailure : [Initialization fails]
+UnloadingPhase --> UnloadFailure : [System is shutting down while running or unloading complete]
+@enduml

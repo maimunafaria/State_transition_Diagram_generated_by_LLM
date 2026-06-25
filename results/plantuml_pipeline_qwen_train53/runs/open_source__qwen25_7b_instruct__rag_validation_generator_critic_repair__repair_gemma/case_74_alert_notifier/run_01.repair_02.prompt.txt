@@ -1,0 +1,85 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Alert Notifier — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall initialize a component to detect updates upon initial loading.
+2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.
+3. The system shall process detected updates by storing them and evaluating their significance.
+4. The system shall notify appropriate operators of changes based on evaluation results if certain conditions are met.
+5. The system shall return to a waiting state after processing an update.
+6. The system shall enter an unloading phase if initialization fails or if the system is shut down while the component is running.
+7. The system shall perform necessary cleanup operations and inform the component manager of successful removal during unloading.
+8. The system shall terminate the component's operation after unloading is complete.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram (Alert Notifier)
+
+[*] --> Initialization
+
+state Initialization <<choice>>
+Initialization --> Success : [Initialization successful]
+Initialization --> Failure : [Initialization fails]
+
+state WaitingMode
+WaitingMode --> ProcessUpdate : [Detected update]
+ProcessUpdate --> NotifyOperators : [Conditions met for notification]
+NotifyOperators --> ReturnToWait : [After processing an update]
+
+state UnloadingPhase
+UnloadFailure --> CleanupOperations
+
+state UnloadFailure <<choice>>
+UnloadFailure --> Unloading : [System is shutting down while running]
+UnloadFailure --> End : [Unloading complete]
+
+state SuccessState
+SuccessState --> End : [Unloading complete]
+
+state FailureState
+FailureState --> End : [Unloading complete]
+
+ReturnToWait --> WaitingMode
+CleanupOperations --> [*]
+End --> [*]
+WaitingMode --> [*]
+Unloading --> [*]
+@enduml
+
+
+Validation issues to fix:
+- orphan: UnloadingPhase
+- orphan_states_detected
+- unreachable: CleanupOperations, End, FailureState, NotifyOperators, ProcessUpdate, ReturnToWait, SuccessState, UnloadFailure, Unloading, UnloadingPhase, WaitingMode
+- unreachable_states_detected
+- choice_node_without_guarded_outgoing_transitions (UnloadFailure)
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].

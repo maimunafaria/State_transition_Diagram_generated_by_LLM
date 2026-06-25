@@ -1,0 +1,161 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using the validation issues, repair guidance, and historical repair examples below.
+The historical examples show how similar violations were repaired in past diagrams.
+Use them as repair patterns only; do not copy domain-specific states, transitions, or labels unless supported by the target requirement.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Device Handout — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall collect personal details from a donor during registration.
+2. The system shall check the entered personal details after registration.
+3. The system shall collect contact information from a donor after verifying their personal details.
+4. The system shall allow donors to share details about the device they want to donate.
+5. The system shall review the shared device details.
+6. The system shall support if a device meets the requirements, the system shall accept it.
+7. The system shall assign an executive to handle the accepted device.
+8. The system shall confirm the status of the accepted device by the executive.
+9. The system shall support if a device does not meet the requirements, the system shall inform the donor that it cannot be accepted.
+
+Candidate PlantUML to repair:
+@startuml
+
+[*] --> Registration
+
+Registration : entry / Device Handout — Polished Requirement Specification
+Registration : do / Collect personal details from donor during registration
+Registration : exit / Verify entered personal details after registration
+
+Registration --> ContactInfoVerification : verify / Check the entered personal details after registration
+ContactInfoVerification : do / Collect contact information from donor after verifying their personal details
+ContactInfoVerification : exit / Verify contact information
+
+ContactInfoVerification --> DeviceDetailsCollection : collect / Allow donors to share details about the device they want to donate
+DeviceDetailsCollection : do / Review the shared device details
+DeviceDetailsCollection : exit / Accept or inform that it cannot be accepted based on requirements
+
+DeviceDetailsCollection --> DeviceAcceptance : accept / Support if a device meets the requirements, the system shall accept it
+DeviceAcceptance : do / Assign an executive to handle the accepted device
+DeviceAcceptance : exit / Confirm the status of the accepted device by the executive
+
+DeviceAcceptance --> DeviceRejected : reject / Support if a device does not meet the requirements, the system shall inform the donor that it cannot be accepted
+
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Violation-Specific Repair Examples ---
+Historical Repair Example 1 (Gemma 3 12B, few_shot, baseline, case_32_e_visa_processing_and_follow_up_system)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Example invalid PlantUML:
+@startuml
+title E-Visa Processing and Follow-Up System
+
+[*] --> CreateAccount
+CreateAccount --> LoggedOut : Account Created
+
+state CreateAccount {
+    entry / Display Registration Form
+    exit / Validate and Save User Details
+}
+
+state LoggedOut {
+    entry / Display Login Form
+}
+
+LoggedOut --> LoggedIn : Valid Credentials
+
+state LoggedIn {
+
+---
+
+Historical Repair Example 2 (Qwen 2.5 7B Instruct, few_shot, deepseek_repair, case_02_inventory)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Inventory — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to add new goods to the inventory.
+2. The system shall allow the user to update the price of existing items in the inventory.
+3. The system shall allow the user to remove goods from the inventory that are no longer required.
+4. The system shall identify expired goods and notify the user about their removal from the inventory.
+5. The system shall allow the user to place an order to a supplier for additional goods when required.
+6. The system shall generate an invoice for the order once it is placed.
+7. The system shall allow the user to search for items available in the inventory and select them for purchase.
+8. The system shall calculate the applicable discount and tax based on the selected items.
+9. The system shall generate a receipt for the customer after the purchase.
+10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.
+11. The system shall record customer requests for items that may not be currently available.
+12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.
+
+Example invalid PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> InventoryMenu
+
+state AddGoods {
+  entry / start state
+  do / add new goods
+  exit / goods added
+  AddGoods --> InventoryMenu
+}
+
+state UpdatePrice {
+  entry / start state
+  do / update price of existing items
+  exit / price updated
+  UpdatePrice --> InventoryMenu
+}
+
+state RemoveGoods {
+  entry / start state
+
+Now repair the target candidate PlantUML. Return only one corrected PlantUML diagram.

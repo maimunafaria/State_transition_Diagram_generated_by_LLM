@@ -1,0 +1,90 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Startup Meet — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select their roll (investor, entrepreneur, or mentor).
+2. The system shall enable the user to sign in after choosing a role.
+3. The system shall allow the signed-in user to submit a startup idea.
+4. The system shall review the submitted startup idea.
+5. The system shall provide mentorship based on the review result.
+6. The system shall make an investment decision if the startup idea is presented to an investor.
+7. The system shall provide funding based on the investment decision.
+8. The system shall end the process once all actions are completed.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram
+
+
+[*] --> C1
+
+state C1 <<choice>>
+C1 --> RoleSelection : [user selects role]
+C1 --> SignIn : [sign in after selecting role]
+
+state RoleSelection
+
+state Investor
+Investor --> SubmitIdea : [submit startup idea]
+
+state Entrepreneur
+Entrepreneur --> SubmitIdea : [submit startup idea]
+
+state Mentor
+Mentor --> ReviewIdea : [review submitted idea]
+
+state ReviewIdea
+ReviewIdea --> Mentorship : [provide mentorship based on review]
+ReviewIdea --> InvestmentDecision : [make investment decision if applicable]
+
+state InvestmentDecision
+InvestmentDecision --> Funding : [provide funding based on decision]
+
+state Funding
+
+state EndProcess : [end process once all actions are completed]
+EndProcess
+
+state SignIn <<choice>>
+SignIn --> Investor : [investor sign in]
+SignIn --> Entrepreneur : [entrepreneur sign in]
+SignIn --> Mentor : [mentor sign in]
+
+@enduml
+
+
+Validation issues:
+- missing_final_state_transition (state --> [*])
+
+Validator details:
+- Current initial state: C1
+- State count: 11
+- Transition count: 11
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Valid PlantUML repair patterns:
+Pattern 1: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT

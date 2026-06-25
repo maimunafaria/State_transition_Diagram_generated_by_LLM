@@ -1,0 +1,233 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using the validation issues, repair guidance, and historical repair examples below.
+The historical examples show how similar violations were repaired in past diagrams.
+Use them as repair patterns only; do not copy domain-specific states, transitions, or labels unless supported by the target requirement.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Alert Notifier — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall initialize a component to detect updates upon initial loading.
+2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.
+3. The system shall process detected updates by storing them and evaluating their significance.
+4. The system shall notify appropriate operators of changes based on evaluation results if certain conditions are met.
+5. The system shall return to a waiting state after processing an update.
+6. The system shall enter an unloading phase if initialization fails or if the system is shut down while the component is running.
+7. The system shall perform necessary cleanup operations and inform the component manager of successful removal during unloading.
+8. The system shall terminate the component's operation after unloading is complete.
+
+Candidate PlantUML to repair:
+@startuml
+@enduml
+
+
+Validation issues to fix:
+- missing_initial_state_transition ([*] --> state)
+- missing_final_state_transition (state --> [*])
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- Add one clear initial transition from [*] to the first lifecycle state.
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Violation-Specific Repair Examples ---
+Historical Repair Example 1 (DeepSeek R1 14B, few_shot, hybrid_issue_guided, case_54_weather_station_system)
+Violation type:
+- missing_initial_state_transition
+
+Example requirement:
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.
+
+Example invalid PlantUML:
+@startuml
+@enduml
+
+Example repaired PlantUML:
+@startuml
+title Weather Station State Transition Diagram
+
+state Shutdown
+state Running
+state Configuration
+state ControlledMode
+
+[*] --> Shutdown : power-up / restart
+
+Shutdown --> Running : power-up / restart
+Shutdown --> [*] : power remains off
+
+Running --> Configuration : changes or power-saving settings required
+Running --> ControlledMode : remote control command
+Running --> Shutdown : shutdown command
+
+Configuration --> Running : configuration completed
+
+Running --> Running : data collection triggered by clock
+Running --> Running : summary preparation upon request
+@enduml
+
+Example rule:
+
+---
+
+Historical Repair Example 2 (Mistral, rag, deepseek_repair, case_01_healthcare_portal)
+Violation type:
+- missing_initial_state_transition
+
+Example requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Example invalid PlantUML:
+@startuml
+@enduml
+
+Example repaired PlantUML:
+@startuml
+title Healthcare Portal State Machine Diagram
+
+state PortalChoice <<choice>>
+state "New Registration" as NewRegistration
+state "Existing Login" as ExistingLogin
+state "User Home" as UserHome
+state "Service Access" as ServiceAccess
+state "Result Review" as ResultReview
+state Logout
+
+---
+
+Historical Repair Example 3 (Qwen 2.5 7B Instruct, few_shot, deepseek_repair, case_02_inventory)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Inventory — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to add new goods to the inventory.
+2. The system shall allow the user to update the price of existing items in the inventory.
+3. The system shall allow the user to remove goods from the inventory that are no longer required.
+4. The system shall identify expired goods and notify the user about their removal from the inventory.
+5. The system shall allow the user to place an order to a supplier for additional goods when required.
+6. The system shall generate an invoice for the order once it is placed.
+7. The system shall allow the user to search for items available in the inventory and select them for purchase.
+8. The system shall calculate the applicable discount and tax based on the selected items.
+9. The system shall generate a receipt for the customer after the purchase.
+10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.
+11. The system shall record customer requests for items that may not be currently available.
+12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.
+
+Example invalid PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> InventoryMenu
+
+state AddGoods {
+  entry / start state
+  do / add new goods
+  exit / goods added
+  AddGoods --> InventoryMenu
+}
+
+state UpdatePrice {
+  entry / start state
+  do / update price of existing items
+  exit / price updated
+  UpdatePrice --> InventoryMenu
+}
+
+state RemoveGoods {
+  entry / start state
+
+---
+
+Historical Repair Example 4 (Qwen 2.5 7B Instruct, chain_of_thought, syntax_grounded_pattern_rules, case_54_weather_station_system)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.
+
+Example invalid PlantUML:
+@startuml
+[*] --> Running
+
+Running --> Configuration Mode : Changes or Power-Saving Settings Required
+Configuration Mode --> Running : Configuration is Completed
+Running --> Running : Clock Trigger (Data Collection)
+Running --> Controlled Mode : Remote Control Command
+Running --> Shut Down : Shutdown Command
+Controlled Mode --> Running : Any Event (Assumed for completeness)
+
+Shut Down --> [*] : Shutdown Command
+
+@enduml
+
+Example repaired PlantUML:
+@startuml
+[*] --> Running
+
+Running --> Configuration Mode : Changes or Power-Saving Settings Required
+Configuration Mode --> Running : Configuration is Completed
+Running --> Running : Clock Trigger (Data Collection)
+
+Now repair the target candidate PlantUML. Return only one corrected PlantUML diagram.
