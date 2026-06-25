@@ -15,6 +15,7 @@ from .prompting import (
     build_generation_prompt,
     build_hybrid_issue_guided_repair_prompt,
     build_repair_prompt,
+    build_sequential_example_guided_repair_prompt,
     build_syntax_grounded_repair_prompt,
     build_syntax_grounded_pattern_rules_repair_prompt,
     build_targeted_repair_prompt,
@@ -320,6 +321,15 @@ def run_single_generation(
                 )
             elif repair_mode_clean == "example_guided":
                 repair_prompt = build_example_guided_repair_prompt(
+                    requirement,
+                    final_puml,
+                    final_validation,
+                    critic_feedback,
+                    repair_example_dataset=repair_example_dataset,
+                    examples_per_issue=repair_examples_per_issue,
+                )
+            elif repair_mode_clean == "sequential_example_guided":
+                repair_prompt = build_sequential_example_guided_repair_prompt(
                     requirement,
                     final_puml,
                     final_validation,

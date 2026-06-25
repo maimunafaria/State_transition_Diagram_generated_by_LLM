@@ -108,6 +108,7 @@ def build_parser() -> argparse.ArgumentParser:
             "syntax_grounded_pattern_rules",
             "full_patterns",
             "example_guided",
+            "sequential_example_guided",
         ],
         default="baseline",
         help="Repair prompt/acceptance mode for repair-enabled configs",

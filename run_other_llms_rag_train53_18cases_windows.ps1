@@ -3,7 +3,7 @@ param(
     [string]$ResultsRoot = "results\plantuml_pipeline_qwen_train53",
     [string]$SplitInput = "data\processed\experiments\qwen_train53_split_35_seed42.json",
     [string]$SplitOutput = "data\processed\experiments\qwen_train53_split_35_seed42.other_llms_raw.used.json",
-    [string]$MistralModel = "mistral:latest",
+    [string]$MistralModel = "mistral:7b-instruct",
     [string]$LlamaModel = "llama3.1:8b-instruct-q4_K_M",
     [string]$DeepSeek14Model = "deepseek-r1:14b",
     [string]$Gemma3Model = "gemma3:12b",

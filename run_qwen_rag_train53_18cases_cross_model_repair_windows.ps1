@@ -4,7 +4,7 @@ param(
     [string]$SplitInput = "data\processed\experiments\qwen_train53_split_35_seed42.json",
     [string]$RepairExampleDataset = "data\sft\all_llm_violation_repair_sft.cleaned.jsonl",
     [string]$QwenModel = "qwen2.5:7b-instruct",
-    [string]$MistralModel = "mistral:latest",
+    [string]$MistralModel = "mistral:7b-instruct",
     [string]$LlamaModel = "llama3.1:8b-instruct-q4_K_M",
     [string]$DeepSeekModel = "deepseek-r1:14b",
     [string]$GemmaModel = "gemma3:12b",

@@ -2,12 +2,14 @@ param(
     [string]$DatasetRoot = "dataset",
     [string]$ResultsRoot = "results\plantuml_pipeline_qwen_train53",
     [string]$SplitInput = "data\processed\experiments\qwen_train53_split_35_seed42.json",
+    [string]$RepairExampleDataset = "data\sft\all_llm_violation_repair_sft.cleaned.jsonl",
     [string]$QwenModel = "qwen2.5:7b-instruct",
     [string]$MistralModel = "mistral:7b-instruct",
     [string]$LlamaModel = "llama3.1:8b-instruct-q4_K_M",
     [string]$DeepSeekModel = "deepseek-r1:14b",
     [string]$GemmaModel = "gemma3:12b",
-    [int]$RepairAttempts = 5
+    [int]$RepairAttempts = 8,
+    [int]$ExamplesPerIssue = 2
 )
 
 $ErrorActionPreference = "Stop"
@@ -18,10 +20,10 @@ if (-not (Test-Path $EmptyRagDocs)) {
 }
 
 $RepairModels = @(
-    @{ Tag = "syntax_grounded_repair_mistral"; Model = $MistralModel },
-    @{ Tag = "syntax_grounded_repair_llama"; Model = $LlamaModel },
-    @{ Tag = "syntax_grounded_repair_deepseek"; Model = $DeepSeekModel },
-    @{ Tag = "syntax_grounded_repair_gemma"; Model = $GemmaModel }
+    @{ Tag = "sequential_example_guided_repair_mistral"; Model = $MistralModel },
+    @{ Tag = "sequential_example_guided_repair_llama"; Model = $LlamaModel },
+    @{ Tag = "sequential_example_guided_repair_deepseek"; Model = $DeepSeekModel },
+    @{ Tag = "sequential_example_guided_repair_gemma"; Model = $GemmaModel }
 )
 
 foreach ($Repair in $RepairModels) {
@@ -30,7 +32,7 @@ foreach ($Repair in $RepairModels) {
     $RunId = "open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair__$Tag"
     $SplitOutput = "data\processed\experiments\qwen_train53_split_35_seed42.$Tag.used.json"
 
-    Write-Host "Running syntax-grounded cross-model repair: $Tag using $Model"
+    Write-Host "Running sequential example-guided cross-model repair: $Tag using $Model"
     python Code\Scripts\plantuml_experiment_pipeline.py run `
         --dataset-root $DatasetRoot `
         --results-root $ResultsRoot `
@@ -44,8 +46,10 @@ foreach ($Repair in $RepairModels) {
         --qwen-model $QwenModel `
         --runs 1 `
         --repair-attempts $RepairAttempts `
-        --repair-mode syntax_grounded `
+        --repair-mode sequential_example_guided `
         --repair-ablation-tag $Tag `
         --repair-model $Model `
+        --repair-example-dataset $RepairExampleDataset `
+        --repair-examples-per-issue $ExamplesPerIssue `
         --save-prompts
 }

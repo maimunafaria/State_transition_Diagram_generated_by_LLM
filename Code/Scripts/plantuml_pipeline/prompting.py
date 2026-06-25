@@ -1726,6 +1726,60 @@ def build_example_guided_repair_prompt(
     )
 
 
+def build_sequential_example_guided_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+    repair_example_dataset: Path | None = None,
+    examples_per_issue: int = 2,
+) -> str:
+    validation_issues = _prioritized_repair_issues(validation)
+    target_issue = validation_issues[0] if validation_issues else ""
+    target_issues = [target_issue] if target_issue else []
+    repair_guidance = _repair_guidance_for_issues(target_issues)
+    structural_rules = _format_structural_validation_rules()
+    issue_details = _validation_issue_details(validation)
+    examples: list[dict[str, Any]] = []
+    if repair_example_dataset is not None and target_issues:
+        examples = _select_repair_examples(
+            repair_example_dataset=repair_example_dataset,
+            issues=target_issues,
+            requirement=requirement,
+            candidate_puml=candidate_puml,
+            examples_per_issue=examples_per_issue,
+        )
+    example_block = _format_repair_examples(examples)
+    remaining_issues = validation_issues[1:]
+    return (
+        "You are a sequential UML repair assistant.\n"
+        "Fix exactly one validation issue in this attempt: the target issue below.\n"
+        "Use the historical repair examples as patterns for this target issue only.\n"
+        "Make the smallest possible edit that fixes the target issue.\n"
+        "Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.\n"
+        "Do not try to solve the later issues unless the same small edit naturally fixes them.\n"
+        "Do not introduce any new validation issue.\n"
+        "Output ONLY corrected PlantUML. No explanations.\n\n"
+        "Target requirement:\n"
+        f"{requirement}\n\n"
+        "Candidate PlantUML to repair:\n"
+        f"{candidate_puml}\n\n"
+        "Target validation issue for THIS attempt:\n"
+        + (f"- {target_issue}" if target_issue else "- none")
+        + "\n\nOther current validation issues, leave for later attempts unless naturally fixed:\n"
+        + ("\n".join(f"- {issue}" for issue in remaining_issues) if remaining_issues else "- none")
+        + "\n\nValidator details:\n"
+        + "\n".join(f"- {detail}" for detail in issue_details)
+        + "\n\n--- Structural Validation Rules ---\n"
+        + structural_rules
+        + "\n\nRepair guidance for the target issue:\n"
+        + "\n".join(f"- {hint}" for hint in repair_guidance)
+        + "\n\n--- Historical Repair Examples for the Target Issue ---\n"
+        + example_block
+        + "\n\nNow repair only the target issue. Return one corrected PlantUML diagram."
+    )
+
+
 def build_repair_prompt(
     requirement: str,
     candidate_puml: str,
