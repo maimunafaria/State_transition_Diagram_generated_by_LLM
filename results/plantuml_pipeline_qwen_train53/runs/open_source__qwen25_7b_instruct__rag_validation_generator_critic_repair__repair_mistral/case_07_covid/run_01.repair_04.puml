@@ -1,0 +1,38 @@
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state UserChoice <<choice>>
+state LoggedOut <<final>>
+state InfectedPeopleUpdate <<action>>
+state HomeQuarantineInfoShare <<action>>
+state DoctorViewInfo <<action>>
+state MedicinePurchase <<action>>
+state CleanArea <<action>>
+state MedicalShopsList <<final>>
+
+[*] --> StartChoice : "Start"
+StartChoice --> LoggedOut : "No user created"
+StartChoice --> CreateAccount : "Create an account"
+
+LoggedOut --> [*] : "Try again to create account"
+CreateAccount --> SignedIn : "Sign in with correct username and password"
+SignedIn --> ReadBlogs : "Read blogs shared by recovered patients"
+SignedIn --> UpdateInfectedPeople : "Update number of infected people"
+SignedIn --> ShareInfo : "Share information from home quarantine"
+SignedIn --> ViewMedicalShops : "View nearby medical shops and purchase medicines"
+SignedIn --> AssignCleaners : "Assign workers to clean an area"
+SignedIn --> LoggedOut : "Log out"
+
+UserChoice --> SignedIn : "Enter correct username and password"
+UserChoice --> AccessEnded : "Enter incorrect username or password"
+AccessEnded --> [*] : "Try again"
+
+SignedIn --> InfectedPeopleUpdate : "Trigger updates on infection statistics and mask demand"
+SignedIn --> HomeQuarantineInfoShare: "Enable users in home quarantine to share their information"
+HomeQuarantineInfoShare --> DoctorViewInfo : "Doctors view shared information from quarantined users"
+DoctorViewInfo --> MedicinePurchase : "Doctors suggest medicines"
+MedicinePurchase --> MedicalShopsList : "Users can view a list of nearby medical shops and purchase medicines online"
+MedicalShopsList --> [*] : "Return to main menu"
+
+@enduml

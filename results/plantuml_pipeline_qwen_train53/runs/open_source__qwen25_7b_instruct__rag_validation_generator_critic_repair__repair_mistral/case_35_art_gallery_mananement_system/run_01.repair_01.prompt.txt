@@ -1,0 +1,72 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Art Gallery Mananement System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall verify login credentials upon submission.
+2. The system shall display an error message and prevent further interaction if login details are incorrect.
+3. The system shall allow users to view products or update their information after a successful login.
+4. The system shall allow users to select items and place an order when viewing products.
+5. The system shall add selected product items to the order and prepare billing details.
+6. The system shall allow users to choose a payment method after adding products to their order.
+7. The system shall process and deliver the order if the payment is successful.
+8. The system shall end the process without further action if the payment fails.
+9. The system shall allow users to save updated information after entering new details.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram (Art Gallery Management System)
+
+[*] --> LoginVerification
+
+state LoginVerification <<choice>>
+LoginVerification --> IncorrectLogin : [Incorrect login details]
+LoginVerification --> SuccessfulLogin : [Successful login]
+
+state SuccessfulLogin
+SuccessfulLogin --> ViewProductsOrUpdateInfo : [View products or update info]
+ViewProductsOrUpdateInfo --> SelectItemsAndOrder : [Select items and place an order]
+SelectItemsAndOrder --> AddToOrder : [Add to order and prepare billing details]
+AddToOrder --> ChoosePaymentMethod : [Choose payment method]
+ChoosePaymentMethod --> ProcessOrderSuccess : [Process and deliver the order if payment is successful]
+ChoosePaymentMethod --> OrderFailed : [End process without further action]
+
+state ProcessOrderSuccess
+ProcessOrderSuccess --> End
+
+state OrderFailed
+OrderFailed --> End
+
+state End
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].

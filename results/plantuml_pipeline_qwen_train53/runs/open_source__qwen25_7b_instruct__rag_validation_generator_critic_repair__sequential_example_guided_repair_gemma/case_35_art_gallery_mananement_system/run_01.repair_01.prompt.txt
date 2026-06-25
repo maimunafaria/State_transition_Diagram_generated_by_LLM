@@ -1,0 +1,169 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Art Gallery Mananement System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall verify login credentials upon submission.
+2. The system shall display an error message and prevent further interaction if login details are incorrect.
+3. The system shall allow users to view products or update their information after a successful login.
+4. The system shall allow users to select items and place an order when viewing products.
+5. The system shall add selected product items to the order and prepare billing details.
+6. The system shall allow users to choose a payment method after adding products to their order.
+7. The system shall process and deliver the order if the payment is successful.
+8. The system shall end the process without further action if the payment fails.
+9. The system shall allow users to save updated information after entering new details.
+
+Candidate PlantUML to repair:
+@startuml
+title UML State Machine Diagram (Art Gallery Management System)
+
+[*] --> LoginVerification
+
+state LoginVerification <<choice>>
+LoginVerification --> IncorrectLogin : [Incorrect login details]
+LoginVerification --> SuccessfulLogin : [Successful login]
+
+state SuccessfulLogin
+SuccessfulLogin --> ViewProductsOrUpdateInfo : [View products or update info]
+ViewProductsOrUpdateInfo --> SelectItemsAndOrder : [Select items and place an order]
+SelectItemsAndOrder --> AddToOrder : [Add to order and prepare billing details]
+AddToOrder --> ChoosePaymentMethod : [Choose payment method]
+ChoosePaymentMethod --> ProcessOrderSuccess : [Process and deliver the order if payment is successful]
+ChoosePaymentMethod --> OrderFailed : [End process without further action]
+
+state ProcessOrderSuccess
+ProcessOrderSuccess --> End
+
+state OrderFailed
+OrderFailed --> End
+
+state End
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_final_state_transition (state --> [*])
+
+Other current validation issues, leave for later attempts unless naturally fixed:
+- none
+
+Validator details:
+- Current initial state: LoginVerification
+- State count: 10
+- Transition count: 10
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for the target issue:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Repair Examples for the Target Issue ---
+Historical Repair Example 1 (Mistral, rag, syntax_grounded_rules, case_34_green_rides)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Green Rides — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display journey details upon user login and destination selection.
+2. The system shall allow users to activate driving mode or choose other options after viewing journey details.
+3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.
+4. The system shall inform relevant authorities in the event of an accident.
+5. The system shall send notifications during driving or in case of an accident.
+6. The system shall allow users to provide feedback upon completion of their journey.
+
+Example invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> InitialState
+InitialState : Display home page
+InitialState --> ServiceCenterHome : Logged in
+ServiceCenterHome : Display journey details upon user login and destination selection
+ServiceCenterHome --> JourneyDetails : Destination selected
+JourneyDetails : Allow users to activate driving mode or choose other options after viewing journey details
+JourneyDetails --> DrivingModeActivated : Driving mode activated
+JourneyDetails --> OtherOptions : Other options chosen
+OtherOptions : Enable users to select a place to eat, view its menu, and place an order if they are hungry
+OtherOptions --> FoodSelection : Place to eat selected
+FoodSelection : View menu
+FoodSelection --> MenuViewed : Menu viewed
+MenuViewed : Place order if user is hungry
+MenuViewed --> OrderPlaced : Order placed
+OrderPlaced : Inform relevant authorities in the event of an accident
+OrderPlaced --> Accident : Accident occurred
+
+---
+
+Historical Repair Example 2 (Mistral, rag, syntax_grounded, case_16_weather_monitoring_system)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.
+
+Example invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Login / Register
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state CheckWeather
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

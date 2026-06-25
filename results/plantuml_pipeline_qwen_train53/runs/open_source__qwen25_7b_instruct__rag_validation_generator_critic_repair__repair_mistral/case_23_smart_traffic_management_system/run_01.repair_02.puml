@@ -1,0 +1,25 @@
+@startuml
+title UML State Machine Diagram (Smart Traffic Management System)
+
+[*] --> MonitoringTraffic
+MonitoringTraffic: MonitoringTraffic --> ControlStreetLights [Traffic conditions detected]
+MonitoringTraffic: MonitoringTraffic --> ManageSignals [Traffic conditions detected]
+
+state MonitoringTraffic <<choice>>
+ControlStreetLights [Exit] --> CaptureVehicleDetails : [Emergency identified or vehicle passes through signal]
+ManageSignals [Exit] --> CaptureVehicleDetails : [Emergency identified or vehicle passes through signal]
+
+state ControlStreetLights <<choice>>
+CaptureVehicleDetails --> VerifyRules : [No traffic rule broken]
+
+state CaptureVehicleDetails <<choice>>
+VerifyRules --> EndProcess : [No action needed]
+VerifyRules --> RecordViolation : [Fine not paid]
+
+state VerifyRules <<choice>>
+RecordViolation --> PayFine : [Fine paid]
+RecordViolation --> SendWarning : [Fine not paid]
+SendWarning --> ExceedLimit : [Violations exceed limit]
+ExceedLimit --> HoldLicense : [Fine cleared or probation period over]
+
+@enduml

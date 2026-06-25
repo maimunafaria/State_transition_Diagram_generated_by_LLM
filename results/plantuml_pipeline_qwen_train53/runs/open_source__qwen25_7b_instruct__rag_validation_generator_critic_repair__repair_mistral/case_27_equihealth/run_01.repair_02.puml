@@ -1,0 +1,29 @@
+@startuml
+title UML State Machine Diagram
+
+[*] --> RegistrationCheck
+state RegistrationCheck <<choice>>
+state PatientDashboard
+state HealthWorkerDashboard
+state GovernmentOfficialDashboard
+state Logout
+
+RegistrationCheck : registration completed [valid] --> CompletedRegistration
+CompletedRegistration : enter as patient [valid] --> PatientDashboard
+PatientDashboard : provide medical information [valid] --> ProvideInfo
+ProvideInfo : check and use info [valid] --> AnalyzeInfo
+AnalyzeInfo : prepare alerts [valid] --> PrepareAlerts
+PrepareAlerts : send to patient or health worker [valid] --> SendAlerts
+
+CompletedRegistration : enter as health worker [valid] --> HealthWorkerDashboard
+HealthWorkerDashboard : check medical information [valid] --> CheckInfo
+CheckInfo : use for analysis [valid] --> UseInfo
+UseInfo : prepare alerts [valid] --> PrepareAlerts
+PrepareAlerts : send to patient or health worker [valid] --> SendAlerts
+
+CompletedRegistration : enter as government official [valid] --> GovernmentOfficialDashboard
+GovernmentOfficialDashboard : display planning results [valid] --> DisplayResults
+DisplayResults : logout [invalid] --> Logout
+
+Logout --> [*] : AccessEnded [invalid]
+@enduml

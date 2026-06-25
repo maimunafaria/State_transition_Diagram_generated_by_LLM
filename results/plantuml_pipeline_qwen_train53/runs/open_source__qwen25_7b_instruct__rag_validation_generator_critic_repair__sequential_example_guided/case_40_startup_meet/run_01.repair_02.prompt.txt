@@ -1,0 +1,179 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Startup Meet — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select their roll (investor, entrepreneur, or mentor).
+2. The system shall enable the user to sign in after choosing a role.
+3. The system shall allow the signed-in user to submit a startup idea.
+4. The system shall review the submitted startup idea.
+5. The system shall provide mentorship based on the review result.
+6. The system shall make an investment decision if the startup idea is presented to an investor.
+7. The system shall provide funding based on the investment decision.
+8. The system shall end the process once all actions are completed.
+
+Candidate PlantUML to repair:
+@startuml
+title UML State Machine Diagram
+
+
+[*] --> C1
+
+state C1 <<choice>>
+C1 --> RoleSelection : [user selects role]
+C1 --> SignIn : [sign in after selecting role]
+
+state RoleSelection
+
+state Investor
+Investor --> SubmitIdea : [submit startup idea]
+
+state Entrepreneur
+Entrepreneur --> SubmitIdea : [submit startup idea]
+
+state Mentor
+Mentor --> ReviewIdea : [review submitted idea]
+
+state ReviewIdea
+ReviewIdea --> Mentorship : [provide mentorship based on review]
+ReviewIdea --> InvestmentDecision : [make investment decision if applicable]
+
+state InvestmentDecision
+InvestmentDecision --> Funding : [provide funding based on decision]
+
+state Funding
+
+state EndProcess : [end process once all actions are completed]
+EndProcess
+
+state SignIn <<choice>>
+SignIn --> Investor : [investor sign in]
+SignIn --> Entrepreneur : [entrepreneur sign in]
+SignIn --> Mentor : [mentor sign in]
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_final_state_transition (state --> [*])
+
+Other current validation issues, leave for later attempts unless naturally fixed:
+- none
+
+Validator details:
+- Current initial state: C1
+- State count: 11
+- Transition count: 11
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for the target issue:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Repair Examples for the Target Issue ---
+Historical Repair Example 1 (Qwen 2.5 7B Instruct, rag, hybrid_issue_guided, case_01_healthcare_portal)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Example invalid PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Registered : [registration successful]
+  Registered --> Login : [user signed in]
+}
+
+state Login {
+  Login --> Dashboard : [user logged in]
+}
+
+state Dashboard <<choice>>
+Dashboard --> PatientDashboard : [patient user]
+
+---
+
+Historical Repair Example 2 (Llama 3.1 8B Instruct, few_shot, full_patterns, case_02_inventory)
+Violation type:
+- missing_final_state_transition
+
+Example requirement:
+Inventory — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to add new goods to the inventory.
+2. The system shall allow the user to update the price of existing items in the inventory.
+3. The system shall allow the user to remove goods from the inventory that are no longer required.
+4. The system shall identify expired goods and notify the user about their removal from the inventory.
+5. The system shall allow the user to place an order to a supplier for additional goods when required.
+6. The system shall generate an invoice for the order once it is placed.
+7. The system shall allow the user to search for items available in the inventory and select them for purchase.
+8. The system shall calculate the applicable discount and tax based on the selected items.
+9. The system shall generate a receipt for the customer after the purchase.
+10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.
+11. The system shall record customer requests for items that may not be currently available.
+12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.
+
+Example invalid PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> Idle
+Idle --> Adding : addNewGoods
+Adding --> Idle : saveGoods
+
+Idle --> Updating : updatePrice
+Updating --> Idle : savePrice
+
+Idle --> Removing : removeGoods
+Removing --> Idle : removeGoods
+
+Idle --> Ordering : placeOrder
+Ordering --> Invoicing : generateInvoice
+Invoicing --> Idle : saveInvoice
+
+Idle --> Searching : searchItems
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

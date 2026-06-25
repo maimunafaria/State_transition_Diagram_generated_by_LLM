@@ -1,0 +1,189 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Guide Dropshipping Website — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to choose whether they are a seller or a customer.
+2. The system shall enable the seller to add or remove products from their list and finalize their offerings.
+3. The system shall allow the customer to view available products and select ones of interest.
+4. The system shall facilitate communication between customers and sellers for deal discussions.
+5. The system shall determine whether a purchase is completed based on the discussion or if it does not proceed.
+6. The system shall allow the customer to make payment after a purchase is completed and provide feedback later.
+7. The system shall end the interaction if no deal occurs.
+
+Candidate PlantUML to repair:
+@startuml
+
+[*] --> Login
+
+state "Login" as L1
+L1 --> SellerRegistration : [seller]
+L1 --> CustomerRegistration : [customer]
+
+state "Seller Registration" as S1
+S1 --> WorkspaceAccess : [complete registration and verification]
+
+state "Customer Registration" as C1
+C1 --> DashboardAccess : [complete registration and verification]
+
+state "Workspace Access" as W1
+W1 --> AddProducts : [add new products]
+W1 --> PromoteProducts : [promote existing products]
+W1 --> CommunicateWithCustomers : [communicate with customers]
+W1 --> Logout : [log out]
+
+state "Dashboard Access" as D1
+D1 --> ExploreProducts : [explore products]
+D1 --> ViewAvailableProducts : [view available products]
+D1 --> BrowseAndPurchase : [browse and purchase]
+
+state "Add Products" as AP
+AP --> W1
+
+state "Promote Products" as PP
+PP --> W1
+
+state "Communicate With Customers" as CC
+CC --> W1
+
+state "Logout" as L2
+L2 --> [*] : [end interaction]
+
+state "Explore Products" as EP
+EP --> D1
+
+state "View Available Products" as VAP
+VAP --> D1
+
+state "Browse And Purchase" as BAP
+BAP --> D1
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- unreachable: Add Products, AddProducts, Browse And Purchase, BrowseAndPurchase, Communicate With Customers, CommunicateWithCustomers, Customer Registration, Dashboard Access, DashboardAccess, Explore Products, ExploreProducts, Logout, Promote Products, PromoteProducts, Seller Registration, View Available Products, ViewAvailableProducts, Workspace Access, WorkspaceAccess
+
+Other current validation issues, leave for later attempts unless naturally fixed:
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: Login
+- Unreachable states: Add Products, AddProducts, Browse And Purchase, BrowseAndPurchase, Communicate With Customers, CommunicateWithCustomers, Customer Registration, Dashboard Access, DashboardAccess, Explore Products, ExploreProducts, Logout, Promote Products, PromoteProducts, Seller Registration, View Available Products, ViewAvailableProducts, Workspace Access, WorkspaceAccess
+- State count: 22
+- Transition count: 17
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for the target issue:
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical Repair Example 1 (Gemma 3 12B, rag, baseline_structural_rules, case_37_online_quiz_system)
+Violation type:
+- unreachable_state
+
+Example requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Example invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+state "Seller Registration" as SellerRegistration
+SellerRegistration : entry/Unregistered Seller
+SellerRegistration : do/Get Valid Seller Credentials
+SellerRegistration : exit/Seller Account Registered
+
+state "Seller Verification" as SellerVerification
+SellerVerification : entry/Seller Account Registered
+SellerVerification : do/Verify Seller
+SellerVerification : exit/Login Seller
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry/Unverified Seller
+SellerLogin : entry/Seller not logged in
+SellerLogin : do/Authenticate Seller
+SellerLogin : exit/Logged In Successfully
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry/Not Logged In
+CustomerLogin : do/Authenticate Customer
+
+---
+
+Historical Repair Example 2 (DeepSeek R1 14B, few_shot, full_patterns, case_01_healthcare_portal)
+Violation type:
+- unreachable_state
+
+Example requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Example invalid PlantUML:
+@startuml
+title UML State Transition Diagram - Healthcare Portal
+
+[*] --> Idle : Start
+
+state "Idle" as Idle
+Idle : entry/Welcome
+Idle : do/Waiting for user action
+Idle : exit/Register/Login
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/MainMenu/InvalidRegister
+
+state "InvalidRegister" as InvalidRegister
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

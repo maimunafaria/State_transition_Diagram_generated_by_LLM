@@ -1,0 +1,35 @@
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state UserChoice <<choice>>
+state TerminalState
+state DoctorChoice <<choice>>
+state NonDoctorChoice <<choice>>
+
+[*] --> CreateAccount : "Enter user details"
+CreateAccount --> SignedIn : "Sign in with correct username and password"
+SignedIn --> ReadBlogs : "Read blogs shared by recovered patients"
+SignedIn --> UpdateInfectedPeople : "Update number of infected people"
+SignedIn --> ShareInfo : "Share information from home quarantine"
+SignedIn --> ViewMedicalShops : "View nearby medical shops and purchase medicines"
+SignedIn --> AssignCleaners : "Assign workers to clean an area"
+SignedIn --> DecisionNode : "Decide if user is a doctor or not"
+
+state DoctorState
+DoctorState --> ViewSharedInfo : [is_doctor]
+DoctorState --> SuggestMedicines : [is_doctor]
+
+state NonDoctorState
+NonDoctorState --> PurchaseMedicine : [not_doctor]
+
+DecisionNode --> DoctorState : [is_doctor]
+DecisionNode --> NonDoctorState : [not_doctor]
+SignedIn --> TerminalState : "Logout"
+TerminalState --> [*] : COMPLETION_EVENT
+StartChoice --> CreateAccount : "Create an account"
+UserChoice --> SignedIn : "Enter correct username and password"
+
+DoctorState --> DoctorChoice : "Decide on action"
+NonDoctorState --> NonDoctorChoice : "Decide on action"
+@enduml

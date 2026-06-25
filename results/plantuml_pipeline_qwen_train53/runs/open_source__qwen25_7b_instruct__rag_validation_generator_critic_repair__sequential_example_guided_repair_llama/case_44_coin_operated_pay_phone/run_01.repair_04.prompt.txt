@@ -1,0 +1,223 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Coin Operated Pay Phone — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start when it is not in use.
+2. The system shall require inserting coins when the user picks up the receiver.
+3. The system shall allow dialing a number only after sufficient credit has been added.
+4. The system shall start the call when the dialed number is valid and the other party answers.
+5. The system shall continue the call as long as there is sufficient credit.
+6. The system shall end the call if the credit runs out during the call.
+7. The system shall allow adding more coins to continue the call.
+8. The system shall return any unused coins when the user hangs up.
+9. The system shall return to an unused state after a call ends.
+
+Candidate PlantUML to repair:
+@startuml
+title Coin Operated Pay Phone State Machine
+
+[*] --> Idle
+
+Idle --> Active : lift receiver / get dial tone
+Active --> DialTone : lift receiver / get dial tone
+DialTone --> CreditCheck : enter coins
+CreditCheck --> CallStart : valid number dialed and answered
+CallStart --> Calling : call in progress
+Calling --> CreditCheck : check credit during call
+Calling --> EndCall : credit runs out
+EndCall --> Idle : hang up
+
+state Idle {
+    [*] --> Active : lift receiver / get dial tone
+}
+
+state Active {
+    [*] --> DialTone : lift receiver / get dial tone
+}
+
+state DialTone {
+    [*] --> CreditCheck : enter coins
+}
+
+state CreditCheck {
+    [*] --> CallStart : valid number dialed and answered
+}
+
+state CallStart {
+    [*] --> Calling : call in progress
+}
+
+state Calling {
+    [*] --> CreditCheck : check credit during call
+    [*] --> EndCall : credit runs out
+}
+
+state EndCall {
+    [*] --> Idle : hang up
+}
+@enduml
+
+
+Target validation issue for THIS attempt:
+- multiple_initial_state_transitions (Idle, Active, DialTone, CreditCheck, CallStart, Calling, CreditCheck, EndCall, Idle)
+
+Other current validation issues, leave for later attempts unless naturally fixed:
+- missing_final_state_transition (state --> [*])
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 7
+- Transition count: 8
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for the target issue:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical Repair Example 1 (Qwen 2.5 7B Instruct, rag, full_patterns, case_47_safehome_security_function)
+Violation type:
+- multiple_initial_state_transitions
+
+Example requirement:
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.
+
+Example invalid PlantUML:
+@startuml
+[*] --> Idle
+
+state Idle {
+  [*] --> ReadyToUse
+  ReadyToUse --> [*]
+}
+
+state ReadyToUse {
+  ReadyToUse --> Reset : reset
+  ReadyToUse --> Activate : activate
+  ReadyToUse --> TurnOff : turnOff
+  ReadyToUse --> Monitoring : monitor
+}
+
+state Monitoring {
+  Monitoring --> Alarm : sensorTriggered
+  Monitoring --> Monitoring : falseAlarm
+  Monitoring --> Monitoring : timeEnds
+  Monitoring --> [*] : passwordEntry
+}
+
+state Alarm {
+  Alarm --> [*] : passwordEntry
+}
+@enduml
+
+Example repaired PlantUML:
+@startuml
+[*] --> Idle
+
+state Idle {
+  Idle --> ReadyToUse : powerOn
+}
+
+state ReadyToUse {
+  ReadyToUse --> Reset : reset
+  ReadyToUse --> Activate : activate
+  ReadyToUse --> TurnOff : turnOff
+
+---
+
+Historical Repair Example 2 (Qwen 2.5 7B Instruct, rag, syntax_grounded_pattern_rules, case_47_safehome_security_function)
+Violation type:
+- multiple_initial_state_transitions
+
+Example requirement:
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.
+
+Example invalid PlantUML:
+@startuml
+[*] --> Idle
+
+state Idle {
+  [*] --> ReadyToUse
+}
+
+state ReadyToUse {
+  ReadyToUse --> Reset : reset
+  ReadyToUse --> Activate : activate
+  ReadyToUse --> TurnOff : turnOff
+  ReadyToUse --> Monitoring : monitor
+}
+
+state Monitoring {
+  Monitoring --> Alarm : sensorTriggered
+  Monitoring --> Monitoring : falseAlarm
+  Monitoring --> Monitoring : timeEnds
+  Monitoring --> [*] : passwordEntry
+}
+
+state Alarm {
+  Alarm --> [*] : passwordEntry
+}
+@enduml
+
+Example repaired PlantUML:
+@startuml
+[*] --> Idle
+
+state Idle {
+  Idle --> ReadyToUse : powerOnCheck
+}
+
+state ReadyToUse {
+  ReadyToUse --> Reset : reset
+  ReadyToUse --> Activate : activate
+  ReadyToUse --> TurnOff : turnOff
+
+Now repair only the target issue. Return one corrected PlantUML diagram.
