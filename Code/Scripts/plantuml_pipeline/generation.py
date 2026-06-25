@@ -327,6 +327,7 @@ def run_single_generation(
                     critic_feedback,
                     repair_example_dataset=repair_example_dataset,
                     examples_per_issue=repair_examples_per_issue,
+                    exclude_example_case_id=case.case_id,
                 )
             elif repair_mode_clean == "sequential_example_guided":
                 repair_prompt = build_sequential_example_guided_repair_prompt(
@@ -336,6 +337,7 @@ def run_single_generation(
                     critic_feedback,
                     repair_example_dataset=repair_example_dataset,
                     examples_per_issue=repair_examples_per_issue,
+                    exclude_example_case_id=case.case_id,
                 )
             else:
                 repair_prompt = build_repair_prompt(

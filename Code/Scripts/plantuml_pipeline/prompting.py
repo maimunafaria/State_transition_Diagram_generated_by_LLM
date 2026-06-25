@@ -1385,6 +1385,7 @@ def _select_repair_examples(
     requirement: str,
     candidate_puml: str,
     examples_per_issue: int,
+    exclude_case_id: str = "",
 ) -> list[dict[str, Any]]:
     examples = _load_repair_examples(repair_example_dataset)
     if not examples or examples_per_issue <= 0:
@@ -1393,6 +1394,7 @@ def _select_repair_examples(
     query_tokens = tokenize(requirement + "\n" + candidate_puml)
     selected: list[dict[str, Any]] = []
     selected_keys: set[tuple[str, str, str]] = set()
+    selected_issue_cases: set[tuple[str, str]] = set()
 
     for issue in issues:
         normalized_issue = _normalize_repair_issue_name(issue)
@@ -1400,6 +1402,7 @@ def _select_repair_examples(
             example
             for example in examples
             if normalized_issue in set(example["issue_names"])
+            and str(example.get("case_id", "")) != exclude_case_id
         ]
         scored: list[tuple[int, str, dict[str, Any]]] = []
         for example in candidates:
@@ -1408,6 +1411,9 @@ def _select_repair_examples(
         scored.sort(key=lambda item: (-item[0], item[1]))
         taken = 0
         for _, _, example in scored:
+            issue_case_key = (normalized_issue, str(example.get("case_id", "")))
+            if issue_case_key in selected_issue_cases:
+                continue
             key = (
                 str(example.get("case_id", "")),
                 str(example.get("source_llm", "")),
@@ -1416,6 +1422,7 @@ def _select_repair_examples(
             if key in selected_keys:
                 continue
             selected_keys.add(key)
+            selected_issue_cases.add(issue_case_key)
             selected.append(example)
             taken += 1
             if taken >= examples_per_issue:
@@ -1423,7 +1430,14 @@ def _select_repair_examples(
     return selected
 
 
-def _format_repair_examples(examples: list[dict[str, Any]], max_chars_per_example: int = 1800) -> str:
+def _clip_section(text: str, max_chars: int) -> str:
+    text = text.strip()
+    if len(text) <= max_chars:
+        return text
+    return text[:max_chars].rsplit("\n", 1)[0].strip() + "\n... [clipped]"
+
+
+def _format_repair_examples(examples: list[dict[str, Any]]) -> str:
     if not examples:
         return "[No matching historical repair examples were found.]"
     blocks: list[str] = []
@@ -1443,19 +1457,38 @@ def _format_repair_examples(examples: list[dict[str, Any]], max_chars_per_exampl
         invalid = _section_between(inp, "Invalid PlantUML:", ["Validation Errors:"])
         errors = _section_between(inp, "Validation Errors:", ["Relevant Rule:"])
         rule = _section_between(inp, "Relevant Rule:", [])
+        repaired = str(example["output"]).strip()
         block = (
             f"Historical Repair Example {index}"
             + (f" ({source})" if source else "")
             + "\n"
             f"Violation type:\n{errors}\n\n"
-            f"Example requirement:\n{requirement}\n\n"
-            f"Example invalid PlantUML:\n{invalid}\n\n"
-            f"Example repaired PlantUML:\n{example['output'].strip()}\n\n"
-            f"Example rule:\n{rule}"
+            f"Example requirement summary:\n{_clip_section(requirement, 500)}\n\n"
+            f"Example invalid PlantUML:\n{_clip_section(invalid, 900)}\n\n"
+            f"Example repaired PlantUML:\n{_clip_section(repaired, 1400)}\n\n"
+            f"Example rule:\n{_clip_section(rule, 350)}"
         ).strip()
-        if len(block) > max_chars_per_example:
-            block = block[:max_chars_per_example].rsplit("\n", 1)[0].strip()
         blocks.append(block)
+    return "\n\n---\n\n".join(blocks)
+
+
+def _format_compact_repair_examples(examples: list[dict[str, Any]]) -> str:
+    if not examples:
+        return "[No matching historical repair example was found.]"
+    blocks: list[str] = []
+    for index, example in enumerate(examples, start=1):
+        inp = example["input"]
+        invalid = _section_between(inp, "Invalid PlantUML:", ["Validation Errors:"])
+        errors = _section_between(inp, "Validation Errors:", ["Relevant Rule:"])
+        repaired = str(example["output"]).strip()
+        blocks.append(
+            (
+                f"Historical repair example {index}\n"
+                f"Violation:\n{errors}\n\n"
+                f"Invalid PlantUML:\n{_clip_section(invalid, 900)}\n\n"
+                f"Repaired PlantUML:\n{_clip_section(repaired, 1200)}"
+            ).strip()
+        )
     return "\n\n---\n\n".join(blocks)
 
 
@@ -1684,6 +1717,7 @@ def build_example_guided_repair_prompt(
     critic_feedback: str = "",
     repair_example_dataset: Path | None = None,
     examples_per_issue: int = 2,
+    exclude_example_case_id: str = "",
 ) -> str:
     validation_issues = _prioritized_repair_issues(validation)
     repair_guidance = _repair_guidance_for_issues(validation_issues)
@@ -1696,6 +1730,7 @@ def build_example_guided_repair_prompt(
             requirement=requirement,
             candidate_puml=candidate_puml,
             examples_per_issue=examples_per_issue,
+            exclude_case_id=exclude_example_case_id,
         )
     example_block = _format_repair_examples(examples)
     return (
@@ -1733,13 +1768,12 @@ def build_sequential_example_guided_repair_prompt(
     critic_feedback: str = "",
     repair_example_dataset: Path | None = None,
     examples_per_issue: int = 2,
+    exclude_example_case_id: str = "",
 ) -> str:
     validation_issues = _prioritized_repair_issues(validation)
     target_issue = validation_issues[0] if validation_issues else ""
     target_issues = [target_issue] if target_issue else []
     repair_guidance = _repair_guidance_for_issues(target_issues)
-    structural_rules = _format_structural_validation_rules()
-    issue_details = _validation_issue_details(validation)
     examples: list[dict[str, Any]] = []
     if repair_example_dataset is not None and target_issues:
         examples = _select_repair_examples(
@@ -1748,9 +1782,9 @@ def build_sequential_example_guided_repair_prompt(
             requirement=requirement,
             candidate_puml=candidate_puml,
             examples_per_issue=examples_per_issue,
+            exclude_case_id=exclude_example_case_id,
         )
-    example_block = _format_repair_examples(examples)
-    remaining_issues = validation_issues[1:]
+    example_block = _format_compact_repair_examples(examples)
     return (
         "You are a sequential UML repair assistant.\n"
         "Fix exactly one validation issue in this attempt: the target issue below.\n"
@@ -1766,12 +1800,6 @@ def build_sequential_example_guided_repair_prompt(
         f"{candidate_puml}\n\n"
         "Target validation issue for THIS attempt:\n"
         + (f"- {target_issue}" if target_issue else "- none")
-        + "\n\nOther current validation issues, leave for later attempts unless naturally fixed:\n"
-        + ("\n".join(f"- {issue}" for issue in remaining_issues) if remaining_issues else "- none")
-        + "\n\nValidator details:\n"
-        + "\n".join(f"- {detail}" for detail in issue_details)
-        + "\n\n--- Structural Validation Rules ---\n"
-        + structural_rules
         + "\n\nRepair guidance for the target issue:\n"
         + "\n".join(f"- {hint}" for hint in repair_guidance)
         + "\n\n--- Historical Repair Examples for the Target Issue ---\n"
