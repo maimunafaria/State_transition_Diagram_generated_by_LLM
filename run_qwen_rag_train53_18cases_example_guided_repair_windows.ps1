@@ -25,7 +25,7 @@ python Code\Scripts\plantuml_experiment_pipeline.py run `
     --split-input $SplitInput `
     --split-output $SplitOutput `
     --skip-gpt-baseline `
-    --only-run-id open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair `
+    --only-run-id open_source__qwen25_7b_instruct__rag_validation_generator_critic_repair__example_guided `
     --qwen-model $QwenModel `
     --runs 1 `
     --repair-attempts $RepairAttempts `
