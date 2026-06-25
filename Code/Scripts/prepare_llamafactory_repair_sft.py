@@ -146,6 +146,12 @@ per_device_eval_batch_size: 1
         encoding="utf-8",
     )
 
+    lora_train_yaml = train_yaml.replace("quantization_bit: 4\n", "")
+    (config_dir / "qwen25_7b_plantuml_repair_lora_sft.yaml").write_text(
+        lora_train_yaml,
+        encoding="utf-8",
+    )
+
     merge_yaml = """\
 ### model
 model_name_or_path: Qwen/Qwen2.5-7B-Instruct
@@ -172,6 +178,7 @@ export_legacy_format: false
         "eval_examples": len(eval_rows),
         "dataset_info": str(data_dir / "dataset_info.json"),
         "train_yaml": str(config_dir / "qwen25_7b_plantuml_repair_qlora_sft.yaml"),
+        "lora_train_yaml": str(config_dir / "qwen25_7b_plantuml_repair_lora_sft.yaml"),
         "merge_yaml": str(config_dir / "merge_qwen25_7b_plantuml_repair_lora.yaml"),
     }
     write_json(args.output_dir / "prepare_summary.json", summary)
