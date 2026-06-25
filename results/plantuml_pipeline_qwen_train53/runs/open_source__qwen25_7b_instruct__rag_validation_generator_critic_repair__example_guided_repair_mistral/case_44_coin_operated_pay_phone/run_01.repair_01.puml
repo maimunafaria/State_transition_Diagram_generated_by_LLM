@@ -1,0 +1,41 @@
+@startuml
+title Coin Operated Pay Phone State Machine
+
+[*] --> Idle
+
+state Idle {
+  Idle --> Active : lift receiver / get dial tone
+}
+
+state Active {
+  Active --> DialTone : lift receiver / get dial tone
+  Active --> CreditCheck : enter coins
+}
+
+state DialTone {
+  DialTone --> CreditCheck : valid number dialed and answered
+}
+
+state CreditCheck {
+  CreditCheck --> CallStart : sufficient credit
+}
+
+state CallStart {
+  CallStart --> Calling : call in progress
+  CallStart --> EndCall : insufficient credit
+}
+
+state Calling {
+  Calling --> CreditCheck : check credit during call
+  Calling --> EndCall : credit runs out
+}
+
+state EndCall {
+  EndCall --> Idle : hang up
+  EndCall --> ReturnCoins : return unused coins
+}
+
+state ReturnCoins {
+  [*] --> Idle
+}
+@enduml

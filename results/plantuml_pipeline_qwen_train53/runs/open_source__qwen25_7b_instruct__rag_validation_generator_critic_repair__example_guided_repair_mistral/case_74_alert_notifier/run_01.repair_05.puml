@@ -1,0 +1,22 @@
+@startuml
+title Alert Notifier State Machine
+
+[*] --> Initializing
+Initializing : initialize component to detect updates upon initial loading
+Initializing --> Waiting : initialization successful
+Initializing --> Unloading : initialization fails or system shutdown
+
+Waiting : continuously check for incoming updates
+Waiting --> ProcessingUpdate : detected update found
+ProcessingUpdate : process detected updates by storing them and evaluating their significance
+ProcessingUpdate --> NotifyingOperators : evaluation results meet certain conditions
+ProcessingUpdate --> Waiting : no changes to notify
+ProcessingUpdate --> Unloading : system shutdown during processing
+
+Unloading : perform necessary cleanup operations
+Unloading --> InformingComponentManager : successful removal during unloading
+Unloading --> Terminating : component terminated after unloading is complete
+
+Waiting --> ReturningToWaiting : after processing an update
+Waiting --> End : [*] (add this line)
+@enduml
