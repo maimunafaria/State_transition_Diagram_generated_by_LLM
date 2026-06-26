@@ -1,0 +1,65 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Plane — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall place a newly acquired plane in an 'Order' state until it is delivered.
+2. The system shall transition a plane from 'Arrival' to 'Preparation' upon its arrival.
+3. The system shall assign a prepared plane to either 'Operations' or 'Maintenance' based on its condition and schedule.
+4. The system shall keep a plane in the 'Operations' state if it still has scheduled flights.
+5. The system shall send a plane to 'Maintenance' when there are no more scheduled flights or maintenance is required.
+6. The system shall transition a plane from 'Maintenance' to 'Preparation' after checking and servicing it until it is ready for operations.
+7. The system shall take a plane out of service if it is no longer available for use.
+8. The system shall remove a plane from its operations when it is permanently withdrawn from service.
+
+Candidate PlantUML:
+@startuml
+title Plane State Transition Diagram
+
+state Order
+state Arrival
+state Preparation
+state Operations
+state Maintenance
+state "Out of Service"
+state "Removed from Service"
+
+[*] --> Order
+
+Order --> Arrival : Plane acquired
+
+Arrival --> Preparation : Arrival at base
+
+Preparation --> Operations : Ready for operations
+Preparation --> Maintenance : Needs maintenance
+
+Operations --> Maintenance : No more flights or maintenance required
+
+Maintenance --> Preparation : Maintenance completed
+
+Operations --> "Out of Service" : Plane unavailable
+
+"Out of Service" --> "Removed from Service" : Permanently withdrawn
+
+@enduml
+
+
+Validation issues:
+- missing_final_state_transition (state --> [*])
+
+Validator details:
+- Current initial state: Order
+- State count: 7
+- Transition count: 8
+
+Valid PlantUML repair patterns:
+Pattern 1: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
