@@ -1,0 +1,453 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Staff Member Class — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow assigning a staff member to a client or adding them to a campaign.
+2. The system shall allow removing assignments from staff members, returning them to an unassigned state.
+3. The system shall enable staff members to switch between different assignments during their work period.
+4. The system shall mark a staff member as unemployed when they leave the job.
+5. The system shall archive the record of a former employee after some time has passed.
+
+Reference context (use as support; the target requirement above is primary):
+
+# PlantUML State Aliases, Notes, and Descriptions
+
+Use this document when state names are long or when the diagram needs annotations.
+
+## Long state names with alias
+
+Use aliases to keep transitions readable when state names are long.
+
+```plantuml
+state "Waiting for Payment Confirmation" as WaitingPayment
+state "Order Completed Successfully" as OrderComplete
+
+WaitingPayment --> OrderComplete : payment confirmed
+```
+
+Alternative alias form:
+
+```plantuml
+state WaitingPayment as "Waiting for Payment Confirmation"
+```
+
+## Notes attached to states
+
+Use notes to add additional explanation without changing the state name.
+
+```plantuml
+note right of Processing : validates request details
+```
+
+Multi-line notes:
+
+```plantuml
+note left of Processing
+The system checks the request,
+
+# PlantUML State Diagram Core Syntax
+
+Use this document when generating a basic UML state transition diagram in PlantUML.
+
+## Diagram wrapper
+
+PlantUML code should be enclosed between `@startuml` and `@enduml`.
+
+```plantuml
+@startuml
+[*] --> Idle
+Idle --> [*]
+@enduml
+```
+
+## Initial and final state
+
+The initial and final pseudostate is written as `[*]`.
+
+Initial transition:
+
+```plantuml
+[*] --> State1
+```
+
+Final transition:
+
+```plantuml
+State1 --> [*]
+```
+
+## Transitions
+
+Use arrows between states.
+
+```plantuml
+State1 --> State2
+State1 -> State2
+```
+
+Transitions can include labels after a colon.
+
+```plantuml
+Idle --> LoggedIn : login successful
+LoggedIn --> LoggedOut : logout
+```
+
+Labels may include event, guard, and action information.
+
+```plantuml
+
+# UML State Machine Core Concepts
+
+Use this document to decide what should become a state and what should become a transition.
+
+## Purpose
+
+A state machine diagram describes how a system, object, or controller behaves over time. It is useful when the object reacts differently depending on its current condition.
+
+## State
+
+A state is not just a variable value. In a state machine, a state means an abstract condition where the system reacts to events in a particular way.
+
+Good state names usually describe stable conditions:
+
+```text
+Idle
+Waiting for Payment
+Verifying User
+Order Confirmed
+Session Active
+```
+
+Avoid making every action a state. Actions such as "click button" or "enter password" are often better as transition labels unless the system remains in that condition.
+
+# UML Transitions, Events, Guards, and Actions
+
+Use this document when labeling transitions in a state diagram.
+
+## Transition label structure
+
+A UML transition label can contain three conceptual parts:
+
+```text
+event [guard] / action
+```
+
+In PlantUML this can be written after a colon:
+
+```plantuml
+Waiting --> Approved : submit [valid] / approve request
+```
+
+## Event
+
+An event is something that may trigger a change of state.
+
+Examples:
+
+```text
+login submitted
+payment received
+card inserted
+order cancelled
+verification completed
+timer expires
+```
+
+## Guard
+
+A guard is a Boolean condition that must be true for the transition to happen.
+
+Examples:
+
+```plantuml
+Checking --> Approved : [credentials valid]
+Checking --> Rejected : [credentials invalid]
+```
+
+Example requirement:
+Class Campaign Final Version — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall activate a campaign once a manager and staff are assigned, it is approved, and the contract is signed.
+2. The system shall allow surveys to be carried out and evaluated during the campaign.
+3. The system shall prepare, approve, schedule, and run adverts during the campaign.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Campaign State Machine (Final Version)
+
+[*] --> Commissioned : /assignManager; assignStaff
+
+state Commissioned
+state Suspended
+state Completed
+state Paid
+
+Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+Commissioned --> Completed : campaignCancelled;\ncalculateCosts;\nprepareFinalStatement
+state Active {
+
+  state Monitoring {
+    [*] --> Survey
+
+    state Survey
+    state Evaluation
+    state H1 <<history>>
+
+    Survey --> Evaluation : surveyComplete
+    Evaluation --> Survey : runSurvey
+  }
+
+  --
+
+  state Running {
+    [*] --> AdvertPreparation
+
+    state AdvertPreparation
+    state Scheduling
+    state "Running Adverts" as RunningAdverts
+    state H2 <<history>>
+
+    AdvertPreparation --> Scheduling : advertsApproved\n/authorize
+    Scheduling --> RunningAdverts : confirmSchedule
+    RunningAdverts --> AdvertPreparation : extendCampaign\n/modifyBudget
+  }
+
+}
+
+
+Active --> Suspended : suspendCampaign\n/stopAdverts
+Suspended --> Active : resumeCampaign
+
+
+Active --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+AdvertPreparation --> Completed : campaignCompleted\n/prepareFinalStatement
+
+
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > 0]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
+
+
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+
+@enduml
+```
+
+Example requirement:
+Advocate Diary — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to explore blogs and news updates.
+2. The system shall permit users to leave at any time after viewing blogs and news updates.
+3. The system shall enable users to create an account by providing their details.
+4. The system shall check the provided details during account creation.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML state machine diagram
+
+state "View blogs as news updates" as ViewBlogs
+ViewBlogs : entry/Visit page
+ViewBlogs : do/Shows blogs and news updates
+ViewBlogs : exit/Leave the page
+
+state "Register" as Register
+Register : entry/New user
+Register : do/Verify details
+Register : exit/Verified details
+
+state "Login" as Login
+Login : entry/Registered
+Login : do/Verify password
+Login : exit/View details
+
+state "View details and logs" as ViewDetails
+ViewDetails : entry/Login
+ViewDetails : do/Show details of case and logs
+ViewDetails : exit/Do required function
+
+state "Add case" as AddCase
+AddCase : entry/Wants to add case
+AddCase : do/Show Category
+AddCase : exit/Selects a category
+
+state "Civil" as Civil
+Civil : entry/Selects this category
+Civil : do/update view table
+Civil : exit/Allows to add details
+
+state "Criminal" as Criminal
+Criminal : entry/Selects this category
+Criminal : do/Update the view table
+Criminal : exit/Allows to add details
+
+state "Add details" as AddDetails
+AddDetails : entry/Selects category
+AddDetails : do/Add details about case
+AddDetails : exit/Update view table
+
+state "Add remainder" as AddReminder
+AddReminder : entry/Adds details
+AddReminder : do/Add remainder
+AddReminder : exit/Update calender
+
+state "Upload document" as UploadDocument
+UploadDocument : entry/Add details
+UploadDocument : do/Upload documents
+UploadDocument : exit/leave page
+
+state "File online" as FileOnline
+FileOnline : entry/Prefers online filing
+FileOnline : do/Select category
+FileOnline : exit/Click a link
+
+state "Redirect to page" as RedirectPage
+RedirectPage : entry/Click a link
+RedirectPage : do/Redirects to page
+RedirectPage : exit/Returns to page
+
+state "Download model forms" as DownloadForms
+DownloadForms : entry/wants to download forms
+DownloadForms : do/Select a form
+DownloadForms : exit/Downloads form
+
+state "Reference" as Reference
+Reference : entry/Pefers to refer
+Reference : do/Select a category
+Reference : exit/prefered categoried is showed
+
+state "Quick References" as QuickReferences
+QuickReferences : entry/Selects quick references
+QuickReferences : do/Shows some Quick references
+QuickReferences : exit/Leave the page
+
+state "Books" as Books
+Books : entry/Selects books
+Books : do/Shows books
+Books : exit/Leave page
+
+state "Feedback" as Feedback
+Feedback : entry/Wants to give feedback
+Feedback : do/Add feedback
+Feedback : exit/Exit page
+
+state "Logout" as Logout
+Logout : entry/Wants to leave the site
+Logout : do/The session of logged in user ended
+Logout : exit/Leave the site
+
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+
+state J10 <<choice>>
+
+[*] --> J1
+
+J1 --> ViewBlogs
+J1 --> Register
+
+ViewBlogs --> [*]
+
+Register --> J2
+J2 --> [*] : [Invalid Credentials]
+J2 --> Login : [Valid]
+
+Login --> [*] : [Improper]
+Login --> ViewDetails : [Proper]
+
+ViewDetails --> J3
+
+J3 --> AddCase
+J3 --> FileOnline
+J3 --> DownloadForms
+J3 --> Reference
+J3 --> Feedback
+
+AddCase --> J4
+J4 --> Civil
+J4 --> Criminal
+
+Civil --> J5
+Criminal --> J5
+J5 --> AddDetails
+AddDetails --> AddReminder
+AddReminder --> UploadDocument
+UploadDocument --> J10
+
+FileOnline --> RedirectPage
+RedirectPage --> J10
+
+DownloadForms --> J10
+
+Reference --> J6
+J6 --> QuickReferences
+J6 --> Books
+QuickReferences --> J10
+Books --> J10
+
+Feedback --> J10
+
+J10 --> Logout
+Logout --> [*]
+
+@enduml
+```
+
+Example requirement:
+Class Campaign — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall begin a campaign once a manager and staff are assigned.
+2. The system shall activate and start running a campaign upon approval and signing of the contract.
+3. The system shall prepare a final statement when the campaign is finished and move the process toward completion.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title State machine for Campaign
+
+state Commissioned
+state Active
+state Completed
+state Paid
+
+[*] --> Commissioned : /assignManager;\nassignStaff
+
+Commissioned --> Active : Authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+
+Active --> Completed : campaignCompleted\n/prepareFinalStatement
+
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = zero]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > zero]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < zero]\n/generateRefund
+
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+
+@enduml
+```
+
+Now return only the final PlantUML.

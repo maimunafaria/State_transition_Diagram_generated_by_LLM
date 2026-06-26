@@ -1,0 +1,80 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Green Rides — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display journey details upon user login and destination selection.
+2. The system shall allow users to activate driving mode or choose other options after viewing journey details.
+3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.
+4. The system shall inform relevant authorities in the event of an accident.
+5. The system shall send notifications during driving or in case of an accident.
+6. The system shall allow users to provide feedback upon completion of their journey.
+
+Candidate PlantUML to repair:
+@startuml
+title UML State Machine Diagram
+
+state Initial
+state LoggedIn
+state JourneyDetails
+state DrivingMode
+state Hungry
+state RestaurantSelection
+state Ordering
+state AccidentReport
+state Notifications
+state Feedback
+state Logout
+
+Initial --> LoggedIn : Login
+
+LoggedIn --> JourneyDetails : Select destination
+
+JourneyDetails : entry / Display journey details
+JourneyDetails : do / Show options
+JourneyDetails --> DrivingMode : Activate driving mode
+JourneyDetails --> JourneyDetails : Choose other options
+JourneyDetails --> Hungry : Select eat
+
+DrivingMode : entry / Activate
+DrivingMode : do / Monitor
+DrivingMode --> JourneyDetails : Deactivate
+DrivingMode --> AccidentReport : Accident detected
+
+Hungry --> RestaurantSelection : Select place
+
+RestaurantSelection : entry / Display menu
+RestaurantSelection --> Ordering : Order
+
+Ordering : entry / Place order
+Ordering --> JourneyDetails : Continue journey
+Ordering --> Notifications : Order confirmed
+
+AccidentReport --> Notifications : Report accident
+
+Notifications : entry / Send notifications
+Notifications --> JourneyDetails : Continue
+Notifications --> DrivingMode : Continue driving
+Notifications --> Feedback : Provide feedback
+
+Feedback --> Logout : Submit
+
+Logout --> [*] : Logout complete
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_initial_state_transition ([*] --> state)
+
+Repair guidance for the target issue:
+- Add one clear initial transition from [*] to the first lifecycle state.
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

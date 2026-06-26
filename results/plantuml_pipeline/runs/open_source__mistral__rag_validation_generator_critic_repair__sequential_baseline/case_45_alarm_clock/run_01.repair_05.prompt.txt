@@ -1,0 +1,54 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Alarm Clock — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall be in an off state initially.
+2. The system shall support when the user sets an alarm time, the system shall activate the alarm.
+3. The system shall ensure that the user shall be able to turn off the activated alarm.
+4. The system shall support when the current time matches the set alarm time, the system shall start ringing the alarm.
+5. The system shall ensure that once the alarm is ringing, the user shall be able to stop it.
+6. The system shall support after stopping the alarm, the system shall remain active for the next scheduled alarm time.
+
+Candidate PlantUML to repair:
+@startuml
+title Alarm Clock State Diagram
+
+state Off {
+  [*] --> SetAlarmTime
+}
+
+state ActiveAlarm {
+  state Ringing {
+    [*] --> StartRinging : current time matches set alarm time
+    Ringing --> StoppedByUser : user stops alarm
+    Ringing --> NextScheduledAlarm : time passes
+  }
+
+  state Stopped {
+    [*] --> StoppedByUser : user turns off activated alarm
+    Stopped --> ActiveAlarm : next scheduled alarm time
+  }
+}
+
+Off --> ActiveAlarm : user sets an alarm time
+ActiveAlarm --> Off : no active alarms
+@enduml
+
+
+Target validation issue for THIS attempt:
+- multiple_initial_state_transitions (SetAlarmTime, StartRinging, StoppedByUser)
+
+Repair guidance for the target issue:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

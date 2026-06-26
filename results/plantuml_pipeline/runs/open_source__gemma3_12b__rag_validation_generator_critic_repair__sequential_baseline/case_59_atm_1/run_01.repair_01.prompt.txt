@@ -1,0 +1,64 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Atm Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose or enter a withdrawal amount.
+2. The system shall support predefined amounts for selection by the user.
+3. The system shall allow users to input their own custom withdrawal amount.
+4. The system shall provide an option for the user to cancel the transaction at any point.
+5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.
+
+Candidate PlantUML to repair:
+@startuml
+title ATM Withdrawal Process
+
+[*] --> Idle
+
+state Idle
+state WaitingForInput
+state EnteringAmount
+state ConfirmingAmount
+state ProcessingTransaction
+state DispensingCash
+state ReturningCard
+state Cancelled
+
+Idle --> WaitingForInput : Card Inserted
+
+WaitingForInput --> EnteringAmount : Choose Withdrawal Amount
+
+EnteringAmount --> ConfirmingAmount : Amount Entered
+
+ConfirmingAmount --> ProcessingTransaction : Confirm Amount
+
+ConfirmingAmount --> WaitingForInput : Cancel Transaction
+
+ProcessingTransaction --> DispensingCash : Transaction Approved
+
+ProcessingTransaction --> ReturningCard : Transaction Declined
+
+ProcessingTransaction --> Cancelled : System Error
+
+DispensingCash --> ReturningCard : Cash Dispensed
+
+ReturningCard --> Idle : Card Returned
+
+Cancelled --> Idle : Transaction Cancelled
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for the target issue:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

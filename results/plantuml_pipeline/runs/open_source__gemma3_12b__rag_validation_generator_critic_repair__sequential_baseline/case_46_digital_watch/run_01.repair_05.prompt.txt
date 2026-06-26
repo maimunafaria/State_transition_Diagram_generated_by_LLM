@@ -1,0 +1,87 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.
+
+Candidate PlantUML to repair:
+@startuml
+title UML state machine diagram
+
+state "Idle" as Idle
+Idle : entry/waiting for user input
+Idle : do/remain in idle state
+Idle : exit/user interaction
+
+state "Adjusting Time" as AdjustingTime
+AdjustingTime : entry/user presses button to adjust time
+AdjustingTime : do/display current setting
+AdjustingTime : exit/user presses button to change setting
+
+state "Increasing Value" as IncreasingValue
+IncreasingValue : entry/user presses button to increase value
+IncreasingValue : do/increment value
+IncreasingValue : exit/value reaches maximum
+
+state "Alarm On/Off" as AlarmOnOff
+AlarmOnOff : entry/user presses button to toggle alarm
+AlarmOnOff : do/change alarm state
+AlarmOnOff : exit/alarm state updated
+
+state "Alarm Ringing" as AlarmRinging
+AlarmRinging : entry/alarm time matches current time
+AlarmRinging : do/sound alarm
+AlarmRinging : exit/user presses button to stop alarm
+
+state "Light On" as LightOn
+LightOn : entry/user presses button to turn on light
+LightOn : do/turn on light
+LightOn : exit/user releases button
+
+state "Light Off" as LightOff
+LightOff : entry/user releases button
+LightOff : do/turn off light
+LightOff : exit/light is off
+
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+
+[*] --> Idle
+
+Idle --> AdjustingTime : button pressed
+AdjustingTime --> IncreasingValue : button pressed
+IncreasingValue --> AdjustingTime : button pressed
+AdjustingTime --> AlarmOnOff : button pressed
+AlarmOnOff --> Idle : button pressed
+AlarmOnOff --> AlarmRinging : alarm time matches current time
+AlarmRinging --> Idle : button pressed
+Idle --> LightOn : button pressed
+LightOn --> LightOff : button released
+LightOff --> Idle : button pressed
+Idle --> [*] : end
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- orphan: J1, J2, J3
+
+Repair guidance for the target issue:
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

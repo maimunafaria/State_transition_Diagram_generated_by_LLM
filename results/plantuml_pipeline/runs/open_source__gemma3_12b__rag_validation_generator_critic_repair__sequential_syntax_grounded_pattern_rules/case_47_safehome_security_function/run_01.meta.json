@@ -1,0 +1,177 @@
+{
+  "run_id": "open_source__gemma3_12b__rag_validation_generator_critic_repair__sequential_syntax_grounded_pattern_rules",
+  "case_id": "case_47_safehome_security_function",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nSafehome Security Function — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if everything is working upon power-on.\n2. The system shall stop if there is a problem during startup.\n3. The system shall become ready to use if everything is fine during startup.\n4. The system shall allow the user to reset it when it is ready to use.\n5. The system shall allow the user to activate it when it is ready to use.\n6. The system shall allow the user to turn it off when it is ready to use.\n7. The system shall start monitoring if it is activated.\n8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.\n9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.\n10. The system shall stop and return to normal when the user enters the password at any time.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Aliases, Notes, and Descriptions\n\nUse this document when state names are long or when the diagram needs annotations.\n\n## Long state names with alias\n\nUse aliases to keep transitions readable when state names are long.\n\n```plantuml\nstate \"Waiting for Payment Confirmation\" as WaitingPayment\nstate \"Order Completed Successfully\" as OrderComplete\n\nWaitingPayment --> OrderComplete : payment confirmed\n```\n\nAlternative alias form:\n\n```plantuml\nstate WaitingPayment as \"Waiting for Payment Confirmation\"\n```\n\n## Notes attached to states\n\nUse notes to add additional explanation without changing the state name.\n\n```plantuml\nnote right of Processing : validates request details\n```\n\nMulti-line notes:\n\n```plantuml\nnote left of Processing\nThe system checks the request,\n\n# PlantUML State Diagram Core Syntax\n\nUse this document when generating a basic UML state transition diagram in PlantUML.\n\n## Diagram wrapper\n\nPlantUML code should be enclosed between `@startuml` and `@enduml`.\n\n```plantuml\n@startuml\n[*] --> Idle\nIdle --> [*]\n@enduml\n```\n\n## Initial and final state\n\nThe initial and final pseudostate is written as `[*]`.\n\nInitial transition:\n\n```plantuml\n[*] --> State1\n```\n\nFinal transition:\n\n```plantuml\nState1 --> [*]\n```\n\n## Transitions\n\nUse arrows between states.\n\n```plantuml\nState1 --> State2\nState1 -> State2\n```\n\nTransitions can include labels after a colon.\n\n```plantuml\nIdle --> LoggedIn : login successful\nLoggedIn --> LoggedOut : logout\n```\n\nLabels may include event, guard, and action information.\n\n```plantuml\n\n# UML State Machine Core Concepts\n\nUse this document to decide what should become a state and what should become a transition.\n\n## Purpose\n\nA state machine diagram describes how a system, object, or controller behaves over time. It is useful when the object reacts differently depending on its current condition.\n\n## State\n\nA state is not just a variable value. In a state machine, a state means an abstract condition where the system reacts to events in a particular way.\n\nGood state names usually describe stable conditions:\n\n```text\nIdle\nWaiting for Payment\nVerifying User\nOrder Confirmed\nSession Active\n```\n\nAvoid making every action a state. Actions such as \"click button\" or \"enter password\" are often better as transition labels unless the system remains in that condition.\n\n# Reactive Objects and Statechart Scope\n\nUse this document to decide whether a requirement is suitable for state-machine modeling and what lifecycle should be modeled.\n\n## Statechart purpose\n\nA statechart models the dynamic behavior of a reactive object. A reactive object can be a class, use case, subsystem, complete system, session, controller, or business process that responds to events.\n\nFor this project, the reactive object is usually the system or process described by the requirement.\n\n## Reactive object characteristics\n\nA good state-machine candidate usually has:\n\n```text\n1. External or internal events that affect behavior.\n2. A clear lifecycle.\n3. Behavior that depends on previous behavior or current condition.\n4. Meaningful states and transitions.\n```\n\nExamples:\n\n```text\n\nExample requirement:\nAtm Many Scenarios Scenario 6 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the entered PIN is correct.\n2. The system shall ask for the PIN again if it is incorrect.\n3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle ATM Control - Validate PIN and Withdraw Funds\n\n[*] --> Idle\n\nstate Idle\nstate WaitingForPIN\nstate ValidatingPIN\nstate WaitingForCustomerChoice\nstate ProcessingWithdrawal\nstate Dispensing\nstate Printing\nstate Ejecting\nstate Confiscating\nstate Terminating\nstate ClosedDown\n\nIdle : entry / Display Welcome\nClosedDown : entry / Display System Down\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nWaitingForPIN --> Confiscating : Card Confiscated / display Confiscated\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> Confiscating : Card Stolen, Card Expired /\\nConfiscate, Update Status\nValidatingPIN --> Confiscating : Third Invalid PIN /\\nConfiscate\n\nValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu\n\nWaitingForPIN --> Ejecting : Cancel / Eject\nWaitingForCustomerChoice --> Ejecting : Cancel / Eject\nValidatingPIN --> Ejecting : Cancel / Eject\n\nWaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected /\\nRequest Withdrawal, Display Wait\n\nProcessingWithdrawal --> Dispensing : Withdrawal Approved /\\nDispense Cash, Update Status\nProcessingWithdrawal --> Ejecting : Rejected / Eject\n\nDispensing --> Printing : Cash Dispensed /\\nPrint Receipt,\\nDisplay Cash Dispensed,\\nConfirm Cash Dispensed\nDispensing --> ClosedDown : Insufficient Cash / Eject\n\nPrinting --> Ejecting : Receipt Printed / Eject\n\nEjecting --> Terminating : Card Ejected / Display Ejected\nConfiscating --> Terminating : Card Confiscated / Display Confiscated\n\nTerminating --> Idle : After (Elapsed Time)\\n[Closedown Not Requested]\n\n\n@enduml\n```\n\nExample requirement:\nPetrol Gas Pump — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall display a welcome message when not in use.\n2. The system shall read the card details upon card insertion.\n3. The system shall prepare the pump for use if the card is valid.\n4. The system shall show an error message and reset if the card is invalid.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle State machine model of a petrol (gas) pump\n\n[*] --> Waiting\n\nstate Waiting\nWaiting : do / display welcome\n\nstate Reading\nReading : do / get CC details\n\nstate Validating\nValidating : do / validate credit card\n\nstate Initializing\nInitializing : do / initialize display\n\nstate Ready\n\nstate Delivering\nDelivering : do / deliver fuel\nDelivering : do / update display\n\nstate Stopped\n\nstate Paying\nPaying : do / debit CC account\n\nstate Resetting\nResetting : do / display CC error\n\nWaiting --> Reading : Card Inserted into Reader\nReading --> Validating : Card Removed\n\nValidating --> Initializing : Card OK\nValidating --> Resetting : Invalid Card\n\nResetting --> Waiting : Timeout\nPaying --> Waiting : Payment ack.\nInitializing --> Waiting : Timeout\n\nInitializing --> Ready : Hose Out of Holster\nReady --> Initializing : Hose in Holster\n\nReady --> Delivering : Nozzle Trigger On\nDelivering --> Stopped : Nozzle Trigger Off\nStopped --> Delivering : Nozzle Trigger On\n\nStopped --> Paying : Hose in Holster\n\n@enduml\n```\n\nExample requirement:\nCoin Operated Pay Phone — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start when it is not in use.\n2. The system shall require inserting coins when the user picks up the receiver.\n3. The system shall allow dialing a number only after sufficient credit has been added.\n4. The system shall start the call when the dialed number is valid and the other party answers.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Correct solution with history pseudostate\n\nstate \"Hung up\" as HungUp\n[*] --> HungUp\n\nstate \"Picked up receiver\" as PickedUp {\n\n    state H <<history>>\n\n    state \"Waiting for coin\" as WaitingCoin\n    state \"Waiting for number\" as WaitingNumber\n    state \"Waiting for validity\" as WaitingValidity\n    state \"Waiting for callee to pick up receiver\" as WaitingCallee\n    state Communication\n    state \"End communication\" as EndCommunication\n\n    HungUp --> WaitingCoin : pickUpReceiver / credit = 0\n    \n\n    WaitingCoin --> WaitingNumber : [credit >= 20]\n    WaitingNumber --> WaitingValidity : dialNumber\n    WaitingValidity --> WaitingCallee : validNumber\n    WaitingCallee --> Communication : startComm / assess\n\n    Communication --> Communication : UT[sufficient credit] / assess\n    Communication --> EndCommunication : UT[insufficient credit] / assess\n}\n\n\nPickedUp --> H : insertCoin(c) / incrementCredit(c)\nPickedUp --> HungUp : replaceReceiver / returnUnusedCoins\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Safehome Security Function — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if everything is working upon power-on.\n2. The system shall stop if there is a problem during startup.\n3. The system shall become ready to use if everything is fine during startup.\n4. The system shall allow the user to reset it when it is ready to use.\n5. The system shall allow the user to activate it when it is ready to use.\n6. The system shall allow the user to turn it off when it is ready to use.\n7. The system shall start monitoring if it is activated.\n8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.\n9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.\n10. The system shall stop and return to normal when the user enters the password at any time.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__sequential_syntax_grounded_pattern_rules\\case_47_safehome_security_function\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "StartupCheck",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 10,
+    "transition_count": 15
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__gemma3_12b__rag",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": true,
+      "repair_mode": "sequential_syntax_grounded_pattern_rules",
+      "repair_model_name": "gemma3:12b",
+      "previous_score": 1,
+      "repair_score": 0,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 10,
+        "repaired_state_count": 10,
+        "current_transition_count": 16,
+        "repaired_transition_count": 17,
+        "min_allowed_state_count": 7,
+        "min_allowed_transition_count": 11,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 1,
+      "strict_state_diagram_valid": true,
+      "remaining_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])"
+        ],
+        "initial_state": "StartupCheck",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 10,
+        "transition_count": 15
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__sequential_syntax_grounded_pattern_rules\\case_47_safehome_security_function\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "repair_mode": "sequential_syntax_grounded_pattern_rules",
+      "repair_model_name": "gemma3:12b",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "StartupCheck",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 10,
+        "transition_count": 15
+      },
+      "strict_state_diagram_valid": true,
+      "accepted": true,
+      "previous_score": 1,
+      "repair_score": 0,
+      "preservation": {
+        "current_state_count": 10,
+        "repaired_state_count": 10,
+        "current_transition_count": 16,
+        "repaired_transition_count": 17,
+        "min_allowed_state_count": 7,
+        "min_allowed_transition_count": 11,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__sequential_syntax_grounded_pattern_rules\\case_47_safehome_security_function\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__sequential_syntax_grounded_pattern_rules\\case_47_safehome_security_function\\run_01.repair_01.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 10,
+    "state_fn": 4,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 15,
+    "transition_fn": 9,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 10,
+    "state_fn_relaxed": 4,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 15,
+    "transition_fn_relaxed": 8,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 15,
+    "transition_fn_semantic": 9,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  },
+  "reused_base_run": {
+    "run_id": "open_source__gemma3_12b__rag",
+    "strategy": "rag",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag\\case_47_safehome_security_function\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag\\case_47_safehome_security_function\\run_01.prompt.txt"
+  }
+}

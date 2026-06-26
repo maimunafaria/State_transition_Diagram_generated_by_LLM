@@ -1,0 +1,86 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Microwave Oven — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display the current time when it is waiting for user input.
+2. The system shall allow the user to choose between full power and half power levels.
+3. The system shall enable the user to set cooking time by entering a number.
+4. The system shall remain inactive if the door is open during operation.
+5. The system shall stop immediately when the door is opened during the cooking process.
+6. The system shall allow the user to cancel the cooking process.
+7. The system shall return to displaying the current time after stopping or cancelling and wait for the next use.
+
+Candidate PlantUML to repair:
+@startuml
+title UML State Machine Diagram - Microwave Oven
+
+[*] --> Idle
+
+state "Idle" as Idle
+Idle : entry / Display current time
+Idle : do / Wait for user input
+
+Idle --> WaitingForInput : [User selects power level or enters cooking time]
+
+state "Waiting for input" as WaitingForInput
+WaitingForInput : entry / Display power level options
+WaitingForInput : do / Get user input
+WaitingForInput : exit / Start cooking or cancel
+
+WaitingForInput --> Cooking : [User selects power level and enters cooking time]
+WaitingForInput --> Cancel : [User cancels cooking process]
+
+state "Cooking" as Cooking
+Cooking : entry / Start cooking process
+Cooking : do / Monitor cooking time
+Cooking : exit / Cooking complete or door opened
+
+Cooking --> Stopped : [Cooking complete]
+Cooking --> DoorOpened : [Door opened during cooking]
+
+state "Stopped" as Stopped
+Stopped : entry / Display current time
+Stopped : do / Wait for next use
+
+Stopped --> Idle : [User stops or cancels cooking process]
+
+state "Door opened" as DoorOpened
+DoorOpened : entry / Stop cooking process
+DoorOpened : do / Return to idle state
+
+DoorOpened --> Idle : [Door opened during cooking process]
+
+state "Cancel" as Cancel
+Cancel : entry / Cancel cooking process
+Cancel : do / Return to idle state
+
+Cancel --> Idle : [User cancels cooking process]
+
+state End <<choice>>
+End --> [*]
+
+Idle --> End : [System is idle]
+WaitingForInput --> End : [User input is received]
+Cooking --> End : [Cooking process is complete or interrupted]
+Stopped --> End : [Cooking process is stopped]
+DoorOpened --> End : [Door is opened during cooking process]
+Cancel --> End : [Cooking process is cancelled]
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- unreachable: Cancel, Cooking, Door opened, DoorOpened, Stopped, Waiting for input
+
+Repair guidance for the target issue:
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

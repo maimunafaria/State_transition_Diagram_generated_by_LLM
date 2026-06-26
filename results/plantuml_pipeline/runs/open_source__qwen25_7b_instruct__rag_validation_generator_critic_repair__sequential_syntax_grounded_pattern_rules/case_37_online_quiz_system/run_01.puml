@@ -1,0 +1,89 @@
+@startuml
+title UML State Machine Diagram
+
+state "Register or Login" as RegisterOrLogin {
+  [*] --> Register
+  Register : do / Fill details
+  Register : exit / Registration successful
+
+  Register : --> Login
+  Login : entry / Registered user
+  Login : do / Enter login credentials
+  Login : exit / Valid username and password
+}
+
+state "Continue as" as ContinueAs {
+  Login --> TeacherChoice
+  Login --> StudentChoice
+
+  state "Teacher Choice" as TeacherChoice
+  TeacherChoice : entry / Teacher logged in
+  TeacherChoice : do / Create, edit, or save quiz
+  TeacherChoice : exit / Action completed
+
+  state "Student Choice" as StudentChoice
+  StudentChoice : entry / Student logged in
+  StudentChoice : do / Select and answer quiz
+  StudentChoice : exit / Quiz submitted
+}
+
+state "Create Quiz" as CreateQuiz {
+  TeacherChoice --> CreateQuiz
+  CreateQuiz : entry / New quiz creation
+  CreateQuiz : do / Define questions, options, etc.
+  CreateQuiz : exit / Quiz saved or posted
+}
+
+state "Edit Quiz" as EditQuiz {
+  TeacherChoice --> EditQuiz
+  EditQuiz : entry / Existing quiz editing
+  EditQuiz : do / Modify questions, options, etc.
+  EditQuiz : exit / Quiz updated
+}
+
+state "Save Quiz" as SaveQuiz {
+  CreateQuiz --> SaveQuiz
+  EditQuiz --> SaveQuiz
+  SaveQuiz : entry / Saving changes
+  SaveQuiz : do / Save quiz as draft or post it
+  SaveQuiz : exit / Quiz saved or posted
+}
+
+state "View Results" as ViewResults {
+  TeacherChoice --> ViewResults
+  ViewResults : entry / Quiz results available
+  ViewResults : do / Review student answers and scores
+  ViewResults : exit / Results reviewed
+}
+
+state "Select Quiz" as SelectQuiz {
+  StudentChoice --> SelectQuiz
+  SelectQuiz : entry / Quizzes available for selection
+  SelectQuiz : do / Choose a quiz to take
+  SelectQuiz : exit / Quiz selected
+}
+
+state "Answer Quiz" as AnswerQuiz {
+  SelectQuiz --> AnswerQuiz
+  AnswerQuiz : entry / Quiz questions displayed
+  AnswerQuiz : do / Answer each question
+  AnswerQuiz : exit / Answers submitted
+}
+
+state "Submit Quiz" as SubmitQuiz {
+  AnswerQuiz --> SubmitQuiz
+  SubmitQuiz : entry / Quiz submission
+  SubmitQuiz : do / Finalize and submit answers
+  SubmitQuiz : exit / Quiz submitted, results viewable
+}
+
+state "View Result" as ViewResult {
+  SubmitQuiz --> ViewResult
+  ViewResult : entry / Results available
+  ViewResult : do / Review quiz score and feedback
+  ViewResult : exit / Results reviewed
+}
+
+[*] --> RegisterOrLogin
+
+@enduml

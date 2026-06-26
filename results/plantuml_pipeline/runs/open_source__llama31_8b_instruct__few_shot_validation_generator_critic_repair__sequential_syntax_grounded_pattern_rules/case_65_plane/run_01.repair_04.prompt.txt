@@ -1,0 +1,211 @@
+You are a sequential PlantUML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use only the PlantUML syntax patterns relevant to this target issue.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Make the smallest possible edit.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Plane — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall place a newly acquired plane in an 'Order' state until it is delivered.
+2. The system shall transition a plane from 'Arrival' to 'Preparation' upon its arrival.
+3. The system shall assign a prepared plane to either 'Operations' or 'Maintenance' based on its condition and schedule.
+4. The system shall keep a plane in the 'Operations' state if it still has scheduled flights.
+5. The system shall send a plane to 'Maintenance' when there are no more scheduled flights or maintenance is required.
+6. The system shall transition a plane from 'Maintenance' to 'Preparation' after checking and servicing it until it is ready for operations.
+7. The system shall take a plane out of service if it is no longer available for use.
+8. The system shall remove a plane from its operations when it is permanently withdrawn from service.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram (Plane Management)
+
+[*] --> Order
+
+state Order
+Order : entry / Plane is placed in order
+Order : do / Wait for delivery
+Order : exit / Plane is delivered
+
+Order --> Arrival
+
+state Arrival
+Arrival : entry / Plane arrives
+Arrival : do / Transition to preparation
+Arrival : exit / Plane is prepared
+
+Arrival --> Preparation
+
+state Preparation
+Preparation : entry / Plane is prepared
+Preparation : do / Assign to operations or maintenance
+Preparation : exit / Plane is assigned
+
+Preparation --> Operations
+Preparation --> Maintenance
+
+state Operations
+Operations : entry / Plane is in operations
+Operations : do / Check for scheduled flights
+Operations : exit / Plane is still in operations
+
+Operations --> Operations : Scheduled flights available
+
+Operations --> Maintenance : No scheduled flights or maintenance required
+
+state Maintenance
+Maintenance : entry / Plane is in maintenance
+Maintenance : do / Check and service plane
+Maintenance : exit / Plane is ready for operations
+
+Maintenance --> Preparation : Plane is ready for operations
+
+state "Plane is no longer available" as NoLongerAvailable
+NoLongerAvailable : entry / Plane is no longer available
+NoLongerAvailable : do / Take plane out of service
+NoLongerAvailable : exit / Plane is removed from operations
+
+Operations --> NoLongerAvailable : Plane is no longer available
+NoLongerAvailable --> End
+
+state End <<choice>>
+End --> [*]
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- choice_node_without_outgoing_transitions (End)
+
+--- PlantUML Structural Validation Patterns ---
+
+The uppercase identifiers below are placeholders.
+Replace them with existing requirement-supported states, events, and guards.
+Do not copy placeholder names into the final diagram.
+
+Pattern 1: never connect the initial pseudostate directly to the final pseudostate
+
+' Invalid
+[*] --> [*]
+
+' Valid
+[*] --> INITIAL_STATE
+INITIAL_STATE --> TERMINAL_STATE : SUPPORTED_EVENT
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+
+Pattern 2: use exactly one top-level initial transition
+
+' Invalid
+[*] --> FIRST_STATE
+[*] --> SECOND_STATE
+
+' Valid
+[*] --> FIRST_STATE
+FIRST_STATE --> SECOND_STATE : SUPPORTED_EVENT
+
+
+Pattern 3: add a missing initial transition
+
+[*] --> INITIAL_STATE
+
+
+Pattern 4: add a missing final transition
+
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+
+Pattern 5: connect every requirement-supported orphan state
+
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+' If ORPHAN_STATE is unsupported by the requirement, omit it.
+
+
+Pattern 6: create a path to every requirement-supported unreachable state
+
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+' If UNREACHABLE_STATE is unsupported by the requirement, omit it.
+
+
+Pattern 7: keep only one transition for the same source and target
+
+' Invalid
+SOURCE_STATE --> TARGET_STATE : FIRST_EVENT
+SOURCE_STATE --> TARGET_STATE : FIRST_EVENT
+
+' Valid
+SOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT
+
+
+Pattern 8: every choice node must have outgoing transitions
+
+state DECISION_NODE <<choice>>
+SOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]
+
+
+Pattern 9: choice-node outgoing transitions must use guards
+
+' Invalid
+DECISION_NODE --> FIRST_STATE
+DECISION_NODE --> SECOND_STATE
+
+' Valid
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]
+
+
+Pattern 10: a fork node must have multiple outgoing branches
+
+state FORK_NODE <<fork>>
+SOURCE_STATE --> FORK_NODE : SUPPORTED_EVENT
+FORK_NODE --> FIRST_PARALLEL_STATE
+FORK_NODE --> SECOND_PARALLEL_STATE
+
+
+Pattern 11: a join node must have multiple incoming branches
+
+state JOIN_NODE <<join>>
+FIRST_PARALLEL_STATE --> JOIN_NODE
+SECOND_PARALLEL_STATE --> JOIN_NODE
+JOIN_NODE --> NEXT_STATE
+
+
+Pattern 12: use history only inside a composite state
+
+state COMPOSITE_STATE {
+  [H] --> RESUMED_CHILD_STATE
+}
+
+
+Pattern 13: do not add another [*] transition inside a composite state
+
+' Invalid
+state PARENT_STATE {
+  [*] --> CHILD_STATE
+}
+
+' Valid
+state PARENT_STATE {
+  state CHILD_STATE
+}
+PARENT_STATE --> CHILD_STATE : SUPPORTED_EVENT
+
+Valid PlantUML repair patterns for the target issue:
+Pattern 1: valid guarded choice node
+state DECISION_NODE <<choice>>
+SOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

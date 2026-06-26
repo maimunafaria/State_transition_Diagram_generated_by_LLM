@@ -1,0 +1,232 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Accountapplication — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall store an application in a pending state during review.
+2. The system shall update the application status to either approved or rejected after review.
+3. The system shall finalize the application process once a decision is made.
+4. The system shall mark every application as finalized upon process completion.
+
+Example 1 PlantUML:
+@startuml
+title Account Application State Diagram
+
+[*] --> pending
+
+state pending
+state approved
+state rejected
+state finalizing
+
+pending --> approved : approve
+pending --> rejected : reject
+
+approved --> finalizing : complete
+rejected --> finalizing : complete
+
+finalizing --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Business Process Outsourcing Bpo Management System Scenario 4 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to change their password by entering their old password and a new one.
+2. The system shall allow the user to update their profile details by entering new information.
+3. The system shall validate the entered information after a password change or profile update.
+4. The system shall save the changes if the validation passes.
+
+Example 2 PlantUML:
+@startuml
+title UML State Machine Diagram (View or Edit profile)
+
+state "View or Edit profile" as ViewEditProfile {
+
+    [*] --> Choice1
+
+    ViewEditProfile : entry / To Edit
+    ViewEditProfile : do / Edit profile
+    ViewEditProfile : exit / After updation
+
+    state Choice1 <<choice>>
+
+    Choice1 --> ChangePassword : [change pwd]
+    Choice1 --> EnterProfileDetails : [edit profile]
+
+    state "Change password" as ChangePassword
+    state "Enter old password" as EnterOldPassword
+    state "Enter new password" as EnterNewPassword
+    state "Enter profile details" as EnterProfileDetails
+    state "Enter new details" as EnterNewDetails
+    state Choice2 <<choice>>
+    state "Update Database" as UpdateDatabase
+    state InvalidEnd <<choice>>
+
+    ChangePassword --> EnterOldPassword
+    EnterOldPassword --> EnterNewPassword
+    EnterNewPassword --> Choice2
+
+    EnterProfileDetails --> EnterNewDetails
+    EnterNewDetails --> Choice2
+
+    Choice2 --> InvalidEnd : [invalid]
+    Choice2 --> UpdateDatabase : [valid]
+
+    InvalidEnd --> [*]
+    UpdateDatabase --> [*]
+}
+
+@enduml
+
+Example 3 Requirement:
+Startup Meet — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select their roll (investor, entrepreneur, or mentor).
+2. The system shall enable the user to sign in after choosing a role.
+3. The system shall allow the signed-in user to submit a startup idea.
+4. The system shall review the submitted startup idea.
+5. The system shall provide mentorship based on the review result.
+6. The system shall make an investment decision if the startup idea is presented to an investor.
+7. The system shall provide funding based on the investment decision.
+8. The system shall end the process once all actions are completed.
+
+Example 3 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+[*] --> UserType
+
+state UserType <<choice>>
+
+UserType --> InvestorLogin : [Investor user]
+UserType --> EntrepreneurLogin : [Entrepreneur user]
+UserType --> MentorLogin : [Mentor user]
+
+state "Investor Login" as InvestorLogin
+InvestorLogin : entry / Action needed
+InvestorLogin : do / enter login credentials
+InvestorLogin : exit / Entered into system
+
+state "Entrepreneur Login" as EntrepreneurLogin
+EntrepreneurLogin : entry / Action needed
+EntrepreneurLogin : do / enter login credentials
+EntrepreneurLogin : exit / Entered into system
+
+state "Mentor Login" as MentorLogin
+MentorLogin : entry / Action needed
+MentorLogin : do / enter login credentials
+MentorLogin : exit / Entered into system
+
+state MergeLogin <<choice>>
+
+InvestorLogin --> MergeLogin
+EntrepreneurLogin --> MergeLogin
+MentorLogin --> MergeLogin
+
+state "Startup idea" as StartupIdea
+StartupIdea : entry / Submitted by entrepreneur
+StartupIdea : do / file the idea
+StartupIdea : exit / accept or decline state
+
+MergeLogin --> StartupIdea
+
+state "Decision on Startup idea" as DecisionIdea
+DecisionIdea : entry / startup idea state
+DecisionIdea : do / accept or decline
+DecisionIdea : exit / NIL
+
+StartupIdea --> DecisionIdea
+
+state ChoiceDecision <<choice>>
+DecisionIdea --> ChoiceDecision
+
+state "Accept mentorship" as AcceptMentorship
+AcceptMentorship : entry / decision on mentorship
+AcceptMentorship : do / mentorship
+AcceptMentorship : exit / NIL
+
+state "Present Idea" as PresentIdea
+PresentIdea : entry / Decision on startup
+PresentIdea : do / present idea to investor
+PresentIdea : exit / Decision on investing
+
+state "Investment" as Investment
+Investment : entry / Decision to invest
+Investment : do / give investment
+Investment : exit / share in profit
+
+ChoiceDecision --> AcceptMentorship
+ChoiceDecision --> PresentIdea
+
+state MergeEnd <<choice>>
+
+AcceptMentorship --> MergeEnd
+PresentIdea --> Investment
+Investment --> MergeEnd
+ChoiceDecision --> MergeEnd
+MergeEnd --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Class Campaign Version 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start a campaign after a manager and staff are assigned.
+2. The system shall activate the campaign once everything is approved and the contract is signed.
+3. The system shall prepare adverts during the campaign.
+4. The system shall approve and schedule the adverts.
+5. The system shall run the adverts.
+6. The system shall allow extension or adjustment of the campaign while it is running.
+7. The system shall complete the campaign and prepare a final statement after all adverts have finished.
+8. The system shall handle payment after the campaign completion and generate a refund if the amount paid is less than required.
+9. The system shall wait for the correct balance to be settled if the amount paid exceeds the required amount.
+10. The system shall mark the campaign as paid once the full amount is properly paid.
+11. The system shall archive the campaign and release all assigned staff and managers.

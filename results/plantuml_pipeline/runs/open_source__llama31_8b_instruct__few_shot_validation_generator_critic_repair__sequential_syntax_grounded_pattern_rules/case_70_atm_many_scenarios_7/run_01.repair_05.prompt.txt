@@ -1,0 +1,243 @@
+You are a sequential PlantUML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use only the PlantUML syntax patterns relevant to this target issue.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Make the smallest possible edit.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Atm Many Scenarios Scenario 7 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall greet the user when they arrive.
+2. The system shall check the PIN after the card is inserted.
+3. The system shall allow the user to try again if the entered PIN is incorrect.
+4. The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times.
+5. The system shall return the card if the user cancels the operation.
+6. The system shall display available options (withdrawing money, checking information, or making a transfer) for the user to choose from if the PIN is correct.
+7. The system shall process the selected request after the user makes a choice.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram
+
+state "Arrival" as Arrival
+state "PIN Verification" as PINVerification
+state "Invalid PIN" as InvalidPIN
+state "Card Held" as CardHeld
+state "Return Card" as ReturnCard
+state "Options Displayed" as OptionsDisplayed
+state "Request Processing" as RequestProcessing
+
+state "Greeting" as Greeting
+Greeting : entry / User arrives
+Greeting : do / Display greeting
+Greeting : exit / User proceeds
+
+state "Card Insertion" as CardInsertion
+CardInsertion : entry / User inserts card
+CardInsertion : do / Check card validity
+CardInsertion : exit / Proceed to PIN verification
+
+state "PIN Entry" as PINEntry
+PINEntry : entry / User enters PIN
+PINEntry : do / Verify PIN
+PINEntry : exit / Proceed to next state
+
+state "Cancel Operation" as CancelOperation
+CancelOperation : entry / User cancels operation
+CancelOperation : do / Return card
+CancelOperation : exit / Operation cancelled
+
+state "Too Many Incorrect PINs" as TooManyIncorrectPINs
+TooManyIncorrectPINs : entry / User enters incorrect PIN too many times
+TooManyIncorrectPINs : do / Hold card for security
+TooManyIncorrectPINs : exit / Card held
+
+state "Correct PIN" as CorrectPIN
+CorrectPIN : entry / User enters correct PIN
+CorrectPIN : do / Display options
+CorrectPIN : exit / Options displayed
+
+state "Withdraw Money" as WithdrawMoney
+WithdrawMoney : entry / User selects withdraw money
+WithdrawMoney : do / Process withdraw money request
+WithdrawMoney : exit / Request processed
+
+state "Check Information" as CheckInformation
+CheckInformation : entry / User selects check information
+CheckInformation : do / Process check information request
+CheckInformation : exit / Request processed
+
+state "Make Transfer" as MakeTransfer
+MakeTransfer : entry / User selects make transfer
+MakeTransfer : do / Process make transfer request
+MakeTransfer : exit / Request processed
+
+state "Invalid Request" as InvalidRequest
+InvalidRequest : entry / User selects invalid request
+InvalidRequest : do / Display error message
+InvalidRequest : exit / Request not processed
+
+Arrival --> Greeting
+Greeting --> CardInsertion
+
+CardInsertion --> PINVerification
+PINVerification --> PINEntry
+
+PINEntry --> PINVerification : Incorrect PIN
+PINVerification --> CorrectPIN : Correct PIN
+PINVerification --> InvalidPIN : Invalid PIN
+PINVerification --> CancelOperation : Cancel operation
+
+CorrectPIN --> OptionsDisplayed
+OptionsDisplayed --> WithdrawMoney
+OptionsDisplayed --> CheckInformation
+OptionsDisplayed --> MakeTransfer
+OptionsDisplayed --> InvalidRequest
+
+WithdrawMoney --> RequestProcessing
+CheckInformation --> RequestProcessing
+MakeTransfer --> RequestProcessing
+
+InvalidPIN --> InvalidPIN
+CancelOperation --> ReturnCard
+TooManyIncorrectPINs --> CardHeld
+
+CardHeld --> [*]
+ReturnCard --> [*]
+RequestProcessing --> [*]
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_initial_state_transition ([*] --> state)
+
+--- PlantUML Structural Validation Patterns ---
+
+The uppercase identifiers below are placeholders.
+Replace them with existing requirement-supported states, events, and guards.
+Do not copy placeholder names into the final diagram.
+
+Pattern 1: never connect the initial pseudostate directly to the final pseudostate
+
+' Invalid
+[*] --> [*]
+
+' Valid
+[*] --> INITIAL_STATE
+INITIAL_STATE --> TERMINAL_STATE : SUPPORTED_EVENT
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+
+Pattern 2: use exactly one top-level initial transition
+
+' Invalid
+[*] --> FIRST_STATE
+[*] --> SECOND_STATE
+
+' Valid
+[*] --> FIRST_STATE
+FIRST_STATE --> SECOND_STATE : SUPPORTED_EVENT
+
+
+Pattern 3: add a missing initial transition
+
+[*] --> INITIAL_STATE
+
+
+Pattern 4: add a missing final transition
+
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+
+Pattern 5: connect every requirement-supported orphan state
+
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+' If ORPHAN_STATE is unsupported by the requirement, omit it.
+
+
+Pattern 6: create a path to every requirement-supported unreachable state
+
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+' If UNREACHABLE_STATE is unsupported by the requirement, omit it.
+
+
+Pattern 7: keep only one transition for the same source and target
+
+' Invalid
+SOURCE_STATE --> TARGET_STATE : FIRST_EVENT
+SOURCE_STATE --> TARGET_STATE : FIRST_EVENT
+
+' Valid
+SOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT
+
+
+Pattern 8: every choice node must have outgoing transitions
+
+state DECISION_NODE <<choice>>
+SOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]
+
+
+Pattern 9: choice-node outgoing transitions must use guards
+
+' Invalid
+DECISION_NODE --> FIRST_STATE
+DECISION_NODE --> SECOND_STATE
+
+' Valid
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]
+
+
+Pattern 10: a fork node must have multiple outgoing branches
+
+state FORK_NODE <<fork>>
+SOURCE_STATE --> FORK_NODE : SUPPORTED_EVENT
+FORK_NODE --> FIRST_PARALLEL_STATE
+FORK_NODE --> SECOND_PARALLEL_STATE
+
+
+Pattern 11: a join node must have multiple incoming branches
+
+state JOIN_NODE <<join>>
+FIRST_PARALLEL_STATE --> JOIN_NODE
+SECOND_PARALLEL_STATE --> JOIN_NODE
+JOIN_NODE --> NEXT_STATE
+
+
+Pattern 12: use history only inside a composite state
+
+state COMPOSITE_STATE {
+  [H] --> RESUMED_CHILD_STATE
+}
+
+
+Pattern 13: do not add another [*] transition inside a composite state
+
+' Invalid
+state PARENT_STATE {
+  [*] --> CHILD_STATE
+}
+
+' Valid
+state PARENT_STATE {
+  state CHILD_STATE
+}
+PARENT_STATE --> CHILD_STATE : SUPPORTED_EVENT
+
+Valid PlantUML repair patterns for the target issue:
+Pattern 1: missing initial transition
+[*] --> INITIAL_STATE
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

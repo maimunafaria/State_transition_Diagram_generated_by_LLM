@@ -1,0 +1,347 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Atm Many Scenarios Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if the entered PIN is correct.
+2. The system shall ask the user to try again if the entered PIN is incorrect.
+3. The system shall keep the card for security reasons if the PIN is entered incorrectly too many times or if the card is invalid.
+4. The system shall show available options and wait for the user's choice if the entered PIN is correct.
+5. The system shall allow the user to cancel the operation at any point during this process.
+6. The system shall return the card when the user cancels the operation.
+
+Example 1 PlantUML:
+@startuml
+title Same Event and Action on Different Transitions
+
+[*] --> Idle
+
+state Idle
+state "Waiting for PIN" as WaitingForPIN
+state "Validating PIN" as ValidatingPIN
+state "Waiting for Customer Choice" as WaitingForChoice
+state Confiscating
+state Ejecting
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu
+ValidatingPIN --> Confiscating : Third Invalid PIN,\nCard Stolen, Card Expired /\nConfiscate
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+WaitingForChoice --> Ejecting : Cancel / Eject
+
+@enduml
+
+Example 2 Requirement:
+Crime Bureau — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to log in by entering their username and password.
+2. The system shall allow the user to try again if the login details are incorrect until successful login.
+3. The system shall allow the user to choose between requesting an FIR, requesting a petition, or viewing the list of wanted and missing persons after login.
+4. The system shall display the requested information once the user selects an option.
+5. The system shall allow a police user to log in by entering their username and password.
+6. The system shall allow the police user to try again if the login details are incorrect until successful login.
+7. The system shall allow the police user to view the list of wanted and missing persons or perform major activities such as adding station details and crime records after login.
+
+Example 2 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+
+state "Login Verification" as LV
+LV : entry / Enters username and password
+LV : do / Verification of login credentials of users
+LV : exit / Enters the website if login is correct
+
+state "Requests FIR" as RF
+RF : entry / Verified login
+RF : do / FIR Request
+RF : exit / Displays FIR
+
+state "Requests Petition" as RP
+RP : entry / Verified login
+RP : do / Requests Petition
+RP : exit / Displays Petition
+
+state "Requests Wanted person and missing list" as RW
+RW : entry / Verified login
+RW : do / Requests Wanted persons
+RW : do / Requests Missing list
+RW : exit / Saving changes
+
+state Choice1 <<choice>>
+
+LV --> LV : Repeats until login credentials are correct
+LV --> Choice1 : Chooses any one
+
+Choice1 --> RF
+Choice1 --> RP
+Choice1 --> RW
+
+RF --> [*]
+RP --> [*]
+RW --> [*]
+
+
+
+state "Login Verification-Police" as LVP
+LVP : entry / Enters username and password
+LVP : do / Verification of login credentials
+LVP : exit / Enters the website if login is correct
+
+state "Requests Wanted person and missing list" as RWP
+RWP : entry / Verified login
+RWP : do / Requests Wanted persons
+RWP : do / Requests Missing list
+RWP : exit / Saving changes
+
+state "Performs Major Activities" as PMA
+PMA : entry / EntryAction1
+PMA : do / Add station details
+PMA : do / Add crimes
+PMA : exit / Saving changes
+
+state Choice2 <<choice>>
+
+LVP --> LVP : Repeats until login credentials are correct
+LVP --> Choice2 : Chooses any one
+
+Choice2 --> RWP
+Choice2 --> PMA
+
+RWP --> [*]
+PMA --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Covid — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to create an account by entering their details.
+2. The system shall allow users to sign in using a correct username and password.
+3. The system shall enable logged-in users to read blogs shared by recovered patients.
+4. The system shall allow users to update the number of infected people in their area, triggering updates on infection statistics and mask demand.
+5. The system shall enable users in home quarantine to share their information.
+6. The system shall allow doctors to view shared information from quarantined users and suggest medicines.
+7. The system shall enable users to view a list of nearby medical shops and purchase medicines online.
+8. The system shall allow assigning workers to clean an area, updating the cleanliness status accordingly.
+
+Example 3 PlantUML:
+@startuml
+title UML state machine diagram
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Login / Register
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state "Invalid registration" as InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state "Invalid login" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state "Read blog" as ReadBlog
+ReadBlog : entry/To home page
+ReadBlog : entry/Read blogs of recovered patients
+ReadBlog : exit/Idle
+
+state "Update current no. of infected people" as UpdateInfected
+UpdateInfected : entry/To home page
+UpdateInfected : do/Update current no. of infected people in the locality
+UpdateInfected : exit/View
+
+state "View number of infected people in the locality" as ViewInfected
+ViewInfected : entry/View
+ViewInfected : do/View number of infected people in the locality
+ViewInfected : exit/Idle
+
+state "No. of deaths in the locality" as DeathCount
+DeathCount : entry/View
+DeathCount : do/View no. of deaths in the locality
+DeathCount : exit/Idle
+
+state "View mask demand" as ViewMaskDemand
+ViewMaskDemand : entry/View
+ViewMaskDemand : do/View mask demand in the locality
+ViewMaskDemand : exit/Stock
+
+state "Stock up" as StockUp
+StockUp : entry/Stock
+StockUp : do/Stock up masks and gloves by the shops
+StockUp : exit/End
+
+state "Send patient info" as SendPatientInfo
+SendPatientInfo : entry/To home page
+SendPatientInfo : do/Update data by home quarantined patients
+SendPatientInfo : exit/View patient info
+
+state "View patient info" as ViewPatientInfo
+ViewPatientInfo : entry/View patient info
+ViewPatientInfo : do/View patient info by the medical professional
+ViewPatientInfo : exit/Prescribe
+
+state "Prescribe medicines if needed" as PrescribeMedicines
+PrescribeMedicines : entry/Prescribe
+PrescribeMedicines : do/Prescribe medicines if needed
+PrescribeMedicines : exit/View data from doc
+
+state "View data shared by doctor" as ViewDoctorData
+ViewDoctorData : entry/View data from doc
+ViewDoctorData : do/View data shared by doctor
+ViewDoctorData : exit/Buy medicines
+
+state "List all medical shops" as ListMedicalShops
+ListMedicalShops : entry/To home page
+ListMedicalShops : do/List all medical shops in the locality
+ListMedicalShops : exit/Buy medicines
+
+state "Assign corporation worker" as AssignWorker
+AssignWorker : entry/To home page
+AssignWorker : do/Assign workers to disinfect in an area
+AssignWorker : exit/Update status
+
+state "Update status of cleanliness" as CleanlinessStatus
+CleanlinessStatus : entry/Update status
+CleanlinessStatus : do/Update status of cleanliness in the locality
+CleanlinessStatus : exit/End
+
+state "Buy medicines" as BuyMedicines
+BuyMedicines : entry/Buy medicines
+BuyMedicines : do/Buy medicines if needed
+BuyMedicines : exit/End
+
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+state J7 <<choice>>
+[*] --> Idle
+
+Idle --> J1
+J1 --> Register
+J1 --> Login
+
+Register --> J2
+J2 --> Login
+J2 --> InvalidRegistration
+InvalidRegistration --> [*]
+
+Login --> J3
+J3 --> InvalidLogin
+J3 --> ReadBlog
+J3 --> UpdateInfected
+J3 --> SendPatientInfo
+J3 --> ListMedicalShops
+J3 --> AssignWorker
+InvalidLogin --> [*]
+
+ReadBlog --> J7
+UpdateInfected --> J4
+ViewInfected --> J7
+DeathCount --> J7
+J7 --> Idle
+J4 --> ViewInfected
+J4 --> DeathCount
+J4 --> ViewMaskDemand
+
+ViewMaskDemand --> StockUp
+StockUp --> J6
+
+SendPatientInfo --> ViewPatientInfo
+ViewPatientInfo --> PrescribeMedicines
+PrescribeMedicines --> ViewDoctorData
+ViewDoctorData --> J5
+ListMedicalShops --> J5
+J5 --> BuyMedicines
+BuyMedicines --> J6
+
+AssignWorker --> CleanlinessStatus
+CleanlinessStatus --> J6
+
+J6 --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Class Campaign Version 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start a campaign after a manager and staff are assigned.
+2. The system shall activate the campaign once everything is approved and the contract is signed.
+3. The system shall prepare adverts during the campaign.
+4. The system shall approve and schedule the adverts.
+5. The system shall run the adverts.
+6. The system shall allow extension or adjustment of the campaign while it is running.
+7. The system shall complete the campaign and prepare a final statement after all adverts have finished.
+8. The system shall handle payment after the campaign completion and generate a refund if the amount paid is less than required.
+9. The system shall wait for the correct balance to be settled if the amount paid exceeds the required amount.
+10. The system shall mark the campaign as paid once the full amount is properly paid.
+11. The system shall archive the campaign and release all assigned staff and managers.
