@@ -1714,6 +1714,132 @@ def build_diagnostic_syntax_grounded_repair_prompt(
     )
 
 
+def build_constrained_validator_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+) -> str:
+    validation_issues = _prioritized_repair_issues(validation)
+    diagnostic_issues = _diagnostic_validation_issue_lines(candidate_puml, validation)
+    repair_guidance = _repair_guidance_for_issues(validation_issues)
+    syntax_patterns = format_syntax_patterns(validation_issues)
+    first_issue = validation_issues[0] if validation_issues else ""
+    low = first_issue.lower()
+    if "unreachable" in low:
+        edit_rule = (
+            "Fix only unreachable states. Prefer adding the minimum supported transitions needed "
+            "to make the listed states reachable. Do not rename states. Do not delete states. "
+            "Do not rewrite unrelated transitions."
+        )
+    elif "orphan" in low:
+        edit_rule = (
+            "Fix only orphan states. Connect requirement-supported orphan states with the minimum "
+            "incoming/outgoing transitions. Remove an orphan only if it is unsupported by the requirement."
+        )
+    elif "missing_final_state_transition" in low:
+        edit_rule = (
+            "Fix only the missing final transition. Add one terminal-state --> [*] transition "
+            "from an existing natural terminal state. Do not rewrite the diagram."
+        )
+    elif "missing_initial_state_transition" in low:
+        edit_rule = (
+            "Fix only the missing initial transition. Add exactly one [*] --> first-state transition "
+            "using an existing first lifecycle state."
+        )
+    elif "multiple_initial_state_transitions" in low:
+        edit_rule = (
+            "Fix only multiple initial transitions. Keep one top-level [*] --> state transition. "
+            "Replace extra [*] --> child transitions with ordinary supported transitions. "
+            "Do not add new states."
+        )
+    elif "duplicate_transitions" in low:
+        edit_rule = (
+            "Fix only duplicate transitions. Remove exact duplicates or merge their labels into one transition. "
+            "Do not change unrelated transitions."
+        )
+    elif "plantuml_syntax_error" in low:
+        edit_rule = (
+            "Fix only PlantUML syntax. Remove malformed fragments, complete incomplete declarations, "
+            "and keep valid existing state/transition content. Do not redesign behavior."
+        )
+    else:
+        edit_rule = "Fix only the listed validation issues with the smallest possible edit."
+
+    return (
+        "General instruction:\n"
+        "You are a constrained PlantUML repair assistant. Make the smallest possible edit. "
+        "Do not redesign the diagram. Do not add unsupported behavior. "
+        "Return only one corrected PlantUML diagram, with no markdown fences or explanation.\n\n"
+        "Current edit constraint:\n"
+        f"{edit_rule}\n\n"
+        "Requirement:\n"
+        f"{requirement}\n\n"
+        "Candidate PlantUML:\n"
+        f"{candidate_puml}\n\n"
+        "Validation issues:\n"
+        + "\n".join(diagnostic_issues)
+        + "\n\nRepair guidance for these issues:\n"
+        + "\n".join(f"- {hint}" for hint in repair_guidance)
+        + "\n\nValid PlantUML repair patterns:\n"
+        + syntax_patterns
+    )
+
+
+def build_transition_patch_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+) -> str:
+    graph = parse_plantuml(candidate_puml)
+    validation_issues = _prioritized_repair_issues(validation)
+    diagnostic_issues = _diagnostic_validation_issue_lines(candidate_puml, validation)
+    reachable_hint = ""
+    if validation.initial_state:
+        reachable_hint = f"Current initial/reachable start state: {validation.initial_state}\n"
+    unreachable = validation.unreachable_states
+    if not unreachable:
+        orphan_issues = [
+            item
+            for item in list(validation.errors) + list(validation.warnings)
+            if item.startswith("orphan:")
+        ]
+        if orphan_issues:
+            unreachable = [
+                state.strip()
+                for item in orphan_issues
+                for state in item.split(":", 1)[-1].split(",")
+                if state.strip()
+            ]
+    states = ", ".join(sorted(graph.states)) if graph.states else "none detected"
+    target_states = ", ".join(unreachable) if unreachable else "use the listed validation issues"
+    return (
+        "General instruction:\n"
+        "You are a PlantUML transition-patch assistant. Return ONLY transition lines to insert into the candidate diagram. "
+        "Do not return @startuml, @enduml, full diagrams, markdown fences, comments, explanations, state declarations, or notes.\n\n"
+        "Requirement:\n"
+        f"{requirement}\n\n"
+        "Candidate PlantUML:\n"
+        f"{candidate_puml}\n\n"
+        "Validation issues:\n"
+        + "\n".join(diagnostic_issues)
+        + "\n\n"
+        f"{reachable_hint}"
+        f"Existing states: {states}\n"
+        f"States that need connection: {target_states}\n\n"
+        "Patch task:\n"
+        "- Add the minimum transition lines needed to make the disconnected states reachable.\n"
+        "- Prefer existing states from the candidate diagram.\n"
+        "- Do not rename states.\n"
+        "- Do not remove or rewrite existing transitions.\n"
+        "- Each output line must be valid PlantUML transition syntax.\n\n"
+        "Output format:\n"
+        "SOURCE_STATE --> TARGET_STATE : SUPPORTED_EVENT\n"
+        "TARGET_STATE --> NEXT_STATE : SUPPORTED_EVENT\n"
+    )
+
+
 def build_hybrid_issue_guided_repair_prompt(
     requirement: str,
     candidate_puml: str,

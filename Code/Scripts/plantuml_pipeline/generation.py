@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import random
+import re
 from pathlib import Path
 from typing import Any
 
 from .model_client import call_model
 from .models import Case, ExperimentConfig, ValidationResult
 from .parser import normalize_puml_text, parse_and_validate_puml_text
+from .constants import TRANSITION_RE
 from .prompting import (
     build_chain_of_thought_analysis_prompt,
     build_chain_of_thought_generation_prompt,
+    build_constrained_validator_repair_prompt,
     build_diagnostic_syntax_grounded_repair_prompt,
     build_example_guided_repair_prompt,
     build_full_pattern_repair_prompt,
@@ -23,6 +26,7 @@ from .prompting import (
     build_syntax_grounded_repair_prompt,
     build_syntax_grounded_pattern_rules_repair_prompt,
     build_targeted_repair_prompt,
+    build_transition_patch_repair_prompt,
     select_fewshot_examples,
 )
 
@@ -41,6 +45,86 @@ def validation_repair_score(validation: ValidationResult) -> int:
     return (1000 if not validation.valid else 0) + (100 * len(validation.errors)) + len(
         validation.warnings
     )
+
+
+_TRANSITION_LINE_RE = re.compile(
+    r"^(.+?)\s*[-.]+(?:right|left|up|down)?(?:\[[^\]]+\])?>\s*(.+?)(?:\s*:\s*(.*))?$"
+)
+
+
+def _deterministic_validator_repair(puml_text: str, validation: ValidationResult) -> str:
+    issues = strict_state_diagram_issues(validation)
+    issue_text = "\n".join(issues).lower()
+    if not issues:
+        return puml_text
+
+    lines = puml_text.splitlines()
+    repaired: list[str] = []
+    seen_transitions: set[str] = set()
+    changed = False
+
+    for raw_line in lines:
+        stripped = raw_line.strip()
+        low = stripped.lower()
+
+        if low == "state":
+            changed = True
+            continue
+
+        if "[*]" in stripped and "-->" in stripped and re.search(r"\[\*\]\s*[-.]+>\s*\[\*\]", stripped):
+            changed = True
+            continue
+
+        transition_match = _TRANSITION_LINE_RE.match(stripped)
+        if transition_match:
+            normalized_transition = " ".join(stripped.split())
+            if "duplicate_transitions" in issue_text and normalized_transition in seen_transitions:
+                changed = True
+                continue
+            seen_transitions.add(normalized_transition)
+
+        repaired.append(raw_line)
+
+    if not changed:
+        return puml_text
+    return normalize_puml_text("\n".join(repaired))
+
+
+def _extract_transition_patch_lines(text: str) -> list[str]:
+    lines: list[str] = []
+    seen: set[str] = set()
+    for raw_line in text.splitlines():
+        stripped = raw_line.strip()
+        if not stripped or stripped.startswith("```") or stripped.startswith("'"):
+            continue
+        if stripped.lower() in {"@startuml", "@enduml"}:
+            continue
+        if TRANSITION_RE.match(stripped):
+            normalized = " ".join(stripped.split())
+            if normalized not in seen:
+                lines.append(stripped)
+                seen.add(normalized)
+    return lines
+
+
+def _apply_transition_patch(puml_text: str, patch_lines: list[str]) -> str:
+    base = normalize_puml_text(puml_text)
+    if not patch_lines:
+        return base
+
+    existing = {" ".join(line.strip().split()) for line in base.splitlines()}
+    new_lines = [line for line in patch_lines if " ".join(line.strip().split()) not in existing]
+    if not new_lines:
+        return base
+
+    lines = base.splitlines()
+    insert_at = len(lines)
+    for index in range(len(lines) - 1, -1, -1):
+        if lines[index].strip().lower() == "@enduml":
+            insert_at = index
+            break
+    patched = lines[:insert_at] + new_lines + lines[insert_at:]
+    return normalize_puml_text("\n".join(patched))
 
 
 def repair_preserves_graph_shape(current_puml: str, repaired_puml: str) -> tuple[bool, dict[str, Any]]:
@@ -288,6 +372,49 @@ def run_single_generation(
             critic_feedback = ""
 
             repair_mode_clean = repair_mode.strip().lower()
+            if repair_mode_clean == "constrained_validator":
+                deterministic_puml = _deterministic_validator_repair(final_puml, final_validation)
+                if deterministic_puml != final_puml:
+                    _, deterministic_validation = parse_and_validate_puml_text(deterministic_puml)
+                    deterministic_issues = strict_state_diagram_issues(deterministic_validation)
+                    current_score = validation_repair_score(final_validation)
+                    deterministic_score = validation_repair_score(deterministic_validation)
+                    accepted = deterministic_score < current_score
+                    attempt_artifacts.append(
+                        {
+                            "stage": "deterministic_repair",
+                            "attempt": attempt,
+                            "repair_mode": repair_mode_clean,
+                            "puml": deterministic_puml,
+                            "validation": deterministic_validation.to_dict(),
+                            "strict_state_diagram_valid": not deterministic_issues,
+                            "accepted": accepted,
+                            "previous_score": current_score,
+                            "repair_score": deterministic_score,
+                        }
+                    )
+                    steps.append(
+                        {
+                            "stage": "deterministic_repair",
+                            "attempt": attempt,
+                            "accepted": accepted,
+                            "repair_mode": repair_mode_clean,
+                            "previous_score": current_score,
+                            "repair_score": deterministic_score,
+                            "plantuml_valid": deterministic_validation.valid,
+                            "strict_state_diagram_valid": not deterministic_issues,
+                            "errors": list(deterministic_validation.errors),
+                            "warnings": list(deterministic_validation.warnings),
+                            "strict_issues": deterministic_issues,
+                        }
+                    )
+                    if accepted:
+                        final_puml = deterministic_puml
+                        final_validation = deterministic_validation
+                        current_issues = deterministic_issues
+                        if not current_issues:
+                            break
+
             if repair_mode_clean == "targeted":
                 repair_prompt = build_targeted_repair_prompt(
                     requirement,
@@ -311,6 +438,20 @@ def run_single_generation(
                 )
             elif repair_mode_clean == "diagnostic_syntax_grounded":
                 repair_prompt = build_diagnostic_syntax_grounded_repair_prompt(
+                    requirement,
+                    final_puml,
+                    final_validation,
+                    critic_feedback,
+                )
+            elif repair_mode_clean == "constrained_validator":
+                repair_prompt = build_constrained_validator_repair_prompt(
+                    requirement,
+                    final_puml,
+                    final_validation,
+                    critic_feedback,
+                )
+            elif repair_mode_clean == "transition_patch":
+                repair_prompt = build_transition_patch_repair_prompt(
                     requirement,
                     final_puml,
                     final_validation,
@@ -387,7 +528,12 @@ def run_single_generation(
                 max_tokens=max_tokens,
                 timeout=timeout,
             )
-            repaired_puml = normalize_puml_text(repaired)
+            patch_lines: list[str] = []
+            if repair_mode_clean == "transition_patch":
+                patch_lines = _extract_transition_patch_lines(repaired)
+                repaired_puml = _apply_transition_patch(final_puml, patch_lines)
+            else:
+                repaired_puml = normalize_puml_text(repaired)
             _, repaired_validation = parse_and_validate_puml_text(repaired_puml)
             repaired_issues = strict_state_diagram_issues(repaired_validation)
             current_score = validation_repair_score(final_validation)
@@ -403,6 +549,7 @@ def run_single_generation(
                     "repair_mode": repair_mode_clean,
                     "repair_model_name": repair_model_name.strip() or cfg.model_name,
                     "repair_prompt": repair_prompt,
+                    "transition_patch_lines": patch_lines,
                     "puml": repaired_puml,
                     "validation": repaired_validation.to_dict(),
                     "strict_state_diagram_valid": not repaired_issues,

@@ -106,6 +106,8 @@ def build_parser() -> argparse.ArgumentParser:
             "syntax_grounded",
             "syntax_grounded_no_rules",
             "diagnostic_syntax_grounded",
+            "constrained_validator",
+            "transition_patch",
             "hybrid_issue_guided",
             "syntax_grounded_pattern_rules",
             "full_patterns",
