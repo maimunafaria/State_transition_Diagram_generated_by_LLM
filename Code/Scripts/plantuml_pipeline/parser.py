@@ -331,6 +331,23 @@ def check_plantuml_syntax(puml_text: str, timeout: int = 8) -> tuple[list[str], 
             timeout=timeout,
             check=False,
         )
+        diagnostic_output = ""
+        if result.returncode != 0:
+            try:
+                diagnostic = subprocess.run(
+                    [plantuml, "-verbose", str(path)],
+                    text=True,
+                    capture_output=True,
+                    timeout=timeout,
+                    check=False,
+                )
+                diagnostic_output = "\n".join(
+                    part.strip()
+                    for part in (diagnostic.stdout, diagnostic.stderr)
+                    if part.strip()
+                )
+            except (subprocess.SubprocessError, OSError):
+                diagnostic_output = ""
 
     if result.returncode == 0:
         return [], []
@@ -338,7 +355,28 @@ def check_plantuml_syntax(puml_text: str, timeout: int = 8) -> tuple[list[str], 
     output = "\n".join(
         part.strip() for part in (result.stdout, result.stderr) if part.strip()
     ).strip()
-    message = "; ".join(output.splitlines()[:2]) if output else f"exit_code={result.returncode}"
+    line_match = re.search(r"Error line\s+(\d+)", diagnostic_output, re.IGNORECASE)
+    if line_match:
+        line_number = int(line_match.group(1))
+        source_lines = text.splitlines()
+        failing_line = (
+            source_lines[line_number - 1].strip()
+            if 1 <= line_number <= len(source_lines)
+            else ""
+        )
+        start = max(1, line_number - 2)
+        end = min(len(source_lines), line_number + 2)
+        context = " | ".join(
+            f"{index}: {source_lines[index - 1].strip()}"
+            for index in range(start, end + 1)
+        )
+        message = (
+            f"line {line_number}: {failing_line}; context: {context}"
+            if failing_line
+            else f"line {line_number}; context: {context}"
+        )
+    else:
+        message = "; ".join(output.splitlines()[:2]) if output else f"exit_code={result.returncode}"
     message = message.replace(str(path), "diagram.puml")
     return [f"plantuml_syntax_error: {message}"], []
 

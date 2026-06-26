@@ -1786,6 +1786,103 @@ def build_constrained_validator_repair_prompt(
     )
 
 
+def build_compiler_guided_syntax_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+) -> str:
+    validation_issues = _prioritized_repair_issues(validation)
+    syntax_issues = [
+        issue for issue in validation_issues if "plantuml_syntax_error" in issue.lower()
+    ]
+    if not syntax_issues:
+        return build_syntax_grounded_repair_prompt(
+            requirement,
+            candidate_puml,
+            validation,
+            critic_feedback,
+        )
+
+    return (
+        "You are a compiler-guided PlantUML syntax repair assistant.\n"
+        "Fix only the official PlantUML compiler error shown below.\n"
+        "Make the smallest possible syntax edit. Preserve all supported states, "
+        "transitions, labels, and behavior. Do not redesign the diagram.\n"
+        "Return only the complete corrected PlantUML code with no markdown fences "
+        "and no explanation.\n\n"
+        "Official compiler diagnostic:\n"
+        + "\n".join(f"- {issue}" for issue in syntax_issues)
+        + "\n\nCommon valid syntax patterns:\n"
+        "state ChoiceNode <<choice>>\n"
+        "state ForkNode <<fork>>\n"
+        "state JoinNode <<join>>\n"
+        'state \"Display Name\" as StateAlias\n'
+        "[*] --> FirstState\n"
+        "StateA --> StateB : event [guard]\n"
+        "FinalState --> [*]\n\n"
+        "Candidate PlantUML:\n"
+        f"{candidate_puml}\n"
+    )
+
+
+def build_issue_routed_sequential_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+    route: str = "syntax_grounded",
+) -> str:
+    validation_issues = _prioritized_repair_issues(validation)
+    target_issue = validation_issues[0] if validation_issues else ""
+    if "plantuml_syntax_error" in target_issue.lower():
+        return build_compiler_guided_syntax_repair_prompt(
+            requirement,
+            candidate_puml,
+            validation,
+            critic_feedback,
+        )
+
+    target_issues = [target_issue] if target_issue else []
+    repair_guidance = _repair_guidance_for_issues(target_issues)
+    syntax_patterns = (
+        format_syntax_patterns(target_issues)
+        if route == "syntax_grounded"
+        else ""
+    )
+    route_instruction = (
+        "Use direct natural-language repair guidance for this target issue."
+        if route == "baseline"
+        else "Use the relevant valid PlantUML pattern for this target issue."
+    )
+    pattern_section = (
+        "\n\nValid PlantUML pattern for the target issue:\n" + syntax_patterns
+        if syntax_patterns
+        else ""
+    )
+    return (
+        "You are an issue-routed sequential PlantUML repair assistant.\n"
+        "Fix exactly one validation issue in this attempt.\n"
+        f"Selected repair strategy: {route}.\n"
+        f"{route_instruction}\n"
+        "Make the smallest possible edit that removes the target issue.\n"
+        "Preserve every unaffected state, transition, name, label, and "
+        "requirement-supported behavior.\n"
+        "Do not attempt unrelated repairs. Do not introduce any new validation issue.\n"
+        "Return only the complete corrected PlantUML code with no markdown fences "
+        "or explanation.\n\n"
+        "Requirement:\n"
+        f"{requirement}\n\n"
+        "Candidate PlantUML:\n"
+        f"{candidate_puml}\n\n"
+        "Target validation issue for this attempt:\n"
+        + (f"- {target_issue}" if target_issue else "- none")
+        + "\n\nRepair guidance:\n"
+        + "\n".join(f"- {hint}" for hint in repair_guidance)
+        + pattern_section
+    )
+
+
 def build_transition_patch_repair_prompt(
     requirement: str,
     candidate_puml: str,

@@ -10,8 +10,11 @@ from .models import Case, ExperimentConfig, ValidationResult
 from .parser import normalize_puml_text, parse_and_validate_puml_text
 from .constants import TRANSITION_RE
 from .prompting import (
+    _prioritized_repair_issues,
     build_chain_of_thought_analysis_prompt,
     build_chain_of_thought_generation_prompt,
+    build_compiler_guided_syntax_repair_prompt,
+    build_issue_routed_sequential_repair_prompt,
     build_constrained_validator_repair_prompt,
     build_diagnostic_syntax_grounded_repair_prompt,
     build_example_guided_repair_prompt,
@@ -88,6 +91,146 @@ def _deterministic_validator_repair(puml_text: str, validation: ValidationResult
     if not changed:
         return puml_text
     return normalize_puml_text("\n".join(repaired))
+
+
+def _has_plantuml_syntax_error(validation: ValidationResult) -> bool:
+    return any("plantuml_syntax_error" in issue.lower() for issue in validation.errors)
+
+
+def _repair_issue_key(issue: str) -> str:
+    low = issue.lower()
+    if "plantuml_syntax_error" in low:
+        return "plantuml_syntax_error"
+    if "missing_final_state_transition" in low:
+        return "missing_final_state_transition"
+    if "missing_initial_state_transition" in low:
+        return "missing_initial_state_transition"
+    if "multiple_initial_state_transitions" in low:
+        return "multiple_initial_state_transitions"
+    if "duplicate_transitions" in low:
+        return "duplicate_transitions_detected"
+    if "choice_node_without_guarded" in low:
+        return "choice_node_without_guarded_outgoing_transitions"
+    if "choice_node_without_outgoing" in low:
+        return "choice_node_without_outgoing_transitions"
+    if "invalid [*]" in low:
+        return "invalid_initial_to_final_transition"
+    if "orphan" in low:
+        return "orphan_states_detected"
+    if "unreachable" in low:
+        return "unreachable_states_detected"
+    if "fork_" in low:
+        return "fork_node_violation"
+    if "join_" in low:
+        return "join_node_violation"
+    if "history_state" in low:
+        return "history_state_violation"
+    return re.sub(r"\s*\(.*$", "", issue.split(":", 1)[0].strip().lower())
+
+
+def _validation_issue_keys(validation: ValidationResult) -> set[str]:
+    return {
+        _repair_issue_key(issue)
+        for issue in strict_state_diagram_issues(validation)
+    }
+
+
+def _issue_repair_route(issue: str) -> str:
+    key = _repair_issue_key(issue)
+    if key == "plantuml_syntax_error":
+        return "compiler_guided"
+    if key in {
+        "missing_final_state_transition",
+        "duplicate_transitions_detected",
+        "choice_node_without_outgoing_transitions",
+    }:
+        return "baseline"
+    return "syntax_grounded"
+
+
+def _deterministic_syntax_repair(
+    puml_text: str,
+    validation: ValidationResult | None = None,
+) -> str:
+    lines = normalize_puml_text(puml_text).splitlines()
+    repaired: list[str] = []
+    changed = False
+    failing_line_number = 0
+    if validation is not None:
+        for issue in validation.errors:
+            match = re.search(r"plantuml_syntax_error:\s*line\s+(\d+)", issue, re.IGNORECASE)
+            if match:
+                failing_line_number = int(match.group(1))
+                break
+    bare_stereotype = re.compile(
+        r"^(\s*)([A-Za-z_][A-Za-z0-9_]*)\s+"
+        r"<<(choice|fork|join|history|deepHistory)>>\s*$",
+        re.IGNORECASE,
+    )
+    incomplete_stereotype = re.compile(
+        r"^(\s*state\s+[A-Za-z_][A-Za-z0-9_]*\s+)"
+        r"<<(choice|fork|join|history|deepHistory)\s*$",
+        re.IGNORECASE,
+    )
+    for line_number, raw_line in enumerate(lines, start=1):
+        stripped = raw_line.strip()
+        is_failing_line = not failing_line_number or line_number == failing_line_number
+        match = bare_stereotype.match(raw_line)
+        incomplete_match = incomplete_stereotype.match(raw_line)
+        if is_failing_line and match and not raw_line.lstrip().lower().startswith("state "):
+            indent, state_name, stereotype = match.groups()
+            repaired.append(f"{indent}state {state_name} <<{stereotype}>>")
+            changed = True
+        elif is_failing_line and incomplete_match:
+            prefix, stereotype = incomplete_match.groups()
+            repaired.append(f"{prefix}<<{stereotype}>>")
+            changed = True
+        elif is_failing_line and stripped.lower().startswith(
+            ("here is ", "here's ", "below is ", "the plantuml code")
+        ):
+            changed = True
+            continue
+        elif is_failing_line and re.match(r"^.+[-.]+>\s*$", stripped):
+            changed = True
+            continue
+        elif is_failing_line and "-->" in stripped and ":" in stripped:
+            transition, label = raw_line.split(":", 1)
+            if ";" in label:
+                repaired.append(f"{transition}: {label.replace(';', ' and ').strip()}")
+                changed = True
+            else:
+                repaired.append(raw_line)
+        elif (
+            is_failing_line
+            and stripped
+            and re.match(r"^[A-Za-z][A-Za-z0-9 ]+$", stripped)
+            and not stripped.lower().startswith(
+                ("state ", "title ", "note ", "legend ", "skinparam ")
+            )
+        ):
+            repaired.append(f"title {stripped}")
+            changed = True
+        else:
+            repaired.append(raw_line)
+    return normalize_puml_text("\n".join(repaired)) if changed else puml_text
+
+
+def _run_deterministic_syntax_repairs(
+    puml_text: str,
+    validation: ValidationResult,
+    max_passes: int = 10,
+) -> tuple[str, ValidationResult]:
+    candidate = puml_text
+    candidate_validation = validation
+    for _ in range(max_passes):
+        repaired = _deterministic_syntax_repair(candidate, candidate_validation)
+        if repaired == candidate:
+            break
+        candidate = repaired
+        _, candidate_validation = parse_and_validate_puml_text(candidate)
+        if not _has_plantuml_syntax_error(candidate_validation):
+            break
+    return candidate, candidate_validation
 
 
 def _extract_transition_patch_lines(text: str) -> list[str]:
@@ -370,8 +513,60 @@ def run_single_generation(
 
             critic_prompt = ""
             critic_feedback = ""
+            target_issue = ""
+            target_issue_key = ""
+            repair_route = ""
 
             repair_mode_clean = repair_mode.strip().lower()
+            if (
+                repair_mode_clean in {
+                    "compiler_guided_syntax",
+                    "compiler_guided_issue_routed",
+                }
+                and _has_plantuml_syntax_error(final_validation)
+            ):
+                deterministic_puml, deterministic_validation = _run_deterministic_syntax_repairs(
+                    final_puml,
+                    final_validation,
+                )
+                if deterministic_puml != final_puml:
+                    deterministic_issues = strict_state_diagram_issues(deterministic_validation)
+                    current_score = validation_repair_score(final_validation)
+                    deterministic_score = validation_repair_score(deterministic_validation)
+                    accepted = (
+                        not _has_plantuml_syntax_error(deterministic_validation)
+                        and deterministic_score < current_score
+                    )
+                    attempt_artifacts.append(
+                        {
+                            "stage": "compiler_deterministic_repair",
+                            "attempt": attempt,
+                            "repair_mode": repair_mode_clean,
+                            "puml": deterministic_puml,
+                            "validation": deterministic_validation.to_dict(),
+                            "strict_state_diagram_valid": not deterministic_issues,
+                            "accepted": accepted,
+                            "previous_score": current_score,
+                            "repair_score": deterministic_score,
+                        }
+                    )
+                    steps.append(
+                        {
+                            "stage": "compiler_deterministic_repair",
+                            "attempt": attempt,
+                            "accepted": accepted,
+                            "repair_mode": repair_mode_clean,
+                            "errors": list(deterministic_validation.errors),
+                            "warnings": list(deterministic_validation.warnings),
+                        }
+                    )
+                    if accepted:
+                        final_puml = deterministic_puml
+                        final_validation = deterministic_validation
+                        current_issues = deterministic_issues
+                        if not current_issues:
+                            break
+
             if repair_mode_clean == "constrained_validator":
                 deterministic_puml = _deterministic_validator_repair(final_puml, final_validation)
                 if deterministic_puml != final_puml:
@@ -442,6 +637,25 @@ def run_single_generation(
                     final_puml,
                     final_validation,
                     critic_feedback,
+                )
+            elif repair_mode_clean == "compiler_guided_syntax":
+                repair_prompt = build_compiler_guided_syntax_repair_prompt(
+                    requirement,
+                    final_puml,
+                    final_validation,
+                    critic_feedback,
+                )
+            elif repair_mode_clean == "compiler_guided_issue_routed":
+                prioritized_issues = _prioritized_repair_issues(final_validation)
+                target_issue = prioritized_issues[0] if prioritized_issues else ""
+                target_issue_key = _repair_issue_key(target_issue) if target_issue else ""
+                repair_route = _issue_repair_route(target_issue) if target_issue else ""
+                repair_prompt = build_issue_routed_sequential_repair_prompt(
+                    requirement,
+                    final_puml,
+                    final_validation,
+                    critic_feedback,
+                    route=repair_route,
                 )
             elif repair_mode_clean == "constrained_validator":
                 repair_prompt = build_constrained_validator_repair_prompt(
@@ -539,7 +753,23 @@ def run_single_generation(
             current_score = validation_repair_score(final_validation)
             repaired_score = validation_repair_score(repaired_validation)
             preserves_shape, preservation_meta = repair_preserves_graph_shape(final_puml, repaired_puml)
-            accepted = repaired_score < current_score and (
+            syntax_was_invalid = _has_plantuml_syntax_error(final_validation)
+            compiler_acceptance = not (
+                repair_mode_clean in {
+                    "compiler_guided_syntax",
+                    "compiler_guided_issue_routed",
+                }
+                and syntax_was_invalid
+                and _has_plantuml_syntax_error(repaired_validation)
+            )
+            routed_acceptance = True
+            if repair_mode_clean == "compiler_guided_issue_routed":
+                current_keys = _validation_issue_keys(final_validation)
+                repaired_keys = _validation_issue_keys(repaired_validation)
+                target_solved = bool(target_issue_key) and target_issue_key not in repaired_keys
+                introduced_keys = repaired_keys - current_keys
+                routed_acceptance = target_solved and not introduced_keys
+            accepted = compiler_acceptance and routed_acceptance and repaired_score < current_score and (
                 repair_mode_clean != "targeted" or preserves_shape or repaired_score == 0
             )
             attempt_artifacts.append(
@@ -548,6 +778,9 @@ def run_single_generation(
                     "attempt": attempt,
                     "repair_mode": repair_mode_clean,
                     "repair_model_name": repair_model_name.strip() or cfg.model_name,
+                    "target_issue": target_issue,
+                    "target_issue_key": target_issue_key,
+                    "repair_route": repair_route,
                     "repair_prompt": repair_prompt,
                     "transition_patch_lines": patch_lines,
                     "puml": repaired_puml,
@@ -572,6 +805,9 @@ def run_single_generation(
                     "accepted": accepted,
                     "repair_mode": repair_mode_clean,
                     "repair_model_name": repair_model_name.strip() or cfg.model_name,
+                    "target_issue": target_issue,
+                    "target_issue_key": target_issue_key,
+                    "repair_route": repair_route,
                     "previous_score": current_score,
                     "repair_score": repaired_score,
                     "preserves_graph_shape": preserves_shape,
