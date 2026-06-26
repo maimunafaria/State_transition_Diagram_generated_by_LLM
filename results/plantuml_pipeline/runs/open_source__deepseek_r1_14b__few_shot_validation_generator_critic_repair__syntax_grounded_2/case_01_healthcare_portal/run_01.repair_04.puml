@@ -1,0 +1,42 @@
+@startuml
+[*] --> INITIAL_STATE
+
+INITIAL_STATE -> UserAuthentication : start registration
+UserAuthentication {
+    UserAuthentication -> RegistrationRequested
+    UserAuthentication -> SignInRequested
+}
+
+RegistrationRequested -> REGISTRATION_IN_PROGRESS
+REGISTRATION_IN_PROGRESS -> RegistrationSuccess : valid registration
+REGISTRATION_IN_PROGRESS -> RegistrationFailure : invalid registration
+
+SignInRequested -> SignInInProgress
+SignInInProgress -> SignedIn_Successfully : valid credentials
+SignInInProgress -> Invalid_Credentials_TryAgain : invalid credentials
+
+SignedIn_Successfully -> SystemAccessEntryPoint
+SystemAccessEntryPoint -> Access_Facilities_Info
+SystemAccessEntryPoint -> Read_News_Content
+SystemAccessEntryPoint -> Health_Info_Options
+
+Health_Info_Options -> Symptom_Checker
+Symptom_Checker -> Fitness_Checking_Options
+
+PaymentMethodSelection {
+    PaymentMethodSelection -> Payment_Cash : cash payment
+    PaymentMethodSelection -> Payment_Insurance : insurance payment
+}
+
+Payment_Cash -> CashPayment_DetailsProvided
+Payment_Insurance -> InsuranceValidationRequested
+InsuranceValidationRequested -> InsuranceApproved : valid insurance
+InsuranceApproved -> Process_Insurance_Payment
+
+FeedbackCollection {
+    SystemAccessEntryPoint -> FeedbackCollection : provide feedback
+}
+FeedbackCollection -> LOGGED_OUT : session complete
+
+LOGGED_OUT --> [*] : logout event
+@enduml

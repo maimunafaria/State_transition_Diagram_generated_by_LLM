@@ -1,0 +1,261 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Flight — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall schedule and assign a flight number when a new flight is created.
+2. The system shall change the flight status to 'on journey' once it takes off.
+3. The system shall mark the flight as inactive and record it as a past record upon landing.
+4. The system shall record cancelled flights in the same manner as landed flights if they are cancelled before starting.
+5. The system shall remove inactive flights over time.
+
+Example 1 PlantUML:
+@startuml
+title Statechart diagram of the class "Flight"
+
+[*] --> Planned : «M» Flight Defined/
+
+state Planned
+state "In Transit" as InTransit
+state Historic
+
+Planned : «M» New Flight Number/
+
+Planned --> InTransit : «M» Flight Started/
+InTransit --> Historic : «M» Flight Landed/
+
+Planned --> Historic : «M» Flight Cancelled/
+Historic --> [*] : «M» Flight Irrelevant/
+Planned --> [*] : «M» Flight Number Irrelevant/
+
+@enduml
+
+Example 2 Requirement:
+Device Handout — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall collect personal details from a donor during registration.
+2. The system shall check the entered personal details after registration.
+3. The system shall collect contact information from a donor after verifying their personal details.
+4. The system shall allow donors to share details about the device they want to donate.
+5. The system shall review the shared device details.
+6. The system shall support if a device meets the requirements, the system shall accept it.
+7. The system shall assign an executive to handle the accepted device.
+8. The system shall confirm the status of the accepted device by the executive.
+9. The system shall support if a device does not meet the requirements, the system shall inform the donor that it cannot be accepted.
+
+Example 2 PlantUML:
+@startuml
+title UML State Machine Diagram
+
+[*] --> DonorRegistration
+
+state "donor registration" as DonorRegistration
+DonorRegistration : entry / enter personal details
+DonorRegistration : do / verify details
+DonorRegistration : exit / request contact details
+
+state "get contacts" as GetContacts
+GetContacts : entry / registered donor
+GetContacts : do / receive contact details
+GetContacts : exit / donate a device
+
+state "device details" as DeviceDetails
+DeviceDetails : entry / gave contacts
+DeviceDetails : do / receive details
+DeviceDetails : exit / request approval
+
+state "device verification" as DeviceVerification
+DeviceVerification : entry / provided device details
+DeviceVerification : do / check details
+DeviceVerification : exit / acknowledge donor
+
+state Decision <<choice>>
+
+state approved
+approved : entry / device verified
+approved : do / choose an executive
+approved : exit / send details to executive
+
+state rejected
+rejected : entry / fails verification
+rejected : do / notify donor
+rejected : exit / device not accepted
+
+state "picked up" as PickedUp
+PickedUp : entry / executive receives details
+PickedUp : do / executive picks product
+PickedUp : exit / acknowledges status of product
+
+DonorRegistration --> GetContacts
+GetContacts --> DeviceDetails
+DeviceDetails --> DeviceVerification
+DeviceVerification --> Decision
+
+Decision --> approved : [passes verification]
+Decision --> rejected : [fails verification]
+
+approved --> PickedUp
+
+PickedUp --> [*]
+rejected --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Book Bank Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to register by entering their details.
+2. The system shall issue a member ID and complete the registration upon correct entry of details.
+3. The system shall require the user to re-enter their details upon incorrect entry of details.
+4. The system shall allow a user to log in after successful registration using their member ID and password.
+5. The system shall allow the user to continue upon correct entry of member ID and password during login. Otherwise, they cannot log in.
+6. The system shall allow a user to search for a book by entering its details.
+7. The system shall show suggestions if a book is found during a search; otherwise, it shall allow the user to choose another option.
+8. The system shall allow a user to get a book by entering its ID and their member ID.
+9. The system shall allow the user to get the book if their membership is active; otherwise, it shall require them to pay the fine amount first.
+10. The system shall allow a user to buy a book by entering its ID and seeing the price.
+11. The system shall provide the book if the user pays; otherwise, it shall end the process there.
+
+Example 3 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+state "Registration" as Registration {
+  [*] --> RegEnterDetails
+
+  state "Enter Details" as RegEnterDetails
+  state "Get Member_ID" as GetMemberID
+  state "Successful Registration" as SuccessfulRegistration
+  state "Re-enter Details" as ReEnterDetails
+
+  RegEnterDetails --> GetMemberID : [Valid]
+  RegEnterDetails --> ReEnterDetails : [Invalid]
+  ReEnterDetails --> RegEnterDetails
+  GetMemberID --> SuccessfulRegistration
+}
+
+state "Authentication" as Authentication {
+  [*] --> AuthEnterMemberID
+
+  state "Enter Member_ID" as AuthEnterMemberID
+  state "Enter Password" as EnterPassword
+  state "successful Login" as SuccessfulLogin
+  state "Invalid Member_ID or Password" as InvalidCreds
+
+  AuthEnterMemberID --> EnterPassword
+  EnterPassword --> SuccessfulLogin : [Valid]
+  EnterPassword --> InvalidCreds : [Invalid]
+}
+
+state "Search Books" as SearchBooks {
+  [*] --> EnterBookDetails
+
+  state "Enter Book Details" as EnterBookDetails
+  state "Display Suggestion" as DisplaySuggestion
+  state "choose Alternate option" as ChooseAlternate
+
+  EnterBookDetails --> DisplaySuggestion : [Found]
+  EnterBookDetails --> ChooseAlternate : [Not Found]
+}
+
+state "Get Books" as GetBooksState {
+  [*] --> GetEnterBookID
+
+  state "Enter Book_ID" as GetEnterBookID
+  state "Enter Member_ID" as GetEnterMemberID
+  state "Obtain Books" as ObtainBooks
+  state "Pay Fine Amount" as PayFineAmount
+
+  GetEnterBookID --> GetEnterMemberID
+  GetEnterMemberID --> ObtainBooks : [Active Member]
+  GetEnterMemberID --> PayFineAmount : [Inactive Member]
+}
+
+state "Buy Books" as BuyBooks {
+  [*] --> BuyEnterBookID
+
+  state "Enter Book_ID" as BuyEnterBookID
+  state "Display Book Amount" as DisplayBookAmount
+  state "Get Books" as BuyGetBooks
+  state BuyNotPaidEnd <<choice>>
+
+  BuyEnterBookID --> DisplayBookAmount
+  DisplayBookAmount --> BuyGetBooks : [Paid]
+  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]
+  BuyNotPaidEnd --> [*]
+}
+
+state StartJoin <<choice>>
+
+[*] --> StartJoin
+StartJoin --> Registration
+StartJoin --> Authentication
+StartJoin --> SearchBooks
+StartJoin --> GetBooksState
+StartJoin --> BuyBooks
+
+SuccessfulRegistration --> AuthEnterMemberID
+
+SuccessfulLogin --> EnterBookDetails
+SuccessfulLogin --> GetEnterBookID
+SuccessfulLogin --> BuyEnterBookID
+
+
+ObtainBooks --> [*]
+BuyGetBooks --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Business Process Outsourcing Bpo Management System Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to search by selecting a filter category.
+2. The system shall allow users to search by selecting a price range as a filter.
+3. The system shall display matching users based on the chosen criteria after the user selects a filter.
