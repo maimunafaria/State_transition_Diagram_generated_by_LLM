@@ -1,0 +1,302 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.
+
+Candidate PlantUML to repair:
+@startuml
+[*] --> StartupCheck
+StartupCheck --> Ready : everything is fine
+StartupCheck --> Stopped : problem during startup
+Ready --> UserReset
+Ready --> UserActivate
+Ready --> UserTurnOff
+UserReset --> Ready
+UserActivate --> Monitoring
+UserTurnOff --> Ready
+Monitoring --> AlarmTriggered
+Monitoring --> FalseAlarm
+Monitoring --> TimeEnds
+AlarmTriggered --> Monitoring
+FalseAlarm --> Monitoring
+TimeEnds --> Monitoring
+Monitoring --> Stopped : user enters password
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for the target issue:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> InventoryMenu
+
+state AddGoods {
+  entry / start state
+  do / add new goods
+  exit / goods added
+  AddGoods --> InventoryMenu
+}
+
+state UpdatePrice {
+  entry / start state
+  do / update price of existing items
+  exit / price updated
+  UpdatePrice --> InventoryMenu
+}
+
+state RemoveGoods {
+  entry / start state
+  do / remove goods from inventory
+  exit / goods removed
+  RemoveGoods --> InventoryMenu
+}
+
+state ExpireCheck {
+  entry / start state
+  do / check for expired goods
+  exit / expired goods identified
+  ExpireCheck --> RemoveGoods
+}
+
+state PlaceOrder {
+  entry / start state
+  do / place order with supplier
+  exit / order placed
+  PlaceOrder --> GenerateInvoice
+}
+
+state SearchItems {
+  entry / start state
+  do / search for items in inventory
+  exit / items selected
+  SearchItems --> PurchaseItems
+}
+
+state CalculateDiscount {
+  entry / start state
+  do / calculate applicable discount
+  exit / discount calculated
+  CalculateDiscount --> GenerateReceipt
+}
+
+state GenerateReceipt {
+  entry / start state
+  do / generate receipt for purchase
+  exit / receipt generated
+  GenerateReceipt --> InventoryMenu
+}
+
+state ReplaceItem {
+  entry / start state
+  do / replace an item or cancel receipt
+  exit / item replaced or receipt cancelled
+  ReplaceItem --> InventoryMenu
+}
+
+state RecordRequest {
+  entry / start state
+  do / record customer requests
+  exit / request recorded
+  RecordRequest --> InventoryMenu
+}
+
+state GenerateSummary {
+  entry / start state
+  do / generate summary report
+  exit / report generated
+  GenerateSummary --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> [*
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> InventoryMenu
+
+state InventoryMenu {
+  InventoryMenu --> AddGoods : [Add Goods]
+  AddGoods : entry / start state
+  AddGoods : do / add new goods
+  AddGoods : exit / goods added
+  AddGoods --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> UpdatePrice : [Update Price]
+  UpdatePrice : entry / start state
+  UpdatePrice : do / update price of existing items
+  UpdatePrice : exit / price updated
+  UpdatePrice --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> RemoveGoods : [Remove Goods]
+  RemoveGoods : entry / start state
+  RemoveGoods : do / remove goods from inventory
+  RemoveGoods : exit / goods removed
+  RemoveGoods --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> ExpireCheck : [Check for Expired Goods]
+  ExpireCheck : entry / start state
+  ExpireCheck : do / check for expired goods
+  ExpireCheck : exit / expired goods identified
+  ExpireCheck --> RemoveGoods
+}
+
+state InventoryMenu {
+  InventoryMenu --> PlaceOrder : [Place Order]
+  PlaceOrder : entry / start state
+  PlaceOrder : do / place order with supplier
+  PlaceOrder : exit / order placed
+  PlaceOrder --> GenerateInvoice
+}
+
+state InventoryMenu {
+  InventoryMenu --> SearchItems : [Search Items]
+  SearchItems : entry / start state
+  SearchItems : do / search for items in inventory
+  SearchItems : exit / items selected
+  SearchItems --> PurchaseItems
+}
+
+state InventoryMenu {
+  InventoryMenu --> CalculateDiscount : [Calculate Discount]
+  CalculateDiscount : entry / start state
+  CalculateDiscount : do / calculate applicable discount
+  CalculateDiscount : exit / discount calculated
+  CalculateDiscount --> GenerateReceipt
+}
+
+state InventoryMenu {
+  InventoryMenu --> GenerateReceipt : [Generate Receipt]
+  GenerateReceipt : entry / start state
+  GenerateReceipt : do / generate receipt for purchase
+  GenerateReceipt : exit / receipt generated
+  GenerateReceipt --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> ReplaceItem : [Replace Item]
+  ReplaceItem : entry / start state
+  ReplaceItem : do / replace an item or cancel receipt
+  ReplaceItem : exit / item replaced or receipt cancelled
+  ReplaceItem --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> RecordRequest : [Record Request]
+  RecordRequest : entry / start state
+  RecordRequest : do / record customer requests
+  RecordRequest : exit / request recorded
+  RecordRequest --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> GenerateSummary : [Generate Summary Report]
+  GenerateSummary : entry / start state
+  GenerateSummary : do / generate summary report
+  GenerateSummary : exit / report generated
+  GenerateSummary --> InventoryMenu
+}
+
+state InventoryMenu
+InventoryMenu --> [*] : [Exit]
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title Digital Watch State Diagram
+
+[*] --> Idle
+
+state "Idle" as Idle
+state "Adjusting Time" as AdjustingTime
+state "Alarm Settings" as AlarmSettings
+state "Alarm Triggered" as AlarmTriggered
+state "Light On" as LightOn
+
+Idle --> AdjustingTime : Press Button
+Idle --> AlarmSettings : Press Button
+AdjustingTime --> Idle : Press Button
+AlarmSettings --> Idle : Press Button
+AdjustingTime --> AdjustingTime : Increase Value
+AlarmSettings --> AlarmSettings : Increase Value
+AdjustingTime --> AlarmTriggered : Set Alarm Time Matches Current Time
+AlarmSettings --> AlarmTriggered : Set Alarm Time Matches Current Time
+AlarmTriggered --> Idle : Stop Alarm
+LightOn --> Idle : Press Button
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Digital Watch State Diagram
+
+[*] --> Idle
+
+state "Idle" as Idle
+state "Adjusting Time" as AdjustingTime
+state "Alarm Settings" as AlarmSettings
+state "Alarm Triggered" as AlarmTriggered
+state "Light On" as LightOn
+
+Idle --> AdjustingTime : Press Button
+Idle --> AlarmSettings : Press Button
+AdjustingTime --> Idle : Press Button
+AlarmSettings --> Idle : Press Button
+AdjustingTime --> AdjustingTime : Increase Value
+AlarmSettings --> AlarmSettings : Increase Value
+AdjustingTime --> AlarmTriggered : Set Alarm Time Matches Current Time
+AlarmSettings --> AlarmTriggered : Set Alarm Time Matches Current Time
+AlarmTriggered --> Idle : Stop Alarm
+
+Idle --> LightOn : Press Button
+LightOn --> Idle : Press Button
+
+Idle --> [*] : COMPLETION_EVENT
+
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

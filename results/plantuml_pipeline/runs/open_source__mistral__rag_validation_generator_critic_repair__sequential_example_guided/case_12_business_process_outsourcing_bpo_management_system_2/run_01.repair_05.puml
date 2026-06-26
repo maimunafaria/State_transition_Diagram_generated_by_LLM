@@ -1,0 +1,40 @@
+@startuml
+title UML State Machine Diagram - Search Users
+
+[*] --> ChooseUserType
+
+state ChooseUserType <<choice>>
+ChooseUserType --> NewUser : [New user]
+ChooseUserType --> RegisteredUser : [Registered user]
+
+state "New User Registration" as NewUserRegistration {
+    EnterDetails --> ChoiceReg : [Registration verification]
+    ChoiceReg --> UpdateDB : [valid]
+    ChoiceReg --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+NewUserRegistration : entry / New user registration
+NewUserRegistration : do / Registration details
+NewUserRegistration : exit / After updation
+
+UpdateDB --> Login : [verified]
+
+state Login
+Login : do / Enter username and password
+Login : exit / After verification
+
+Login --> Profile : [valid uname & pwd]
+
+state "Profile" as Profile {
+    [*] --> EditProfile : [edit profile data]
+    Profile --> SearchUsers : [search user]
+    Profile --> ViewDeals : [current deals]
+    Profile --> AddToWishlist : [add product to wishlist]
+    Profile --> MoveFromWishlistToCart : [move from wishlist to cart]
+}
+
+ChooseUserType --> NewUserRegistration
+Profile --> Login : [Logout]
+@enduml

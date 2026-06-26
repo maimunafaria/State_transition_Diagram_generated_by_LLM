@@ -1,0 +1,51 @@
+@startuml
+title Digidoclocker System States
+
+[*] --> Registration
+
+state "Registration" as Registration
+state "Login" as Login
+state "Document Upload" as DocumentUpload
+state "Profile View" as ProfileView
+state "Certificate Application" as CertificateApplication
+state "Reapply for Certificate" as ReapplyCertificate
+state "Request Certificate" as RequestCertificate
+state "End Session" as EndSession
+
+Registration : entry / citizen registration
+Registration : do / validate citizen details
+Registration : exit / citizen registered
+
+Registration --> Login : [registration successful]
+
+Login : entry / citizen login
+Login : do / validate login details
+Login : exit / login successful
+
+Login --> DocumentUpload : [login successful]
+DocumentUpload --> Login : [upload document]
+DocumentUpload --> ProfileView : [view profile]
+DocumentUpload --> CertificateApplication : [apply for certificate]
+DocumentUpload --> EndSession : [end session]
+
+Login --> RequestCertificate : [request certificate]
+RequestCertificate --> Login : [request certificate]
+RequestCertificate --> CertificateApplication : [apply for certificate]
+
+Login --> ReapplyCertificate : [reapply for certificate]
+ReapplyCertificate --> Login : [reapply for certificate]
+ReapplyCertificate --> CertificateApplication : [apply for certificate]
+
+DocumentUpload --> ProfileView : [view profile]
+ProfileView --> DocumentUpload : [upload document]
+ProfileView --> CertificateApplication : [apply for certificate]
+ProfileView --> EndSession : [end session]
+
+CertificateApplication --> RequestCertificate : [request certificate]
+CertificateApplication --> ReapplyCertificate : [reapply for certificate]
+CertificateApplication --> EndSession : [end session]
+
+EndSession --> [*] : [session ended]
+RequestCertificate --> Login : [request certificate]
+ReapplyCertificate --> Login : [reapply for certificate]
+@enduml

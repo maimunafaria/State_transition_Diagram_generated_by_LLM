@@ -1,0 +1,417 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Inventory — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to add new goods to the inventory.
+2. The system shall allow the user to update the price of existing items in the inventory.
+3. The system shall allow the user to remove goods from the inventory that are no longer required.
+4. The system shall identify expired goods and notify the user about their removal from the inventory.
+5. The system shall allow the user to place an order to a supplier for additional goods when required.
+6. The system shall generate an invoice for the order once it is placed.
+7. The system shall allow the user to search for items available in the inventory and select them for purchase.
+8. The system shall calculate the applicable discount and tax based on the selected items.
+9. The system shall generate a receipt for the customer after the purchase.
+10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.
+11. The system shall record customer requests for items that may not be currently available.
+12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.
+
+Candidate PlantUML to repair:
+@startuml
+title Inventory System State Machine
+
+[*] --> Idle
+
+state Idle {
+}
+
+state AddGoods {
+    entry / User initiates adding goods
+    exit / Goods added to inventory
+}
+
+state UpdatePrice {
+    entry / User initiates price update
+    exit / Price updated for existing item
+}
+
+state RemoveGoods {
+    entry / User initiates removal of goods
+    exit / Goods removed from inventory
+}
+
+state IdentifyExpired {
+    entry / System checks for expired goods
+    exit / User notified about expired goods
+}
+
+state PlaceOrder {
+    entry / User initiates order placement
+    exit / Order placed with supplier
+}
+
+state GenerateInvoice {
+    entry / System generates invoice for order
+    exit / Invoice created
+}
+
+state SearchAndSelect {
+    entry / User searches for items
+    exit / Items selected for purchase
+}
+
+state CalculateDiscountTax {
+    entry / System calculates discount and tax
+    exit / Discount and tax calculated
+}
+
+state GenerateReceipt {
+    entry / System generates receipt
+    exit / Receipt created for customer
+}
+
+state ReplaceCancelReceipt {
+    entry / User requests replacement or cancellation
+    exit / Receipt replaced or cancelled
+}
+
+state RecordCustomerRequest {
+    entry / System records customer requests
+    exit / Request recorded
+}
+
+state ViewSummaryReport {
+    entry / User requests summary report
+    exit / Report displayed
+}
+
+Idle --> AddGoods : Add New Goods
+Idle --> UpdatePrice : Update Price
+Idle --> RemoveGoods : Remove Goods
+Idle --> IdentifyExpired : Check for Expired Goods
+Idle --> PlaceOrder : Place Order
+Idle --> GenerateInvoice : Generate Invoice
+Idle --> SearchAndSelect : Search for Items
+Idle --> CalculateDiscountTax : Calculate Discount/Tax
+Idle --> GenerateReceipt : Generate Receipt
+Idle --> ReplaceCancelReceipt : Replace/Cancel Receipt
+Idle --> RecordCustomerRequest : Record Customer Request
+Idle --> ViewSummaryReport : View Summary Report
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for the target issue:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Login / Register
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state CheckWeather
+CheckWeather : entry/Check weather
+CheckWeather : do/Check weather for current or another location
+CheckWeather : exit/Idle
+
+CheckWeather --> WeatherInfo
+WeatherInfo : entry/Show weather info
+WeatherInfo : do/Update and show the selected weather information to the user
+WeatherInfo : exit/Additional details
+
+WeatherInfo --> AdditionalDetails
+AdditionalDetails : entry/View additional weather details
+AdditionalDetails : do/View alerts, a weekly analysis, a future prediction, or a graph
+AdditionalDetails : exit/Idle
+
+AdditionalDetails --> Logout
+Logout : entry/Log out
+Logout : do/End session when the user logs out
+Logout : exit/End
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+[*] --> Idle : start event
+Idle --> CheckWeather : Check weather event
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+Idle --> Register : Register event
+Register --> InvalidRegistration : Invalid registration event
+InvalidRegistration : exit/Abnormal termination
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+Idle --> Login : Login event
+Login --> InvalidLogin : Invalid login event
+InvalidLogin : exit/Abnormal termination
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state CheckWeather
+CheckWeather : entry/Check weather
+CheckWeather : do/Check weather for current or another location
+CheckWeather : exit/Idle
+CheckWeather --> WeatherInfo : Show weather info event
+
+state WeatherInfo
+WeatherInfo : entry/Show weather info
+WeatherInfo : do/Update and show the selected weather information to the user
+WeatherInfo : exit/Additional details
+WeatherInfo --> AdditionalDetails : Show additional details event
+
+state AdditionalDetails
+AdditionalDetails : entry/View additional weather details
+AdditionalDetails : do/View alerts, a weekly analysis, a future prediction, or a graph
+AdditionalDetails : exit/Idle
+AdditionalDetails --> Logout : Log out event
+
+state Logout
+Logout : entry/Log out
+Logout : do/End session when the user logs out
+Logout : exit/End
+Logout --> [*] : COMPLETION_EVENT
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title E-Visa Processing and Follow-Up System
+
+[*] --> CreateAccount
+CreateAccount --> LoggedOut : Account Created
+
+state CreateAccount {
+    entry / Display Registration Form
+    exit / Validate and Save User Details
+}
+
+state LoggedOut {
+    entry / Display Login Form
+}
+
+LoggedOut --> LoggedIn : Valid Credentials
+
+state LoggedIn {
+    entry / Display User Dashboard
+    exit / Display Options
+}
+
+state ApplyForVisa {
+    entry / Initiate Visa Application
+    exit / Collect Application Details, Payment
+}
+
+state ViewVisaStatus {
+    entry / Display Visa Application Status
+    exit / Show Current Status
+}
+
+state CancelApplication {
+    entry / Initiate Cancellation Process
+    exit / Confirm Cancellation
+}
+
+state ModifyDetails {
+    entry / Update User Information
+    exit / Save Changes
+}
+
+state ViewDetails {
+    entry / Display User Profile
+    exit / Show User Information
+}
+
+state ViewPurpose {
+    entry / Display Application Purpose
+    exit / Show Application Purpose
+}
+
+state GiveFeedback {
+    entry / Provide Feedback on Service
+    exit / Submit Feedback
+}
+
+ApplyForVisa --> PaymentReceived : Application Accepted
+
+PaymentReceived --> VisaProcessing : Payment Confirmed
+
+VisaProcessing --> Approved : Document Check Passed
+VisaProcessing --> Rejected : Document Check Failed
+
+Approved --> ViewVisaStatus : Visa Approved
+Rejected --> ViewVisaStatus : Visa Rejected
+
+ViewVisaStatus --> GiveFeedback : Status Checked
+ViewVisaStatus --> LoggedIn : Status Displayed
+
+CancelApplication --> LoggedIn : Application Cancelled
+ModifyDetails --> LoggedIn : Details Modified
+ViewDetails --> LoggedIn : Details Viewed
+ViewPurpose --> LoggedIn : Purpose Viewed
+GiveFeedback --> LoggedIn : Feedback Submitted
+
+LoggedIn --> ApplyForVisa : Apply for Visa
+LoggedIn --> ViewVisaStatus : View Status
+LoggedIn --> CancelApplication : Cancel Application
+LoggedIn --> ModifyDetails : Modify Details
+LoggedIn --> ViewDetails : View Details
+LoggedIn --> ViewPurpose : View Purpose
+LoggedIn --> GiveFeedback : Give Feedback
+LoggedIn --> LoggedOut : Logout
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title E-Visa Processing and Follow-Up System
+
+[*] --> CreateAccount
+CreateAccount --> LoggedOut : Account Created
+
+state CreateAccount {
+    entry / Display Registration Form
+    exit / Validate and Save User Details
+}
+
+state LoggedOut {
+    entry / Display Login Form
+}
+
+LoggedOut --> LoggedIn : Valid Credentials
+
+state LoggedIn {
+    entry / Display User Dashboard
+    exit / Display Options
+}
+
+state ApplyForVisa {
+    entry / Initiate Visa Application
+    exit / Collect Application Details, Payment
+}
+
+state ViewVisaStatus {
+    entry / Display Visa Application Status
+    exit / Show Current Status
+}
+
+state CancelApplication {
+    entry / Initiate Cancellation Process
+    exit / Confirm Cancellation
+}
+
+state ModifyDetails {
+    entry / Update User Information
+    exit / Save Changes
+}
+
+state ViewDetails {
+    entry / Display User Profile
+    exit / Show User Information
+}
+
+state ViewPurpose {
+    entry / Display Application Purpose
+    exit / Show Application Purpose
+}
+
+state GiveFeedback {
+    entry / Provide Feedback on Service
+    exit / Submit Feedback
+}
+
+ApplyForVisa --> PaymentReceived : Application Accepted
+
+PaymentReceived --> VisaProcessing : Payment Confirmed
+
+VisaProcessing --> Approved : Document Check Passed
+VisaProcessing --> Rejected : Document Check Failed
+
+Approved --> ViewVisaStatus : Visa Approved
+Rejected --> ViewVisaStatus : Visa Rejected
+
+ViewVisaStatus --> GiveFeedback : Status Checked
+ViewVisaStatus --> LoggedIn : Status Displayed
+
+CancelApplication --> LoggedIn : Application Cancelled
+ModifyDetails --> LoggedIn : Details Modified
+ViewDetails --> LoggedIn : Details Viewed
+ViewPurpose --> LoggedIn : Purpose Viewed
+GiveFeedback --> LoggedIn : Feedback Submitted
+
+LoggedIn --> ApplyForVisa : Apply for Visa
+LoggedIn --> ViewVisaStatus : View Status
+LoggedIn --> CancelApplication : Cancel Application
+LoggedIn --> ModifyDetails : Modify Details
+LoggedIn --> ViewDetails : View Details
+LoggedIn --> ViewPurpose : View Purpose
+LoggedIn --> GiveFeedback : Give Feedback
+LoggedIn --> LoggedOut : Logout
+LoggedOut --> [*]
+
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

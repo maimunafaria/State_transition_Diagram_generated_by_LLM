@@ -1,0 +1,243 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Website Development — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to navigate from the homepage using a navigation bar.
+2. The system shall display information about projects when selected by the user.
+3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.
+4. The system shall display information about career opportunities when selected by the user.
+5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.
+6. The system shall check submitted job applications after they are submitted.
+
+Candidate PlantUML to repair:
+@startuml
+state Homepage
+[*] --> Homepage
+
+Homepage --> NavigationBar
+...
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for the target issue:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> InitialState
+InitialState : Display home page
+InitialState --> ServiceCenterHome : Logged in
+ServiceCenterHome : Display journey details upon user login and destination selection
+ServiceCenterHome --> JourneyDetails : Destination selected
+JourneyDetails : Allow users to activate driving mode or choose other options after viewing journey details
+JourneyDetails --> DrivingModeActivated : Driving mode activated
+JourneyDetails --> OtherOptions : Other options chosen
+OtherOptions : Enable users to select a place to eat, view its menu, and place an order if they are hungry
+OtherOptions --> FoodSelection : Place to eat selected
+FoodSelection : View menu
+FoodSelection --> MenuViewed : Menu viewed
+MenuViewed : Place order if user is hungry
+MenuViewed --> OrderPlaced : Order placed
+OrderPlaced : Inform relevant authorities in the event of an accident
+OrderPlaced --> Accident : Accident occurred
+Accident : Send notifications during driving or in case of an accident
+Accident --> NotificationSent : Notification sent
+NotificationSent : Allow users to provide feedback upon completion of their journey
+NotificationSent --> Feedback : Feedback provided
+Feedback : Return to initial state
+ServiceCenterHome : Expiry Notification page
+ServiceCenterHome --> ExpiryNotification : Expiry notification received
+ExpiryNotification : Send service request to Car owner
+ExpiryNotification --> ServiceRequestSent : Service request sent
+ExpiryNotification : Return to Service center home page
+ServiceCenterHome : Enter Damaged parts list
+ServiceCenterHome --> EnteringDamagedPartsList : Enter damaged parts list required
+EnteringDamagedPartsList : Preparing and entering damaged parts list
+EnteringDamagedPartsList --> DamagedPartsListEntered : Damaged parts list entered
+EnteringDamagedPartsList : Return to service center home page
+ServiceCenterHome : Updating Information list
+ServiceCenterHome --> UpdatingInformation : Changed parts information available for updating
+UpdatingInformation : Update Information
+UpdatingInformation --> InformationUpdated : Information updated
+UpdatingInformation : Return to Service center home page
+Logout : To Logout
+Logout --> LoggedOut : Logout completed
+Logout : Logged out Successfully
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> InitialState
+InitialState : Display home page
+InitialState --> ServiceCenterHome : Logged in
+ServiceCenterHome : Display journey details upon user login and destination selection
+ServiceCenterHome --> JourneyDetails : Destination selected
+JourneyDetails : Allow users to activate driving mode or choose other options after viewing journey details
+JourneyDetails --> DrivingModeActivated : Driving mode activated
+JourneyDetails --> OtherOptions : Other options chosen
+OtherOptions : Enable users to select a place to eat, view its menu, and place an order if they are hungry
+OtherOptions --> FoodSelection : Place to eat selected
+FoodSelection : View menu
+FoodSelection --> MenuViewed : Menu viewed
+MenuViewed : Place order if user is hungry
+MenuViewed --> OrderPlaced : Order placed
+OrderPlaced : Inform relevant authorities in the event of an accident
+OrderPlaced --> Accident : Accident occurred
+Accident : Send notifications during driving or in case of an accident
+Accident --> NotificationSent : Notification sent
+NotificationSent : Allow users to provide feedback upon completion of their journey
+NotificationSent --> Feedback : Feedback provided
+Feedback : Return to initial state
+ServiceCenterHome : Expiry Notification page
+ServiceCenterHome --> ExpiryNotification : Expiry notification received
+ExpiryNotification : Send service request to Car owner
+ExpiryNotification --> ServiceRequestSent : Service request sent
+ExpiryNotification : Return to Service center home page
+ServiceCenterHome : Enter Damaged parts list
+ServiceCenterHome --> EnteringDamagedPartsList : Enter damaged parts list required
+EnteringDamagedPartsList : Preparing and entering damaged parts list
+EnteringDamagedPartsList --> DamagedPartsListEntered : Damaged parts list entered
+EnteringDamagedPartsList : Return to service center home page
+ServiceCenterHome : Updating Information list
+ServiceCenterHome --> UpdatingInformation : Changed parts information available for updating
+UpdatingInformation : Update Information
+UpdatingInformation --> InformationUpdated : Information updated
+UpdatingInformation : Return to Service center home page
+LoggedOut : To Logout
+LoggedOut --> LogoutCompleted : Logout completed
+LoggedOut --> Feedback : Logged out Successfully
+ServiceCenterHome --> LoggedOut : User logs out
+NotificationSent --> [*] : Completion Event
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Login : [registration successful]
+  Login : [registration failed]
+}
+
+state Login {
+  Login --> Dashboard : [login successful]
+  Dashboard : [logout]
+}
+
+state Dashboard {
+  Dashboard --> News : [read news]
+  News --> Dashboard : [back to dashboard]
+  Dashboard --> Facilities : [access facilities]
+  Facilities --> Dashboard : [back to dashboard]
+  Dashboard --> SymptomCheck : [check symptoms]
+  SymptomCheck --> Dashboard : [back to dashboard]
+  Dashboard --> FitnessCheck : [use fitness checking options]
+  FitnessCheck --> Dashboard : [back to dashboard]
+  Dashboard --> Payment : [select payment method]
+  Payment --> FinishSession : [finish session]
+}
+
+state Payment {
+  Payment --> InsurancePayment : [insurance payment]
+  InsurancePayment --> DoctorConsultation : [doctor consultation]
+  DoctorConsultation --> PaymentComplete : [payment completed]
+  PaymentComplete --> FinishSession : [finish session]
+}
+
+state InsurancePayment {
+  InsurancePayment --> CashPayment : [choose cash payment]
+  CashPayment --> FinishSession : [display cash payment details, finish session]
+}
+
+state FinishSession {
+  FinishSession --> Feedback : [provide feedback]
+  Feedback --> Logout : [logout]
+  Logout : [logout successfully]
+}
+
+[*] --> [*]
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Login : [registration successful]
+  Login : [registration failed]
+}
+
+state Login {
+  Login --> Dashboard : [login successful]
+  Dashboard : [logout]
+}
+
+state Dashboard {
+  Dashboard --> News : [read news]
+  News --> Dashboard : [back to dashboard]
+  Dashboard --> Facilities : [access facilities]
+  Facilities --> Dashboard : [back to dashboard]
+  Dashboard --> SymptomCheck : [check symptoms]
+  SymptomCheck --> Dashboard : [back to dashboard]
+  Dashboard --> FitnessCheck : [use fitness checking options]
+  FitnessCheck --> Dashboard : [back to dashboard]
+  Dashboard --> Payment : [select payment method]
+  Payment --> FinishSession : [finish session]
+}
+
+state Payment {
+  Payment --> InsurancePayment : [insurance payment]
+  InsurancePayment --> DoctorConsultation : [doctor consultation]
+  DoctorConsultation --> PaymentComplete : [payment completed]
+  PaymentComplete --> FinishSession : [finish session]
+}
+
+state InsurancePayment {
+  InsurancePayment --> CashPayment : [choose cash payment]
+  CashPayment --> FinishSession : [display cash payment details]
+}
+
+state FinishSession {
+  FinishSession --> Feedback : [provide feedback]
+  Feedback --> Logout : [logout]
+}
+
+state Logout {
+  Logout --> [*] : [logout successfully]
+}
+
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

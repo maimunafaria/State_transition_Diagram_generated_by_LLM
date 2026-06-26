@@ -1,0 +1,116 @@
+@startuml
+title UML State Machine Diagram
+
+state "Arrival" as Arrival
+[*] --> Arrival
+Arrival : entry / User arrives
+Arrival : do / Display greeting
+Arrival : exit / User proceeds
+
+state "Greeting" as Greeting
+Greeting : entry / User proceeds
+Greeting : do / Display greeting
+Greeting : exit / Proceed to PIN verification
+
+state "Card Insertion" as CardInsertion
+CardInsertion : entry / User inserts card
+CardInsertion : do / Check card validity
+CardInsertion : exit / Proceed to PIN verification
+
+state "PIN Verification" as PINVerification
+PINVerification : entry / Proceed to PIN verification
+PINVerification --> PINEntry : Enter PIN
+PINVerification --> CancelOperation : Cancel operation
+
+state "Cancel Operation" as CancelOperation
+CancelOperation : entry / User cancels operation
+CancelOperation : do / Return card
+CancelOperation : exit / Operation cancelled
+
+state "PIN Entry" as PINEntry
+PINEntry : entry / User enters PIN
+PINEntry : do / Verify PIN
+PINEntry --> PINVerification : Incorrect PIN
+PINEntry --> CorrectPIN : Correct PIN
+PINVerification --> PINEntry : Enter PIN (loop)
+
+state "Correct PIN" as CorrectPIN
+CorrectPIN : entry / User enters correct PIN
+CorrectPIN : do / Display options
+CorrectPIN : exit / Options displayed
+
+state "Options Displayed" as OptionsDisplayed
+OptionsDisplayed : entry / Options displayed
+OptionsDisplayed --> WithdrawMoney : Select withdraw money
+OptionsDisplayed --> CheckInformation : Select check information
+OptionsDisplayed --> MakeTransfer : Select make transfer
+OptionsDisplayed --> InvalidRequest : Select invalid request
+
+state "Withdraw Money" as WithdrawMoney
+WithdrawMoney : entry / User selects withdraw money
+WithdrawMoney : do / Process withdraw money request
+WithdrawMoney : exit / Request processed
+
+state "Check Information" as CheckInformation
+CheckInformation : entry / User selects check information
+CheckInformation : do / Process check information request
+CheckInformation : exit / Request processed
+
+state "Make Transfer" as MakeTransfer
+MakeTransfer : entry / User selects make transfer
+MakeTransfer : do / Process make transfer request
+MakeTransfer : exit / Request processed
+
+state "Invalid Request" as InvalidRequest
+InvalidRequest : entry / User selects invalid request
+InvalidRequest : do / Display error message
+InvalidRequest : exit / Request not processed
+
+state "Invalid PIN" as InvalidPIN
+InvalidPIN : entry / Invalid PIN
+InvalidPIN --> InvalidPIN : Invalid PIN (loop)
+
+state "Too Many Incorrect PINs" as TooManyIncorrectPINs
+TooManyIncorrectPINs : entry / User enters incorrect PIN too many times
+TooManyIncorrectPINs : do / Hold card for security
+TooManyIncorrectPINs : exit / Card held
+
+state "Card Held" as CardHeld
+CardHeld : entry / Card held
+CardHeld --> [*] : process complete
+
+state "Return Card" as ReturnCard
+ReturnCard : entry / User cancels operation or transaction completed
+ReturnCard : do / Return the card
+ReturnCard --> [*] : process complete
+
+state "Request Processing" as RequestProcessing
+RequestProcessing : entry / Request processed
+RequestProcessing --> [*] : process complete
+
+Arrival --> Greeting
+Greeting --> CardInsertion
+
+CardInsertion --> PINVerification
+PINVerification --> PINEntry
+
+PINEntry --> PINVerification : Incorrect PIN
+PINVerification --> CorrectPIN : Correct PIN
+PINVerification --> InvalidPIN : Invalid PIN
+PINVerification --> CancelOperation : Cancel operation
+
+CorrectPIN --> OptionsDisplayed
+OptionsDisplayed --> WithdrawMoney
+OptionsDisplayed --> CheckInformation
+OptionsDisplayed --> MakeTransfer
+OptionsDisplayed --> InvalidRequest
+
+WithdrawMoney --> RequestProcessing
+CheckInformation --> RequestProcessing
+MakeTransfer --> RequestProcessing
+
+InvalidPIN --> InvalidPIN
+CancelOperation --> ReturnCard
+TooManyIncorrectPINs --> CardHeld
+
+@enduml

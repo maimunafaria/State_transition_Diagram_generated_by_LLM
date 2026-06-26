@@ -1,0 +1,314 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Website Development — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to navigate from the homepage using a navigation bar.
+2. The system shall display information about projects when selected by the user.
+3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.
+4. The system shall display information about career opportunities when selected by the user.
+5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.
+6. The system shall check submitted job applications after they are submitted.
+
+Candidate PlantUML to repair:
+@startuml
+title UML State Chart Diagram
+
+state "Homepage" as Homepage
+state "Projects" as Projects
+state "View Photos" as ViewPhotos
+state "View Videos" as ViewVideos
+state "Career Info" as CareerInfo
+state "View Updates" as ViewUpdates
+state "Apply" as Apply
+state "Job Application" as JobApplication
+state "Application Checked" as ApplicationChecked
+
+Homepage --> Projects : Navigation
+Homepage --> CareerInfo : Navigation
+Homepage --> Contact : Navigation
+
+Projects --> ViewPhotos : Select Photos
+Projects --> ViewVideos : Select Videos
+ViewPhotos --> Projects : Back
+ViewVideos --> Projects : Back
+
+CareerInfo --> ViewUpdates : Select Updates
+CareerInfo --> Apply : Submit Application
+Apply --> JobApplication : Submit
+JobApplication --> ApplicationChecked : Check
+
+ApplicationChecked --> [*]
+
+Contact --> [*]
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_initial_state_transition ([*] --> state)
+
+Repair guidance for the target issue:
+- Add one clear initial transition from [*] to the first lifecycle state.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_initial_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Login / Register
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state CheckWeather
+CheckWeather : entry/Check weather
+CheckWeather : do/Check weather for current or another location
+CheckWeather : exit/Idle
+
+CheckWeather --> WeatherInfo
+WeatherInfo : entry/Show weather info
+WeatherInfo : do/Update and show the selected weather information to the user
+WeatherInfo : exit/Additional details
+
+WeatherInfo --> AdditionalDetails
+AdditionalDetails : entry/View additional weather details
+AdditionalDetails : do/View alerts, a weekly analysis, a future prediction, or a graph
+AdditionalDetails : exit/Idle
+
+AdditionalDetails --> Logout
+Logout : entry/Log out
+Logout : do/End session when the user logs out
+Logout : exit/End
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+[*] --> Idle : start event
+Idle --> CheckWeather : Check weather event
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+Idle --> Register : Register event
+Register --> InvalidRegistration : Invalid registration event
+InvalidRegistration : exit/Abnormal termination
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+Idle --> Login : Login event
+Login --> InvalidLogin : Invalid login event
+InvalidLogin : exit/Abnormal termination
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state CheckWeather
+CheckWeather : entry/Check weather
+CheckWeather : do/Check weather for current or another location
+CheckWeather : exit/Idle
+CheckWeather --> WeatherInfo : Show weather info event
+
+state WeatherInfo
+WeatherInfo : entry/Show weather info
+WeatherInfo : do/Update and show the selected weather information to the user
+WeatherInfo : exit/Additional details
+WeatherInfo --> AdditionalDetails : Show additional details event
+
+state AdditionalDetails
+AdditionalDetails : entry/View additional weather details
+AdditionalDetails : do/View alerts, a weekly analysis, a future prediction, or a graph
+AdditionalDetails : exit/Idle
+AdditionalDetails --> Logout : Log out event
+
+state Logout
+Logout : entry/Log out
+Logout : do/End session when the user logs out
+Logout : exit/End
+Logout --> [*] : COMPLETION_EVENT
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_initial_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML State Chart Diagram
+
+state "Initial" as Initial
+Initial --> InsertCard : Start
+
+state "Insert Card" as InsertCard
+InsertCard : entry / Insert the card
+InsertCard : do / Verify card
+InsertCard : exit / Card verified
+
+state "Select Amount" as SelectAmount
+SelectAmount : entry / Select amount options
+SelectAmount : do / Display predefined amounts and custom option
+SelectAmount : exit / User selects an option
+
+state "Select Predefined Amount" as SelectPredefined
+SelectPredefined : entry / Predefined amount selected
+SelectPredefined : do / Verify amount
+SelectPredefined : exit / Amount selected
+
+state "Enter Custom Amount" as EnterCustomAmount
+EnterCustomAmount : entry / Custom amount selected
+EnterCustomAmount : do / Validate custom amount
+EnterCustomAmount : exit / Amount entered
+
+state "Check Balance" as CheckBalance
+CheckBalance : entry / Amount selected
+CheckBalance : do / Check available balance
+CheckBalance : exit / Balance sufficient or not
+
+state "Dispense Cash" as DispenseCash
+DispenseCash : entry / Sufficient balance
+DispenseCash : do / Dispense the cash
+DispenseCash : exit / Transaction complete
+
+state "Cancel Transaction" as CancelTransaction
+CancelTransaction : entry / Cancel option selected
+CancelTransaction : do / Stop transaction
+CancelTransaction : exit / Transaction aborted
+
+state "Return Card" as ReturnCard
+ReturnCard : entry / Transaction completed or aborted
+ReturnCard : do / Return the card
+ReturnCard : exit / Card returned
+
+InsertCard --> SelectAmount : proceed to select amount
+InsertCard --> CancelTransaction : cancel immediately
+
+SelectAmount --> SelectPredefined : select predefined amount
+SelectAmount --> EnterCustomAmount : enter custom amount
+SelectAmount --> CancelTransaction : cancel transaction
+
+SelectPredefined --> CheckBalance : check balance for predefined amount
+EnterCustomAmount --> CheckBalance : check balance for custom amount
+
+CheckBalance --> DispenseCash : balance sufficient
+CheckBalance --> CheckBalance : balance insufficient (loop)
+
+DispenseCash --> ReturnCard : transaction complete
+CancelTransaction --> ReturnCard : transaction aborted
+
+ReturnCard --> [*] : process complete
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML State Chart Diagram
+
+state "Insert Card" as InsertCard
+[*] --> InsertCard
+InsertCard : entry / Insert the card
+InsertCard : do / Verify card
+InsertCard : exit / Card verified
+
+state "Select Amount" as SelectAmount
+SelectAmount : entry / Select amount options
+SelectAmount : do / Display predefined amounts and custom option
+SelectAmount : exit / User selects an option
+
+state "Select Predefined Amount" as SelectPredefined
+SelectPredefined : entry / Predefined amount selected
+SelectPredefined : do / Verify amount
+SelectPredefined : exit / Amount selected
+
+state "Enter Custom Amount" as EnterCustomAmount
+EnterCustomAmount : entry / Custom amount selected
+EnterCustomAmount : do / Validate custom amount
+EnterCustomAmount : exit / Amount entered
+
+state "Check Balance" as CheckBalance
+CheckBalance : entry / Amount selected
+CheckBalance : do / Check available balance
+CheckBalance : exit / Balance sufficient or not
+
+state "Dispense Cash" as DispenseCash
+DispenseCash : entry / Sufficient balance
+DispenseCash : do / Dispense the cash
+DispenseCash : exit / Transaction complete
+
+state "Cancel Transaction" as CancelTransaction
+CancelTransaction : entry / Cancel option selected
+CancelTransaction : do / Stop transaction
+CancelTransaction : exit / Transaction aborted
+
+state "Return Card" as ReturnCard
+ReturnCard : entry / Transaction completed or aborted
+ReturnCard : do / Return the card
+ReturnCard : exit / Card returned
+
+InsertCard --> SelectAmount : proceed to select amount
+InsertCard --> CancelTransaction : cancel immediately
+
+SelectAmount --> SelectPredefined : select predefined amount
+SelectAmount --> EnterCustomAmount : enter custom amount
+SelectAmount --> CancelTransaction : cancel transaction
+
+SelectPredefined --> CheckBalance : check balance for predefined amount
+EnterCustomAmount --> CheckBalance : check balance for custom amount
+
+CheckBalance --> DispenseCash : balance sufficient
+CheckBalance --> CheckBalance : balance insufficient (loop)
+
+DispenseCash --> ReturnCard : transaction complete
+CancelTransaction --> ReturnCard : transaction aborted
+
+ReturnCard --> [*] : process complete
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

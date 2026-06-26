@@ -1,0 +1,244 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Video Suggestion System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall receive a video suggestion request from a user.
+2. The system shall identify the user who made the video suggestion request.
+3. The system shall gather different types of videos simultaneously based on the user's profile or preferences, trending videos from the user’s area, videos with similar tags, videos from similar genres, and promoted videos .
+4. The system shall add additional details such as thumbnails and view counts to the suggested videos.
+5. The system shall send the suggested videos to the user.
+
+Candidate PlantUML to repair:
+@startuml
+title Video Suggestion System
+
+state "Idle" as Idle
+state "Receiving Request" as ReceivingRequest
+state "Identifying User" as IdentifyingUser
+state "Gathering Videos" as GatheringVideos
+state "Adding Details" as AddingDetails
+state "Sending Suggestions" as SendingSuggestions
+state "User Profile" as UserProfile
+state "User Preferences" as UserPreferences
+state "Trending Videos" as TrendingVideos
+state "Similar Videos" as SimilarVideos
+state "Promoted Videos" as PromotedVideos
+
+Idle --> ReceivingRequest : Video Suggestion Request
+
+ReceivingRequest --> IdentifyingUser : Identify User
+
+IdentifyingUser --> GatheringVideos : Gather Videos
+GatheringVideos --> UserProfile : User Profile
+GatheringVideos --> UserPreferences : User Preferences
+GatheringVideos --> TrendingVideos : Trending Videos
+GatheringVideos --> SimilarVideos : Similar Videos
+GatheringVideos --> PromotedVideos : Promoted Videos
+
+GatheringVideos --> AddingDetails : Add Details
+
+AddingDetails --> SendingSuggestions : Send Suggestions
+
+[*] --> Idle
+Idle --> ReceivingRequest
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for the target issue:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> Idle
+Idle --> Adding : addNewGoods
+Adding --> Idle : saveGoods
+
+Idle --> Updating : updatePrice
+Updating --> Idle : savePrice
+
+Idle --> Removing : removeGoods
+Removing --> Idle : removeGoods
+
+Idle --> Ordering : placeOrder
+Ordering --> Invoicing : generateInvoice
+Invoicing --> Idle : saveInvoice
+
+Idle --> Searching : searchItems
+Searching --> Idle : selectItems
+
+Idle --> Expired : identifyExpiredGoods
+Expired --> Idle : notifyUser
+
+Idle --> Billing : generateReceipt
+Billing --> Cancelled : cancelReceipt
+Billing --> Replaced : replaceItem
+Billing --> Summary : saveTransaction
+
+Idle --> Summary : viewSummary
+
+Adding --> Updating : updatePrice
+Updating --> Removing : removeGoods
+Removing --> Expired : identifyExpiredGoods
+Expired --> Ordering : placeOrder
+Ordering --> Invoicing : generateInvoice
+Invoicing --> Billing : generateReceipt
+Billing --> Cancelled : cancelReceipt
+Billing --> Replaced : replaceItem
+Billing --> Summary : saveTransaction
+
+Summary --> Idle : viewSummary
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> Idle : INITIAL_TRANSITION
+
+state Idle
+state Adding
+state Updating
+state Removing
+state Expired
+state Ordering
+state Invoicing
+state Searching
+state Billing
+state Cancelled
+state Replaced
+state Summary
+
+Idle --> Adding : addNewGoods
+Adding --> Idle : saveGoods
+
+Idle --> Updating : updatePrice
+Updating --> Idle : savePrice
+
+Idle --> Removing : removeGoods
+Removing --> Idle : removeGoods
+
+Idle --> Ordering : placeOrder
+Ordering --> Invoicing : generateInvoice
+Invoicing --> Idle : saveInvoice
+
+Idle --> Searching : searchItems
+Searching --> Idle : selectItems
+
+Idle --> Expired : identifyExpiredGoods
+Expired --> Idle : notifyUser
+
+Idle --> Billing : generateReceipt
+Billing --> Cancelled : cancelReceipt
+Billing --> Replaced : replaceItem
+Billing --> Summary : saveTransaction
+
+Idle --> Summary : viewSummary
+
+Updating --> Removing : removePrice
+Removing --> Expired : expireGoods
+Expired --> Ordering : placeOrderForReplacement
+Ordering --> Invoicing : generateInvoiceForReplacement
+Invoicing --> Idle : saveInvoiceForReplacement
+
+Searching --> Billing : selectItemsForPurchase
+Billing --> Cancelled : cancelReceiptDuringBilling
+Cancelled --> Summary : viewSummaryAfterCancellation
+Replaced --> Summary : viewSummaryAfterReplacement
+
+Idle --> [*] : COMPLETION_EVENT
+
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title Farm Management System State Diagram
+
+[*] --> LoggedOut
+
+state LoggedOut
+state LoggedIn
+state "Market Conditions" as MarketConditions
+state "Pest Control Help" as PestControlHelp
+state "Soil Suggestions" as SoilSuggestions
+state "Weather Insights" as WeatherInsights
+state "Labour Availability" as LabourAvailability
+
+LoggedOut --> LoggedIn : User Login / Authentication Successful
+
+LoggedIn --> MarketConditions : Select Market Conditions / Display Report
+LoggedIn --> PestControlHelp : Select Pest Control Help / Request Photo
+LoggedIn --> SoilSuggestions : Select Soil Suggestions / Provide Soil Information
+LoggedIn --> WeatherInsights : Select Weather Insights / Provide Location
+LoggedIn --> LabourAvailability : Select Labour Availability / Provide Location
+
+MarketConditions --> LoggedIn : View Report / Return to Main Menu
+PestControlHelp --> LoggedIn : Provide Photo / Display Techniques
+SoilSuggestions --> LoggedIn : Receive Soil Information / Display Suggestions
+WeatherInsights --> LoggedIn : Receive Location / Display Insights
+LabourAvailability --> LoggedIn : Receive Location / Display Availability
+
+LoggedIn --> LoggedOut : User Logout / End Session
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Farm Management System State Diagram
+
+[*] --> LoggedOut
+
+state LoggedOut
+state LoggedIn
+state "Market Conditions" as MarketConditions
+state "Pest Control Help" as PestControlHelp
+state "Soil Suggestions" as SoilSuggestions
+state "Weather Insights" as WeatherInsights
+state "Labour Availability" as LabourAvailability
+
+LoggedOut --> LoggedIn : User Login / Authentication Successful
+
+LoggedIn --> MarketConditions : Select Market Conditions / Display Report
+LoggedIn --> PestControlHelp : Select Pest Control Help / Request Photo
+LoggedIn --> SoilSuggestions : Select Soil Suggestions / Provide Soil Information
+LoggedIn --> WeatherInsights : Select Weather Insights / Provide Location
+LoggedIn --> LabourAvailability : Select Labour Availability / Provide Location
+
+MarketConditions --> LoggedIn : View Report / Return to Main Menu
+PestControlHelp --> LoggedIn : Provide Photo / Display Techniques
+SoilSuggestions --> LoggedIn : Receive Soil Information / Display Suggestions
+WeatherInsights --> LoggedIn : Receive Location / Display Insights
+LabourAvailability --> LoggedIn : Receive Location / Display Availability
+
+LoggedIn --> LoggedOut : User Logout / End Session
+LoggedOut --> [*]
+
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

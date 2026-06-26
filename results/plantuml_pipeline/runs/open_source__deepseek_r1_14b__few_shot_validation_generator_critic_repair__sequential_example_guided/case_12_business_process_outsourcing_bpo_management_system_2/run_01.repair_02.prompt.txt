@@ -17,10 +17,7 @@ Functional Requirements
 
 Candidate PlantUML to repair:
 @startuml
-title Business Process Outsourcing Management System State Chart Diagram
-
-state "User Search Criteria" as UserSearchCriteria
-[*] --> UserSearchCriteria
+[*] --> FirstState
 @enduml
 
 
@@ -58,7 +55,14 @@ LoggedIn --> WeatherInsights : Select Weather Insights / Provide Location
 LoggedIn --> LabourAvailability : Select Labour Availability / Provide Location
 
 MarketConditions --> LoggedIn : View Report / Return to Main Menu
-... [clipped]
+PestControlHelp --> LoggedIn : Provide Photo / Display Techniques
+SoilSuggestions --> LoggedIn : Receive Soil Information / Display Suggestions
+WeatherInsights --> LoggedIn : Receive Location / Display Insights
+LabourAvailability --> LoggedIn : Receive Location / Display Availability
+
+LoggedIn --> LoggedOut : User Logout / End Session
+
+@enduml
 
 Repaired PlantUML:
 @startuml
@@ -89,7 +93,9 @@ WeatherInsights --> LoggedIn : Receive Location / Display Insights
 LabourAvailability --> LoggedIn : Receive Location / Display Availability
 
 LoggedIn --> LoggedOut : User Logout / End Session
-... [clipped]
+LoggedOut --> [*]
+
+@enduml
 
 ---
 
@@ -128,7 +134,25 @@ state Dashboard {
 
 state Payment {
   Payment --> InsurancePayment : [insurance payment]
-... [clipped]
+  InsurancePayment --> DoctorConsultation : [doctor consultation]
+  DoctorConsultation --> PaymentComplete : [payment completed]
+  PaymentComplete --> FinishSession : [finish session]
+}
+
+state InsurancePayment {
+  InsurancePayment --> CashPayment : [choose cash payment]
+  CashPayment --> FinishSession : [display cash payment details, finish session]
+}
+
+state FinishSession {
+  FinishSession --> Feedback : [provide feedback]
+  Feedback --> Logout : [logout]
+  Logout : [logout successfully]
+}
+
+[*] --> [*]
+
+@enduml
 
 Repaired PlantUML:
 @startuml
@@ -170,6 +194,16 @@ state InsurancePayment {
   InsurancePayment --> CashPayment : [choose cash payment]
   CashPayment --> FinishSession : [display cash payment details]
 }
-... [clipped]
+
+state FinishSession {
+  FinishSession --> Feedback : [provide feedback]
+  Feedback --> Logout : [logout]
+}
+
+state Logout {
+  Logout --> [*] : [logout successfully]
+}
+
+@enduml
 
 Now repair only the target issue. Return one corrected PlantUML diagram.

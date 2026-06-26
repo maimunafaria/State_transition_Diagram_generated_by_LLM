@@ -1,0 +1,177 @@
+{
+  "run_id": "open_source__gemma3_12b__rag_validation_generator_critic_repair__sequential_example_guided",
+  "case_id": "case_52_microwave_oven",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nMicrowave Oven — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall display the current time when it is waiting for user input.\n2. The system shall allow the user to choose between full power and half power levels.\n3. The system shall enable the user to set cooking time by entering a number.\n4. The system shall remain inactive if the door is open during operation.\n5. The system shall stop immediately when the door is opened during the cooking process.\n6. The system shall allow the user to cancel the cooking process.\n7. The system shall return to displaying the current time after stopping or cancelling and wait for the next use.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Aliases, Notes, and Descriptions\n\nUse this document when state names are long or when the diagram needs annotations.\n\n## Long state names with alias\n\nUse aliases to keep transitions readable when state names are long.\n\n```plantuml\nstate \"Waiting for Payment Confirmation\" as WaitingPayment\nstate \"Order Completed Successfully\" as OrderComplete\n\nWaitingPayment --> OrderComplete : payment confirmed\n```\n\nAlternative alias form:\n\n```plantuml\nstate WaitingPayment as \"Waiting for Payment Confirmation\"\n```\n\n## Notes attached to states\n\nUse notes to add additional explanation without changing the state name.\n\n```plantuml\nnote right of Processing : validates request details\n```\n\nMulti-line notes:\n\n```plantuml\nnote left of Processing\nThe system checks the request,\n\n# PlantUML State Diagram Core Syntax\n\nUse this document when generating a basic UML state transition diagram in PlantUML.\n\n## Diagram wrapper\n\nPlantUML code should be enclosed between `@startuml` and `@enduml`.\n\n```plantuml\n@startuml\n[*] --> Idle\nIdle --> [*]\n@enduml\n```\n\n## Initial and final state\n\nThe initial and final pseudostate is written as `[*]`.\n\nInitial transition:\n\n```plantuml\n[*] --> State1\n```\n\nFinal transition:\n\n```plantuml\nState1 --> [*]\n```\n\n## Transitions\n\nUse arrows between states.\n\n```plantuml\nState1 --> State2\nState1 -> State2\n```\n\nTransitions can include labels after a colon.\n\n```plantuml\nIdle --> LoggedIn : login successful\nLoggedIn --> LoggedOut : logout\n```\n\nLabels may include event, guard, and action information.\n\n```plantuml\n\n# Event Types for State Transitions\n\nUse this document to choose better transition labels from requirements.\n\n## Event role\n\nAn event is a noteworthy occurrence that may trigger a transition. In generated PlantUML, events usually appear as transition labels.\n\n```plantuml\nIdle --> Authenticating : login submitted\nAuthenticating --> LoggedIn : credentials valid\nAuthenticating --> LoginFailed : credentials invalid\n```\n\n## Call events\n\nA call event represents a request for an operation or service.\n\nRequirement phrases that often indicate call events:\n\n```text\nuser submits\nadmin approves\nsystem validates\ncustomer requests\ndoctor confirms\n```\n\nExample:\n\n```plantuml\nWaiting --> Processing : submit request\n```\n\n## Signal events\n\nA signal event represents an asynchronous notification or message.\n\n# Reactive Objects and Statechart Scope\n\nUse this document to decide whether a requirement is suitable for state-machine modeling and what lifecycle should be modeled.\n\n## Statechart purpose\n\nA statechart models the dynamic behavior of a reactive object. A reactive object can be a class, use case, subsystem, complete system, session, controller, or business process that responds to events.\n\nFor this project, the reactive object is usually the system or process described by the requirement.\n\n## Reactive object characteristics\n\nA good state-machine candidate usually has:\n\n```text\n1. External or internal events that affect behavior.\n2. A clear lifecycle.\n3. Behavior that depends on previous behavior or current condition.\n4. Meaningful states and transitions.\n```\n\nExamples:\n\n```text\n\nExample requirement:\nMicrowave Oven Operation — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check for proper functioning before starting.\n2. The system shall alert the user and stop operation if an issue is detected.\n3. The system shall start cooking and run for the set time if no issues are detected.\n4. The system shall emit a sound to notify the user upon completion of cooking.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Microwave Oven Operation\n\nstate Operation {\n\n  state Checking\n  Checking : do / Check Status\n\n  state Cook\n  Cook : do / Run Generator\n\n  state Alarm\n  Alarm : do / Display Event\n\n  state Done\n  Done : do / Buzzer On for 5 Secs.\n\n  [*] --> Checking\n\n  Checking --> Cook : OK\n  Checking --> Alarm : Turntable Fault\n  Checking --> Alarm : Emitter Fault\n\n  Cook --> Done : Timeout\n  Cook --> Cook : Time\n}\n\nstate Disabled\nstate Waiting\n\nOperation --> Disabled : Door Open\nOperation --> Waiting : Cancel\n\nAlarm --> Disabled\nDone --> Waiting\n\n@enduml\n```\n\nExample requirement:\nOven — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to open the door whenever it is closed.\n2. The system shall allow the user to place food inside or remove it from the microwave when the door is open.\n3. The system shall require the user to close the door after placing food inside.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Microwave Oven Control - State Diagram\n\n[*] --> DoorShut\n\nstate \"Door Shut\" as DoorShut\nstate \"Door Open\" as DoorOpen\nstate \"Door Open With Item\" as DoorOpenItem\nstate \"Door Shut With Item\" as DoorShutItem\nstate \"Ready To Cook\" as ReadyToCook\nstate Cooking\n\nDoorShut --> DoorOpen : Door Opened\nDoorOpen --> DoorShut : Door Closed\n\nDoorOpen --> DoorOpenItem : Item Placed\nDoorOpenItem --> DoorOpen : Item Removed\n\nDoorOpenItem --> DoorShutItem : Door Closed\nDoorShutItem --> DoorOpenItem : Door Opened\n\nDoorShutItem --> ReadyToCook : Cooking Time Entered\nReadyToCook --> ReadyToCook : Cooking Time Entered\n\nReadyToCook --> Cooking : Start\n\nCooking --> DoorOpenItem : Door Opened\nCooking --> DoorShutItem : Timer Expired\n\n@enduml\n```\n\nExample requirement:\nAtm Many Scenarios Scenario 6 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the entered PIN is correct.\n2. The system shall ask for the PIN again if it is incorrect.\n3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle ATM Control - Validate PIN and Withdraw Funds\n\n[*] --> Idle\n\nstate Idle\nstate WaitingForPIN\nstate ValidatingPIN\nstate WaitingForCustomerChoice\nstate ProcessingWithdrawal\nstate Dispensing\nstate Printing\nstate Ejecting\nstate Confiscating\nstate Terminating\nstate ClosedDown\n\nIdle : entry / Display Welcome\nClosedDown : entry / Display System Down\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nWaitingForPIN --> Confiscating : Card Confiscated / display Confiscated\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> Confiscating : Card Stolen, Card Expired /\\nConfiscate, Update Status\nValidatingPIN --> Confiscating : Third Invalid PIN /\\nConfiscate\n\nValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu\n\nWaitingForPIN --> Ejecting : Cancel / Eject\nWaitingForCustomerChoice --> Ejecting : Cancel / Eject\nValidatingPIN --> Ejecting : Cancel / Eject\n\nWaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected /\\nRequest Withdrawal, Display Wait\n\nProcessingWithdrawal --> Dispensing : Withdrawal Approved /\\nDispense Cash, Update Status\nProcessingWithdrawal --> Ejecting : Rejected / Eject\n\nDispensing --> Printing : Cash Dispensed /\\nPrint Receipt,\\nDisplay Cash Dispensed,\\nConfirm Cash Dispensed\nDispensing --> ClosedDown : Insufficient Cash / Eject\n\nPrinting --> Ejecting : Receipt Printed / Eject\n\nEjecting --> Terminating : Card Ejected / Display Ejected\nConfiscating --> Terminating : Card Confiscated / Display Confiscated\n\nTerminating --> Idle : After (Elapsed Time)\\n[Closedown Not Requested]\n\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Microwave Oven — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall display the current time when it is waiting for user input.\n2. The system shall allow the user to choose between full power and half power levels.\n3. The system shall enable the user to set cooking time by entering a number.\n4. The system shall remain inactive if the door is open during operation.\n5. The system shall stop immediately when the door is opened during the cooking process.\n6. The system shall allow the user to cancel the cooking process.\n7. The system shall return to displaying the current time after stopping or cancelling and wait for the next use.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__sequential_example_guided\\case_52_microwave_oven\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "Waiting",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 8,
+    "transition_count": 12
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__gemma3_12b__rag",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": true,
+      "repair_mode": "sequential_example_guided",
+      "repair_model_name": "gemma3:12b",
+      "previous_score": 1,
+      "repair_score": 0,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 8,
+        "repaired_state_count": 8,
+        "current_transition_count": 13,
+        "repaired_transition_count": 14,
+        "min_allowed_state_count": 6,
+        "min_allowed_transition_count": 9,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 1,
+      "strict_state_diagram_valid": true,
+      "remaining_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])"
+        ],
+        "initial_state": "Waiting",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 12
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__sequential_example_guided\\case_52_microwave_oven\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "repair_mode": "sequential_example_guided",
+      "repair_model_name": "gemma3:12b",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "Waiting",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 12
+      },
+      "strict_state_diagram_valid": true,
+      "accepted": true,
+      "previous_score": 1,
+      "repair_score": 0,
+      "preservation": {
+        "current_state_count": 8,
+        "repaired_state_count": 8,
+        "current_transition_count": 13,
+        "repaired_transition_count": 14,
+        "min_allowed_state_count": 6,
+        "min_allowed_transition_count": 9,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__sequential_example_guided\\case_52_microwave_oven\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag_validation_generator_critic_repair__sequential_example_guided\\case_52_microwave_oven\\run_01.repair_01.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.125,
+    "state_recall": 0.14285714285714285,
+    "state_f1": 0.13333333333333333,
+    "state_tp": 1,
+    "state_fp": 7,
+    "state_fn": 6,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 12,
+    "transition_fn": 15,
+    "state_precision_relaxed": 0.125,
+    "state_recall_relaxed": 0.14285714285714285,
+    "state_f1_relaxed": 0.13333333333333333,
+    "state_tp_relaxed": 1,
+    "state_fp_relaxed": 7,
+    "state_fn_relaxed": 6,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 12,
+    "transition_fn_relaxed": 14,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 12,
+    "transition_fn_semantic": 15,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 0.875,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.875,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.06666666666666667,
+    "overall_f1_relaxed": 0.06666666666666667,
+    "weighted_f1_relaxed_70_30": 0.09333333333333332,
+    "overall_f1_semantic": 0.06666666666666667,
+    "weighted_f1_semantic_70_30": 0.09333333333333332,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  },
+  "reused_base_run": {
+    "run_id": "open_source__gemma3_12b__rag",
+    "strategy": "rag",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag\\case_52_microwave_oven\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__gemma3_12b__rag\\case_52_microwave_oven\\run_01.prompt.txt"
+  }
+}

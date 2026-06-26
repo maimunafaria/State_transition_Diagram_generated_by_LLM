@@ -1,0 +1,414 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.
+
+Reference context (use as support; the target requirement above is primary):
+
+# PlantUML State Aliases, Notes, and Descriptions
+
+Use this document when state names are long or when the diagram needs annotations.
+
+## Long state names with alias
+
+Use aliases to keep transitions readable when state names are long.
+
+```plantuml
+state "Waiting for Payment Confirmation" as WaitingPayment
+state "Order Completed Successfully" as OrderComplete
+
+WaitingPayment --> OrderComplete : payment confirmed
+```
+
+Alternative alias form:
+
+```plantuml
+state WaitingPayment as "Waiting for Payment Confirmation"
+```
+
+## Notes attached to states
+
+Use notes to add additional explanation without changing the state name.
+
+```plantuml
+note right of Processing : validates request details
+```
+
+Multi-line notes:
+
+```plantuml
+note left of Processing
+The system checks the request,
+
+# PlantUML State Diagram Core Syntax
+
+Use this document when generating a basic UML state transition diagram in PlantUML.
+
+## Diagram wrapper
+
+PlantUML code should be enclosed between `@startuml` and `@enduml`.
+
+```plantuml
+@startuml
+[*] --> Idle
+Idle --> [*]
+@enduml
+```
+
+## Initial and final state
+
+The initial and final pseudostate is written as `[*]`.
+
+Initial transition:
+
+```plantuml
+[*] --> State1
+```
+
+Final transition:
+
+```plantuml
+State1 --> [*]
+```
+
+## Transitions
+
+Use arrows between states.
+
+```plantuml
+State1 --> State2
+State1 -> State2
+```
+
+Transitions can include labels after a colon.
+
+```plantuml
+Idle --> LoggedIn : login successful
+LoggedIn --> LoggedOut : logout
+```
+
+Labels may include event, guard, and action information.
+
+```plantuml
+
+# UML State Machine Core Concepts
+
+Use this document to decide what should become a state and what should become a transition.
+
+## Purpose
+
+A state machine diagram describes how a system, object, or controller behaves over time. It is useful when the object reacts differently depending on its current condition.
+
+## State
+
+A state is not just a variable value. In a state machine, a state means an abstract condition where the system reacts to events in a particular way.
+
+Good state names usually describe stable conditions:
+
+```text
+Idle
+Waiting for Payment
+Verifying User
+Order Confirmed
+Session Active
+```
+
+Avoid making every action a state. Actions such as "click button" or "enter password" are often better as transition labels unless the system remains in that condition.
+
+# State Syntax, Actions, and Activities
+
+Use this document when deciding whether something belongs inside a state or on a transition.
+
+## State meaning
+
+A state represents a condition during the lifecycle of the reactive object. In that condition, the object may wait for events, perform behavior, or react in a specific way.
+
+Good states:
+
+```text
+WaitingForInput
+Authenticating
+PaymentPending
+ProcessingOrder
+AlarmActive
+```
+
+## Actions
+
+An action is short, atomic behavior. In modeling, actions are often attached to transitions or to state entry/exit behavior.
+
+Transition action pattern:
+
+```plantuml
+Pending --> Approved : approve / notify user
+```
+
+## Activities
+
+Example requirement:
+Alert Notifier — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall initialize a component to detect updates upon initial loading.
+2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.
+3. The system shall process detected updates by storing them and evaluating their significance.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Alert Notifier Component States
+
+[*] --> InitializeComponent : Load Component
+
+state "Initialize\nComponent" as InitializeComponent
+state "Waiting for Update" as WaitingForUpdate
+state "Processing Update" as ProcessingUpdate
+state "Unloading Component" as UnloadingComponent
+
+WaitingForUpdate : do / checkForUpdate
+
+ProcessingUpdate : entry / storeUpdate
+ProcessingUpdate : do / evaluateUpdate
+ProcessingUpdate : exit / [update > delta] Operator.Notify(update)
+
+UnloadingComponent : exit / compMgr.compUnloaded()
+
+InitializeComponent --> WaitingForUpdate : [ init. success ]
+InitializeComponent --> UnloadingComponent : [ init. failure ]
+
+WaitingForUpdate --> ProcessingUpdate : stock update
+ProcessingUpdate --> WaitingForUpdate
+
+WaitingForUpdate --> UnloadingComponent : shutdown
+
+UnloadingComponent --> [*]
+
+@enduml
+```
+
+Example requirement:
+Equihealth — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to create an account.
+2. The system shall check if a user's registration is completed before allowing them to sign in.
+3. The system shall display different dashboards based on the user type after they sign in (patient, health worker, or government official).
+
+Reference PlantUML:
+```plantuml
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [check user]
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state "Register" as Register
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/ successful registration
+Register : exit/ invalid registration
+
+state "Login" as Login {
+
+  state "Patient dashboard" as PatientDashboard
+  PatientDashboard : entry/if the user is logged in as patient
+  PatientDashboard : do/dashboard is displayed
+  PatientDashboard : exit/when user logout
+
+  state "Health worker Dashboard" as HealthWorkerDashboard
+  HealthWorkerDashboard : entry/if the user is logged in as health worker
+  HealthWorkerDashboard : do/display the health worker dashboard
+  HealthWorkerDashboard : exit/if health worker logout
+
+  state "Government dashboard" as GovernmentDashboard
+  GovernmentDashboard : entry/if the user is government official
+  GovernmentDashboard : do/display government dashboard
+  GovernmentDashboard : exit/after his activity is finished
+
+  state "Data Entry" as DataEntry
+  DataEntry : entry/if the data entry is logged in as patient
+  DataEntry : do/data entry is processed
+  DataEntry : exit/after data entry is completed
+  DataEntry : exit/send the data for validation
+
+  state "Validation of medical data" as ValidationMedicalData
+  ValidationMedicalData : entry/if the data entry by the patient is completed
+  ValidationMedicalData : do/validate the data by healthworker
+  ValidationMedicalData : exit/after validation of medical data is completed
+
+  state "Health Financing" as HealthPlanning
+  HealthPlanning : entry/analysis of data should be done
+  HealthPlanning : do/the basis of analysed data the best health schemes are drafted
+  HealthPlanning : exit/ the health schemes are sent to the government dashboard
+
+  state "Analysis" as Analysis
+  Analysis : entry/if the data entered is validated
+  Analysis : do/analysis of data
+  Analysis : exit/after analysis of data
+  Analysis : exit/send data to health monitoring
+  Analysis : exit/send data to activity scheduling module
+
+  state "Activity Scheduling" as ActivityScheduling
+  ActivityScheduling : entry/analysis of data should be done
+  ActivityScheduling : do/activity is scheduled for the healthworkers
+  ActivityScheduling : exit/the activity scheduling is complete
+  ActivityScheduling : exit/send data to alert module
+  ActivityScheduling : exit/send the schedule to health worker dashboard
+
+  state "Alerts" as Alerts
+  Alerts : entry/when data from analysis is received
+  Alerts : do/prepare alerts
+  Alerts : exit/after sending alerts patient dashboard and health worker dashboard
+
+  [*] --> LJ
+  state LJ <<choice>>
+
+  LJ --> PatientDashboard
+  LJ --> HealthWorkerDashboard
+  LJ --> GovernmentDashboard
+
+  PatientDashboard --> DataEntry
+  DataEntry --> ValidationMedicalData
+  DataEntry --> Analysis
+
+  Analysis --> ActivityScheduling
+  Analysis --> Alerts
+  Analysis --> HealthPlanning
+  Alerts --> PatientDashboard
+  Alerts --> HealthWorkerDashboard
+  ActivityScheduling --> HealthWorkerDashboard
+  HealthWorkerDashboard --> ValidationMedicalData
+  HealthPlanning --> GovernmentDashboard
+}
+
+state "Logout" as Logout
+Logout : entry/when the user completes his process
+Logout : do/logout user
+Logout : exit/successfully logged out
+
+J1 --> Register : [ new user ]
+Register --> J2
+J1 --> J2
+J2 --> J3
+J3 --> Login
+J3 --> J4
+Login --> J4
+J4 --> Logout
+J2 --> [*]
+Logout --> [*]
+
+@enduml
+```
+
+Example requirement:
+National Health Id — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if a person is an Indian citizen.
+2. The system shall verify the details of an Indian citizen.
+3. The system shall generate a unique health ID for registered Indian citizens.
+4. The system shall activate an account upon successful login.
+
+Reference PlantUML:
+```plantuml
+@startuml
+
+[*] --> Choice1
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+state Choice3 <<choice>>
+Choice1 --> Verification : Indian
+Choice1 --> [*] : not Indian
+
+Verification : entry / Citizenship status
+Verification : do / Verify details
+Verification : exit / Verified status
+
+Verification --> Registration : verified
+
+Registration : entry / Citizenship status
+Registration : do / Register with ID
+Registration : exit / Unique National Health ID
+
+Registration --> Login : registered
+
+Login : entry / National Health ID
+Login : do / Login with the ID
+Login : exit / Logged in to the account
+
+Login --> Choice2 
+Choice2 --> Activation : login success
+Choice2 --> [*] 
+Activation : entry / Logged in the account
+Activation : do / Activate the account
+Activation : exit / Activated account
+
+Activation --> AddFiles : add old files
+Activation --> Permission : proceed to permissions
+
+AddFiles : entry / Activated account
+AddFiles : do / Add the files
+AddFiles : exit / Added old files
+
+AddFiles --> Repository
+
+Permission : entry / Activated account
+Permission : do / Providing permissions
+Permission : exit / Access of authorities
+
+Permission --> Access : permission granted
+Permission --> Repository : saving permissions
+
+Access : entry / Checking for permission
+Access : do / Accessing the files
+Access : exit / Adding new files
+
+Access --> Choice3 
+Choice3 --> Repository : given permission
+Choice3 --> [*] 
+Access --> [*] : no permission
+
+Government : entry / Having repository
+Government : do / Accessing the details
+Government : exit / Analysis report
+
+Government --> Repository
+
+Repository : entry / Government repository
+Repository : do / Saving the details
+Repository : exit / Logged out
+
+Repository --> [*]
+
+@enduml
+```
+
+Now return only the final PlantUML.

@@ -1,0 +1,136 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.
+
+Candidate PlantUML to repair:
+@startuml
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_initial_state_transition ([*] --> state)
+
+Repair guidance for the target issue:
+- Add one clear initial transition from [*] to the first lifecycle state.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_initial_state_transition
+
+Invalid PlantUML:
+@startuml
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Healthcare Portal State Machine Diagram
+
+state PortalChoice <<choice>>
+state "New Registration" as NewRegistration
+state "Existing Login" as ExistingLogin
+state "User Home" as UserHome
+state "Service Access" as ServiceAccess
+state "Result Review" as ResultReview
+state Logout
+state "Access Ended" as AccessEnded
+
+[*] --> PortalChoice
+
+PortalChoice --> NewRegistration : [Register]
+PortalChoice --> ExistingLogin : [Login]
+
+NewRegistration --> AccessEnded : [Registration Failed]
+ExistingLogin --> UserHome : [Successful Login]
+
+UserHome --> ServiceAccess : [Access Services]
+UserHome --> Logout : [Logout]
+
+ServiceAccess --> ResultReview : [View Results]
+ServiceAccess --> UserHome : [Continue Session]
+
+ResultReview --> UserHome : [Return Home]
+ResultReview --> Logout : [End Session]
+
+Logout --> [*] : [Logged Out]
+
+AccessEnded --> [*] : [Access Denied]
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_initial_state_transition
+
+Invalid PlantUML:
+@startuml
+@enduml
+
+Repaired PlantUML:
+@startuml
+title E-Ticketing for Bus State Diagram
+
+state "Start" as Start
+state "Create Account" as CreateAccount
+state "Validate Registration" as ValidateRegistration
+state "Login" as Login
+state "Logged In" as LoggedIn
+state "Check Ticket Status" as CheckTicketStatus
+state "Book Ticket" as BookTicket
+state "Confirm Booking" as ConfirmBooking
+state "Make Payment" as MakePayment
+state "Manage Account" as ManageAccount
+state "Logout" as Logout
+state "Final" as Final
+
+[*] --> Start
+
+Start --> CreateAccount
+
+CreateAccount --> ValidateRegistration
+
+ValidateRegistration --> Login
+
+Login --> LoggedIn
+
+LoggedIn --> CheckTicketStatus
+LoggedIn --> BookTicket
+LoggedIn --> ManageAccount
+LoggedIn --> Logout
+
+CheckTicketStatus --> [*]
+
+BookTicket --> ConfirmBooking
+
+ConfirmBooking --> MakePayment
+
+MakePayment --> [*]
+
+ManageAccount --> [*]
+
+Logout --> Final
+
+Final --> [*]
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

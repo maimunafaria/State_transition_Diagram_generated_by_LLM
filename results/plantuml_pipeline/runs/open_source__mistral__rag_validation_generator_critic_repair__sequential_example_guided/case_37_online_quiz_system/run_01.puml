@@ -1,0 +1,71 @@
+@startuml
+title UML State Machine Diagram
+
+[*] --> StartJoin : [user action]
+StartJoin --> Registration
+StartJoin --> Authentication
+StartJoin --> SearchBooks
+StartJoin --> GetBooksState
+StartJoin --> BuyBooks
+
+state "Registration" as Registration {
+  Registration --> RegEnterDetails
+
+  state "Enter Details" as RegEnterDetails
+  state "Get Member_ID" as GetMemberID
+  state "Successful Registration" as SuccessfulRegistration
+  state "Re-enter Details" as ReEnterDetails
+
+  RegEnterDetails --> GetMemberID : [Valid]
+  RegEnterDetails --> ReEnterDetails : [Invalid]
+  ReEnterDetails --> RegEnterDetails
+  GetMemberID --> SuccessfulRegistration
+}
+
+state "Authentication" as Authentication {
+  Authentication --> AuthEnterMemberID
+
+  state "Enter Member_ID" as AuthEnterMemberID
+  state "Enter Password" as EnterPassword
+  state "successful Login" as SuccessfulLogin
+  state "Invalid Member_ID or Password" as InvalidCreds
+
+  AuthEnterMemberID --> EnterPassword
+  EnterPassword --> SuccessfulLogin : [Valid]
+  EnterPassword --> InvalidCreds : [Invalid]
+}
+
+state "Search Books" as SearchBooks {
+  SearchBooks --> EnterBookDetails
+
+  state "Enter Book Details" as EnterBookDetails
+  state "Display Suggestion" as DisplaySuggestion
+  state "choose Alternate option" as ChooseAlternate
+
+  EnterBookDetails --> DisplaySuggestion : [Found]
+  EnterBookDetails --> ChooseAlternate : [Not Found]
+}
+
+state "Get Books" as GetBooksState {
+  GetBooksState --> GetEnterBookID
+
+  state "Get Book ID" as GetEnterBookID
+  state "Get Book" as GetBook
+  state "Book Not Found" as BookNotFound
+
+  GetEnterBookID --> GetBook : [Valid Book ID]
+  GetEnterBookID --> BookNotFound : [Invalid Book ID]
+  GetBook --> [*]
+}
+
+state "Buy Books" as BuyBooks {
+  BuyBooks --> Pay
+
+  state "Pay" as Pay
+  state "Payment Successful" as PaymentSuccessful
+  state "Payment Failed" as PaymentFailed
+
+  Pay --> PaymentSuccessful : [Valid]
+  Pay --> PaymentFailed : [Invalid]
+}
+@enduml

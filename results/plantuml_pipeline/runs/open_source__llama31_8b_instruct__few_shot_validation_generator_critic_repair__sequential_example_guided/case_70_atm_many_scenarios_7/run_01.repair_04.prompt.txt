@@ -1,0 +1,374 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Atm Many Scenarios Scenario 7 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall greet the user when they arrive.
+2. The system shall check the PIN after the card is inserted.
+3. The system shall allow the user to try again if the entered PIN is incorrect.
+4. The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times.
+5. The system shall return the card if the user cancels the operation.
+6. The system shall display available options (withdrawing money, checking information, or making a transfer) for the user to choose from if the PIN is correct.
+7. The system shall process the selected request after the user makes a choice.
+
+Candidate PlantUML to repair:
+@startuml
+title UML State Machine Diagram
+
+state "Arrival" as Arrival
+state "PIN Verification" as PINVerification
+state "Invalid PIN" as InvalidPIN
+state "Card Held" as CardHeld
+state "Return Card" as ReturnCard
+state "Options Displayed" as OptionsDisplayed
+state "Request Processing" as RequestProcessing
+
+state "Greeting" as Greeting
+Greeting : entry / User arrives
+Greeting : do / Display greeting
+Greeting : exit / User proceeds
+
+state "Card Insertion" as CardInsertion
+CardInsertion : entry / User inserts card
+CardInsertion : do / Check card validity
+CardInsertion : exit / Proceed to PIN verification
+
+state "PIN Entry" as PINEntry
+PINEntry : entry / User enters PIN
+PINEntry : do / Verify PIN
+PINEntry : exit / Proceed to next state
+
+state "Cancel Operation" as CancelOperation
+CancelOperation : entry / User cancels operation
+CancelOperation : do / Return card
+CancelOperation : exit / Operation cancelled
+
+state "Too Many Incorrect PINs" as TooManyIncorrectPINs
+TooManyIncorrectPINs : entry / User enters incorrect PIN too many times
+TooManyIncorrectPINs : do / Hold card for security
+TooManyIncorrectPINs : exit / Card held
+
+state "Correct PIN" as CorrectPIN
+CorrectPIN : entry / User enters correct PIN
+CorrectPIN : do / Display options
+CorrectPIN : exit / Options displayed
+
+state "Withdraw Money" as WithdrawMoney
+WithdrawMoney : entry / User selects withdraw money
+WithdrawMoney : do / Process withdraw money request
+WithdrawMoney : exit / Request processed
+
+state "Check Information" as CheckInformation
+CheckInformation : entry / User selects check information
+CheckInformation : do / Process check information request
+CheckInformation : exit / Request processed
+
+state "Make Transfer" as MakeTransfer
+MakeTransfer : entry / User selects make transfer
+MakeTransfer : do / Process make transfer request
+MakeTransfer : exit / Request processed
+
+state "Invalid Request" as InvalidRequest
+InvalidRequest : entry / User selects invalid request
+InvalidRequest : do / Display error message
+InvalidRequest : exit / Request not processed
+
+Arrival --> Greeting
+Greeting --> CardInsertion
+
+CardInsertion --> PINVerification
+PINVerification --> PINEntry
+
+PINEntry --> PINVerification : Incorrect PIN
+PINVerification --> CorrectPIN : Correct PIN
+PINVerification --> InvalidPIN : Invalid PIN
+PINVerification --> CancelOperation : Cancel operation
+
+CorrectPIN --> OptionsDisplayed
+OptionsDisplayed --> WithdrawMoney
+OptionsDisplayed --> CheckInformation
+OptionsDisplayed --> MakeTransfer
+OptionsDisplayed --> InvalidRequest
+
+WithdrawMoney --> RequestProcessing
+CheckInformation --> RequestProcessing
+MakeTransfer --> RequestProcessing
+
+InvalidPIN --> InvalidPIN
+CancelOperation --> ReturnCard
+TooManyIncorrectPINs --> CardHeld
+
+CardHeld --> [*]
+ReturnCard --> [*]
+RequestProcessing --> [*]
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_initial_state_transition ([*] --> state)
+
+Repair guidance for the target issue:
+- Add one clear initial transition from [*] to the first lifecycle state.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_initial_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML State Chart Diagram
+
+state "Initial" as Initial
+Initial --> InsertCard : Start
+
+state "Insert Card" as InsertCard
+InsertCard : entry / Insert the card
+InsertCard : do / Verify card
+InsertCard : exit / Card verified
+
+state "Select Amount" as SelectAmount
+SelectAmount : entry / Select amount options
+SelectAmount : do / Display predefined amounts and custom option
+SelectAmount : exit / User selects an option
+
+state "Select Predefined Amount" as SelectPredefined
+SelectPredefined : entry / Predefined amount selected
+SelectPredefined : do / Verify amount
+SelectPredefined : exit / Amount selected
+
+state "Enter Custom Amount" as EnterCustomAmount
+EnterCustomAmount : entry / Custom amount selected
+EnterCustomAmount : do / Validate custom amount
+EnterCustomAmount : exit / Amount entered
+
+state "Check Balance" as CheckBalance
+CheckBalance : entry / Amount selected
+CheckBalance : do / Check available balance
+CheckBalance : exit / Balance sufficient or not
+
+state "Dispense Cash" as DispenseCash
+DispenseCash : entry / Sufficient balance
+DispenseCash : do / Dispense the cash
+DispenseCash : exit / Transaction complete
+
+state "Cancel Transaction" as CancelTransaction
+CancelTransaction : entry / Cancel option selected
+CancelTransaction : do / Stop transaction
+CancelTransaction : exit / Transaction aborted
+
+state "Return Card" as ReturnCard
+ReturnCard : entry / Transaction completed or aborted
+ReturnCard : do / Return the card
+ReturnCard : exit / Card returned
+
+InsertCard --> SelectAmount : proceed to select amount
+InsertCard --> CancelTransaction : cancel immediately
+
+SelectAmount --> SelectPredefined : select predefined amount
+SelectAmount --> EnterCustomAmount : enter custom amount
+SelectAmount --> CancelTransaction : cancel transaction
+
+SelectPredefined --> CheckBalance : check balance for predefined amount
+EnterCustomAmount --> CheckBalance : check balance for custom amount
+
+CheckBalance --> DispenseCash : balance sufficient
+CheckBalance --> CheckBalance : balance insufficient (loop)
+
+DispenseCash --> ReturnCard : transaction complete
+CancelTransaction --> ReturnCard : transaction aborted
+
+ReturnCard --> [*] : process complete
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML State Chart Diagram
+
+state "Insert Card" as InsertCard
+[*] --> InsertCard
+InsertCard : entry / Insert the card
+InsertCard : do / Verify card
+InsertCard : exit / Card verified
+
+state "Select Amount" as SelectAmount
+SelectAmount : entry / Select amount options
+SelectAmount : do / Display predefined amounts and custom option
+SelectAmount : exit / User selects an option
+
+state "Select Predefined Amount" as SelectPredefined
+SelectPredefined : entry / Predefined amount selected
+SelectPredefined : do / Verify amount
+SelectPredefined : exit / Amount selected
+
+state "Enter Custom Amount" as EnterCustomAmount
+EnterCustomAmount : entry / Custom amount selected
+EnterCustomAmount : do / Validate custom amount
+EnterCustomAmount : exit / Amount entered
+
+state "Check Balance" as CheckBalance
+CheckBalance : entry / Amount selected
+CheckBalance : do / Check available balance
+CheckBalance : exit / Balance sufficient or not
+
+state "Dispense Cash" as DispenseCash
+DispenseCash : entry / Sufficient balance
+DispenseCash : do / Dispense the cash
+DispenseCash : exit / Transaction complete
+
+state "Cancel Transaction" as CancelTransaction
+CancelTransaction : entry / Cancel option selected
+CancelTransaction : do / Stop transaction
+CancelTransaction : exit / Transaction aborted
+
+state "Return Card" as ReturnCard
+ReturnCard : entry / Transaction completed or aborted
+ReturnCard : do / Return the card
+ReturnCard : exit / Card returned
+
+InsertCard --> SelectAmount : proceed to select amount
+InsertCard --> CancelTransaction : cancel immediately
+
+SelectAmount --> SelectPredefined : select predefined amount
+SelectAmount --> EnterCustomAmount : enter custom amount
+SelectAmount --> CancelTransaction : cancel transaction
+
+SelectPredefined --> CheckBalance : check balance for predefined amount
+EnterCustomAmount --> CheckBalance : check balance for custom amount
+
+CheckBalance --> DispenseCash : balance sufficient
+CheckBalance --> CheckBalance : balance insufficient (loop)
+
+DispenseCash --> ReturnCard : transaction complete
+CancelTransaction --> ReturnCard : transaction aborted
+
+ReturnCard --> [*] : process complete
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_initial_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Login / Register
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state CheckWeather
+CheckWeather : entry/Check weather
+CheckWeather : do/Check weather for current or another location
+CheckWeather : exit/Idle
+
+CheckWeather --> WeatherInfo
+WeatherInfo : entry/Show weather info
+WeatherInfo : do/Update and show the selected weather information to the user
+WeatherInfo : exit/Additional details
+
+WeatherInfo --> AdditionalDetails
+AdditionalDetails : entry/View additional weather details
+AdditionalDetails : do/View alerts, a weekly analysis, a future prediction, or a graph
+AdditionalDetails : exit/Idle
+
+AdditionalDetails --> Logout
+Logout : entry/Log out
+Logout : do/End session when the user logs out
+Logout : exit/End
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+[*] --> Idle : start event
+Idle --> CheckWeather : Check weather event
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+Idle --> Register : Register event
+Register --> InvalidRegistration : Invalid registration event
+InvalidRegistration : exit/Abnormal termination
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+Idle --> Login : Login event
+Login --> InvalidLogin : Invalid login event
+InvalidLogin : exit/Abnormal termination
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state CheckWeather
+CheckWeather : entry/Check weather
+CheckWeather : do/Check weather for current or another location
+CheckWeather : exit/Idle
+CheckWeather --> WeatherInfo : Show weather info event
+
+state WeatherInfo
+WeatherInfo : entry/Show weather info
+WeatherInfo : do/Update and show the selected weather information to the user
+WeatherInfo : exit/Additional details
+WeatherInfo --> AdditionalDetails : Show additional details event
+
+state AdditionalDetails
+AdditionalDetails : entry/View additional weather details
+AdditionalDetails : do/View alerts, a weekly analysis, a future prediction, or a graph
+AdditionalDetails : exit/Idle
+AdditionalDetails --> Logout : Log out event
+
+state Logout
+Logout : entry/Log out
+Logout : do/End session when the user logs out
+Logout : exit/End
+Logout --> [*] : COMPLETION_EVENT
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

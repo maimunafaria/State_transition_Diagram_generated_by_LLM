@@ -1,0 +1,271 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+First Person Shooter Fps Games — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall keep the troll in a calm state with no actions if there is no detected threat.
+2. The system shall determine the troll's reaction based on the perceived strength of the detected opponent.
+3. The system shall make the troll aggressive and start an attack if the opponent appears weak enough to defeat.
+4. The system shall continue the troll's fight while it can see the opponent.
+5. The system shall calm the troll and return it to a normal state if it loses sight of the opponent.
+6. The system shall make the troll scared and panic if the opponent appears too strong.
+7. The system shall calm the troll and return it to a normal state if it gets away from or loses sight of a stronger opponent.
+8. The system shall remove the troll from the game if it takes a fatal hit and its health reaches zero.
+
+Example 1 PlantUML:
+@startuml
+title Troll State Diagram
+
+[*] --> Neutral
+
+state Neutral
+state Attack
+state Panic
+state Die
+
+Neutral --> Attack : see opponent [defeatable]
+Attack --> Neutral : lost opponent
+
+Neutral --> Panic : see opponent [undefeatable]
+Panic --> Neutral : lost opponent
+
+Attack --> Die : receive blow [health = 0] / pray
+Panic --> Die : receive blow [health = 0] / pray
+
+Die --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Atm Many Scenarios Scenario 8 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall keep the card if it is invalid, expired, or the PIN was entered incorrectly too many times.
+2. The system shall return the card with a message if the user cancels the operation or the request is rejected.
+3. The system shall print a receipt and dispense cash if needed before returning the card to the user after a successful transaction.
+4. The system shall consider the session finished once the card is ejected.
+5. The system shall move into a short ending phase before resetting itself after completing the transaction or cancellation process.
+6. The system shall return to its normal waiting condition or shut down depending on the situation.
+
+Example 2 PlantUML:
+@startuml
+title ATM Control - Terminating Transaction
+
+state "Closed Down" as ClosedDown
+ClosedDown : entry / Display System Down
+
+state Idle
+Idle : entry / Display Welcome
+
+state "Processing Customer Input" as ProcessingCustomerInput
+state "Processing Transaction" as ProcessingTransaction
+
+state "Terminating Transaction" as TerminatingTransaction {
+
+  state Terminating
+  state Confiscating
+  state Ejecting
+  state Printing
+  state Dispensing
+
+  Confiscating --> Terminating : Card Confiscated /\nDisplay Confiscated
+  Ejecting --> Terminating : Card Ejected /\nDisplay Ejected
+  Printing --> Ejecting : Receipt Printed /\nEject
+  Dispensing --> Printing : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+}
+
+ProcessingCustomerInput --> Confiscating : Stolen Card, Expired Card /\nConfiscate, Update Status
+ProcessingCustomerInput --> Confiscating : Third Invalid PIN /\nConfiscate
+ProcessingCustomerInput --> Ejecting : Cancel / Eject,\nDisplay Cancel
+
+ProcessingTransaction --> Ejecting : Rejected / Eject,\nDisplay Apology
+ProcessingTransaction --> Printing : Transfer Approved /\nPrint Receipt,\nUpdate Status
+ProcessingTransaction --> Printing : Query Approved /\nPrint Receipt,\nUpdate Status
+ProcessingTransaction --> Dispensing : Withdrawal Approved /\nDispense Cash,\nUpdate Status
+
+Dispensing --> ClosedDown : Insufficient Cash /\nEject,\nAbort Cash Dispensed
+
+Terminating --> Idle : After (Elapsed Time) [Closedown Not Requested]
+Terminating --> ClosedDown : After (Elapsed Time) [Closedown Was Requested]
+
+@enduml
+
+Example 3 Requirement:
+E Med Medical Assistance Tool — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to fill in their personal medical history if it is missing, and then check and save the information.
+2. The system shall provide users with the ability to view their medical history, receive reminders for medication, receive reminders for medicine restocking, schedule appointments, use an emergency button, write and view medical notes.
+3. The system shall allow users to update their medical history if they choose to do so after viewing it.
+4. The system shall allow users to update their medical notes if they choose to do so after viewing them.
+5. The system shall call emergency contacts if they use the emergency button.
+
+Example 3 PlantUML:
+@startuml
+title UML State Chart Diagram - Medical System
+
+[*] --> CheckHistory
+
+state CheckHistory <<choice>>
+CheckHistory --> FillHistory : [No]
+CheckHistory --> Hub : [Yes]
+
+state "Fill personal medical history" as FillHistory
+FillHistory : entry / start state
+FillHistory : do / fill details in personal medical history
+FillHistory : exit / verify medical history
+
+state "Validate and store" as ValidateStore
+ValidateStore : entry / verify medical history
+ValidateStore : do / validate and store
+ValidateStore : exit / medical history stored
+
+FillHistory --> ValidateStore
+ValidateStore --> Hub
+
+state Hub <<choice>>
+
+state "View Medical History" as ViewHistory
+ViewHistory : entry / entered the app
+ViewHistory : do / view medical history stored
+ViewHistory : exit / viewed medical history
+
+state "Reminder to have medicines on time" as ReminderTime
+ReminderTime : entry / entered the app
+ReminderTime : do / user is reminded to have medicines
+ReminderTime : exit / notification acknowledged
+
+state "Reminder to buy medicines when not in stock" as ReminderBuy
+ReminderBuy : entry / entered the app
+ReminderBuy : do / user is reminded to buy medicines
+ReminderBuy : exit / notification acknowledged
+
+state "Schedule Appointments Regularly" as Schedule
+Schedule : entry / entered the app
+Schedule : do / schedule the appointment regularly
+Schedule : exit / scheduled appointment
+
+state "Press Emergency Button" as Emergency
+Emergency : entry / entered the app
+Emergency : do / press emergency button
+Emergency : exit / pressed emergency button
+
+state "Write medical notes for reference" as WriteNotes
+WriteNotes : entry / entered the app
+WriteNotes : do / write medical notes
+WriteNotes : exit / store in database
+
+state "View medical notes" as ViewNotes
+ViewNotes : entry / entered the app
+ViewNotes : do / view medical notes stored
+ViewNotes : exit / viewed medical notes
+
+state "Send message to receptionist" as MessageReception
+MessageReception : entry / scheduled appointment
+MessageReception : do / send message to receptionist based on schedule
+MessageReception : exit / message sent
+
+state "Call Emergency Contacts" as CallEmergency
+CallEmergency : entry / pressed emergency button
+CallEmergency : do / call the emergency contacts
+CallEmergency : exit / called emergency contacts
+
+state "Update Medical History" as UpdateHistory
+UpdateHistory : entry / want to update medical history
+UpdateHistory : do / update medical history
+UpdateHistory : exit / updated details are stored in the database
+
+state "Update Medical Notes" as UpdateNotes
+UpdateNotes : entry / want to update medical notes
+UpdateNotes : do / update medical notes
+UpdateNotes : exit / updated details are stored in the database
+
+state UpdateChoice <<choice>>
+state UpdateChoice1 <<choice>>
+Hub --> ViewHistory
+Hub --> ReminderTime
+Hub --> ReminderBuy
+Hub --> Schedule
+Hub --> Emergency
+Hub --> WriteNotes
+Hub --> ViewNotes
+
+Schedule --> MessageReception
+Emergency --> CallEmergency
+
+ViewHistory --> UpdateChoice : [Update ?]
+ViewNotes --> UpdateChoice1 : [Update ?]
+
+UpdateChoice --> UpdateHistory : [Yes]
+UpdateChoice1 --> UpdateNotes : [Yes]
+UpdateChoice --> [*] : [No]
+UpdateChoice1 --> [*] : [No]
+ReminderTime --> [*]
+ReminderBuy --> [*]
+WriteNotes --> [*]
+MessageReception --> [*]
+CallEmergency --> [*]
+UpdateHistory --> [*]
+UpdateNotes --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.

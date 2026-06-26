@@ -1,0 +1,74 @@
+@startuml
+title Digidoclocker System States
+
+[*] --> Registration
+
+state "Registration" as Registration
+state "Login" as Login
+state "Document Upload" as DocumentUpload
+state "Profile View" as ProfileView
+state "Certificate Application" as CertificateApplication
+state "Reapply for Certificate" as ReapplyCertificate
+state "Request Certificate" as RequestCertificate
+state "End Session" as EndSession
+
+Registration : entry / citizen registration
+Registration : do / validate citizen details
+Registration : exit / citizen registered
+
+Registration --> Login : [registration successful]
+
+Login : entry / citizen login
+Login : do / validate login details
+Login : exit / login successful
+
+Login --> DocumentUpload : Valid login
+Login --> RequestCertificate : Invalid login
+
+state "Document Upload" as DocumentUpload
+DocumentUpload : entry / upload documents
+DocumentUpload : do / verify documents
+DocumentUpload : exit / Profile View/End Session
+
+DocumentUpload --> ProfileView : Documents uploaded
+DocumentUpload --> EndSession : Cancel session
+
+state "Profile View" as ProfileView
+ProfileView : entry / view profile
+ProfileView : do / view details
+ProfileView : exit / Certificate Application/End Session
+
+ProfileView --> CertificateApplication : Proceed with application
+ProfileView --> EndSession : Return to login
+
+state "Certificate Application" as CertificateApplication
+CertificateApplication : entry / apply for certificate
+CertificateApplication : do / submit application
+CertificateApplication : exit / Reapply for Certificate/End Session
+
+CertificateApplication --> ReapplyForCertificate : Application submitted
+CertificateApplication --> EndSession : Cancel session
+
+state "Reapply for Certificate" as ReapplyCertificate
+ReapplyCertificate : entry / reapply for certificate
+ReapplyCertificate : do / resubmit application
+ReapplyCertificate : exit / Certificate Application/End Session
+
+ReapplyCertificate --> CertificateApplication : Resubmit application
+ReapplyCertificate --> EndSession : Cancel session
+
+state "Request Certificate" as RequestCertificate
+RequestCertificate : entry / request certificate
+RequestCertificate : do / initiate process
+RequestCertificate : exit / Login/Document Upload
+
+RequestCertificate --> Login : Invalid login
+RequestCertificate --> DocumentUpload : Valid login
+
+state "End Session" as EndSession
+EndSession : entry / end session
+EndSession : do / terminate session
+EndSession : exit / [*]
+
+EndSession --> [*] : Session ended
+@enduml

@@ -1,0 +1,356 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.
+
+Candidate PlantUML to repair:
+@startuml
+title UML State Chart Diagram
+
+[*] --> CreateUser
+
+state CreateUser
+CreateUser : entry / start registration
+CreateUser : do / validate registration
+CreateUser : exit / registration complete or failed
+
+state CreateUserDecision <<choice>>
+CreateUser --> CreateUserDecision
+
+state "Successful Registration" as SuccessReg
+SuccessReg : entry / registration completed
+SuccessReg : do / proceed to login
+SuccessReg : exit / move to login
+
+state "Failed Registration" as FailReg
+FailReg : entry / registration failed
+FailReg : do / end process
+FailReg : exit / return
+
+CreateUserDecision --> SuccessReg
+CreateUserDecision --> FailReg
+
+state Login
+Login : entry / start login
+Login : do / validate credentials
+Login : exit / login successful or failed
+
+state LoginDecision <<choice>>
+SuccessReg --> Login
+Login --> LoginDecision
+
+state "Successful Login" as SuccessLogin
+SuccessLogin : entry / login completed
+SuccessLogin : do / proceed to weather check
+SuccessLogin : exit / move to weather check
+
+state "Failed Login" as FailLogin
+FailLogin : entry / login failed
+FailLogin : do / end process
+FailLogin : exit / return
+
+LoginDecision --> SuccessLogin
+LoginDecision --> FailLogin
+
+state WeatherCheck
+WeatherCheck : entry / check location
+WeatherCheck : do / validate location
+WeatherCheck : exit / location valid or invalid
+
+state LocationInvalid
+LocationInvalid : entry / invalid location entered
+LocationInvalid : do / end process
+LocationInvalid : exit / return
+
+WeatherCheck --> LocationInvalid
+
+state WeatherSelection <<choice>>
+WeatherCheck --> WeatherSelection
+
+state WeatherInfo
+WeatherInfo : entry / display selected info
+WeatherInfo : do / update and show info
+WeatherInfo : exit / proceed to additional details
+
+state AdditionalDetails
+AdditionalDetails : entry / view additional details
+AdditionalDetails : do / choose action
+AdditionalDetails : exit / proceed accordingly
+
+state Logout
+Logout : entry / start logout
+Logout : do / end session
+Logout : exit / return
+
+WeatherSelection --> WeatherInfo
+WeatherInfo --> AdditionalDetails
+
+AdditionalDetails --> WeatherInfo
+AdditionalDetails --> Logout
+
+Logout --> [*]
+
+SuccessLogin --> WeatherCheck
+WeatherInfo --> AdditionalDetails
+AdditionalDetails --> [*]
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- duplicate_transitions_detected (1)
+
+Repair guidance for the target issue:
+- Remove duplicate transitions or merge their labels into one transition.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- duplicate_transitions_detected
+
+Invalid PlantUML:
+@startuml
+title E Visa Processing and Follow-Up System State Diagram
+
+[*] --> Initial
+
+state Initial
+state NotLoggedIn
+state LoggedIn
+state ApplicationSubmitted
+state ApplicationProcessing
+state ApplicationApproved
+state ApplicationRejected
+state LoggedOut
+
+Initial --> NotLoggedIn : System starts
+
+NotLoggedIn --> Initial : System reset
+NotLoggedIn --> LoggedIn : User successfully logs in
+
+LoggedIn --> ApplicationSubmitted : User submits application after login and payment
+LoggedIn --> ApplicationSubmitted : User modifies details
+LoggedIn --> ApplicationSubmitted : User views details
+LoggedIn --> ApplicationSubmitted : User gives feedback
+LoggedIn --> ApplicationSubmitted : User views purpose of application
+LoggedIn --> ApplicationSubmitted : User views application status
+LoggedIn --> ApplicationSubmitted : User checks status
+LoggedIn --> ApplicationSubmitted : User cancels application
+
+ApplicationSubmitted --> ApplicationProcessing : Application is processed
+
+ApplicationProcessing --> ApplicationApproved : Application approved
+ApplicationProcessing --> ApplicationRejected : Application rejected
+
+ApplicationApproved --> [*] : Log out or complete action
+ApplicationRejected --> [*] : Log out or complete action
+
+LoggedIn --> LoggedOut : User logs out after modifying details, viewing details, giving feedback, or completing status update
+
+LoggedIn --> ApplicationSubmitted : User views application status
+LoggedIn --> ApplicationSubmitted : User checks status
+
+LoggedIn --> ApplicationSubmitted : User cancels application
+
+LoggedIn --> ApplicationSubmitted : User views details
+LoggedIn --> ApplicationSubmitted : User modifies details
+LoggedIn --> ApplicationSubmitted : User gives feedback
+LoggedIn --> ApplicationSubmitted : User views purpose of application
+
+LoggedIn --> ApplicationSubmitted : User views application status
+LoggedIn --> ApplicationSubmitted : User checks status
+
+LoggedIn --> ApplicationSubmitted : User cancels application
+
+LoggedIn --> ApplicationSubmitted : User views details
+LoggedIn --> ApplicationSubmitted : User modifies details
+LoggedIn --> ApplicationSubmitted : User gives feedback
+LoggedIn --> ApplicationSubmitted : User views purpose of application
+
+LoggedIn --> ApplicationSubmitted : User views application status
+LoggedIn --> ApplicationSubmitted : User checks status
+
+LoggedIn --> ApplicationSubmitted : User cancels application
+
+LoggedIn --> ApplicationSubmitted : User views details
+LoggedIn --> ApplicationSubmitted : User modifies details
+LoggedIn --> ApplicationSubmitted : User gives feedback
+LoggedIn --> ApplicationSubmitted : User views purpose of application
+
+LoggedIn --> ApplicationSubmitted : User views application status
+LoggedIn --> ApplicationSubmitted : User checks status
+
+LoggedIn -->
+@enduml
+
+Repaired PlantUML:
+@startuml
+title E Visa Processing and Follow-Up System State Diagram
+
+[*] --> Initial
+
+state Initial
+state NotLoggedIn
+state LoggedIn
+state ApplicationSubmitted
+state ApplicationProcessing
+state ApplicationApproved
+state ApplicationRejected
+state LoggedOut
+
+Initial --> NotLoggedIn : System starts
+
+NotLoggedIn --> Initial : System reset
+NotLoggedIn --> LoggedIn : User successfully logs in
+
+LoggedIn --> ApplicationSubmitted :
+    - Submit application after login and payment
+    - Modify details
+    - View details
+    - Give feedback
+    - View purpose of application
+    - View application status
+    - Check status
+    - Cancel application
+
+ApplicationSubmitted --> ApplicationProcessing : Application is processed
+
+ApplicationProcessing --> ApplicationApproved : Application approved
+ApplicationProcessing --> ApplicationRejected : Application rejected
+
+ApplicationApproved --> [*] : Log out or complete action
+ApplicationRejected --> [*] : Log out or complete action
+
+LoggedIn --> LoggedOut : User logs out after modifying details, viewing details, giving feedback, or completing status update
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- duplicate_transitions_detected
+
+Invalid PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> Idle
+Idle --> Adding : addNewGoods
+Adding --> Idle : saveGoods
+
+Idle --> Updating : updatePrice
+Updating --> Idle : savePrice
+
+Idle --> Removing : removeGoods
+Removing --> Idle : removeGoods
+
+Idle --> Ordering : placeOrder
+Ordering --> Invoicing : generateInvoice
+Invoicing --> Idle : saveInvoice
+
+Idle --> Searching : searchItems
+Searching --> Idle : selectItems
+
+Idle --> Expired : identifyExpiredGoods
+Expired --> Idle : notifyUser
+
+Idle --> Billing : generateReceipt
+Billing --> Cancelled : cancelReceipt
+Billing --> Replaced : replaceItem
+Billing --> Summary : saveTransaction
+
+Idle --> Summary : viewSummary
+
+Adding --> Updating : updatePrice
+Updating --> Removing : removeGoods
+Removing --> Expired : identifyExpiredGoods
+Expired --> Ordering : placeOrder
+Ordering --> Invoicing : generateInvoice
+Invoicing --> Billing : generateReceipt
+Billing --> Cancelled : cancelReceipt
+Billing --> Replaced : replaceItem
+Billing --> Summary : saveTransaction
+
+Summary --> Idle : viewSummary
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> Idle : INITIAL_TRANSITION
+
+state Idle
+state Adding
+state Updating
+state Removing
+state Expired
+state Ordering
+state Invoicing
+state Searching
+state Billing
+state Cancelled
+state Replaced
+state Summary
+
+Idle --> Adding : addNewGoods
+Adding --> Idle : saveGoods
+
+Idle --> Updating : updatePrice
+Updating --> Idle : savePrice
+
+Idle --> Removing : removeGoods
+Removing --> Idle : removeGoods
+
+Idle --> Ordering : placeOrder
+Ordering --> Invoicing : generateInvoice
+Invoicing --> Idle : saveInvoice
+
+Idle --> Searching : searchItems
+Searching --> Idle : selectItems
+
+Idle --> Expired : identifyExpiredGoods
+Expired --> Idle : notifyUser
+
+Idle --> Billing : generateReceipt
+Billing --> Cancelled : cancelReceipt
+Billing --> Replaced : replaceItem
+Billing --> Summary : saveTransaction
+
+Idle --> Summary : viewSummary
+
+Updating --> Removing : removePrice
+Removing --> Expired : expireGoods
+Expired --> Ordering : placeOrderForReplacement
+Ordering --> Invoicing : generateInvoiceForReplacement
+Invoicing --> Idle : saveInvoiceForReplacement
+
+Searching --> Billing : selectItemsForPurchase
+Billing --> Cancelled : cancelReceiptDuringBilling
+Cancelled --> Summary : viewSummaryAfterCancellation
+Replaced --> Summary : viewSummaryAfterReplacement
+
+Idle --> [*] : COMPLETION_EVENT
+
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

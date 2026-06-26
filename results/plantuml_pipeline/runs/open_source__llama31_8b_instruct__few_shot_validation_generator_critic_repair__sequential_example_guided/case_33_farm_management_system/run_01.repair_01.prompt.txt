@@ -1,0 +1,298 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Farm Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to log in.
+2. The system shall display the main area after a user signs in, allowing them to choose what to check.
+3. The system shall show market conditions when the user selects this option.
+4. The system shall show the market report if the customer selects market condition.
+4. The system shall require users to provide a photo when they choose pest control help.
+4. The system shall show the pest control techniques if the customer selects pest control help.
+5. The system shall provide soil-related suggestions ( which crops are suitable ) after receiving soil information from the user.
+6. The system shall offer weather insights based on the provided location.
+7. The system shall display labour availability details after receiving a location from the user.
+8. The system shall allow users to continue using the service after viewing any of these results.
+9. The system shall end the session when a user logs out.
+
+Candidate PlantUML to repair:
+@startuml
+title Farm Management System
+
+state "Logged Out" as LoggedOut
+state "Logged In" as LoggedIn
+state "Main Area" as MainArea
+state "Market Conditions" as MarketConditions
+state "Market Report" as MarketReport
+state "Pest Control Help" as PestControlHelp
+state "Pest Control Techniques" as PestControlTechniques
+state "Soil Suggestions" as SoilSuggestions
+state "Weather Insights" as WeatherInsights
+state "Labour Availability" as LabourAvailability
+state "Session Ended" as SessionEnded
+
+[*] --> LoggedOut
+
+LoggedIn --> MainArea : User Signs In
+MainArea --> MarketConditions : User Selects Market Conditions
+MarketConditions --> MarketReport : User Selects Market Report
+MarketReport --> LoggedIn : User Returns to Main Area
+
+MainArea --> PestControlHelp : User Selects Pest Control Help
+PestControlHelp --> PestControlTechniques : User Provides Photo
+PestControlTechniques --> LoggedIn : User Returns to Main Area
+
+MainArea --> SoilSuggestions : User Provides Soil Information
+SoilSuggestions --> LoggedIn : User Returns to Main Area
+
+MainArea --> WeatherInsights : User Provides Location
+WeatherInsights --> LoggedIn : User Returns to Main Area
+
+MainArea --> LabourAvailability : User Provides Location
+LabourAvailability --> LoggedIn : User Returns to Main Area
+
+LoggedIn --> SessionEnded : User Logs Out
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for the target issue:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Login : [registration successful]
+  Login : [registration failed]
+}
+
+state Login {
+  Login --> Dashboard : [login successful]
+  Dashboard : [logout]
+}
+
+state Dashboard {
+  Dashboard --> News : [read news]
+  News --> Dashboard : [back to dashboard]
+  Dashboard --> Facilities : [access facilities]
+  Facilities --> Dashboard : [back to dashboard]
+  Dashboard --> SymptomCheck : [check symptoms]
+  SymptomCheck --> Dashboard : [back to dashboard]
+  Dashboard --> FitnessCheck : [use fitness checking options]
+  FitnessCheck --> Dashboard : [back to dashboard]
+  Dashboard --> Payment : [select payment method]
+  Payment --> FinishSession : [finish session]
+}
+
+state Payment {
+  Payment --> InsurancePayment : [insurance payment]
+  InsurancePayment --> DoctorConsultation : [doctor consultation]
+  DoctorConsultation --> PaymentComplete : [payment completed]
+  PaymentComplete --> FinishSession : [finish session]
+}
+
+state InsurancePayment {
+  InsurancePayment --> CashPayment : [choose cash payment]
+  CashPayment --> FinishSession : [display cash payment details, finish session]
+}
+
+state FinishSession {
+  FinishSession --> Feedback : [provide feedback]
+  Feedback --> Logout : [logout]
+  Logout : [logout successfully]
+}
+
+[*] --> [*]
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Login : [registration successful]
+  Login : [registration failed]
+}
+
+state Login {
+  Login --> Dashboard : [login successful]
+  Dashboard : [logout]
+}
+
+state Dashboard {
+  Dashboard --> News : [read news]
+  News --> Dashboard : [back to dashboard]
+  Dashboard --> Facilities : [access facilities]
+  Facilities --> Dashboard : [back to dashboard]
+  Dashboard --> SymptomCheck : [check symptoms]
+  SymptomCheck --> Dashboard : [back to dashboard]
+  Dashboard --> FitnessCheck : [use fitness checking options]
+  FitnessCheck --> Dashboard : [back to dashboard]
+  Dashboard --> Payment : [select payment method]
+  Payment --> FinishSession : [finish session]
+}
+
+state Payment {
+  Payment --> InsurancePayment : [insurance payment]
+  InsurancePayment --> DoctorConsultation : [doctor consultation]
+  DoctorConsultation --> PaymentComplete : [payment completed]
+  PaymentComplete --> FinishSession : [finish session]
+}
+
+state InsurancePayment {
+  InsurancePayment --> CashPayment : [choose cash payment]
+  CashPayment --> FinishSession : [display cash payment details]
+}
+
+state FinishSession {
+  FinishSession --> Feedback : [provide feedback]
+  Feedback --> Logout : [logout]
+}
+
+state Logout {
+  Logout --> [*] : [logout successfully]
+}
+
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Login / Register
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state CheckWeather
+CheckWeather : entry/Check weather
+CheckWeather : do/Check weather for current or another location
+CheckWeather : exit/Idle
+
+CheckWeather --> WeatherInfo
+WeatherInfo : entry/Show weather info
+WeatherInfo : do/Update and show the selected weather information to the user
+WeatherInfo : exit/Additional details
+
+WeatherInfo --> AdditionalDetails
+AdditionalDetails : entry/View additional weather details
+AdditionalDetails : do/View alerts, a weekly analysis, a future prediction, or a graph
+AdditionalDetails : exit/Idle
+
+AdditionalDetails --> Logout
+Logout : entry/Log out
+Logout : do/End session when the user logs out
+Logout : exit/End
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+[*] --> Idle : start event
+Idle --> CheckWeather : Check weather event
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+Idle --> Register : Register event
+Register --> InvalidRegistration : Invalid registration event
+InvalidRegistration : exit/Abnormal termination
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+Idle --> Login : Login event
+Login --> InvalidLogin : Invalid login event
+InvalidLogin : exit/Abnormal termination
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state CheckWeather
+CheckWeather : entry/Check weather
+CheckWeather : do/Check weather for current or another location
+CheckWeather : exit/Idle
+CheckWeather --> WeatherInfo : Show weather info event
+
+state WeatherInfo
+WeatherInfo : entry/Show weather info
+WeatherInfo : do/Update and show the selected weather information to the user
+WeatherInfo : exit/Additional details
+WeatherInfo --> AdditionalDetails : Show additional details event
+
+state AdditionalDetails
+AdditionalDetails : entry/View additional weather details
+AdditionalDetails : do/View alerts, a weekly analysis, a future prediction, or a graph
+AdditionalDetails : exit/Idle
+AdditionalDetails --> Logout : Log out event
+
+state Logout
+Logout : entry/Log out
+Logout : do/End session when the user logs out
+Logout : exit/End
+Logout --> [*] : COMPLETION_EVENT
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

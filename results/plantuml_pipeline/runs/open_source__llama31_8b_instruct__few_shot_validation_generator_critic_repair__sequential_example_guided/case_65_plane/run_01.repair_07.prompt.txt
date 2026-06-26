@@ -1,0 +1,410 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Plane — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall place a newly acquired plane in an 'Order' state until it is delivered.
+2. The system shall transition a plane from 'Arrival' to 'Preparation' upon its arrival.
+3. The system shall assign a prepared plane to either 'Operations' or 'Maintenance' based on its condition and schedule.
+4. The system shall keep a plane in the 'Operations' state if it still has scheduled flights.
+5. The system shall send a plane to 'Maintenance' when there are no more scheduled flights or maintenance is required.
+6. The system shall transition a plane from 'Maintenance' to 'Preparation' after checking and servicing it until it is ready for operations.
+7. The system shall take a plane out of service if it is no longer available for use.
+8. The system shall remove a plane from its operations when it is permanently withdrawn from service.
+
+Candidate PlantUML to repair:
+@startuml
+title UML State Machine Diagram (Plane Management)
+
+[*] --> Order
+
+state Order
+Order : entry / Plane is placed in order
+Order : do / Wait for delivery
+Order : exit / Plane is delivered
+
+Order --> Arrival
+
+state Arrival
+Arrival : entry / Plane arrives
+Arrival : do / Transition to preparation
+Arrival : exit / Plane is prepared
+
+Arrival --> Preparation
+
+state Preparation
+Preparation : entry / Plane is prepared
+Preparation : do / Assign to operations or maintenance
+Preparation : exit / Plane is assigned
+
+Preparation --> Operations
+Preparation --> Maintenance
+
+state Operations
+Operations : entry / Plane is in operations
+Operations : do / Check for scheduled flights
+Operations : exit / Plane is still in operations
+
+Operations --> Operations : Scheduled flights available
+
+Operations --> Maintenance : No scheduled flights or maintenance required
+
+state Maintenance
+Maintenance : entry / Plane is in maintenance
+Maintenance : do / Check and service plane
+Maintenance : exit / Plane is ready for operations
+
+Maintenance --> Preparation : Plane is ready for operations
+
+state "Plane is no longer available" as NoLongerAvailable
+NoLongerAvailable : entry / Plane is no longer available
+NoLongerAvailable : do / Take plane out of service
+NoLongerAvailable : exit / Plane is removed from operations
+
+state End <<choice>>
+End --> [*]
+Idle --> End : Plane is no longer available
+[*] --> Idle
+
+Idle --> Order : No plane assigned
+Order --> Arrival : Plane acquired
+
+state "Plane is no longer available" as NoLongerAvailable
+NoLongerAvailable : entry / Plane is no longer available
+NoLongerAvailable : do / Take plane out of service
+NoLongerAvailable : exit / Plane is removed from operations
+
+Idle --> NoLongerAvailable : Plane is no longer available
+
+state End <<choice>>
+End --> [*]
+@enduml
+
+
+Target validation issue for THIS attempt:
+- multiple_initial_state_transitions (Order, Idle)
+
+Repair guidance for the target issue:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- multiple_initial_state_transitions
+
+Invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [check user]
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state "Register" as Register
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/ successful registration
+Register : exit/ invalid registration
+
+state "Login" as Login {
+
+  state "Patient dashboard" as PatientDashboard
+  PatientDashboard : entry/if the user is logged in as patient
+  PatientDashboard : do/dashboard is displayed
+  PatientDashboard : exit/when user logout
+
+  state "Health worker Dashboard" as HealthWorkerDashboard
+  HealthWorkerDashboard : entry/if the user is logged in as health worker
+  HealthWorkerDashboard : do/display the health worker dashboard
+  HealthWorkerDashboard : exit/if health worker logout
+
+  state "Government dashboard" as GovernmentDashboard
+  GovernmentDashboard : entry/if the user is government official
+  GovernmentDashboard : do/display government dashboard
+  GovernmentDashboard : exit/after his activity is finished
+
+  state "Data Entry" as DataEntry
+  DataEntry : entry/if the data entry is logged in as patient
+  DataEntry : do/data entry is processed
+  DataEntry : exit/after data entry is completed
+  DataEntry : exit/send the data for validation
+
+  state "Validation of medical data" as ValidationMedicalData
+  ValidationMedicalData : entry/if the data entry by the patient is completed
+  ValidationMedicalData : do/validate the data by healthworker
+  ValidationMedicalData : exit/after validation of medical data is completed
+
+  state "Health Financing" as HealthPlanning
+  HealthPlanning : entry/analysis of data should be done
+  HealthPlanning : do/the basis of analysed data the best health schemes are drafted
+  HealthPlanning : exit/ the health schemes are sent to the government dashboard
+
+  state "Analysis" as Analysis
+  Analysis : entry/if the data entered is validated
+  Analysis : do/analysis of data
+  Analysis : exit/after analysis of data
+  Analysis : exit/send data to health monitoring
+  Analysis : exit/send data to activity scheduling module
+
+  state "Activity Scheduling" as ActivityScheduling
+  ActivityScheduling : entry/analysis of data should be done
+  ActivityScheduling : do/activity is scheduled for the healthworkers
+  ActivityScheduling : exit/the activity scheduling is complete
+  ActivityScheduling : exit/send data to alert module
+  ActivityScheduling : exit/send the schedule to health worker dashboard
+
+  state "Alerts" as Alerts
+  Alerts : entry/when data from analysis is received
+  Alerts : do/prepare alerts
+  Alerts : exit/after sending alerts patient dashboard and health worker dashboard
+
+  [*] --> LJ
+  state LJ <<choice>>
+
+  LJ --> PatientDashboard
+  LJ --> HealthWorkerDashboard
+  LJ --> GovernmentDashboard
+
+  PatientDashboard --> DataEntry
+  DataEntry --> ValidationMedicalData
+  DataEntry --> Analysis
+
+  Analysis --> ActivityScheduling
+  Analysis --> Alerts
+  Analysis --> HealthPlanning
+  Alerts --> PatientDashboard
+  Alerts --> HealthWorkerDashboard
+  ActivityScheduling --> HealthWorkerDashboard
+  HealthWorkerDashboard --> ValidationMedicalData
+  HealthPlanning --> GovernmentDashboard
+}
+
+state "Logout" as Logout
+Logout : entry/when the user completes his process
+Logout : do/logout user
+Logout : exit/successfully logged out
+
+J1 --> Register : [ new user ]
+Register --> J2
+J1 --> J2
+J2 --> J3
+J3 --> Login
+J3 --> J4
+Login --> J4
+J4 --> Logout
+J2 --> [*]
+Logout --> [*]
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> Register : [new user]
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/successful registration
+Register : exit/invalid registration
+Register --> Login : [successful registration]
+Login : entry/if the user is logged in
+Login : do/login process
+Login : exit/user logs out
+
+state "Patient dashboard" as PatientDashboard
+PatientDashboard : entry/if the user is logged in as patient
+PatientDashboard : do/dashboard is displayed
+PatientDashboard : exit/when user logout
+
+state "Health worker Dashboard" as HealthWorkerDashboard
+HealthWorkerDashboard : entry/if the user is logged in as health worker
+HealthWorkerDashboard : do/display the health worker dashboard
+HealthWorkerDashboard : exit/if health worker logout
+
+state "Government dashboard" as GovernmentDashboard
+GovernmentDashboard : entry/if the user is government official
+GovernmentDashboard : do/display government dashboard
+GovernmentDashboard : exit/after his activity is finished
+
+state "Data Entry" as DataEntry
+DataEntry : entry/if the data entry is logged in as patient
+DataEntry : do/data entry is processed
+DataEntry : exit/after data entry is completed
+DataEntry : exit/send the data for validation
+
+state "Validation of medical data" as ValidationMedicalData
+ValidationMedicalData : entry/if the data entry by the patient is completed
+ValidationMedicalData : do/validate the data by healthworker
+ValidationMedicalData : exit/after validation of medical data is completed
+
+state "Health Financing" as HealthPlanning
+HealthPlanning : entry/analysis of data should be done
+HealthPlanning : do/the basis of analysed data the best health schemes are drafted
+HealthPlanning : exit/ the health schemes are sent to the government dashboard
+
+state "Analysis" as Analysis
+Analysis : entry/if the data entered is validated
+Analysis : do/analysis of data
+Analysis : exit/after analysis of data
+Analysis : exit/send data to health monitoring
+Analysis : exit/send data to activity scheduling module
+
+state "Activity Scheduling" as ActivityScheduling
+ActivityScheduling : entry/analysis of data should be done
+ActivityScheduling : do/activity is scheduled for the healthworkers
+ActivityScheduling : exit/the activity scheduling is complete
+ActivityScheduling : exit/send data to alert module
+ActivityScheduling : exit/send the schedule to health worker dashboard
+
+state "Alerts" as Alerts
+Alerts : entry/when data from analysis is received
+Alerts : do/prepare alerts
+Alerts : exit/after sending alerts patient dashboard and health worker dashboard
+
+Login --> PatientDashboard
+Login --> HealthWorkerDashboard
+Login --> GovernmentDashboard
+
+PatientDashboard --> DataEntry
+DataEntry --> ValidationMedicalData
+DataEntry --> Analysis
+
+Analysis --> ActivityScheduling
+Analysis --> Alerts
+Analysis --> HealthPlanning
+Alerts --> PatientDashboard
+Alerts --> HealthWorkerDashboard
+ActivityScheduling --> HealthWorkerDashboard
+HealthWorkerDashboard --> ValidationMedicalData
+HealthPlanning --> GovernmentDashboard
+
+state "Logout" as Logout
+Logout : entry/when the user completes his process
+Logout : do/logout user
+Logout : exit/successfully logged out
+
+Login --> Logout
+Logout --> [*]
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- multiple_initial_state_transitions
+
+Invalid PlantUML:
+@startuml
+title Weather Station System State Machine
+
+[*] --> ConfigMode
+ConfigMode --> Running : configuration complete
+Running : entry / collect data
+Running : do / collect data
+Running : exit / return to running state
+Running --> DataCollection : clock triggered
+DataCollection --> Running : data collection complete
+Running --> SummaryPreparation : summary request
+SummaryPreparation --> Running : summary prepared
+Running --> StatusChecking : status request
+StatusChecking --> Running : status checked
+Running --> Controlled : remote control
+Controlled --> Running : remote control released
+Running --> ShutDown : shutdown command
+
+ConfigMode : entry / configuration mode
+ConfigMode : do / configure system
+ConfigMode : exit / return to running state
+
+ShutDown : entry / shutdown command
+ShutDown : do / shut down system
+
+DataCollection : entry / collect data
+DataCollection : do / collect data
+DataCollection : exit / return to running state
+
+SummaryPreparation : entry / prepare summary
+SummaryPreparation : do / prepare summary
+SummaryPreparation : exit / return to running state
+
+StatusChecking : entry / check status
+StatusChecking : do / check status
+StatusChecking : exit / return to running state
+
+Controlled : entry / remote control
+Controlled : do / control system
+Controlled : exit / return to running state
+
+ShutDown --> ConfigMode : restart
+[*] --> Running
+Running --> DataCollection
+DataCollection --> ShutDown : data collection complete
+Running --> SummaryPreparation
+SummaryPreparation --> ShutDown : summary prepared
+Running --> StatusChecking
+StatusChecking --> ShutDown : status checked
+Running --> Controlled
+Controlled --> ShutDown : remote control released
+ShutDown --> [*] : shutdown command
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Weather Station System State Machine
+
+[*] --> Running
+Running --> ConfigMode : configuration complete
+ConfigMode --> Running : configuration complete
+Running : entry / collect data
+Running : do / collect data
+Running : exit / return to running state
+Running --> DataCollection : clock triggered
+DataCollection --> ShutDown : data collection complete
+Running --> SummaryPreparation : summary request
+SummaryPreparation --> ShutDown : summary prepared
+Running --> StatusChecking : status request
+StatusChecking --> ShutDown : status checked
+Running --> Controlled : remote control
+Controlled --> Running : remote control released
+Running --> ShutDown : shutdown command
+
+ConfigMode : entry / configuration mode
+ConfigMode : do / configure system
+ConfigMode : exit / return to running state
+
+ShutDown : entry / shut down system
+ShutDown : do / shut down system
+
+DataCollection : entry / collect data
+DataCollection : do / collect data
+DataCollection : exit / return to running state
+
+SummaryPreparation : entry / prepare summary
+SummaryPreparation : do / prepare summary
+SummaryPreparation : exit / return to running state
+
+StatusChecking : entry / check status
+StatusChecking : do / check status
+StatusChecking : exit / return to running state
+
+Controlled : entry / remote control
+Controlled : do / control system
+Controlled : exit / return to running state
+
+ShutDown --> [*] : shutdown command
+
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

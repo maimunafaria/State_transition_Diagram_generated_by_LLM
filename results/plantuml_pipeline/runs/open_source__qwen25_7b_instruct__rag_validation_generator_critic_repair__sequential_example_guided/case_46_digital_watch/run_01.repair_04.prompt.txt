@@ -1,0 +1,149 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.
+
+Candidate PlantUML to repair:
+@startuml
+title Digital Watch State Diagram
+
+[*] --> Idle
+
+state "Idle" as Idle
+state "Adjusting Time" as AdjustingTime
+state "Alarm Settings" as AlarmSettings
+state "Alarm Triggered" as AlarmTriggered
+state "Light On" as LightOn
+
+Idle --> AdjustingTime : Press Button
+Idle --> AlarmSettings : Press Button
+AdjustingTime --> Idle : Press Button
+AlarmSettings --> Idle : Press Button
+AdjustingTime --> AdjustingTime : Increase Value
+AlarmSettings --> AlarmSettings : Increase Value
+AdjustingTime --> AlarmTriggered : Set Alarm Time Matches Current Time
+AlarmSettings --> AlarmTriggered : Set Alarm Time Matches Current Time
+AlarmTriggered --> Idle : Stop Alarm
+LightOn --> Idle : Press Button
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for the target issue:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML State Chart Diagram
+
+state "Off" as Off
+state "Alarm Set" as AlarmSet
+state "Ringing" as Ringing
+
+[*] --> Off
+Off -->
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML State Chart Diagram
+
+state "Off" as Off
+state "Alarm Set" as AlarmSet
+state "Ringing" as Ringing
+
+[*] --> Off
+Off --> [*]
+
+Off --> AlarmSet : set alarm time
+AlarmSet --> Ringing : current time matches alarm time
+Ringing --> AlarmSet
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title Safehome Security Function State Machine
+
+state "PowerOnCheck" as POC
+state "StartupProblem" as SP
+state "ReadyToUse" as RTU
+state "Monitoring" as M
+state "Normal" as N
+
+[*] --> POC  // Initial transition added
+
+POC --> RTU : everything working
+POC --> SP : problem detected
+
+SP --> POC : problem resolved
+SP --> N : system stops
+
+RTU --> POC : user resets
+RTU --> M : user activates
+RTU --> N : user turns off
+
+M --> M : false alarm or time ends
+M --> N : user enters password
+
+N --> [*]  // Final transition added
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Safehome Security Function State Machine
+
+state "PowerOnCheck" as POC
+state "StartupProblem" as SP
+state "ReadyToUse" as RTU
+state "Monitoring" as M
+state "Normal" as N
+
+[*] --> POC
+
+POC --> RTU : everything working
+POC --> SP : problem detected
+
+SP --> POC : problem resolved
+SP --> N : system stops
+
+RTU --> POC : user resets
+RTU --> M : user activates
+RTU --> N : user turns off
+
+M --> M : false alarm or time ends
+M --> N : user enters password
+
+N --> [*]
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

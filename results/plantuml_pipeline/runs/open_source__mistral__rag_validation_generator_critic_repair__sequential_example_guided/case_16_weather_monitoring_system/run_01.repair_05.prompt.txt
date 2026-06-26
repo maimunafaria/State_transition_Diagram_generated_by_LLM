@@ -1,0 +1,285 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.
+
+Candidate PlantUML to repair:
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Create Account / Watch Video
+
+state CreateAccount
+CreateAccount : entry/Create Account
+CreateAccount : do/Create account after validating
+CreateAccount : exit/Watch Video / Invalid registration
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state WatchVideo
+WatchVideo : entry/Watch Video
+WatchVideo : do/Watch video after login
+WatchVideo : exit/Upload Video / Save Video
+
+state UploadVideo
+UploadVideo : entry/Upload Video
+UploadVideo : do/Upload video
+UploadVideo : exit/Save Video / Discussion
+
+state SaveVideo
+SaveVideo : entry/Save Video
+SaveVideo : do/Save video in likes list
+SaveVideo : exit/View Saved Videos / Discussion
+
+state ViewSavedVideos
+ViewSavedVideos : entry/View Saved Videos
+ViewSavedVideos : do/View saved videos
+ViewSavedVideos : exit/Discussion
+
+state Discussion
+Discussion : entry/Discussion
+Discussion : do/Enter discussion option
+Discussion : exit/End
+
+state End
+End : entry/End
+End : do/End
+End : exit/[*]
+
+Idle --> CreateAccount
+CreateAccount --> WatchVideo
+WatchVideo --> UploadVideo
+UploadVideo --> SaveVideo
+SaveVideo --> ViewSavedVideos
+ViewSavedVideos --> Discussion
+Discussion --> End
+
+InvalidRegistration --> Abnormal termination
+CreateAccount --> InvalidRegistration : Invalid registration
+WatchVideo --> InvalidRegistration : Invalid registration
+UploadVideo --> InvalidRegistration : Invalid registration
+SaveVideo --> InvalidRegistration : Invalid registration
+ViewSavedVideos --> InvalidRegistration : Invalid registration
+Discussion --> InvalidRegistration : Invalid registration
+
+state MainMenu
+MainMenu : entry/Main Menu
+MainMenu : do/Display main menu options
+MainMenu : exit/Idle / Watch Video
+
+MainMenu --> Idle
+MainMenu --> WatchVideo
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_initial_state_transition ([*] --> state)
+
+Repair guidance for the target issue:
+- Add one clear initial transition from [*] to the first lifecycle state.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_initial_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML State Chart Diagram
+
+state "Initial" as Initial
+Initial --> InsertCard : Start
+
+state "Insert Card" as InsertCard
+InsertCard : entry / Insert the card
+InsertCard : do / Verify card
+InsertCard : exit / Card verified
+
+state "Select Amount" as SelectAmount
+SelectAmount : entry / Select amount options
+SelectAmount : do / Display predefined amounts and custom option
+SelectAmount : exit / User selects an option
+
+state "Select Predefined Amount" as SelectPredefined
+SelectPredefined : entry / Predefined amount selected
+SelectPredefined : do / Verify amount
+SelectPredefined : exit / Amount selected
+
+state "Enter Custom Amount" as EnterCustomAmount
+EnterCustomAmount : entry / Custom amount selected
+EnterCustomAmount : do / Validate custom amount
+EnterCustomAmount : exit / Amount entered
+
+state "Check Balance" as CheckBalance
+CheckBalance : entry / Amount selected
+CheckBalance : do / Check available balance
+CheckBalance : exit / Balance sufficient or not
+
+state "Dispense Cash" as DispenseCash
+DispenseCash : entry / Sufficient balance
+DispenseCash : do / Dispense the cash
+DispenseCash : exit / Transaction complete
+
+state "Cancel Transaction" as CancelTransaction
+CancelTransaction : entry / Cancel option selected
+CancelTransaction : do / Stop transaction
+CancelTransaction : exit / Transaction aborted
+
+state "Return Card" as ReturnCard
+ReturnCard : entry / Transaction completed or aborted
+ReturnCard : do / Return the card
+ReturnCard : exit / Card returned
+
+InsertCard --> SelectAmount : proceed to select amount
+InsertCard --> CancelTransaction : cancel immediately
+
+SelectAmount --> SelectPredefined : select predefined amount
+SelectAmount --> EnterCustomAmount : enter custom amount
+SelectAmount --> CancelTransaction : cancel transaction
+
+SelectPredefined --> CheckBalance : check balance for predefined amount
+EnterCustomAmount --> CheckBalance : check balance for custom amount
+
+CheckBalance --> DispenseCash : balance sufficient
+CheckBalance --> CheckBalance : balance insufficient (loop)
+
+DispenseCash --> ReturnCard : transaction complete
+CancelTransaction --> ReturnCard : transaction aborted
+
+ReturnCard --> [*] : process complete
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML State Chart Diagram
+
+state "Insert Card" as InsertCard
+[*] --> InsertCard
+InsertCard : entry / Insert the card
+InsertCard : do / Verify card
+InsertCard : exit / Card verified
+
+state "Select Amount" as SelectAmount
+SelectAmount : entry / Select amount options
+SelectAmount : do / Display predefined amounts and custom option
+SelectAmount : exit / User selects an option
+
+state "Select Predefined Amount" as SelectPredefined
+SelectPredefined : entry / Predefined amount selected
+SelectPredefined : do / Verify amount
+SelectPredefined : exit / Amount selected
+
+state "Enter Custom Amount" as EnterCustomAmount
+EnterCustomAmount : entry / Custom amount selected
+EnterCustomAmount : do / Validate custom amount
+EnterCustomAmount : exit / Amount entered
+
+state "Check Balance" as CheckBalance
+CheckBalance : entry / Amount selected
+CheckBalance : do / Check available balance
+CheckBalance : exit / Balance sufficient or not
+
+state "Dispense Cash" as DispenseCash
+DispenseCash : entry / Sufficient balance
+DispenseCash : do / Dispense the cash
+DispenseCash : exit / Transaction complete
+
+state "Cancel Transaction" as CancelTransaction
+CancelTransaction : entry / Cancel option selected
+CancelTransaction : do / Stop transaction
+CancelTransaction : exit / Transaction aborted
+
+state "Return Card" as ReturnCard
+ReturnCard : entry / Transaction completed or aborted
+ReturnCard : do / Return the card
+ReturnCard : exit / Card returned
+
+InsertCard --> SelectAmount : proceed to select amount
+InsertCard --> CancelTransaction : cancel immediately
+
+SelectAmount --> SelectPredefined : select predefined amount
+SelectAmount --> EnterCustomAmount : enter custom amount
+SelectAmount --> CancelTransaction : cancel transaction
+
+SelectPredefined --> CheckBalance : check balance for predefined amount
+EnterCustomAmount --> CheckBalance : check balance for custom amount
+
+CheckBalance --> DispenseCash : balance sufficient
+CheckBalance --> CheckBalance : balance insufficient (loop)
+
+DispenseCash --> ReturnCard : transaction complete
+CancelTransaction --> ReturnCard : transaction aborted
+
+ReturnCard --> [*] : process complete
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_initial_state_transition
+
+Invalid PlantUML:
+@startuml
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Healthcare Portal State Machine Diagram
+
+state PortalChoice <<choice>>
+state "New Registration" as NewRegistration
+state "Existing Login" as ExistingLogin
+state "User Home" as UserHome
+state "Service Access" as ServiceAccess
+state "Result Review" as ResultReview
+state Logout
+state "Access Ended" as AccessEnded
+
+[*] --> PortalChoice
+
+PortalChoice --> NewRegistration : [Register]
+PortalChoice --> ExistingLogin : [Login]
+
+NewRegistration --> AccessEnded : [Registration Failed]
+ExistingLogin --> UserHome : [Successful Login]
+
+UserHome --> ServiceAccess : [Access Services]
+UserHome --> Logout : [Logout]
+
+ServiceAccess --> ResultReview : [View Results]
+ServiceAccess --> UserHome : [Continue Session]
+
+ResultReview --> UserHome : [Return Home]
+ResultReview --> Logout : [End Session]
+
+Logout --> [*] : [Logged Out]
+
+AccessEnded --> [*] : [Access Denied]
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

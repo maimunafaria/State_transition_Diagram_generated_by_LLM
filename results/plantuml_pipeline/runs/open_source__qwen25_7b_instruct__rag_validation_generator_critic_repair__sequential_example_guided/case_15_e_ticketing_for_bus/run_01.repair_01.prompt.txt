@@ -1,0 +1,199 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+E Ticketing For Bus — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create a new account.
+2. The system shall validate the registration of a new user.
+3. The system shall allow the user to log in upon successful registration.
+4. The system shall provide options for logged-in users to check their ticket status.
+5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.
+6. The system shall enable users to manage their account details such as editing or deleting them.
+7. The system shall log out the user after they complete any action.
+
+Candidate PlantUML to repair:
+@startuml
+title UML State Chart Diagram for E Ticketing For Bus
+
+state "User Registration" as UserRegistration {
+  [*] --> EnterDetails
+
+  state EnterDetails
+  state ValidateDetails
+  state RegistrationComplete
+}
+
+UserRegistration : entry / New user
+UserRegistration : do / Enter valid details
+UserRegistration : exit / After validation
+
+EnterDetails --> ValidateDetails : [Valid]
+ValidateDetails --> RegistrationComplete : [Successful]
+
+state "Login" as Login {
+  [*] --> Authenticate
+
+  state Authenticate
+  state LoggedIn
+}
+
+Login : entry / Registered user
+Login : do / Enter username and password
+Login : exit / After verification
+
+Authenticate --> LoggedIn : [Valid credentials]
+Authenticate --> RegistrationComplete : [Invalid credentials]
+
+state "Dashboard" as Dashboard {
+  [*] --> CheckTicketStatus
+
+  state CheckTicketStatus
+  state BookTicket
+  state ManageAccount
+}
+
+Dashboard : entry / Logged in user
+Dashboard : do / View ticket status
+Dashboard : exit / After checking
+
+CheckTicketStatus --> BookTicket : [Book a new ticket]
+BookTicket --> ManageAccount : [Manage account details]
+
+state "Logout" as Logout {
+  [*] --> [*]
+}
+
+Logout : entry / Any action completed
+Logout : do / Log out user
+Logout : exit / User logged out
+
+UserRegistration --> Login
+Login --> Dashboard
+Dashboard --> Logout
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- candidate_line_49: invalid [*] -> [*] transition
+
+Repair guidance for the target issue:
+- For invalid [*] --> [*], replace it with a real final transition, for example Logout --> [*] : session ended.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- invalid_initial_to_final_transition
+
+Invalid PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Login : [registration successful]
+  Login : [registration failed]
+}
+
+state Login {
+  Login --> Dashboard : [login successful]
+  Dashboard : [logout]
+}
+
+state Dashboard {
+  Dashboard --> News : [read news]
+  News --> Dashboard : [back to dashboard]
+  Dashboard --> Facilities : [access facilities]
+  Facilities --> Dashboard : [back to dashboard]
+  Dashboard --> SymptomCheck : [check symptoms]
+  SymptomCheck --> Dashboard : [back to dashboard]
+  Dashboard --> FitnessCheck : [use fitness checking options]
+  FitnessCheck --> Dashboard : [back to dashboard]
+  Dashboard --> Payment : [select payment method]
+  Payment --> FinishSession : [finish session]
+}
+
+state Payment {
+  Payment --> InsurancePayment : [insurance payment]
+  InsurancePayment --> DoctorConsultation : [doctor consultation]
+  DoctorConsultation --> PaymentComplete : [payment completed]
+  PaymentComplete --> FinishSession : [finish session]
+}
+
+state InsurancePayment {
+  InsurancePayment --> CashPayment : [choose cash payment]
+  CashPayment --> FinishSession : [display cash payment details, finish session]
+}
+
+state FinishSession {
+  FinishSession --> Feedback : [provide feedback]
+  Feedback --> Logout : [logout]
+  Logout : [logout successfully]
+}
+
+[*] --> [*]
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Login : [registration successful]
+  Login : [registration failed]
+}
+
+state Login {
+  Login --> Dashboard : [login successful]
+  Dashboard : [logout]
+}
+
+state Dashboard {
+  Dashboard --> News : [read news]
+  News --> Dashboard : [back to dashboard]
+  Dashboard --> Facilities : [access facilities]
+  Facilities --> Dashboard : [back to dashboard]
+  Dashboard --> SymptomCheck : [check symptoms]
+  SymptomCheck --> Dashboard : [back to dashboard]
+  Dashboard --> FitnessCheck : [use fitness checking options]
+  FitnessCheck --> Dashboard : [back to dashboard]
+  Dashboard --> Payment : [select payment method]
+  Payment --> FinishSession : [finish session]
+}
+
+state Payment {
+  Payment --> InsurancePayment : [insurance payment]
+  InsurancePayment --> DoctorConsultation : [doctor consultation]
+  DoctorConsultation --> PaymentComplete : [payment completed]
+  PaymentComplete --> FinishSession : [finish session]
+}
+
+state InsurancePayment {
+  InsurancePayment --> CashPayment : [choose cash payment]
+  CashPayment --> FinishSession : [display cash payment details]
+}
+
+state FinishSession {
+  FinishSession --> Feedback : [provide feedback]
+  Feedback --> Logout : [logout]
+}
+
+state Logout {
+  Logout --> [*] : [logout successfully]
+}
+
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

@@ -1,0 +1,548 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Ott Based System Mini Reel — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall enable a user to watch videos after they have created an account.
+3. The system shall permit a user to upload videos.
+4. The system shall allow a user to save videos in their likes list during video viewing.
+5. The system shall enable a user to view their saved videos from the likes list.
+6. The system shall allow a user to enter the discussion option.
+
+Candidate PlantUML to repair:
+@startuml
+Here is the final PlantUML for the Online College Magazine System:
+
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>>
+state EditorChoice <<choice>>
+state ReadFeedbackChoice <<choice>>
+state EndJoin <<choice>>
+
+[*] --> StartChoice
+
+state Register
+Register : do / Fill details
+Register : exit / Registration successful
+
+state Login
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+state "Manage profiles" as ManageProfiles
+ManageProfiles : entry / Admin logged in
+ManageProfiles : do / Manage profile in database
+ManageProfiles : do / Add, delete or edit profiles if necessary
+ManageProfiles : exit / Action completed
+
+state "Invalid user" as InvalidUser
+InvalidUser : entry / Invalid login or invalid registration
+InvalidUser : do / Block entry to system
+InvalidUser : exit / Abnormal termination
+
+state Writing
+Writing : entry / Writer logged in
+Writing : do / Write article
+Writing : exit / Send to editor
+
+state Editing
+Editing : entry / Editor logged in and article to be edited
+Editing : do / Edit article
+Editing : exit / Send to moderator/admin
+
+state Publishing
+Publishing : entry / Admin logged in and article to be approved
+Publishing : do / Choose to approve and publish or reject article
+Publishing : do / Add article to database if approved
+Publishing : exit / Publish article
+
+state Search
+Search : entry / Choose to search for articles
+Search : do / Read searched articles
+Search : exit / Completed reading
+
+state Reading
+Reading : entry / Published article
+Reading : do / Read article
+Reading : exit / Completed reading
+
+state Feedback
+Feedback : entry / Reader chosen to give feedback
+Feedback : do / Get feedback
+Feedback : exit / Feedback entry successful
+
+StartChoice --> Register
+StartChoice --> Login
+
+Register --> AdminChoice
+Login --> EditorChoice
+
+AdminChoice --> ManageProfiles
+AdminChoice --> InvalidUser
+
+EditorChoice --> Writing
+EditorChoice --> Editing
+EditorChoice --> InvalidUser
+
+Writing --> Editing
+Editing --> Publishing
+ManageProfiles --> Publishing
+
+InvalidUser --> [*]
+
+Publishing --> Reading
+Reading --> Reading
+
+Search --> Search
+Reading --> ReadFeedbackChoice
+
+ReadFeedbackChoice --> Search
+ReadFeedbackChoice --> Feedback
+
+Feedback --> EndJoin
+Search --> EndJoin
+
+EndJoin --> [*]
+@enduml
+
+
+Target validation issue for THIS attempt:
+- choice_node_without_guarded_outgoing_transitions (AdminChoice)
+
+Repair guidance for the target issue:
+- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- choice_without_outgoing
+
+Invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [check user]
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state "Register" as Register
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/ successful registration
+Register : exit/ invalid registration
+
+state "Login" as Login {
+
+  state "Patient dashboard" as PatientDashboard
+  PatientDashboard : entry/if the user is logged in as patient
+  PatientDashboard : do/dashboard is displayed
+  PatientDashboard : exit/when user logout
+
+  state "Health worker Dashboard" as HealthWorkerDashboard
+  HealthWorkerDashboard : entry/if the user is logged in as health worker
+  HealthWorkerDashboard : do/display the health worker dashboard
+  HealthWorkerDashboard : exit/if health worker logout
+
+  state "Government dashboard" as GovernmentDashboard
+  GovernmentDashboard : entry/if the user is government official
+  GovernmentDashboard : do/display government dashboard
+  GovernmentDashboard : exit/after his activity is finished
+
+  state "Data Entry" as DataEntry
+  DataEntry : entry/if the data entry is logged in as patient
+  DataEntry : do/data entry is processed
+  DataEntry : exit/after data entry is completed
+  DataEntry : exit/send the data for validation
+
+  state "Validation of medical data" as ValidationMedicalData
+  ValidationMedicalData : entry/if the data entry by the patient is completed
+  ValidationMedicalData : do/validate the data by healthworker
+  ValidationMedicalData : exit/after validation of medical data is completed
+
+  state "Health Financing" as HealthPlanning
+  HealthPlanning : entry/analysis of data should be done
+  HealthPlanning : do/the basis of analysed data the best health schemes are drafted
+  HealthPlanning : exit/ the health schemes are sent to the government dashboard
+
+  state "Analysis" as Analysis
+  Analysis : entry/if the data entered is validated
+  Analysis : do/analysis of data
+  Analysis : exit/after analysis of data
+  Analysis : exit/send data to health monitoring
+  Analysis : exit/send data to activity scheduling module
+
+  state "Activity Scheduling" as ActivityScheduling
+  ActivityScheduling : entry/analysis of data should be done
+  ActivityScheduling : do/activity is scheduled for the healthworkers
+  ActivityScheduling : exit/the activity scheduling is complete
+  ActivityScheduling : exit/send data to alert module
+  ActivityScheduling : exit/send the schedule to health worker dashboard
+
+  state "Alerts" as Alerts
+  Alerts : entry/when data from analysis is received
+  Alerts : do/prepare alerts
+  Alerts : exit/after sending alerts patient dashboard and health worker dashboard
+
+  [*] --> LJ
+  state LJ <<choice>>
+
+  LJ --> PatientDashboard
+  LJ --> HealthWorkerDashboard
+  LJ --> GovernmentDashboard
+
+  PatientDashboard --> DataEntry
+  DataEntry --> ValidationMedicalData
+  DataEntry --> Analysis
+
+  Analysis --> ActivityScheduling
+  Analysis --> Alerts
+  Analysis --> HealthPlanning
+  Alerts --> PatientDashboard
+  Alerts --> HealthWorkerDashboard
+  ActivityScheduling --> HealthWorkerDashboard
+  HealthWorkerDashboard --> ValidationMedicalData
+  HealthPlanning --> GovernmentDashboard
+}
+
+state "Logout" as Logout
+Logout : entry/when the user completes his process
+Logout : do/logout user
+Logout : exit/successfully logged out
+
+J1 --> Register : [ new user ]
+Register --> J2
+J1 --> J2
+J2 --> J3
+J3 --> Login
+J3 --> J4
+Login --> J4
+J4 --> Logout
+J2 --> [*]
+Logout --> [*]
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> Register : [new user]
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/successful registration
+Register : exit/invalid registration
+Register --> Login : [successful registration]
+Login : entry/if the user is logged in
+Login : do/login process
+Login : exit/user logs out
+
+state "Patient dashboard" as PatientDashboard
+PatientDashboard : entry/if the user is logged in as patient
+PatientDashboard : do/dashboard is displayed
+PatientDashboard : exit/when user logout
+
+state "Health worker Dashboard" as HealthWorkerDashboard
+HealthWorkerDashboard : entry/if the user is logged in as health worker
+HealthWorkerDashboard : do/display the health worker dashboard
+HealthWorkerDashboard : exit/if health worker logout
+
+state "Government dashboard" as GovernmentDashboard
+GovernmentDashboard : entry/if the user is government official
+GovernmentDashboard : do/display government dashboard
+GovernmentDashboard : exit/after his activity is finished
+
+state "Data Entry" as DataEntry
+DataEntry : entry/if the data entry is logged in as patient
+DataEntry : do/data entry is processed
+DataEntry : exit/after data entry is completed
+DataEntry : exit/send the data for validation
+
+state "Validation of medical data" as ValidationMedicalData
+ValidationMedicalData : entry/if the data entry by the patient is completed
+ValidationMedicalData : do/validate the data by healthworker
+ValidationMedicalData : exit/after validation of medical data is completed
+
+state "Health Financing" as HealthPlanning
+HealthPlanning : entry/analysis of data should be done
+HealthPlanning : do/the basis of analysed data the best health schemes are drafted
+HealthPlanning : exit/ the health schemes are sent to the government dashboard
+
+state "Analysis" as Analysis
+Analysis : entry/if the data entered is validated
+Analysis : do/analysis of data
+Analysis : exit/after analysis of data
+Analysis : exit/send data to health monitoring
+Analysis : exit/send data to activity scheduling module
+
+state "Activity Scheduling" as ActivityScheduling
+ActivityScheduling : entry/analysis of data should be done
+ActivityScheduling : do/activity is scheduled for the healthworkers
+ActivityScheduling : exit/the activity scheduling is complete
+ActivityScheduling : exit/send data to alert module
+ActivityScheduling : exit/send the schedule to health worker dashboard
+
+state "Alerts" as Alerts
+Alerts : entry/when data from analysis is received
+Alerts : do/prepare alerts
+Alerts : exit/after sending alerts patient dashboard and health worker dashboard
+
+Login --> PatientDashboard
+Login --> HealthWorkerDashboard
+Login --> GovernmentDashboard
+
+PatientDashboard --> DataEntry
+DataEntry --> ValidationMedicalData
+DataEntry --> Analysis
+
+Analysis --> ActivityScheduling
+Analysis --> Alerts
+Analysis --> HealthPlanning
+Alerts --> PatientDashboard
+Alerts --> HealthWorkerDashboard
+ActivityScheduling --> HealthWorkerDashboard
+HealthWorkerDashboard --> ValidationMedicalData
+HealthPlanning --> GovernmentDashboard
+
+state "Logout" as Logout
+Logout : entry/when the user completes his process
+Logout : do/logout user
+Logout : exit/successfully logged out
+
+Login --> Logout
+Logout --> [*]
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- choice_without_outgoing
+
+Invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [check user]
+state J1 <<choice>> {
+  J1 --> Register : [ new user ]
+  J1 --> J2
+}
+state J2 <<choice>> {
+  J2 --> J3
+  J2 --> [*]
+}
+state J3 <<choice>> {
+  J3 --> Login
+  J3 --> J4
+}
+state J4 <<choice>> {
+  Login --> J4
+  J4 --> Logout
+}
+state "Register" as Register
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/ successful registration
+Register : exit/ invalid registration
+
+state "Login" {
+
+  state "Patient dashboard" as PatientDashboard
+  PatientDashboard : entry/if the user is logged in as patient
+  PatientDashboard : do/dashboard is displayed
+  PatientDashboard : exit/when user logout
+
+  state "Health worker Dashboard" as HealthWorkerDashboard
+  HealthWorkerDashboard : entry/if the user is logged in as health worker
+  HealthWorkerDashboard : do/display the health worker dashboard
+  HealthWorkerDashboard : exit/if health worker logout
+
+  state "Government dashboard" as GovernmentDashboard
+  GovernmentDashboard : entry/if the user is government official
+  GovernmentDashboard : do/display government dashboard
+  GovernmentDashboard : exit/after his activity is finished
+
+  state "Data Entry" as DataEntry
+  DataEntry : entry/if the data entry is logged in as patient
+  DataEntry : do/data entry is processed
+  DataEntry : exit/after data entry is completed
+  DataEntry : exit/send the data for validation
+
+  state "Validation of medical data" as ValidationMedicalData
+  ValidationMedicalData : entry/if the data entry by the patient is completed
+  ValidationMedicalData : do/validate the data by healthworker
+  ValidationMedicalData : exit/after validation of medical data is completed
+
+  state "Health Financing" as HealthPlanning
+  HealthPlanning : entry/analysis of data should be done
+  HealthPlanning : do/the basis of analysed data the best health schemes are drafted
+  HealthPlanning : exit/ the health schemes are sent to the government dashboard
+
+  state "Analysis" as Analysis
+  Analysis : entry/if the data entered is validated
+  Analysis : do/analysis of data
+  Analysis : exit/after analysis of data
+  Analysis : exit/send data to health monitoring
+  Analysis : exit/send data to activity scheduling module
+
+  state "Activity Scheduling" as ActivityScheduling
+  ActivityScheduling : entry/analysis of data should be done
+  ActivityScheduling : do/activity is scheduled for the healthworkers
+  ActivityScheduling : exit/the activity scheduling is complete
+  ActivityScheduling : exit/send data to alert module
+  ActivityScheduling : exit/send the schedule to health worker dashboard
+
+  state "Alerts" as Alerts
+  Alerts : entry/when data from analysis is received
+  Alerts : do/prepare alerts
+  Alerts : exit/after sending alerts patient dashboard and health worker dashboard
+
+  Login --> LJ
+  state LJ <<choice>>
+
+  LJ --> PatientDashboard
+  LJ --> HealthWorkerDashboard
+  LJ --> GovernmentDashboard
+
+  PatientDashboard --> DataEntry
+  DataEntry --> ValidationMedicalData
+  DataEntry --> Analysis
+
+  Analysis --> ActivityScheduling
+  Analysis --> Alerts
+  Analysis --> HealthPlanning
+  Alerts --> PatientDashboard
+  Alerts --> HealthWorkerDashboard
+  ActivityScheduling --> HealthWorkerDashboard
+  HealthPlanning --> GovernmentDashboard
+}
+
+state "Logout" as Logout
+Logout : entry/when the user completes his process
+Logout : do/logout user
+Logout : exit/successfully logged out
+
+Logout --> [*]
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [check user]
+state J1 <<choice>> {
+  J1 --> Register : [ new user ]
+  J1 --> J2 : [existing user]
+}
+state J2 <<choice>> {
+  J2 --> J3 : [valid credentials]
+  J2 --> [*] : [invalid credentials]
+}
+state J3 <<choice>> {
+  J3 --> Login : [successful login]
+  J3 --> J4 : [failed login]
+}
+state J4 <<choice>> {
+  Login --> J4 : [still logged in]
+  J4 --> Logout : [logout requested]
+}
+state "Register" as Register
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/ successful registration
+Register : exit/ invalid registration
+
+state "Login" {
+
+  state "Patient dashboard" as PatientDashboard
+  PatientDashboard : entry/if the user is logged in as patient
+  PatientDashboard : do/dashboard is displayed
+  PatientDashboard : exit/when user logout
+
+  state "Health worker Dashboard" as HealthWorkerDashboard
+  HealthWorkerDashboard : entry/if the user is logged in as health worker
+  HealthWorkerDashboard : do/display the health worker dashboard
+  HealthWorkerDashboard : exit/if health worker logout
+
+  state "Government dashboard" as GovernmentDashboard
+  GovernmentDashboard : entry/if the user is government official
+  GovernmentDashboard : do/display government dashboard
+  GovernmentDashboard : exit/after his activity is finished
+
+  state "Data Entry" as DataEntry
+  DataEntry : entry/if the data entry is logged in as patient
+  DataEntry : do/data entry is processed
+  DataEntry : exit/after data entry is completed
+  DataEntry : exit/send the data for validation
+
+  state "Validation of medical data" as ValidationMedicalData
+  ValidationMedicalData : entry/if the data entry by the patient is completed
+  ValidationMedicalData : do/validate the data by healthworker
+  ValidationMedicalData : exit/after validation of medical data is completed
+
+  state "Health Financing" as HealthPlanning
+  HealthPlanning : entry/analysis of data should be done
+  HealthPlanning : do/the basis of analysed data the best health schemes are drafted
+  HealthPlanning : exit/ the health schemes are sent to the government dashboard
+
+  state "Analysis" as Analysis
+  Analysis : entry/if the data entered is validated
+  Analysis : do/analysis of data
+  Analysis : exit/after analysis of data
+  Analysis : exit/send data to health monitoring
+  Analysis : exit/send data to activity scheduling module
+
+  state "Activity Scheduling" as ActivityScheduling
+  ActivityScheduling : entry/analysis of data should be done
+  ActivityScheduling : do/activity is scheduled for the healthworkers
+  ActivityScheduling : exit/the activity scheduling is complete
+  ActivityScheduling : exit/send data to alert module
+  ActivityScheduling : exit/send the schedule to health worker dashboard
+
+  state "Alerts" as Alerts
+  Alerts : entry/when data from analysis is received
+  Alerts : do/prepare alerts
+  Alerts : exit/after sending alerts patient dashboard and health worker dashboard
+
+  Login --> LJ
+  state LJ <<choice>>
+
+  LJ --> PatientDashboard : [patient]
+  LJ --> HealthWorkerDashboard : [health worker]
+  LJ --> GovernmentDashboard : [government]
+
+  PatientDashboard --> DataEntry
+  DataEntry --> ValidationMedicalData
+  DataEntry --> Analysis
+
+  Analysis --> ActivityScheduling
+  Analysis --> Alerts
+  Analysis --> HealthPlanning
+  Alerts --> PatientDashboard
+  Alerts --> HealthWorkerDashboard
+  ActivityScheduling --> HealthWorkerDashboard
+  HealthPlanning --> GovernmentDashboard
+}
+
+state "Logout" as Logout
+Logout : entry/when the user completes his process
+Logout : do/logout user
+Logout : exit/successfully logged out
+
+Logout --> [*]
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

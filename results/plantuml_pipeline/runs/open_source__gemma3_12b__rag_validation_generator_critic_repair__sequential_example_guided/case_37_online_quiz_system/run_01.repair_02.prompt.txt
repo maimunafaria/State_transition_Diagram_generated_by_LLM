@@ -1,0 +1,467 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Candidate PlantUML to repair:
+@startuml
+title UML state machine diagram
+
+state "Seller Registration" as SellerRegistration
+SellerRegistration : entry/Unregistered Seller
+SellerRegistration : do/Get Valid Seller Credentials
+SellerRegistration : exit/Seller Account Registered
+
+state "Seller Verification" as SellerVerification
+SellerVerification : entry/Seller Account Registered
+SellerVerification : do/Verify Seller
+SellerVerification : exit/Login Seller
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry/Unverified Seller
+SellerLogin : entry/Seller not logged in
+SellerLogin : do/Authenticate Seller
+SellerLogin : exit/Logged In Successfully
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry/Not Logged In
+CustomerLogin : do/Authenticate Customer
+CustomerLogin : exit/Successfully Logged In
+
+state "Seller Home" as SellerHome
+SellerHome : entry/Logged In Seller
+SellerHome : do/Display Seller Dashboard
+SellerHome : exit/Sale Products
+SellerHome : exit/Promote Products
+SellerHome : exit/Chat
+SellerHome : exit/Logout
+
+state "Customer Home" as CustomerHome
+CustomerHome : entry/Customer Logged in
+CustomerHome : do/Display Recommended/Promoted Products
+CustomerHome : exit/View Product
+CustomerHome : exit/Buy Product
+CustomerHome : exit/Chat
+CustomerHome : exit/Report Seller
+CustomerHome : exit/Rate and Review
+
+state "View Product" as ViewProduct
+ViewProduct : entry/To View Products
+ViewProduct : do/Search and View Products
+ViewProduct : exit/Return to home
+ViewProduct : exit/Buy Product
+
+state "Buy Product" as BuyProduct
+BuyProduct : entry/Opted to Buy
+BuyProduct : do/Add product to cart
+BuyProduct : exit/Proceed to Checkout
+
+state "Make Purchase" as MakePurchase
+MakePurchase : entry/Proceeded to Checkout
+MakePurchase : do/Enable payment
+MakePurchase : exit/Payment Successful
+MakePurchase : exit/Payment Unsuccessful
+MakePurchase : exit/Return to Home
+
+state "Chat" as CustomerChat
+CustomerChat : entry/To Chat
+CustomerChat : do/Chat with Seller
+CustomerChat : exit/Return to Home
+
+state "Report Seller" as ReportSeller
+ReportSeller : entry/To Report Seller
+ReportSeller : entry/Seller in Purchase History
+ReportSeller : do/Issue Report to Seller
+ReportSeller : exit/Return to Home
+
+state "Rate and Review" as RateReview
+RateReview : entry/To Rate and Review
+Rate 확대Review : entry/Product Delivered
+RateReview : do/Rate and Review the product
+RateReview : exit/Return to Home
+
+state "Sale Products" as SaleProducts
+SaleProducts : entry/To Sale Products
+SaleProducts : do/Add new Product to Seller Inventory
+SaleProducts : exit/Product added Successfully
+SaleProducts : exit/Return to Home State
+
+state "Promote Products" as PromoteProducts
+PromoteProducts : entry/To Promote Products
+PromoteProducts : entry/Product in Sale
+PromoteProducts : do/Promote a Product
+PromoteProducts : exit/Return to Home State
+
+state "Chat" as SellerChat
+SellerChat : entry/To Chat
+SellerChat : entry/Seller Product in Sale
+SellerChat : entry/Message from Customer
+SellerChat : do/Enable chat with Customer
+SellerChat : exit/Return to Home State
+
+state "Logout" as Logout
+Logout : entry/To Logout User
+Logout : do/Logout User
+Logout : exit/User Logged out
+
+state J0 <<choice>>
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+state J7 <<choice>>
+state J8 <<choice>>
+
+[*] --> J0
+J0 --> J1 : [Seller Portal]
+J0 --> CustomerLogin : [Customer Portal]
+
+J1 --> SellerRegistration : [New Seller]
+J1 --> J2 : [Registered Seller]
+
+SellerRegistration --> SellerVerification
+SellerVerification --> J2
+J2 --> SellerLogin
+
+CustomerLogin --> J3
+SellerLogin --> J7
+J7 --> SellerHome : [Go To Home]
+
+J3 --> CustomerHome : [Go To Home]
+
+CustomerHome --> J4 : [Possible Activities]
+J4 --> ViewProduct : [View Products]
+J4 --> CustomerChat : [Chat]
+J4 --> ReportSeller : [Report Seller]
+J4 --> RateReview : [Rate and Review]
+J4 --> J8 : [Logout]
+
+ViewProduct --> J5
+J5 --> J3 : [Not to Buy]
+J5 --> BuyProduct : [Proceed to Buy]
+
+BuyProduct --> MakePurchase
+MakePurchase --> J3
+
+CustomerChat
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for the target issue:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Registered : [registration successful]
+  Registered --> Login : [user signed in]
+}
+
+state Login {
+  Login --> Dashboard : [user logged in]
+}
+
+state Dashboard <<choice>>
+Dashboard --> PatientDashboard : [patient user]
+PatientDashboard : entry / patient dashboard displayed
+PatientDashboard : do / read news and expert content
+PatientDashboard : do / check symptoms or use fitness checking options
+PatientDashboard : exit / continue using system or finish session
+
+Dashboard --> HealthWorkerDashboard : [health worker user]
+HealthWorkerDashboard : entry / health worker dashboard displayed
+HealthWorkerDashboard : do / process insurance for available finance-related services
+HealthWorkerDashboard : do / check payment with insurance for doctor consultations and complete the payment process
+HealthWorkerDashboard : do / allow users to select payment methods (cash or insurance) for drug and supplement purchases
+HealthWorkerDashboard : exit / continue using system or finish session
+
+Dashboard --> GovernmentDashboard : [government official]
+GovernmentDashboard : entry / government dashboard displayed
+GovernmentDashboard : do / collect user feedback after service completion
+GovernmentDashboard : exit / log out user at the end of their session
+
+state Logout {
+  Dashboard --> Logout : [user wants to logout]
+  Logout : entry / log out user
+  Logout : do / complete logout process
+  Logout : exit / successfully logged out
+}
+
+Register --> Login : [registration failed]
+Login --> Dashboard : [invalid credentials]
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Registered : [registration successful]
+  Registered --> Login : [user signed in]
+}
+
+state Login {
+  Login --> Dashboard : [user logged in]
+}
+
+state Dashboard <<choice>>
+Dashboard --> PatientDashboard : [patient user]
+PatientDashboard : entry / patient dashboard displayed
+PatientDashboard : do / read news and expert content
+PatientDashboard : do / check symptoms or use fitness checking options
+PatientDashboard : exit / continue using system or finish session
+
+Dashboard --> HealthWorkerDashboard : [health worker user]
+HealthWorkerDashboard : entry / health worker dashboard displayed
+HealthWorkerDashboard : do / process insurance for available finance-related services
+HealthWorkerDashboard : do / check payment with insurance for doctor consultations and complete the payment process
+HealthWorkerDashboard : do / allow users to select payment methods (cash or insurance) for drug and supplement purchases
+HealthWorkerDashboard : exit / continue using system or finish session
+
+Dashboard --> GovernmentDashboard : [government official]
+GovernmentDashboard : entry / government dashboard displayed
+GovernmentDashboard : do / collect user feedback after service completion
+GovernmentDashboard : exit / log out user at the end of their session
+
+state Logout {
+  Dashboard --> Logout : [user wants to logout]
+  Logout : entry / log out user
+  Logout : do / complete logout process
+  Logout : exit / successfully logged out
+}
+
+Register --> Login : [registration failed]
+Login --> Dashboard : [invalid credentials]
+
+Dashboard --> [*] : [session ended]
+
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> InventoryMenu
+
+state AddGoods {
+  entry / start state
+  do / add new goods
+  exit / goods added
+  AddGoods --> InventoryMenu
+}
+
+state UpdatePrice {
+  entry / start state
+  do / update price of existing items
+  exit / price updated
+  UpdatePrice --> InventoryMenu
+}
+
+state RemoveGoods {
+  entry / start state
+  do / remove goods from inventory
+  exit / goods removed
+  RemoveGoods --> InventoryMenu
+}
+
+state ExpireCheck {
+  entry / start state
+  do / check for expired goods
+  exit / expired goods identified
+  ExpireCheck --> RemoveGoods
+}
+
+state PlaceOrder {
+  entry / start state
+  do / place order with supplier
+  exit / order placed
+  PlaceOrder --> GenerateInvoice
+}
+
+state SearchItems {
+  entry / start state
+  do / search for items in inventory
+  exit / items selected
+  SearchItems --> PurchaseItems
+}
+
+state CalculateDiscount {
+  entry / start state
+  do / calculate applicable discount
+  exit / discount calculated
+  CalculateDiscount --> GenerateReceipt
+}
+
+state GenerateReceipt {
+  entry / start state
+  do / generate receipt for purchase
+  exit / receipt generated
+  GenerateReceipt --> InventoryMenu
+}
+
+state ReplaceItem {
+  entry / start state
+  do / replace an item or cancel receipt
+  exit / item replaced or receipt cancelled
+  ReplaceItem --> InventoryMenu
+}
+
+state RecordRequest {
+  entry / start state
+  do / record customer requests
+  exit / request recorded
+  RecordRequest --> InventoryMenu
+}
+
+state GenerateSummary {
+  entry / start state
+  do / generate summary report
+  exit / report generated
+  GenerateSummary --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> [*
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> InventoryMenu
+
+state InventoryMenu {
+  InventoryMenu --> AddGoods : [Add Goods]
+  AddGoods : entry / start state
+  AddGoods : do / add new goods
+  AddGoods : exit / goods added
+  AddGoods --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> UpdatePrice : [Update Price]
+  UpdatePrice : entry / start state
+  UpdatePrice : do / update price of existing items
+  UpdatePrice : exit / price updated
+  UpdatePrice --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> RemoveGoods : [Remove Goods]
+  RemoveGoods : entry / start state
+  RemoveGoods : do / remove goods from inventory
+  RemoveGoods : exit / goods removed
+  RemoveGoods --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> ExpireCheck : [Check for Expired Goods]
+  ExpireCheck : entry / start state
+  ExpireCheck : do / check for expired goods
+  ExpireCheck : exit / expired goods identified
+  ExpireCheck --> RemoveGoods
+}
+
+state InventoryMenu {
+  InventoryMenu --> PlaceOrder : [Place Order]
+  PlaceOrder : entry / start state
+  PlaceOrder : do / place order with supplier
+  PlaceOrder : exit / order placed
+  PlaceOrder --> GenerateInvoice
+}
+
+state InventoryMenu {
+  InventoryMenu --> SearchItems : [Search Items]
+  SearchItems : entry / start state
+  SearchItems : do / search for items in inventory
+  SearchItems : exit / items selected
+  SearchItems --> PurchaseItems
+}
+
+state InventoryMenu {
+  InventoryMenu --> CalculateDiscount : [Calculate Discount]
+  CalculateDiscount : entry / start state
+  CalculateDiscount : do / calculate applicable discount
+  CalculateDiscount : exit / discount calculated
+  CalculateDiscount --> GenerateReceipt
+}
+
+state InventoryMenu {
+  InventoryMenu --> GenerateReceipt : [Generate Receipt]
+  GenerateReceipt : entry / start state
+  GenerateReceipt : do / generate receipt for purchase
+  GenerateReceipt : exit / receipt generated
+  GenerateReceipt --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> ReplaceItem : [Replace Item]
+  ReplaceItem : entry / start state
+  ReplaceItem : do / replace an item or cancel receipt
+  ReplaceItem : exit / item replaced or receipt cancelled
+  ReplaceItem --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> RecordRequest : [Record Request]
+  RecordRequest : entry / start state
+  RecordRequest : do / record customer requests
+  RecordRequest : exit / request recorded
+  RecordRequest --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> GenerateSummary : [Generate Summary Report]
+  GenerateSummary : entry / start state
+  GenerateSummary : do / generate summary report
+  GenerateSummary : exit / report generated
+  GenerateSummary --> InventoryMenu
+}
+
+state InventoryMenu
+InventoryMenu --> [*] : [Exit]
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

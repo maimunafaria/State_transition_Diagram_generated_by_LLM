@@ -1,0 +1,258 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Atm Many Scenarios Scenario 7 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall greet the user when they arrive.
+2. The system shall check the PIN after the card is inserted.
+3. The system shall allow the user to try again if the entered PIN is incorrect.
+4. The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times.
+5. The system shall return the card if the user cancels the operation.
+6. The system shall display available options (withdrawing money, checking information, or making a transfer) for the user to choose from if the PIN is correct.
+7. The system shall process the selected request after the user makes a choice.
+
+Candidate PlantUML to repair:
+@startuml
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForChoice
+state Confiscating
+state Ejecting
+
+Idle --> WaitingForPIN : Card Inserted
+WaitingForPIN --> ValidatingPIN : PIN Entered
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+ValidatingPIN --> WaitingForChoice : Valid PIN
+ValidatingPIN --> Confiscating : Third Invalid PIN
+WaitingForPIN --> Ejecting : Cancel
+ValidatingPIN --> Ejecting : Cancel
+WaitingForChoice --> Ejecting : Cancel
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for the target issue:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title ATM Control - Validate PIN and Withdraw Funds
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForCustomerChoice
+state ProcessingWithdrawal
+state Dispensing
+state Printing
+state Ejecting
+state Confiscating
+state Terminating
+state ClosedDown
+
+Idle : entry / Display Welcome
+ClosedDown : entry / Display System Down
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+WaitingForPIN --> Confiscating : Card Confiscated / display Confiscated
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> Confiscating : Card Stolen, Card Expired /\nConfiscate, Update Status
+ValidatingPIN --> Confiscating : Third Invalid PIN /\nConfiscate
+
+ValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+WaitingForCustomerChoice --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+
+WaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected /\nRequest Withdrawal, Display Wait
+
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash, Update Status
+ProcessingWithdrawal --> Ejecting : Rejected / Eject
+
+Dispensing --> Printing : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+Dispensing --> ClosedDown : Insufficient Cash / Eject
+
+Printing --> Ejecting : Receipt Printed / Eject
+
+Ejecting --> Terminating : Card Ejected / Display Ejected
+Confiscating --> Terminating : Card Confiscated / Display Confiscated
+
+Terminating --> Idle : After (Elapsed Time)\n[Closedown Not Requested]
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title ATM Control - Validate PIN and Withdraw Funds
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForCustomerChoice
+state ProcessingWithdrawal
+state Dispensing
+state Printing
+state Ejecting
+state Confiscating
+state Terminating
+state ClosedDown
+
+Idle : entry / Display Welcome
+ClosedDown : entry / Display System Down
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+WaitingForPIN --> Confiscating : Card Confiscated / display Confiscated
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> Confiscating : Card Stolen, Card Expired /\nConfiscate, Update Status
+ValidatingPIN --> Confiscating : Third Invalid PIN /\nConfiscate
+
+ValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+WaitingForCustomerChoice --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+
+WaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected /\nRequest Withdrawal, Display Wait
+
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash, Update Status
+ProcessingWithdrawal --> Ejecting : Rejected / Eject
+
+Dispensing --> Printing : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+Dispensing --> ClosedDown : Insufficient Cash / Eject
+
+Printing --> Ejecting : Receipt Printed / Eject
+
+Ejecting --> Terminating : Card Ejected / Display Ejected
+Confiscating --> Terminating : Card Confiscated / Display Confiscated
+
+Terminating --> [*] : After (Elapsed Time) / Reset
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> InitialState
+InitialState : Display home page
+InitialState --> ServiceCenterHome : Logged in
+ServiceCenterHome : Display journey details upon user login and destination selection
+ServiceCenterHome --> JourneyDetails : Destination selected
+JourneyDetails : Allow users to activate driving mode or choose other options after viewing journey details
+JourneyDetails --> DrivingModeActivated : Driving mode activated
+JourneyDetails --> OtherOptions : Other options chosen
+OtherOptions : Enable users to select a place to eat, view its menu, and place an order if they are hungry
+OtherOptions --> FoodSelection : Place to eat selected
+FoodSelection : View menu
+FoodSelection --> MenuViewed : Menu viewed
+MenuViewed : Place order if user is hungry
+MenuViewed --> OrderPlaced : Order placed
+OrderPlaced : Inform relevant authorities in the event of an accident
+OrderPlaced --> Accident : Accident occurred
+Accident : Send notifications during driving or in case of an accident
+Accident --> NotificationSent : Notification sent
+NotificationSent : Allow users to provide feedback upon completion of their journey
+NotificationSent --> Feedback : Feedback provided
+Feedback : Return to initial state
+ServiceCenterHome : Expiry Notification page
+ServiceCenterHome --> ExpiryNotification : Expiry notification received
+ExpiryNotification : Send service request to Car owner
+ExpiryNotification --> ServiceRequestSent : Service request sent
+ExpiryNotification : Return to Service center home page
+ServiceCenterHome : Enter Damaged parts list
+ServiceCenterHome --> EnteringDamagedPartsList : Enter damaged parts list required
+EnteringDamagedPartsList : Preparing and entering damaged parts list
+EnteringDamagedPartsList --> DamagedPartsListEntered : Damaged parts list entered
+EnteringDamagedPartsList : Return to service center home page
+ServiceCenterHome : Updating Information list
+ServiceCenterHome --> UpdatingInformation : Changed parts information available for updating
+UpdatingInformation : Update Information
+UpdatingInformation --> InformationUpdated : Information updated
+UpdatingInformation : Return to Service center home page
+Logout : To Logout
+Logout --> LoggedOut : Logout completed
+Logout : Logged out Successfully
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> InitialState
+InitialState : Display home page
+InitialState --> ServiceCenterHome : Logged in
+ServiceCenterHome : Display journey details upon user login and destination selection
+ServiceCenterHome --> JourneyDetails : Destination selected
+JourneyDetails : Allow users to activate driving mode or choose other options after viewing journey details
+JourneyDetails --> DrivingModeActivated : Driving mode activated
+JourneyDetails --> OtherOptions : Other options chosen
+OtherOptions : Enable users to select a place to eat, view its menu, and place an order if they are hungry
+OtherOptions --> FoodSelection : Place to eat selected
+FoodSelection : View menu
+FoodSelection --> MenuViewed : Menu viewed
+MenuViewed : Place order if user is hungry
+MenuViewed --> OrderPlaced : Order placed
+OrderPlaced : Inform relevant authorities in the event of an accident
+OrderPlaced --> Accident : Accident occurred
+Accident : Send notifications during driving or in case of an accident
+Accident --> NotificationSent : Notification sent
+NotificationSent : Allow users to provide feedback upon completion of their journey
+NotificationSent --> Feedback : Feedback provided
+Feedback : Return to initial state
+ServiceCenterHome : Expiry Notification page
+ServiceCenterHome --> ExpiryNotification : Expiry notification received
+ExpiryNotification : Send service request to Car owner
+ExpiryNotification --> ServiceRequestSent : Service request sent
+ExpiryNotification : Return to Service center home page
+ServiceCenterHome : Enter Damaged parts list
+ServiceCenterHome --> EnteringDamagedPartsList : Enter damaged parts list required
+EnteringDamagedPartsList : Preparing and entering damaged parts list
+EnteringDamagedPartsList --> DamagedPartsListEntered : Damaged parts list entered
+EnteringDamagedPartsList : Return to service center home page
+ServiceCenterHome : Updating Information list
+ServiceCenterHome --> UpdatingInformation : Changed parts information available for updating
+UpdatingInformation : Update Information
+UpdatingInformation --> InformationUpdated : Information updated
+UpdatingInformation : Return to Service center home page
+LoggedOut : To Logout
+LoggedOut --> LogoutCompleted : Logout completed
+LoggedOut --> Feedback : Logged out Successfully
+ServiceCenterHome --> LoggedOut : User logs out
+NotificationSent --> [*] : Completion Event
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

@@ -1,0 +1,413 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Process Sale — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a new sale.
+2. The system shall enter items one by one as they are selected by the customer.
+3. The system shall move to payment after all items have been added.
+4. The system shall complete the sale immediately if the customer pays with cash.
+5. The system shall verify the payment if the customer chooses to pay by card or check.
+6. The system shall complete the sale once the payment is approved.
+7. The system shall return to waiting for the next customer after the payment has been finished.
+
+Candidate PlantUML to repair:
+@startuml
+title State diagram of the system operations of "Process sale"
+
+[*] --> WaitingCustomer
+
+state "Waiting for customer" as WaitingCustomer
+state "Record items" as RecordItems
+state "Waiting for payment" as WaitingPayment
+
+WaitingCustomer --> RecordItems : enter item
+RecordItems --> RecordItems : enter item
+RecordItems --> WaitingPayment : end of sale
+WaitingPayment --> WaitingCustomer : enter payment
+WaitingCustomer --> [*] : done
+@enduml
+
+
+Target validation issue for THIS attempt:
+- unreachable: Record items, Waiting for customer, Waiting for payment
+
+Repair guidance for the target issue:
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- unreachable_state
+
+Invalid PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> InventoryMenu
+
+state AddGoods {
+  entry / start state
+  do / add new goods
+  exit / goods added
+  AddGoods --> InventoryMenu
+}
+
+state UpdatePrice {
+  entry / start state
+  do / update price of existing items
+  exit / price updated
+  UpdatePrice --> InventoryMenu
+}
+
+state RemoveGoods {
+  entry / start state
+  do / remove goods from inventory
+  exit / goods removed
+  RemoveGoods --> InventoryMenu
+}
+
+state ExpireCheck {
+  entry / start state
+  do / check for expired goods
+  exit / expired goods identified
+  ExpireCheck --> RemoveGoods
+}
+
+state PlaceOrder {
+  entry / start state
+  do / place order with supplier
+  exit / order placed
+  PlaceOrder --> GenerateInvoice
+}
+
+state SearchItems {
+  entry / start state
+  do / search for items in inventory
+  exit / items selected
+  SearchItems --> PurchaseItems
+}
+
+state CalculateDiscount {
+  entry / start state
+  do / calculate applicable discount
+  exit / discount calculated
+  CalculateDiscount --> GenerateReceipt
+}
+
+state GenerateReceipt {
+  entry / start state
+  do / generate receipt for purchase
+  exit / receipt generated
+  GenerateReceipt --> InventoryMenu
+}
+
+state ReplaceItem {
+  entry / start state
+  do / replace an item or cancel receipt
+  exit / item replaced or receipt cancelled
+  ReplaceItem --> InventoryMenu
+}
+
+state RecordRequest {
+  entry / start state
+  do / record customer requests
+  exit / request recorded
+  RecordRequest --> InventoryMenu
+}
+
+state GenerateSummary {
+  entry / start state
+  do / generate summary report
+  exit / report generated
+  GenerateSummary --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> [*
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> InventoryMenu
+
+state InventoryMenu {
+  InventoryMenu --> AddGoods : [Add Goods]
+  AddGoods : entry / start state
+  AddGoods : do / add new goods
+  AddGoods : exit / goods added
+  AddGoods --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> UpdatePrice : [Update Price]
+  UpdatePrice : entry / start state
+  UpdatePrice : do / update price of existing items
+  UpdatePrice : exit / price updated
+  UpdatePrice --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> RemoveGoods : [Remove Goods]
+  RemoveGoods : entry / start state
+  RemoveGoods : do / remove goods from inventory
+  RemoveGoods : exit / goods removed
+  RemoveGoods --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> ExpireCheck : [Check for Expired Goods]
+  ExpireCheck : entry / start state
+  ExpireCheck : do / check for expired goods
+  ExpireCheck : exit / expired goods identified
+  ExpireCheck --> RemoveGoods
+}
+
+state InventoryMenu {
+  InventoryMenu --> PlaceOrder : [Place Order]
+  PlaceOrder : entry / start state
+  PlaceOrder : do / place order with supplier
+  PlaceOrder : exit / order placed
+  PlaceOrder --> GenerateInvoice
+}
+
+state InventoryMenu {
+  InventoryMenu --> SearchItems : [Search Items]
+  SearchItems : entry / start state
+  SearchItems : do / search for items in inventory
+  SearchItems : exit / items selected
+  SearchItems --> PurchaseItems
+}
+
+state InventoryMenu {
+  InventoryMenu --> CalculateDiscount : [Calculate Discount]
+  CalculateDiscount : entry / start state
+  CalculateDiscount : do / calculate applicable discount
+  CalculateDiscount : exit / discount calculated
+  CalculateDiscount --> GenerateReceipt
+}
+
+state InventoryMenu {
+  InventoryMenu --> GenerateReceipt : [Generate Receipt]
+  GenerateReceipt : entry / start state
+  GenerateReceipt : do / generate receipt for purchase
+  GenerateReceipt : exit / receipt generated
+  GenerateReceipt --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> ReplaceItem : [Replace Item]
+  ReplaceItem : entry / start state
+  ReplaceItem : do / replace an item or cancel receipt
+  ReplaceItem : exit / item replaced or receipt cancelled
+  ReplaceItem --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> RecordRequest : [Record Request]
+  RecordRequest : entry / start state
+  RecordRequest : do / record customer requests
+  RecordRequest : exit / request recorded
+  RecordRequest --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> GenerateSummary : [Generate Summary Report]
+  GenerateSummary : entry / start state
+  GenerateSummary : do / generate summary report
+  GenerateSummary : exit / report generated
+  GenerateSummary --> InventoryMenu
+}
+
+state InventoryMenu
+InventoryMenu --> [*] : [Exit]
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- unreachable_state
+
+Invalid PlantUML:
+@startuml
+title Campaign State Machine Diagram
+
+state "Idle" as Idle
+Idle : entry/No campaign assigned
+Idle : do/Remain in same state
+Idle : exit/Assign manager and staff / Start campaign
+
+state "Start Campaign" as StartCampaign
+StartCampaign : entry/Manager and staff assigned
+StartCampaign : do/Start campaign
+StartCampaign : exit/Activate campaign
+
+state "Activate Campaign" as ActivateCampaign
+ActivateCampaign : entry/Campaign activated
+ActivateCampaign : do/Prepare adverts
+ActivateCampaign : exit/Approve adverts
+
+state "Prepare Adverts" as PrepareAdverts
+PrepareAdverts : entry/Adverts prepared
+PrepareAdverts : do/Approve adverts
+PrepareAdverts : exit/Schedule adverts
+
+state "Schedule Adverts" as ScheduleAdverts
+ScheduleAdverts : entry/Adverts scheduled
+ScheduleAdverts : do/Run adverts
+ScheduleAdverts : exit/Adjust campaign
+
+state "Adjust Campaign" as AdjustCampaign
+AdjustCampaign : entry/Campaign adjusted
+AdjustCampaign : do/Run adverts
+AdjustCampaign : exit/Complete campaign
+
+state "Complete Campaign" as CompleteCampaign
+CompleteCampaign : entry/Campaign completed
+CompleteCampaign : do/Prepare final statement
+CompleteCampaign : exit/Pay campaign
+
+state "Pay Campaign" as PayCampaign
+PayCampaign : entry/Pay campaign
+PayCampaign : do/Handle payment
+PayCampaign : exit/Archive campaign
+
+state "Archive Campaign" as ArchiveCampaign
+ArchiveCampaign : entry/Campaign archived
+ArchiveCampaign : do/Release staff and managers
+ArchiveCampaign : exit/End
+
+state "Refund Campaign" as RefundCampaign
+RefundCampaign : entry/Refund campaign
+RefundCampaign : do/Generate refund
+RefundCampaign : exit/Wait for balance
+
+state "Wait for Balance" as WaitForBalance
+WaitForBalance : entry/Wait for balance
+WaitForBalance : do/Wait for balance
+WaitForBalance : exit/Mark campaign as paid
+
+state "Mark Campaign as Paid" as MarkCampaignAsPaid
+MarkCampaignAsPaid : entry/Mark campaign as paid
+MarkCampaignAsPaid : do/Mark campaign as paid
+MarkCampaignAsPaid : exit/End
+
+[*] --> Idle
+
+Idle --> StartCampaign : Manager and staff assigned
+StartCampaign --> ActivateCampaign : Everything approved and contract signed
+ActivateCampaign --> PrepareAdverts :
+PrepareAdverts --> ScheduleAdverts : Adverts prepared
+ScheduleAdverts --> AdjustCampaign :
+AdjustCampaign --> CompleteCampaign : All adverts finished
+CompleteCampaign --> PayCampaign :
+PayCampaign --> ArchiveCampaign : Full amount paid
+ArchiveCampaign --> [*] : Completion event
+
+state DECISION_NODE <<choice>>
+Idle --> DECISION_NODE : Manager and staff assigned
+DECISION_NODE --> StartCampaign : [Manager and staff assigned]
+DECISION_NODE --> PrepareAdverts : [Everything approved and contract signed]
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Campaign State Machine Diagram
+
+state "Idle" as Idle
+Idle : entry/No campaign assigned
+Idle : do/Remain in same state
+Idle : exit/Assign manager and staff / Start campaign
+
+state "Start Campaign" as StartCampaign
+StartCampaign : entry/Manager and staff assigned
+StartCampaign : do/Start campaign
+StartCampaign : exit/Activate campaign
+
+state "Activate Campaign" as ActivateCampaign
+ActivateCampaign : entry/Campaign activated
+ActivateCampaign : do/Prepare adverts
+ActivateCampaign : exit/Approve adverts
+
+state "Prepare Adverts" as PrepareAdverts
+PrepareAdverts : entry/Adverts prepared
+PrepareAdverts : do/Approve adverts
+PrepareAdverts : exit/Schedule adverts
+
+state "Schedule Adverts" as ScheduleAdverts
+ScheduleAdverts : entry/Adverts scheduled
+ScheduleAdverts : do/Run adverts
+ScheduleAdverts : exit/Adjust campaign
+
+state "Adjust Campaign" as AdjustCampaign
+AdjustCampaign : entry/Campaign adjusted
+AdjustCampaign : do/Run adverts
+AdjustCampaign : exit/Complete campaign
+
+state "Complete Campaign" as CompleteCampaign
+CompleteCampaign : entry/Campaign completed
+CompleteCampaign : do/Prepare final statement
+CompleteCampaign : exit/Pay campaign
+
+state "Pay Campaign" as PayCampaign
+PayCampaign : entry/Pay campaign
+PayCampaign : do/Handle payment
+PayCampaign : exit/Archive campaign
+
+state "Archive Campaign" as ArchiveCampaign
+ArchiveCampaign : entry/Campaign archived
+ArchiveCampaign : do/Release staff and managers
+ArchiveCampaign : exit/End
+
+state "Refund Campaign" as RefundCampaign
+RefundCampaign : entry/Refund campaign
+RefundCampaign : do/Generate refund
+RefundCampaign : exit/Wait for balance
+
+state "Wait for Balance" as WaitForBalance
+WaitForBalance : entry/Wait for balance
+WaitForBalance : do/Wait for balance
+WaitForBalance : exit/Mark campaign as paid
+
+state "Mark Campaign as Paid" as MarkCampaignAsPaid
+MarkCampaignAsPaid : entry/Mark campaign as paid
+MarkCampaignAsPaid : do/Mark campaign as paid
+MarkCampaignAsPaid : exit/End
+
+[*] --> Idle
+
+Idle --> StartCampaign : Manager and staff assigned
+StartCampaign --> ActivateCampaign : Everything approved and contract signed
+ActivateCampaign --> PrepareAdverts :
+PrepareAdverts --> ScheduleAdverts : Adverts prepared
+ScheduleAdverts --> AdjustCampaign :
+AdjustCampaign --> CompleteCampaign : All adverts finished
+CompleteCampaign --> PayCampaign :
+PayCampaign --> ArchiveCampaign : Full amount paid
+
+Idle --> RefundCampaign : Amount paid is less than required
+RefundCampaign --> WaitForBalance :
+WaitForBalance --> MarkCampaignAsPaid : Wait for balance completed
+
+state DECISION_NODE <<choice>>
+Idle --> DECISION_NODE : Manager and staff assigned
+DECISION_NODE --> StartCampaign : [Manager and staff assigned]
+DECISION_NODE --> PrepareAdverts : [Everything approved and contract signed]
+
+ArchiveCampaign --> [*] : Completion event
+
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

@@ -1,0 +1,206 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Atm Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose or enter a withdrawal amount.
+2. The system shall support predefined amounts for selection by the user.
+3. The system shall allow users to input their own custom withdrawal amount.
+4. The system shall provide an option for the user to cancel the transaction at any point.
+5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.
+
+Candidate PlantUML to repair:
+@startuml
+title ATM Control - Withdrawal Scenario
+
+state "Waiting for Input" as WaitingForInput
+state "Choosing Amount" as ChoosingAmount
+state "Selecting Predefined Amount" as SelectingPredefinedAmount
+state "Entering Custom Amount" as EnteringCustomAmount
+state "Cancelling Transaction" as CancellingTransaction
+state "Processing Withdrawal" as ProcessingWithdrawal
+state "Dispensing Cash" as DispensingCash
+state "Printing Receipt" as PrintingReceipt
+state "Ejecting Card" as EjectingCard
+
+WaitingForInput --> ChoosingAmount : User chooses option
+ChoosingAmount --> SelectingPredefinedAmount : Predefined amount selected
+ChoosingAmount --> EnteringCustomAmount : Custom amount entered
+SelectingPredefinedAmount --> DispensingCash : Amount dispensed
+EnteringCustomAmount --> ProcessingWithdrawal : Valid amount entered
+ProcessingWithdrawal --> DispensingCash : Withdrawal approved
+ProcessingWithdrawal --> EjectingCard : Rejected / Eject, Display Apology
+CancellingTransaction --> EjectingCard : Cancel / Eject
+DispensingCash --> PrintingReceipt : Cash dispensed
+PrintingReceipt --> EjectingCard : Receipt printed
+EjectingCard --> "Waiting for Input" : Card ejected
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_initial_state_transition ([*] --> state)
+
+Repair guidance for the target issue:
+- Add one clear initial transition from [*] to the first lifecycle state.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_initial_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Login / Register
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state CheckWeather
+CheckWeather : entry/Check weather
+CheckWeather : do/Check weather for current or another location
+CheckWeather : exit/Idle
+
+CheckWeather --> WeatherInfo
+WeatherInfo : entry/Show weather info
+WeatherInfo : do/Update and show the selected weather information to the user
+WeatherInfo : exit/Additional details
+
+WeatherInfo --> AdditionalDetails
+AdditionalDetails : entry/View additional weather details
+AdditionalDetails : do/View alerts, a weekly analysis, a future prediction, or a graph
+AdditionalDetails : exit/Idle
+
+AdditionalDetails --> Logout
+Logout : entry/Log out
+Logout : do/End session when the user logs out
+Logout : exit/End
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+[*] --> Idle : start event
+Idle --> CheckWeather : Check weather event
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+Idle --> Register : Register event
+Register --> InvalidRegistration : Invalid registration event
+InvalidRegistration : exit/Abnormal termination
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+Idle --> Login : Login event
+Login --> InvalidLogin : Invalid login event
+InvalidLogin : exit/Abnormal termination
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state CheckWeather
+CheckWeather : entry/Check weather
+CheckWeather : do/Check weather for current or another location
+CheckWeather : exit/Idle
+CheckWeather --> WeatherInfo : Show weather info event
+
+state WeatherInfo
+WeatherInfo : entry/Show weather info
+WeatherInfo : do/Update and show the selected weather information to the user
+WeatherInfo : exit/Additional details
+WeatherInfo --> AdditionalDetails : Show additional details event
+
+state AdditionalDetails
+AdditionalDetails : entry/View additional weather details
+AdditionalDetails : do/View alerts, a weekly analysis, a future prediction, or a graph
+AdditionalDetails : exit/Idle
+AdditionalDetails --> Logout : Log out event
+
+state Logout
+Logout : entry/Log out
+Logout : do/End session when the user logs out
+Logout : exit/End
+Logout --> [*] : COMPLETION_EVENT
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_initial_state_transition
+
+Invalid PlantUML:
+@startuml
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Process Sale State Diagram
+
+state WaitingForSale
+state AddingItems
+state PaymentVerification
+state PaymentCompleted
+state SaleCompleted
+
+[*] --> WaitingForSale
+
+WaitingForSale --> AddingItems : select item
+
+AddingItems --> PaymentVerification : all items added
+
+PaymentVerification --> SaleCompleted : payment approved
+
+SaleCompleted --> WaitingForSale : next customer
+SaleCompleted --> [*] : end process
+
+PaymentVerification --> PaymentCompleted : payment denied
+
+PaymentCompleted --> WaitingForSale : sale finished
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

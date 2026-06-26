@@ -1,0 +1,340 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Plane — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall place a newly acquired plane in an 'Order' state until it is delivered.
+2. The system shall transition a plane from 'Arrival' to 'Preparation' upon its arrival.
+3. The system shall assign a prepared plane to either 'Operations' or 'Maintenance' based on its condition and schedule.
+4. The system shall keep a plane in the 'Operations' state if it still has scheduled flights.
+5. The system shall send a plane to 'Maintenance' when there are no more scheduled flights or maintenance is required.
+6. The system shall transition a plane from 'Maintenance' to 'Preparation' after checking and servicing it until it is ready for operations.
+7. The system shall take a plane out of service if it is no longer available for use.
+8. The system shall remove a plane from its operations when it is permanently withdrawn from service.
+
+Candidate PlantUML to repair:
+@startuml
+title Statechart diagram of Plane Lifecycle
+
+[*] --> Order
+state Order
+state Arrival
+state Preparation
+state Operations
+state Maintenance
+state OutOfService
+state Removed
+
+Order --> Arrival : plane arrives
+Arrival --> Preparation : prepare plane
+Preparation --> Operations : assign to operations based on condition and schedule
+Operations --> Maintenance : no more scheduled flights or maintenance required
+Maintenance --> Preparation : checked and serviced
+Preparation --> OutOfService : take out of service if not available for use
+OutOfService --> Removed : permanently withdrawn from service
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for the target issue:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> InventoryMenu
+
+state AddGoods {
+  entry / start state
+  do / add new goods
+  exit / goods added
+  AddGoods --> InventoryMenu
+}
+
+state UpdatePrice {
+  entry / start state
+  do / update price of existing items
+  exit / price updated
+  UpdatePrice --> InventoryMenu
+}
+
+state RemoveGoods {
+  entry / start state
+  do / remove goods from inventory
+  exit / goods removed
+  RemoveGoods --> InventoryMenu
+}
+
+state ExpireCheck {
+  entry / start state
+  do / check for expired goods
+  exit / expired goods identified
+  ExpireCheck --> RemoveGoods
+}
+
+state PlaceOrder {
+  entry / start state
+  do / place order with supplier
+  exit / order placed
+  PlaceOrder --> GenerateInvoice
+}
+
+state SearchItems {
+  entry / start state
+  do / search for items in inventory
+  exit / items selected
+  SearchItems --> PurchaseItems
+}
+
+state CalculateDiscount {
+  entry / start state
+  do / calculate applicable discount
+  exit / discount calculated
+  CalculateDiscount --> GenerateReceipt
+}
+
+state GenerateReceipt {
+  entry / start state
+  do / generate receipt for purchase
+  exit / receipt generated
+  GenerateReceipt --> InventoryMenu
+}
+
+state ReplaceItem {
+  entry / start state
+  do / replace an item or cancel receipt
+  exit / item replaced or receipt cancelled
+  ReplaceItem --> InventoryMenu
+}
+
+state RecordRequest {
+  entry / start state
+  do / record customer requests
+  exit / request recorded
+  RecordRequest --> InventoryMenu
+}
+
+state GenerateSummary {
+  entry / start state
+  do / generate summary report
+  exit / report generated
+  GenerateSummary --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> [*
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> InventoryMenu
+
+state InventoryMenu {
+  InventoryMenu --> AddGoods : [Add Goods]
+  AddGoods : entry / start state
+  AddGoods : do / add new goods
+  AddGoods : exit / goods added
+  AddGoods --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> UpdatePrice : [Update Price]
+  UpdatePrice : entry / start state
+  UpdatePrice : do / update price of existing items
+  UpdatePrice : exit / price updated
+  UpdatePrice --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> RemoveGoods : [Remove Goods]
+  RemoveGoods : entry / start state
+  RemoveGoods : do / remove goods from inventory
+  RemoveGoods : exit / goods removed
+  RemoveGoods --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> ExpireCheck : [Check for Expired Goods]
+  ExpireCheck : entry / start state
+  ExpireCheck : do / check for expired goods
+  ExpireCheck : exit / expired goods identified
+  ExpireCheck --> RemoveGoods
+}
+
+state InventoryMenu {
+  InventoryMenu --> PlaceOrder : [Place Order]
+  PlaceOrder : entry / start state
+  PlaceOrder : do / place order with supplier
+  PlaceOrder : exit / order placed
+  PlaceOrder --> GenerateInvoice
+}
+
+state InventoryMenu {
+  InventoryMenu --> SearchItems : [Search Items]
+  SearchItems : entry / start state
+  SearchItems : do / search for items in inventory
+  SearchItems : exit / items selected
+  SearchItems --> PurchaseItems
+}
+
+state InventoryMenu {
+  InventoryMenu --> CalculateDiscount : [Calculate Discount]
+  CalculateDiscount : entry / start state
+  CalculateDiscount : do / calculate applicable discount
+  CalculateDiscount : exit / discount calculated
+  CalculateDiscount --> GenerateReceipt
+}
+
+state InventoryMenu {
+  InventoryMenu --> GenerateReceipt : [Generate Receipt]
+  GenerateReceipt : entry / start state
+  GenerateReceipt : do / generate receipt for purchase
+  GenerateReceipt : exit / receipt generated
+  GenerateReceipt --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> ReplaceItem : [Replace Item]
+  ReplaceItem : entry / start state
+  ReplaceItem : do / replace an item or cancel receipt
+  ReplaceItem : exit / item replaced or receipt cancelled
+  ReplaceItem --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> RecordRequest : [Record Request]
+  RecordRequest : entry / start state
+  RecordRequest : do / record customer requests
+  RecordRequest : exit / request recorded
+  RecordRequest --> InventoryMenu
+}
+
+state InventoryMenu {
+  InventoryMenu --> GenerateSummary : [Generate Summary Report]
+  GenerateSummary : entry / start state
+  GenerateSummary : do / generate summary report
+  GenerateSummary : exit / report generated
+  GenerateSummary --> InventoryMenu
+}
+
+state InventoryMenu
+InventoryMenu --> [*] : [Exit]
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> InitialState
+InitialState : Display home page
+InitialState --> ServiceCenterHome : Logged in
+ServiceCenterHome : Display journey details upon user login and destination selection
+ServiceCenterHome --> JourneyDetails : Destination selected
+JourneyDetails : Allow users to activate driving mode or choose other options after viewing journey details
+JourneyDetails --> DrivingModeActivated : Driving mode activated
+JourneyDetails --> OtherOptions : Other options chosen
+OtherOptions : Enable users to select a place to eat, view its menu, and place an order if they are hungry
+OtherOptions --> FoodSelection : Place to eat selected
+FoodSelection : View menu
+FoodSelection --> MenuViewed : Menu viewed
+MenuViewed : Place order if user is hungry
+MenuViewed --> OrderPlaced : Order placed
+OrderPlaced : Inform relevant authorities in the event of an accident
+OrderPlaced --> Accident : Accident occurred
+Accident : Send notifications during driving or in case of an accident
+Accident --> NotificationSent : Notification sent
+NotificationSent : Allow users to provide feedback upon completion of their journey
+NotificationSent --> Feedback : Feedback provided
+Feedback : Return to initial state
+ServiceCenterHome : Expiry Notification page
+ServiceCenterHome --> ExpiryNotification : Expiry notification received
+ExpiryNotification : Send service request to Car owner
+ExpiryNotification --> ServiceRequestSent : Service request sent
+ExpiryNotification : Return to Service center home page
+ServiceCenterHome : Enter Damaged parts list
+ServiceCenterHome --> EnteringDamagedPartsList : Enter damaged parts list required
+EnteringDamagedPartsList : Preparing and entering damaged parts list
+EnteringDamagedPartsList --> DamagedPartsListEntered : Damaged parts list entered
+EnteringDamagedPartsList : Return to service center home page
+ServiceCenterHome : Updating Information list
+ServiceCenterHome --> UpdatingInformation : Changed parts information available for updating
+UpdatingInformation : Update Information
+UpdatingInformation --> InformationUpdated : Information updated
+UpdatingInformation : Return to Service center home page
+Logout : To Logout
+Logout --> LoggedOut : Logout completed
+Logout : Logged out Successfully
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> InitialState
+InitialState : Display home page
+InitialState --> ServiceCenterHome : Logged in
+ServiceCenterHome : Display journey details upon user login and destination selection
+ServiceCenterHome --> JourneyDetails : Destination selected
+JourneyDetails : Allow users to activate driving mode or choose other options after viewing journey details
+JourneyDetails --> DrivingModeActivated : Driving mode activated
+JourneyDetails --> OtherOptions : Other options chosen
+OtherOptions : Enable users to select a place to eat, view its menu, and place an order if they are hungry
+OtherOptions --> FoodSelection : Place to eat selected
+FoodSelection : View menu
+FoodSelection --> MenuViewed : Menu viewed
+MenuViewed : Place order if user is hungry
+MenuViewed --> OrderPlaced : Order placed
+OrderPlaced : Inform relevant authorities in the event of an accident
+OrderPlaced --> Accident : Accident occurred
+Accident : Send notifications during driving or in case of an accident
+Accident --> NotificationSent : Notification sent
+NotificationSent : Allow users to provide feedback upon completion of their journey
+NotificationSent --> Feedback : Feedback provided
+Feedback : Return to initial state
+ServiceCenterHome : Expiry Notification page
+ServiceCenterHome --> ExpiryNotification : Expiry notification received
+ExpiryNotification : Send service request to Car owner
+ExpiryNotification --> ServiceRequestSent : Service request sent
+ExpiryNotification : Return to Service center home page
+ServiceCenterHome : Enter Damaged parts list
+ServiceCenterHome --> EnteringDamagedPartsList : Enter damaged parts list required
+EnteringDamagedPartsList : Preparing and entering damaged parts list
+EnteringDamagedPartsList --> DamagedPartsListEntered : Damaged parts list entered
+EnteringDamagedPartsList : Return to service center home page
+ServiceCenterHome : Updating Information list
+ServiceCenterHome --> UpdatingInformation : Changed parts information available for updating
+UpdatingInformation : Update Information
+UpdatingInformation --> InformationUpdated : Information updated
+UpdatingInformation : Return to Service center home page
+LoggedOut : To Logout
+LoggedOut --> LogoutCompleted : Logout completed
+LoggedOut --> Feedback : Logged out Successfully
+ServiceCenterHome --> LoggedOut : User logs out
+NotificationSent --> [*] : Completion Event
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

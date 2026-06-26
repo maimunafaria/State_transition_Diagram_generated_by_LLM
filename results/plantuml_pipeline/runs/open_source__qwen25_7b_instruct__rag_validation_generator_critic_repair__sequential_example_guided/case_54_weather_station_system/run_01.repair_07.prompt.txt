@@ -1,0 +1,297 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.
+
+Candidate PlantUML to repair:
+@startuml
+[*] --> Running
+
+state Running {
+  [*] --> Configuring : configurationRequired
+  Configuring --> Running : configurationCompleted
+  [*] --> DataCollection : clockTriggered
+  DataCollection --> Running : activityCompleted
+  [*] --> SummaryPreparation : summaryRequest
+  SummaryPreparation --> Running : activityCompleted
+  [*] --> StatusChecking : statusRequest
+  StatusChecking --> Running : activityCompleted
+  [*] --> ControlledMode : remoteControl
+  ControlledMode --> Running : modeExited
+  [*] --> Shutdown : shutdownCommand
+  Shutdown --> [*]
+}
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- multiple_initial_state_transitions (Running, Configuring, DataCollection, SummaryPreparation, StatusChecking, ControlledMode, Shutdown)
+
+Repair guidance for the target issue:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- multiple_initial_state_transitions
+
+Invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [check user]
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state "Register" as Register
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/ successful registration
+Register : exit/ invalid registration
+
+state "Login" as Login {
+
+  state "Patient dashboard" as PatientDashboard
+  PatientDashboard : entry/if the user is logged in as patient
+  PatientDashboard : do/dashboard is displayed
+  PatientDashboard : exit/when user logout
+
+  state "Health worker Dashboard" as HealthWorkerDashboard
+  HealthWorkerDashboard : entry/if the user is logged in as health worker
+  HealthWorkerDashboard : do/display the health worker dashboard
+  HealthWorkerDashboard : exit/if health worker logout
+
+  state "Government dashboard" as GovernmentDashboard
+  GovernmentDashboard : entry/if the user is government official
+  GovernmentDashboard : do/display government dashboard
+  GovernmentDashboard : exit/after his activity is finished
+
+  state "Data Entry" as DataEntry
+  DataEntry : entry/if the data entry is logged in as patient
+  DataEntry : do/data entry is processed
+  DataEntry : exit/after data entry is completed
+  DataEntry : exit/send the data for validation
+
+  state "Validation of medical data" as ValidationMedicalData
+  ValidationMedicalData : entry/if the data entry by the patient is completed
+  ValidationMedicalData : do/validate the data by healthworker
+  ValidationMedicalData : exit/after validation of medical data is completed
+
+  state "Health Financing" as HealthPlanning
+  HealthPlanning : entry/analysis of data should be done
+  HealthPlanning : do/the basis of analysed data the best health schemes are drafted
+  HealthPlanning : exit/ the health schemes are sent to the government dashboard
+
+  state "Analysis" as Analysis
+  Analysis : entry/if the data entered is validated
+  Analysis : do/analysis of data
+  Analysis : exit/after analysis of data
+  Analysis : exit/send data to health monitoring
+  Analysis : exit/send data to activity scheduling module
+
+  state "Activity Scheduling" as ActivityScheduling
+  ActivityScheduling : entry/analysis of data should be done
+  ActivityScheduling : do/activity is scheduled for the healthworkers
+  ActivityScheduling : exit/the activity scheduling is complete
+  ActivityScheduling : exit/send data to alert module
+  ActivityScheduling : exit/send the schedule to health worker dashboard
+
+  state "Alerts" as Alerts
+  Alerts : entry/when data from analysis is received
+  Alerts : do/prepare alerts
+  Alerts : exit/after sending alerts patient dashboard and health worker dashboard
+
+  [*] --> LJ
+  state LJ <<choice>>
+
+  LJ --> PatientDashboard
+  LJ --> HealthWorkerDashboard
+  LJ --> GovernmentDashboard
+
+  PatientDashboard --> DataEntry
+  DataEntry --> ValidationMedicalData
+  DataEntry --> Analysis
+
+  Analysis --> ActivityScheduling
+  Analysis --> Alerts
+  Analysis --> HealthPlanning
+  Alerts --> PatientDashboard
+  Alerts --> HealthWorkerDashboard
+  ActivityScheduling --> HealthWorkerDashboard
+  HealthWorkerDashboard --> ValidationMedicalData
+  HealthPlanning --> GovernmentDashboard
+}
+
+state "Logout" as Logout
+Logout : entry/when the user completes his process
+Logout : do/logout user
+Logout : exit/successfully logged out
+
+J1 --> Register : [ new user ]
+Register --> J2
+J1 --> J2
+J2 --> J3
+J3 --> Login
+J3 --> J4
+Login --> J4
+J4 --> Logout
+J2 --> [*]
+Logout --> [*]
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> Register : [new user]
+Register : entry/when the user are user
+Register : do/Register process
+Register : exit/successful registration
+Register : exit/invalid registration
+Register --> Login : [successful registration]
+Login : entry/if the user is logged in
+Login : do/login process
+Login : exit/user logs out
+
+state "Patient dashboard" as PatientDashboard
+PatientDashboard : entry/if the user is logged in as patient
+PatientDashboard : do/dashboard is displayed
+PatientDashboard : exit/when user logout
+
+state "Health worker Dashboard" as HealthWorkerDashboard
+HealthWorkerDashboard : entry/if the user is logged in as health worker
+HealthWorkerDashboard : do/display the health worker dashboard
+HealthWorkerDashboard : exit/if health worker logout
+
+state "Government dashboard" as GovernmentDashboard
+GovernmentDashboard : entry/if the user is government official
+GovernmentDashboard : do/display government dashboard
+GovernmentDashboard : exit/after his activity is finished
+
+state "Data Entry" as DataEntry
+DataEntry : entry/if the data entry is logged in as patient
+DataEntry : do/data entry is processed
+DataEntry : exit/after data entry is completed
+DataEntry : exit/send the data for validation
+
+state "Validation of medical data" as ValidationMedicalData
+ValidationMedicalData : entry/if the data entry by the patient is completed
+ValidationMedicalData : do/validate the data by healthworker
+ValidationMedicalData : exit/after validation of medical data is completed
+
+state "Health Financing" as HealthPlanning
+HealthPlanning : entry/analysis of data should be done
+HealthPlanning : do/the basis of analysed data the best health schemes are drafted
+HealthPlanning : exit/ the health schemes are sent to the government dashboard
+
+state "Analysis" as Analysis
+Analysis : entry/if the data entered is validated
+Analysis : do/analysis of data
+Analysis : exit/after analysis of data
+Analysis : exit/send data to health monitoring
+Analysis : exit/send data to activity scheduling module
+
+state "Activity Scheduling" as ActivityScheduling
+ActivityScheduling : entry/analysis of data should be done
+ActivityScheduling : do/activity is scheduled for the healthworkers
+ActivityScheduling : exit/the activity scheduling is complete
+ActivityScheduling : exit/send data to alert module
+ActivityScheduling : exit/send the schedule to health worker dashboard
+
+state "Alerts" as Alerts
+Alerts : entry/when data from analysis is received
+Alerts : do/prepare alerts
+Alerts : exit/after sending alerts patient dashboard and health worker dashboard
+
+Login --> PatientDashboard
+Login --> HealthWorkerDashboard
+Login --> GovernmentDashboard
+
+PatientDashboard --> DataEntry
+DataEntry --> ValidationMedicalData
+DataEntry --> Analysis
+
+Analysis --> ActivityScheduling
+Analysis --> Alerts
+Analysis --> HealthPlanning
+Alerts --> PatientDashboard
+Alerts --> HealthWorkerDashboard
+ActivityScheduling --> HealthWorkerDashboard
+HealthWorkerDashboard --> ValidationMedicalData
+HealthPlanning --> GovernmentDashboard
+
+state "Logout" as Logout
+Logout : entry/when the user completes his process
+Logout : do/logout user
+Logout : exit/successfully logged out
+
+Login --> Logout
+Logout --> [*]
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- multiple_initial_state_transitions
+
+Invalid PlantUML:
+@startuml
+[*] --> Startup : PowerOn
+Startup --> Ready : StartupComplete
+Startup --> Startup : StartupFailed
+Ready --> Resetting : UserReset
+Ready --> Activated : UserActivate
+Ready --> Startup : UserTurnOff
+Activated --> Alarm : SensorTriggered
+Alarm --> Activated : FalseAlarm/Timeout
+Ready --> Ready : UserPasswordEntry
+Alarm --> Ready : UserPasswordEntry
+Resetting --> Ready : UserPasswordEntry
+[*] --> Ready : StartupComplete
+Alarm --> [*] : UserPasswordEntry
+Resetting --> [*] : UserPasswordEntry
+@enduml
+
+Repaired PlantUML:
+@startuml
+[*] --> Startup : PowerOn
+Startup --> Ready : StartupComplete
+Startup --> Startup : StartupFailed
+Ready --> Resetting : UserReset
+Ready --> Activated : UserActivate
+Ready --> Startup : UserTurnOff
+Activated --> Alarm : SensorTriggered
+Alarm --> Activated : FalseAlarm/Timeout
+Ready --> Ready : UserPasswordEntry
+Alarm --> Ready : UserPasswordEntry
+Resetting --> Ready : UserPasswordEntry
+Startup --> [*] : UserPasswordEntry
+Alarm --> [*] : UserPasswordEntry
+Resetting --> [*] : UserPasswordEntry
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

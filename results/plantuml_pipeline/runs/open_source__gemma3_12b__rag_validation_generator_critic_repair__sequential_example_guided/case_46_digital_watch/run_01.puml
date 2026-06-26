@@ -1,0 +1,57 @@
+@startuml
+title UML state machine diagram
+
+state "Idle" as Idle
+Idle : entry/waiting for user input
+Idle : do/remain in idle state
+Idle : exit/user interaction
+
+state "Adjusting Time" as AdjustingTime
+AdjustingTime : entry/user presses button to adjust time
+AdjustingTime : do/display current setting
+AdjustingTime : exit/user presses button to change setting
+
+state "Increasing Value" as IncreasingValue
+IncreasingValue : entry/user presses button to increase value
+IncreasingValue : do/increment value
+IncreasingValue : exit/value reaches maximum
+
+state "Alarm On/Off" as AlarmOnOff
+AlarmOnOff : entry/user presses button to toggle alarm
+AlarmOnOff : do/change alarm state
+AlarmOnOff : exit/alarm state updated
+
+state "Alarm Ringing" as AlarmRinging
+AlarmRinging : entry/alarm time matches current time
+AlarmRinging : do/sound alarm
+AlarmRinging : exit/user presses button to stop alarm
+
+state "Light On" as LightOn
+LightOn : entry/user presses button to turn on light
+LightOn : do/turn on light
+LightOn : exit/user releases button
+
+state "Light Off" as LightOff
+LightOff : entry/user releases button
+LightOff : do/turn off light
+LightOff : exit/light is off
+
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+
+[*] --> Idle
+
+Idle --> AdjustingTime : button pressed
+AdjustingTime --> IncreasingValue : button pressed
+IncreasingValue --> AdjustingTime : button pressed
+AdjustingTime --> AlarmOnOff : button pressed
+AlarmOnOff --> Idle : button pressed
+AlarmOnOff --> AlarmRinging : alarm time matches current time
+AlarmRinging --> Idle : button pressed
+Idle --> LightOn : button pressed
+LightOn --> LightOff : button released
+LightOff --> Idle : button pressed
+LightOff --> [*]
+
+@enduml

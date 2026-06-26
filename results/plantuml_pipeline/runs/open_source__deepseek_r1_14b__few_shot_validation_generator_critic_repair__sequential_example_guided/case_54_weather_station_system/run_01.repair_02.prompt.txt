@@ -1,0 +1,224 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.
+
+Candidate PlantUML to repair:
+@startuml
+title Weather Station State Transition Diagram
+
+state Shutdown
+state Running
+state Configuration
+state ControlledMode
+
+[*] --> Shutdown
+
+Shutdown --> Running : power-up / restart
+
+Running --> Configuration : changes or power-saving settings required
+Running --> ControlledMode : remote control command
+Running --> Shutdown : shutdown command
+
+Configuration --> Running : configuration completed
+
+Running --> Running : data collection triggered by clock
+Running --> Running : summary preparation upon request
+Running --> Running : status check upon request
+
+ControlledMode --> Running : exit controlled mode
+ControlledMode --> Shutdown : shutdown command
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for the target issue:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> InitialState
+InitialState : Display home page
+InitialState --> ServiceCenterHome : Logged in
+ServiceCenterHome : Display journey details upon user login and destination selection
+ServiceCenterHome --> JourneyDetails : Destination selected
+JourneyDetails : Allow users to activate driving mode or choose other options after viewing journey details
+JourneyDetails --> DrivingModeActivated : Driving mode activated
+JourneyDetails --> OtherOptions : Other options chosen
+OtherOptions : Enable users to select a place to eat, view its menu, and place an order if they are hungry
+OtherOptions --> FoodSelection : Place to eat selected
+FoodSelection : View menu
+FoodSelection --> MenuViewed : Menu viewed
+MenuViewed : Place order if user is hungry
+MenuViewed --> OrderPlaced : Order placed
+OrderPlaced : Inform relevant authorities in the event of an accident
+OrderPlaced --> Accident : Accident occurred
+Accident : Send notifications during driving or in case of an accident
+Accident --> NotificationSent : Notification sent
+NotificationSent : Allow users to provide feedback upon completion of their journey
+NotificationSent --> Feedback : Feedback provided
+Feedback : Return to initial state
+ServiceCenterHome : Expiry Notification page
+ServiceCenterHome --> ExpiryNotification : Expiry notification received
+ExpiryNotification : Send service request to Car owner
+ExpiryNotification --> ServiceRequestSent : Service request sent
+ExpiryNotification : Return to Service center home page
+ServiceCenterHome : Enter Damaged parts list
+ServiceCenterHome --> EnteringDamagedPartsList : Enter damaged parts list required
+EnteringDamagedPartsList : Preparing and entering damaged parts list
+EnteringDamagedPartsList --> DamagedPartsListEntered : Damaged parts list entered
+EnteringDamagedPartsList : Return to service center home page
+ServiceCenterHome : Updating Information list
+ServiceCenterHome --> UpdatingInformation : Changed parts information available for updating
+UpdatingInformation : Update Information
+UpdatingInformation --> InformationUpdated : Information updated
+UpdatingInformation : Return to Service center home page
+Logout : To Logout
+Logout --> LoggedOut : Logout completed
+Logout : Logged out Successfully
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML state machine diagram
+
+[*] --> InitialState
+InitialState : Display home page
+InitialState --> ServiceCenterHome : Logged in
+ServiceCenterHome : Display journey details upon user login and destination selection
+ServiceCenterHome --> JourneyDetails : Destination selected
+JourneyDetails : Allow users to activate driving mode or choose other options after viewing journey details
+JourneyDetails --> DrivingModeActivated : Driving mode activated
+JourneyDetails --> OtherOptions : Other options chosen
+OtherOptions : Enable users to select a place to eat, view its menu, and place an order if they are hungry
+OtherOptions --> FoodSelection : Place to eat selected
+FoodSelection : View menu
+FoodSelection --> MenuViewed : Menu viewed
+MenuViewed : Place order if user is hungry
+MenuViewed --> OrderPlaced : Order placed
+OrderPlaced : Inform relevant authorities in the event of an accident
+OrderPlaced --> Accident : Accident occurred
+Accident : Send notifications during driving or in case of an accident
+Accident --> NotificationSent : Notification sent
+NotificationSent : Allow users to provide feedback upon completion of their journey
+NotificationSent --> Feedback : Feedback provided
+Feedback : Return to initial state
+ServiceCenterHome : Expiry Notification page
+ServiceCenterHome --> ExpiryNotification : Expiry notification received
+ExpiryNotification : Send service request to Car owner
+ExpiryNotification --> ServiceRequestSent : Service request sent
+ExpiryNotification : Return to Service center home page
+ServiceCenterHome : Enter Damaged parts list
+ServiceCenterHome --> EnteringDamagedPartsList : Enter damaged parts list required
+EnteringDamagedPartsList : Preparing and entering damaged parts list
+EnteringDamagedPartsList --> DamagedPartsListEntered : Damaged parts list entered
+EnteringDamagedPartsList : Return to service center home page
+ServiceCenterHome : Updating Information list
+ServiceCenterHome --> UpdatingInformation : Changed parts information available for updating
+UpdatingInformation : Update Information
+UpdatingInformation --> InformationUpdated : Information updated
+UpdatingInformation : Return to Service center home page
+LoggedOut : To Logout
+LoggedOut --> LogoutCompleted : Logout completed
+LoggedOut --> Feedback : Logged out Successfully
+ServiceCenterHome --> LoggedOut : User logs out
+NotificationSent --> [*] : Completion Event
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title State diagram of Plane Management System
+
+[*] --> Order
+
+state "Order" as Order
+state "Arrival" as Arrival
+state "Preparation" as Preparation
+state "Operations" as Operations
+state "Maintenance" as Maintenance
+state "Out of Service" as OutOfService
+
+Order --> Arrival : Delivered
+
+Arrival --> Preparation : Arrived
+
+Preparation --> Operations : Ready for Operations
+Preparation --> Maintenance : Requires Maintenance
+
+Operations --> Operations : Scheduled Flights
+Operations --> Maintenance : No Scheduled Flights or Maintenance Required
+
+Maintenance --> Preparation : Serviced and Ready
+
+Preparation --> OutOfService : No longer available
+
+Operations --> OutOfService : Permanently Withdrawn
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title State diagram of Plane Management System
+
+[*] --> Order
+
+state "Order" as Order
+state "Arrival" as Arrival
+state "Preparation" as Preparation
+state "Operations" as Operations
+state "Maintenance" as Maintenance
+state "Out of Service" as OutOfService
+
+Order --> Arrival : Delivered
+
+Arrival --> Preparation : Arrived
+
+Preparation --> Operations : Ready for Operations
+Preparation --> Maintenance : Requires Maintenance
+
+Operations --> Operations : Scheduled Flights
+Operations --> Maintenance : No Scheduled Flights or Maintenance Required
+
+Maintenance --> Preparation : Serviced and Ready
+
+Preparation --> OutOfService : No longer available
+
+Operations --> OutOfService : Permanently Withdrawn
+
+OutOfService --> [*]
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

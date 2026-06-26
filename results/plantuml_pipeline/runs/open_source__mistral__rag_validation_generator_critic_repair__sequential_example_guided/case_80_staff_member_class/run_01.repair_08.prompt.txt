@@ -1,0 +1,255 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Staff Member Class — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow assigning a staff member to a client or adding them to a campaign.
+2. The system shall allow removing assignments from staff members, returning them to an unassigned state.
+3. The system shall enable staff members to switch between different assignments during their work period.
+4. The system shall mark a staff member as unemployed when they leave the job.
+5. The system shall archive the record of a former employee after some time has passed.
+
+Candidate PlantUML to repair:
+@startuml
+title Staff Member Class State Machine Diagram
+
+state Unassigned
+state AssignedToClient
+state AssignedToCampaign
+state Unemployed
+state Archived
+
+[*] --> LoggedIn
+
+LoggedIn --> Assign : assignStaffMember
+Assign --> AssignedToClient : assignedToClient
+Assign --> AssignedToCampaign : assignedToCampaign
+
+AssignedToClient --> SwitchAssignment : switchAssignment
+SwitchAssignment --> Unassigned
+
+AssignedToCampaign --> SwitchAssignment : switchAssignment
+SwitchAssignment --> Unassigned
+
+Unassigned --> RemoveAssignment : removeAssignment
+RemoveAssignment --> Unemployed
+
+Unemployed --> LeaveJob : leaveJob
+LeaveJob --> Unemployed
+
+Unemployed --> Archive : archiveRecord
+Archive --> Archived
+
+LoggedIn --> Logout : logoutEvent
+Logout --> [*] : COMPLETION_EVENT
+@enduml
+
+
+Target validation issue for THIS attempt:
+- duplicate_transitions_detected (1)
+
+Repair guidance for the target issue:
+- Remove duplicate transitions or merge their labels into one transition.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- duplicate_transitions_detected
+
+Invalid PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> Idle
+Idle --> Adding : addNewGoods
+Adding --> Idle : saveGoods
+
+Idle --> Updating : updatePrice
+Updating --> Idle : savePrice
+
+Idle --> Removing : removeGoods
+Removing --> Idle : removeGoods
+
+Idle --> Ordering : placeOrder
+Ordering --> Invoicing : generateInvoice
+Invoicing --> Idle : saveInvoice
+
+Idle --> Searching : searchItems
+Searching --> Idle : selectItems
+
+Idle --> Expired : identifyExpiredGoods
+Expired --> Idle : notifyUser
+
+Idle --> Billing : generateReceipt
+Billing --> Cancelled : cancelReceipt
+Billing --> Replaced : replaceItem
+Billing --> Summary : saveTransaction
+
+Idle --> Summary : viewSummary
+
+Idle --> Ordering : placeOrder
+Ordering --> Invoicing : generateInvoice
+Invoicing --> Idle : saveInvoice
+
+Idle --> Expired : identifyExpiredGoods
+Expired --> Idle : notifyUser
+
+Ordering --> Billing : generateReceipt
+Billing --> Cancelled : cancelReceipt
+Billing --> Replaced : replaceItem
+Billing --> Summary : saveTransaction
+
+Summary --> [*] : COMPLETION_EVENT
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> Idle
+
+state Idle
+state Adding
+state Updating
+state Removing
+state Expired
+state Ordering
+state Invoicing
+state Searching
+state Billing
+state Cancelled
+state Replaced
+state Summary
+
+Idle --> Adding : addNewGoods
+Adding --> Idle : saveGoods
+
+Idle --> Updating : updatePrice
+Updating --> Idle : savePrice
+
+Idle --> Removing : removeGoods
+Removing --> Idle : removeGoods
+
+Idle --> Ordering : placeOrder
+Ordering --> Invoicing : generateInvoice
+Invoicing --> Idle : saveInvoice
+
+Idle --> Searching : searchItems
+Searching --> Idle : selectItems
+
+Idle --> Expired : identifyExpiredGoods
+Expired --> Idle : notifyUser
+
+Idle --> Billing : generateReceipt
+Billing --> Cancelled : cancelReceipt
+Billing --> Replaced : replaceItem
+Billing --> Summary : saveTransaction
+
+Idle --> Summary : viewSummary
+
+Ordering --> [*] : placeOrder
+Invoicing --> [*] : saveInvoice
+Searching --> [*] : selectItems
+Expired --> [*] : notifyUser
+Cancelled --> [*] : cancelReceipt
+Replaced --> [*] : replaceItem
+Summary --> [*] : saveTransaction
+
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- duplicate_transitions_detected
+
+Invalid PlantUML:
+@startuml
+title Campaign State Machine (Final Version)
+
+[*] --> Commissioned
+
+state Commissioned
+state Suspended
+state Completed
+state Paid
+state AdvertPreparation
+state Evaluation
+state Monitoring
+state Running
+state RunningAdverts
+state Scheduling
+state Survey
+
+Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+Commissioned --> Completed : campaignCancelled;\ncalculateCosts;\nprepareFinalStatement
+
+state Active {
+  state Monitoring {
+    Survey --> Evaluation : surveyComplete
+    Evaluation --> Survey : runSurvey
+    Monitoring --> AdvertPreparation : surveyComplete\n/authorize
+  }
+
+  state Running {
+    AdvertPreparation --> Scheduling : advertsApproved
+    Scheduling --> RunningAdverts : confirmSchedule
+    RunningAdverts --> Active : resumeCampaign
+    RunningAdverts --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+  }
+
+  state RunningAdverts {
+    RunningAdverts --> Active : resumeCampaign
+    RunningAdverts --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+  }
+}
+
+Active --> Suspended : resumeCampaign
+Suspended --> Active : resumeCampaign
+
+Active --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+AdvertPreparation --> Completed : campaignCompleted\n/prepareFinalStatement
+
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > 0]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
+
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+@enduml
+
+Repaired PlantUML:
+@startuml
+title Campaign State Machine (Final Version)
+
+[*] --> Commissioned
+
+state Commissioned
+state Suspended
+state Completed
+state Paid
+
+Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+Commissioned --> AdvertPreparation : surveyComplete\n/authorize
+AdvertPreparation --> Scheduling : advertsApproved
+Scheduling --> RunningAdverts : confirmSchedule
+RunningAdverts --> Active : resumeCampaign
+RunningAdverts --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+Active --> Suspended : suspendCampaign\n/stopAdverts
+Suspended --> Active : resumeCampaign
+Active --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > 0]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

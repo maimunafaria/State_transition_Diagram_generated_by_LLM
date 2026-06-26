@@ -1,0 +1,268 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Microwave Oven — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display the current time when it is waiting for user input.
+2. The system shall allow the user to choose between full power and half power levels.
+3. The system shall enable the user to set cooking time by entering a number.
+4. The system shall remain inactive if the door is open during operation.
+5. The system shall stop immediately when the door is opened during the cooking process.
+6. The system shall allow the user to cancel the cooking process.
+7. The system shall return to displaying the current time after stopping or cancelling and wait for the next use.
+
+Candidate PlantUML to repair:
+@startuml
+[*] --> Waiting
+Waiting --> DisplayTime : display time
+Waiting --> PowerSelection : user input
+PowerSelection --> Waiting : power selected
+Waiting --> TimeSetting : user input
+TimeSetting --> Waiting : time set
+Waiting --> Cooking : start cooking
+Cooking --> DoorOpen : door opened
+Cooking --> Cancel : user cancel
+Cooking --> Done : cooking complete
+DoorOpen --> Waiting : door closed
+Cancel --> Waiting : cooking cancelled
+Done --> Waiting : cooking finished
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for the target issue:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title ATM Control - Validate PIN and Process Requests
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForCustomerChoice
+state ProcessingWithdrawal
+state Dispensing
+state Printing
+state Ejecting
+state Confiscating
+state Terminating
+state ClosedDown
+
+Idle : entry / Display Welcome
+ClosedDown : entry / Display System Down
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+WaitingForPIN --> Confiscating : Card Confiscated / display Confiscated
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> Confiscating : Card Stolen, Card Expired /\nConfiscate, Update Status
+ValidatingPIN --> Confiscating : Third Invalid PIN /\nConfiscate
+
+ValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+WaitingForCustomerChoice --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+
+WaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected /\nRequest Withdrawal, Display Wait
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash, Update Status
+ProcessingWithdrawal --> Ejecting : Rejected / Eject
+
+Dispensing --> Printing : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+Dispensing --> ClosedDown : Insufficient Cash / Eject
+
+Printing --> Ejecting : Receipt Printed / Eject
+
+Ejecting --> Terminating : Card Ejected / Display Ejected
+Confiscating --> Terminating : Card Confiscated / Display Confiscated
+
+Terminating --> Idle : After (Elapsed Time)\n[Closedown Not Requested]
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title ATM Control - Validate PIN and Process Requests
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForCustomerChoice
+state ProcessingWithdrawal
+state Dispensing
+state Printing
+state Ejecting
+state Confiscating
+state Terminating
+state ClosedDown
+
+Idle : entry / Display Welcome
+ClosedDown : entry / Display System Down
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+WaitingForPIN --> Confiscating : Card Confiscated / display Confiscated
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> Confiscating : Card Stolen, Card Expired /\nConfiscate, Update Status
+ValidatingPIN --> Confiscating : Third Invalid PIN /\nConfiscate
+
+ValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+WaitingForCustomerChoice --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+
+WaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected /\nRequest Withdrawal, Display Wait
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash, Update Status
+ProcessingWithdrawal --> Ejecting : Rejected / Eject
+
+Dispensing --> Printing : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+Dispensing --> ClosedDown : Insufficient Cash / Eject
+
+Printing --> Ejecting : Receipt Printed / Eject
+
+Ejecting --> Terminating : Card Ejected / Display Ejected
+Confiscating --> Terminating : Card Confiscated / Display Confiscated
+
+Terminating --> [*] : After (Elapsed Time)\n[Closedown Not Requested]
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+state "Idle" as Idle
+Idle : entry/waiting for user input
+Idle : do/remain in idle state
+Idle : exit/user interaction
+
+state "Adjusting Time" as AdjustingTime
+AdjustingTime : entry/user presses button to adjust time
+AdjustingTime : do/display current setting
+AdjustingTime : exit/user presses button to change setting
+
+state "Increasing Value" as IncreasingValue
+IncreasingValue : entry/user presses button to increase value
+IncreasingValue : do/increment value
+IncreasingValue : exit/value reaches maximum
+
+state "Alarm On/Off" as AlarmOnOff
+AlarmOnOff : entry/user presses button to toggle alarm
+AlarmOnOff : do/change alarm state
+AlarmOnOff : exit/alarm state updated
+
+state "Alarm Ringing" as AlarmRinging
+AlarmRinging : entry/alarm time matches current time
+AlarmRinging : do/sound alarm
+AlarmRinging : exit/user presses button to stop alarm
+
+state "Light On" as LightOn
+LightOn : entry/user presses button to turn on light
+LightOn : do/turn on light
+LightOn : exit/user releases button
+
+state "Light Off" as LightOff
+LightOff : entry/user releases button
+LightOff : do/turn off light
+LightOff : exit/light is off
+
+[*] --> Idle
+
+Idle --> AdjustingTime : button pressed
+AdjustingTime --> IncreasingValue : button pressed
+IncreasingValue --> AdjustingTime : button pressed
+AdjustingTime --> AlarmOnOff : button pressed
+AlarmOnOff --> Idle : button pressed
+AlarmOnOff --> AlarmRinging : alarm time matches current time
+AlarmRinging --> Idle : button pressed
+Idle --> LightOn : button pressed
+LightOn --> LightOff : button released
+LightOff --> Idle : button pressed
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML state machine diagram
+
+state "Idle" as Idle
+Idle : entry/waiting for user input
+Idle : do/remain in idle state
+Idle : exit/user interaction
+
+state "Adjusting Time" as AdjustingTime
+AdjustingTime : entry/user presses button to adjust time
+AdjustingTime : do/display current setting
+AdjustingTime : exit/user presses button to change setting
+
+state "Increasing Value" as IncreasingValue
+IncreasingValue : entry/user presses button to increase value
+IncreasingValue : do/increment value
+IncreasingValue : exit/value reaches maximum
+
+state "Alarm On/Off" as AlarmOnOff
+AlarmOnOff : entry/user presses button to toggle alarm
+AlarmOnOff : do/change alarm state
+AlarmOnOff : exit/alarm state updated
+
+state "Alarm Ringing" as AlarmRinging
+AlarmRinging : entry/alarm time matches current time
+AlarmRinging : do/sound alarm
+AlarmRinging : exit/user presses button to stop alarm
+
+state "Light On" as LightOn
+LightOn : entry/user presses button to turn on light
+LightOn : do/turn on light
+LightOn : exit/user releases button
+
+state "Light Off" as LightOff
+LightOff : entry/user releases button
+LightOff : do/turn off light
+LightOff : exit/light is off
+
+[*] --> Idle
+Idle --> AdjustingTime : button pressed
+AdjustingTime --> IncreasingValue : button pressed
+IncreasingValue --> AdjustingTime : button pressed
+AdjustingTime --> AlarmOnOff : button pressed
+AlarmOnOff --> Idle : button pressed
+AlarmOnOff --> AlarmRinging : alarm time matches current time
+AlarmRinging --> Idle : button pressed
+Idle --> LightOn : button pressed
+LightOn --> LightOff : button released
+LightOff --> Idle : button pressed
+Idle --> [*]
+
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

@@ -1,0 +1,178 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Green Rides — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display journey details upon user login and destination selection.
+2. The system shall allow users to activate driving mode or choose other options after viewing journey details.
+3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.
+4. The system shall inform relevant authorities in the event of an accident.
+5. The system shall send notifications during driving or in case of an accident.
+6. The system shall allow users to provide feedback upon completion of their journey.
+
+Candidate PlantUML to repair:
+@startuml
+[*] --> LoggedIn
+
+state LoggedIn {
+  [*] --> JourneyDetails : view journey details
+  JourneyDetails --> DrivingMode : activate driving mode or choose other options
+  JourneyDetails --> EatPlace : select place to eat, view menu, and order
+  DrivingMode --> JourneyDetails : back to journey details
+  EatPlace --> JourneyDetails : finish eating and go back
+}
+
+state JourneyDetails {
+  [*] --> AccidentNotification : accident occurs
+  AccidentNotification --> Notifications : inform relevant authorities
+  Notifications --> Feedback : send notifications during driving or in case of an accident
+  Feedback --> JourneyComplete : provide feedback upon completion of journey
+  AccidentNotification --> Feedback : provide feedback after accident notification
+}
+
+state DrivingMode {
+  [*] --> JourneyDetails : back to journey details
+}
+
+state EatPlace {
+  [*] --> JourneyDetails : finish eating and go back
+}
+
+state Notifications {
+  [*] --> Feedback : provide feedback after sending notifications
+}
+
+state Feedback {
+  [*] --> JourneyComplete : complete journey
+}
+
+state JourneyComplete {
+  [*] --> [*]
+}
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- candidate_line_37: invalid [*] -> [*] transition
+
+Repair guidance for the target issue:
+- For invalid [*] --> [*], replace it with a real final transition, for example Logout --> [*] : session ended.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- invalid_initial_to_final_transition
+
+Invalid PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Login : [registration successful]
+  Login : [registration failed]
+}
+
+state Login {
+  Login --> Dashboard : [login successful]
+  Dashboard : [logout]
+}
+
+state Dashboard {
+  Dashboard --> News : [read news]
+  News --> Dashboard : [back to dashboard]
+  Dashboard --> Facilities : [access facilities]
+  Facilities --> Dashboard : [back to dashboard]
+  Dashboard --> SymptomCheck : [check symptoms]
+  SymptomCheck --> Dashboard : [back to dashboard]
+  Dashboard --> FitnessCheck : [use fitness checking options]
+  FitnessCheck --> Dashboard : [back to dashboard]
+  Dashboard --> Payment : [select payment method]
+  Payment --> FinishSession : [finish session]
+}
+
+state Payment {
+  Payment --> InsurancePayment : [insurance payment]
+  InsurancePayment --> DoctorConsultation : [doctor consultation]
+  DoctorConsultation --> PaymentComplete : [payment completed]
+  PaymentComplete --> FinishSession : [finish session]
+}
+
+state InsurancePayment {
+  InsurancePayment --> CashPayment : [choose cash payment]
+  CashPayment --> FinishSession : [display cash payment details, finish session]
+}
+
+state FinishSession {
+  FinishSession --> Feedback : [provide feedback]
+  Feedback --> Logout : [logout]
+  Logout : [logout successfully]
+}
+
+[*] --> [*]
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Login : [registration successful]
+  Login : [registration failed]
+}
+
+state Login {
+  Login --> Dashboard : [login successful]
+  Dashboard : [logout]
+}
+
+state Dashboard {
+  Dashboard --> News : [read news]
+  News --> Dashboard : [back to dashboard]
+  Dashboard --> Facilities : [access facilities]
+  Facilities --> Dashboard : [back to dashboard]
+  Dashboard --> SymptomCheck : [check symptoms]
+  SymptomCheck --> Dashboard : [back to dashboard]
+  Dashboard --> FitnessCheck : [use fitness checking options]
+  FitnessCheck --> Dashboard : [back to dashboard]
+  Dashboard --> Payment : [select payment method]
+  Payment --> FinishSession : [finish session]
+}
+
+state Payment {
+  Payment --> InsurancePayment : [insurance payment]
+  InsurancePayment --> DoctorConsultation : [doctor consultation]
+  DoctorConsultation --> PaymentComplete : [payment completed]
+  PaymentComplete --> FinishSession : [finish session]
+}
+
+state InsurancePayment {
+  InsurancePayment --> CashPayment : [choose cash payment]
+  CashPayment --> FinishSession : [display cash payment details]
+}
+
+state FinishSession {
+  FinishSession --> Feedback : [provide feedback]
+  Feedback --> Logout : [logout]
+}
+
+state Logout {
+  Logout --> [*] : [logout successfully]
+}
+
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

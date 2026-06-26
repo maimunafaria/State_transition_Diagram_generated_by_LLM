@@ -1,0 +1,67 @@
+@startuml
+title Car Care - Service Center Login State Machine Diagram
+
+[*] --> PortalChoice1
+
+PortalChoice1 --> PortalChoice2 : [Service Center Portal]
+PortalChoice3 --> ServiceCenterRegistration : [New Service center]
+
+state "Service Center Registration" as ServiceCenterRegistration
+ServiceCenterRegistration : entry / Unregistered service center
+ServiceCenterRegistration : do / Enter Valid Credentials
+ServiceCenterRegistration : exit / Account registered
+
+state "Service Center Verification"
+PortalChoice2 --> ServiceCenterVerification : [verify credentials]
+ServiceCenterVerification : entry / verifyData
+ServiceCenterVerification : do / allow Access to system
+ServiceCenterVerification : exit / mainArea
+
+state "Service Center Login Failed"
+ServiceCenterVerification --> ServiceCenterLoginFailed : [credentials invalid]
+ServiceCenterLoginFailed : entry / credentials invalid
+ServiceCenterLoginFailed : do / display error message
+ServiceCenterLoginFailed : exit / mainArea
+
+state MainArea <<choice>> {
+  MainArea --> MarketConditions : [showMarketConditions]
+  MainArea --> PestControlHelp : [provideTechniques]
+  MainArea --> SoilSuggestions : [receiveSoilInfo]
+  MainArea --> WeatherInsights : [receiveLocation]
+  MainArea --> LabourAvailability : [receiveLocation]
+}
+
+state MarketConditions {
+  ValidLogin --> MarketConditions
+}
+
+state Techniques {
+  PestControlHelp --> Techniques : provideTechniques
+  Techniques : entry / provideTechniques
+  Techniques : do / showTechniques
+  Techniques : exit / mainArea
+}
+
+state Suggestions {
+  SoilSuggestions --> Suggestions : provideSuggestions
+  Suggestions : entry / receiveSoilInfo
+  Suggestions : do / suggestCrops
+  Suggestions : exit / mainArea
+}
+
+state Insights {
+  WeatherInsights --> Insights : provideInsights
+  Insights : entry / receiveLocation
+  Insights : do / showWeather
+  Insights : exit / mainArea
+}
+
+state Availability {
+  LabourAvailability --> Availability : provideAvailability
+  Availability : entry / receiveLocation
+  Availability : do / showLabour
+  Availability : exit / mainArea
+}
+
+MainArea --> ServiceCenterLoginFailed : [logOut]
+@enduml

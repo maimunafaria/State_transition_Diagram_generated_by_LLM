@@ -1,0 +1,383 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Candidate PlantUML to repair:
+@startuml
+title Online Quiz System State Diagram
+
+[*] --> Start
+
+state Start
+state "LoggedIn" as LoggedIn
+state "TeacherMenu" as TeacherMenu
+state "StudentMenu" as StudentMenu
+state "CreatingQuiz" as CreatingQuiz
+state "EditingQuiz" as EditingQuiz
+state "ViewingQuizResults" as ViewingResults
+state "SelectingQuiz" as SelectingQuiz
+state "AnsweringQuiz" as AnsweringQuiz
+state "SubmittingQuiz" as SubmittingQuiz
+state "ViewingResult" as ViewingResult
+
+Start --> LoggedIn : login/register
+
+LoggedIn --> TeacherMenu : choose teacher role
+LoggedIn --> StudentMenu : choose student role
+
+TeacherMenu --> CreatingQuiz : create new quiz
+TeacherMenu --> EditingQuiz : edit existing quiz
+TeacherMenu --> ViewingResults : view results
+TeacherMenu --> LoggedIn : logout
+
+CreatingQuiz --> TeacherMenu : save as draft
+CreatingQuiz --> TeacherMenu : post quiz
+
+EditingQuiz --> TeacherMenu : save changes
+EditingQuiz --> TeacherMenu : discard changes
+
+ViewingResults --> TeacherMenu : back to menu
+
+StudentMenu --> SelectingQuiz : select quiz
+
+SelectingQuiz --> AnsweringQuiz : select a quiz
+
+AnsweringQuiz --> SubmittingQuiz : submit quiz
+
+SubmittingQuiz --> StudentMenu : cancel submission
+SubmittingQuiz --> ViewingResult : submit completed
+
+ViewingResult --> StudentMenu : back to menu
+
+[*] <-- LoggedIn : logout
+[*] <-- ViewingResult : system ends
+[*] <-- SubmittingQuiz : system ends
+[*] <-- AnsweringQuiz : system ends
+[*] <-- SelectingQuiz : system ends
+[*] <-- ViewingResults : system ends
+[*] <-- EditingQuiz : system ends
+[*] <-- CreatingQuiz : system ends
+[*] <-- TeacherMenu : system ends
+[*] <-- StudentMenu : system ends
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for the target issue:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title E-Visa Processing and Follow-Up System
+
+[*] --> CreateAccount
+CreateAccount --> LoggedOut : Account Created
+
+state CreateAccount {
+    entry / Display Registration Form
+    exit / Validate and Save User Details
+}
+
+state LoggedOut {
+    entry / Display Login Form
+}
+
+LoggedOut --> LoggedIn : Valid Credentials
+
+state LoggedIn {
+    entry / Display User Dashboard
+    exit / Display Options
+}
+
+state ApplyForVisa {
+    entry / Initiate Visa Application
+    exit / Collect Application Details, Payment
+}
+
+state ViewVisaStatus {
+    entry / Display Visa Application Status
+    exit / Show Current Status
+}
+
+state CancelApplication {
+    entry / Initiate Cancellation Process
+    exit / Confirm Cancellation
+}
+
+state ModifyDetails {
+    entry / Update User Information
+    exit / Save Changes
+}
+
+state ViewDetails {
+    entry / Display User Profile
+    exit / Show User Information
+}
+
+state ViewPurpose {
+    entry / Display Application Purpose
+    exit / Show Application Purpose
+}
+
+state GiveFeedback {
+    entry / Provide Feedback on Service
+    exit / Submit Feedback
+}
+
+ApplyForVisa --> PaymentReceived : Application Accepted
+
+PaymentReceived --> VisaProcessing : Payment Confirmed
+
+VisaProcessing --> Approved : Document Check Passed
+VisaProcessing --> Rejected : Document Check Failed
+
+Approved --> ViewVisaStatus : Visa Approved
+Rejected --> ViewVisaStatus : Visa Rejected
+
+ViewVisaStatus --> GiveFeedback : Status Checked
+ViewVisaStatus --> LoggedIn : Status Displayed
+
+CancelApplication --> LoggedIn : Application Cancelled
+ModifyDetails --> LoggedIn : Details Modified
+ViewDetails --> LoggedIn : Details Viewed
+ViewPurpose --> LoggedIn : Purpose Viewed
+GiveFeedback --> LoggedIn : Feedback Submitted
+
+LoggedIn --> ApplyForVisa : Apply for Visa
+LoggedIn --> ViewVisaStatus : View Status
+LoggedIn --> CancelApplication : Cancel Application
+LoggedIn --> ModifyDetails : Modify Details
+LoggedIn --> ViewDetails : View Details
+LoggedIn --> ViewPurpose : View Purpose
+LoggedIn --> GiveFeedback : Give Feedback
+LoggedIn --> LoggedOut : Logout
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title E-Visa Processing and Follow-Up System
+
+[*] --> CreateAccount
+CreateAccount --> LoggedOut : Account Created
+
+state CreateAccount {
+    entry / Display Registration Form
+    exit / Validate and Save User Details
+}
+
+state LoggedOut {
+    entry / Display Login Form
+}
+
+LoggedOut --> LoggedIn : Valid Credentials
+
+state LoggedIn {
+    entry / Display User Dashboard
+    exit / Display Options
+}
+
+state ApplyForVisa {
+    entry / Initiate Visa Application
+    exit / Collect Application Details, Payment
+}
+
+state ViewVisaStatus {
+    entry / Display Visa Application Status
+    exit / Show Current Status
+}
+
+state CancelApplication {
+    entry / Initiate Cancellation Process
+    exit / Confirm Cancellation
+}
+
+state ModifyDetails {
+    entry / Update User Information
+    exit / Save Changes
+}
+
+state ViewDetails {
+    entry / Display User Profile
+    exit / Show User Information
+}
+
+state ViewPurpose {
+    entry / Display Application Purpose
+    exit / Show Application Purpose
+}
+
+state GiveFeedback {
+    entry / Provide Feedback on Service
+    exit / Submit Feedback
+}
+
+ApplyForVisa --> PaymentReceived : Application Accepted
+
+PaymentReceived --> VisaProcessing : Payment Confirmed
+
+VisaProcessing --> Approved : Document Check Passed
+VisaProcessing --> Rejected : Document Check Failed
+
+Approved --> ViewVisaStatus : Visa Approved
+Rejected --> ViewVisaStatus : Visa Rejected
+
+ViewVisaStatus --> GiveFeedback : Status Checked
+ViewVisaStatus --> LoggedIn : Status Displayed
+
+CancelApplication --> LoggedIn : Application Cancelled
+ModifyDetails --> LoggedIn : Details Modified
+ViewDetails --> LoggedIn : Details Viewed
+ViewPurpose --> LoggedIn : Purpose Viewed
+GiveFeedback --> LoggedIn : Feedback Submitted
+
+LoggedIn --> ApplyForVisa : Apply for Visa
+LoggedIn --> ViewVisaStatus : View Status
+LoggedIn --> CancelApplication : Cancel Application
+LoggedIn --> ModifyDetails : Modify Details
+LoggedIn --> ViewDetails : View Details
+LoggedIn --> ViewPurpose : View Purpose
+LoggedIn --> GiveFeedback : Give Feedback
+LoggedIn --> LoggedOut : Logout
+LoggedOut --> [*]
+
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- missing_final_state_transition
+
+Invalid PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Login : [registration successful]
+  Login : [registration failed]
+}
+
+state Login {
+  Login --> Dashboard : [login successful]
+  Dashboard : [logout]
+}
+
+state Dashboard {
+  Dashboard --> News : [read news]
+  News --> Dashboard : [back to dashboard]
+  Dashboard --> Facilities : [access facilities]
+  Facilities --> Dashboard : [back to dashboard]
+  Dashboard --> SymptomCheck : [check symptoms]
+  SymptomCheck --> Dashboard : [back to dashboard]
+  Dashboard --> FitnessCheck : [use fitness checking options]
+  FitnessCheck --> Dashboard : [back to dashboard]
+  Dashboard --> Payment : [select payment method]
+  Payment --> FinishSession : [finish session]
+}
+
+state Payment {
+  Payment --> InsurancePayment : [insurance payment]
+  InsurancePayment --> DoctorConsultation : [doctor consultation]
+  DoctorConsultation --> PaymentComplete : [payment completed]
+  PaymentComplete --> FinishSession : [finish session]
+}
+
+state InsurancePayment {
+  InsurancePayment --> CashPayment : [choose cash payment]
+  CashPayment --> FinishSession : [display cash payment details, finish session]
+}
+
+state FinishSession {
+  FinishSession --> Feedback : [provide feedback]
+  Feedback --> Logout : [logout]
+  Logout : [logout successfully]
+}
+
+[*] --> [*]
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  Register --> Login : [registration successful]
+  Login : [registration failed]
+}
+
+state Login {
+  Login --> Dashboard : [login successful]
+  Dashboard : [logout]
+}
+
+state Dashboard {
+  Dashboard --> News : [read news]
+  News --> Dashboard : [back to dashboard]
+  Dashboard --> Facilities : [access facilities]
+  Facilities --> Dashboard : [back to dashboard]
+  Dashboard --> SymptomCheck : [check symptoms]
+  SymptomCheck --> Dashboard : [back to dashboard]
+  Dashboard --> FitnessCheck : [use fitness checking options]
+  FitnessCheck --> Dashboard : [back to dashboard]
+  Dashboard --> Payment : [select payment method]
+  Payment --> FinishSession : [finish session]
+}
+
+state Payment {
+  Payment --> InsurancePayment : [insurance payment]
+  InsurancePayment --> DoctorConsultation : [doctor consultation]
+  DoctorConsultation --> PaymentComplete : [payment completed]
+  PaymentComplete --> FinishSession : [finish session]
+}
+
+state InsurancePayment {
+  InsurancePayment --> CashPayment : [choose cash payment]
+  CashPayment --> FinishSession : [display cash payment details]
+}
+
+state FinishSession {
+  FinishSession --> Feedback : [provide feedback]
+  Feedback --> Logout : [logout]
+}
+
+state Logout {
+  Logout --> [*] : [logout successfully]
+}
+
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

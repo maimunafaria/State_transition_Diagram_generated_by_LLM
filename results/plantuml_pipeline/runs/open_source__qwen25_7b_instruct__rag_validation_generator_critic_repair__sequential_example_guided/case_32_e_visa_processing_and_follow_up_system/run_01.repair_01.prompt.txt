@@ -1,0 +1,205 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Candidate PlantUML to repair:
+@startuml
+[*] --> LoggedIn
+
+state LoggedIn {
+  [*] --> Dashboard
+  Dashboard --> Settings : open settings
+  Settings --> Dashboard : back
+  Dashboard --> ViewStatus : view status
+  ViewStatus --> ViewStatus : check status
+  ViewStatus --> CancelApp : cancel application
+  ViewStatus --> ModifyDetails : modify details
+  ViewStatus --> ViewDetails : view details
+  ViewDetails --> ViewPurpose : view purpose of application
+  ViewPurpose --> ViewPurpose : update status based on document check
+  ViewPurpose --> Feedback : give feedback
+}
+
+LoggedIn --> [*] : logout
+
+state CancelApp {
+  CancelApp --> ViewStatus : back to view status
+}
+
+state ModifyDetails {
+  ModifyDetails --> ViewDetails : back to view details
+  ModifyDetails --> ViewPurpose : view purpose of application
+  ModifyDetails --> Feedback : give feedback
+  ModifyDetails --> ViewStatus : update status
+}
+
+state ViewDetails {
+  ViewDetails --> ViewPurpose : view purpose of application
+  ViewDetails --> Feedback : give feedback
+  ViewDetails --> ViewStatus : update status
+}
+
+state ViewPurpose {
+  ViewPurpose --> ViewStatus : update status
+}
+
+Feedback --> ViewStatus
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- multiple_initial_state_transitions (LoggedIn, Dashboard)
+
+Repair guidance for the target issue:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- multiple_initial_state_transitions
+
+Invalid PlantUML:
+@startuml
+[*] --> LoggedIn
+
+state LoggedIn {
+  [*] --> Dashboard
+  Dashboard --> Settings : open settings
+  Settings --> Dashboard : back
+  Dashboard --> BookTicket : book ticket
+  BookTicket --> PaymentConfirmation : payment confirmed
+  PaymentConfirmation --> OrderCompleted : order completed
+  OrderCompleted --> LoggedIn : logout
+}
+
+LoggedIn --> [*] : logout
+@enduml
+
+Repaired PlantUML:
+@startuml
+[*] --> LoggedIn
+
+state LoggedIn {
+ LoggedIn --> Dashboard
+  Dashboard --> Settings : open settings
+  Settings --> Dashboard : back
+  Dashboard --> BookTicket : book ticket
+  BookTicket --> PaymentConfirmation : payment confirmed
+  PaymentConfirmation --> OrderCompleted : order completed
+  OrderCompleted --> LoggedIn : logout
+}
+
+LoggedIn --> [*] : logout
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- multiple_initial_state_transitions
+
+Invalid PlantUML:
+@startuml
+[*] --> Register
+
+state Register {
+  [*] --> Login : registration successful
+  Login --> [*] : registration unsuccessful
+}
+
+state Login {
+  [*] --> CheckLocation : login successful
+  CheckLocation --> [*] : invalid location
+}
+
+state CheckLocation {
+  [*] --> CheckInfo : location valid
+  CheckInfo --> [*] : location invalid
+}
+
+state CheckInfo {
+  [*] --> ChooseInfo : location valid
+  ChooseInfo --> [*] : invalid selection
+}
+
+state ChooseInfo {
+  [*] --> ShowInfo : valid selection
+  ShowInfo --> [*] : logout
+}
+
+state ShowInfo {
+  ShowInfo --> ViewDetails : view additional details
+}
+
+state ViewDetails {
+  ViewDetails --> [*] : additional details viewed
+  ShowInfo --> [*] : session ended
+}
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+[*] --> Register
+
+state Register {
+  Register --> Login : registration successful
+  Login --> [*] : registration unsuccessful
+}
+
+state Login {
+  Login --> CheckLocation : login successful
+  CheckLocation --> [*] : invalid location
+}
+
+state CheckLocation {
+  CheckLocation --> CheckInfo : location valid
+  CheckInfo --> [*] : location invalid
+}
+
+state CheckInfo {
+  CheckInfo --> ChooseInfo : valid selection
+  ChooseInfo --> [*] : invalid selection
+}
+
+state ChooseInfo {
+  ChooseInfo --> ShowInfo : valid selection
+  ShowInfo --> [*] : logout
+}
+
+state ShowInfo {
+  ShowInfo --> ViewDetails : view additional details
+}
+
+state ViewDetails {
+  ViewDetails --> [*] : additional details viewed
+  ShowInfo --> [*] : session ended
+}
+
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.

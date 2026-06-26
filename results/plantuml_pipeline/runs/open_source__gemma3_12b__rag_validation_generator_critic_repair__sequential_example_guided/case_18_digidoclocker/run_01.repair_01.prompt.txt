@@ -1,0 +1,610 @@
+You are a sequential UML repair assistant.
+Fix exactly one validation issue in this attempt: the target issue below.
+Use the historical repair examples as patterns for this target issue only.
+Make the smallest possible edit that fixes the target issue.
+Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.
+Do not try to solve the later issues unless the same small edit naturally fixes them.
+Do not introduce any new validation issue.
+Output ONLY corrected PlantUML. No explanations.
+
+Target requirement:
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
+
+Candidate PlantUML to repair:
+@startuml
+title UML State Machine Diagram (Certificate Management)
+
+
+[*] --> Registration
+
+state Registration
+Registration : entry / Get the Registration Details
+Registration : do / Validate the Details
+Registration : exit / Valid or Invalid Registration
+
+
+Registration --> [*] : [Invalid Registration]
+
+
+Registration --> Login : [Valid Registration]
+
+
+state Login
+Login : entry / Get the Login Details
+Login : do / Validate the Login Details
+Login : exit / Valid or Invalid Login
+
+
+Login --> Login : [Invalid Login]
+
+
+Login --> Choice1 : [Valid Login]
+
+
+state Choice1 <<choice>>
+
+Choice1 --> CancelCert : [Cancel the Certificate]
+Choice1 --> RequestCert : [Applying for Certificates]
+Choice1 --> ViewProfile : [Profile Viewing]
+Choice1 --> UpdateProfile : [Profile Updation]
+
+
+state "Cancellation of Certificates" as CancelCert
+CancelCert : entry / Certificate is asked for Cancellation
+CancelCert : do / Certificate is Canceled
+CancelCert : exit / Move to End
+
+CancelCert --> EndMerge
+
+state "Request for Certificates" as RequestCert
+RequestCert : entry / Fill the Form and Upload the Details
+RequestCert : do / Request for Certificates
+RequestCert : exit / Apply for another Certificate or Move to End
+
+RequestCert --> RequestCert : [Apply for another Certificate if needed]
+
+RequestCert --> IssueCert : [Certificates requested]
+
+state "Issuing the Certificates" as IssueCert
+IssueCert : entry / Validating Details
+IssueCert : do / Issuing the Certificates
+IssueCert : exit / Updating the Database
+
+IssueCert --> RequestCert : [Certificate is issued]
+RequestCert --> EndMerge : [End]
+
+state "View Profile" as ViewProfile
+ViewProfile : entry / View the Profile
+ViewProfile : do / Display the Profile
+ViewProfile : exit / Exit from Profile Viewing
+
+ViewProfile --> EndMerge : [End]
+
+
+state "Update the Profile" as UpdateProfile
+UpdateProfile : entry / Update the User's Profile
+UpdateProfile : do / Citizen Profile is updated
+UpdateProfile : exit / Move to End
+
+UpdateProfile --> EndMerge : [End]
+
+
+state EndMerge <<choice>>
+
+EndMerge --> [*]
+
+@enduml
+
+
+Target validation issue for THIS attempt:
+- unreachable: Cancellation of Certificates, EndMerge, IssueCert, Issuing the Certificates, Request for Certificates, Update the Profile, View Profile
+
+Repair guidance for the target issue:
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+
+--- Historical Repair Examples for the Target Issue ---
+Historical repair example 1
+Violation:
+- unreachable_state
+
+Invalid PlantUML:
+@startuml
+title UML state machine diagram
+
+state "Seller Registration" as SellerRegistration
+SellerRegistration : entry/Unregistered Seller
+SellerRegistration : do/Get Valid Seller Credentials
+SellerRegistration : exit/Seller Account Registered
+
+state "Seller Verification" as SellerVerification
+SellerVerification : entry/Seller Account Registered
+SellerVerification : do/Verify Seller
+SellerVerification : exit/Login Seller
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry/Unverified Seller
+SellerLogin : entry/Seller not logged in
+SellerLogin : do/Authenticate Seller
+SellerLogin : exit/Logged In Successfully
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry/Not Logged In
+CustomerLogin : do/Authenticate Customer
+CustomerLogin : exit/Successfully Logged In
+
+state "Seller Home" as SellerHome
+SellerHome : entry/Logged In Seller
+SellerHome : do/Display Seller Dashboard
+SellerHome : exit/Sale Products
+SellerHome : exit/Promote Products
+SellerHome : exit/Chat
+SellerHome : exit/Logout
+
+state "Customer Home" as CustomerHome
+CustomerHome : entry/Customer Logged in
+CustomerHome : do/Display Recommended/Promoted Products
+CustomerHome : exit/View Product
+CustomerHome : exit/Buy Product
+CustomerHome : exit/Chat
+CustomerHome : exit/Report Seller
+CustomerHome : exit/Rate and Review
+
+state "View Product" as ViewProduct
+ViewProduct : entry/To View Products
+ViewProduct : do/Search and View Products
+ViewProduct : exit/Return to home
+ViewProduct : exit/Buy Product
+
+state "Buy Product" as BuyProduct
+BuyProduct : entry/Opted to Buy
+BuyProduct : do/Add product to cart
+BuyProduct : exit/Proceed to Checkout
+
+state "Make Purchase" as MakePurchase
+MakePurchase : entry/Proceeded to Checkout
+MakePurchase : do/Enable payment
+MakePurchase : exit/Payment Successful
+MakePurchase : exit/Payment Unsuccessful
+MakePurchase : exit/Return to Home
+
+state "Customer Chat" as CustomerChat
+CustomerChat : entry/To Chat
+CustomerChat : do/Chat with Seller
+CustomerChat : exit/Return to Home
+
+state "Report Seller" as ReportSeller
+ReportSeller : entry/To Report Seller
+ReportSeller : entry/Seller in Purchase History
+ReportSeller : do/Issue Report to Seller
+ReportSeller : exit/Return to Home
+
+state "Rate and Review" as RateReview
+RateReview : entry/To Rate and Review
+RateReview : entry/Product Delivered
+RateReview : do/Rate and Review the product
+RateReview : exit/Return to Home
+
+state "Sale Products" as SaleProducts
+SaleProducts : entry/To Sale Products
+SaleProducts : do/Add new Product to Seller Inventory
+SaleProducts : exit/Product added Successfully
+SaleProducts : exit/Return to Home State
+
+state "Promote Products" as PromoteProducts
+PromoteProducts : entry/To Promote Products
+PromoteProducts : entry/Product in Sale
+PromoteProducts : do/Promote a Product
+PromoteProducts : exit/Return to Home State
+
+state "Seller Chat" as SellerChat
+SellerChat : entry/To Chat
+SellerChat : entry/Seller Product in Sale
+SellerChat : entry/Message from Customer
+SellerChat : do/Enable chat with Customer
+SellerChat : exit/Return to Home State
+
+state "Logout" as Logout
+Logout : entry/To Logout User
+Logout : do/Logout User
+Logout : exit/User Logged out
+
+[*] --> CustomerLogin
+CustomerLogin --> SellerRegistration : [New Seller]
+CustomerLogin --> J0 : [Registered Seller]
+
+SellerRegistration --> SellerVerification
+SellerVerification --> SellerLogin
+SellerLogin --> SellerHome : [Go To Home]
+SellerHome --> CustomerHome : [Go To Home]
+
+CustomerHome --> ViewProduct : [View Products]
+CustomerHome --> CustomerChat : [Chat]
+CustomerHome --> ReportSeller : [Report Seller]
+CustomerHome --> RateReview : [Rate and Review]
+CustomerHome --> Logout : [Logout]
+
+ViewProduct --> CustomerHome : [Not to Buy]
+ViewProduct --> BuyProduct : [Proceed to Buy]
+
+BuyProduct --> MakePurchase
+MakePurchase --> CustomerHome
+
+CustomerChat --> CustomerHome
+ReportSeller --> CustomerHome
+RateReview --> CustomerHome
+PromoteProducts --> SellerHome : [Go To Home]
+SaleProducts --> SellerHome : [Go To Home]
+SellerChat --> SellerHome : [Return to Home State]
+Logout --> [*]
+J0 <<choice>>
+J0 --> SellerRegistration : [New Seller]
+J0 --> CustomerLogin : [Customer Portal]
+
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML state machine diagram
+
+state "Seller Registration" as SellerRegistration
+SellerRegistration : entry/Unregistered Seller
+SellerRegistration : do/Get Valid Seller Credentials
+SellerRegistration : exit/Seller Account Registered
+
+state "Seller Verification" as SellerVerification
+SellerVerification : entry/Seller Account Registered
+SellerVerification : do/Verify Seller
+SellerVerification : exit/Login Seller
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry/Unverified Seller
+SellerLogin : entry/Seller not logged in
+SellerLogin : do/Authenticate Seller
+SellerLogin : exit/Logged In Successfully
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry/Not Logged In
+CustomerLogin : do/Authenticate Customer
+CustomerLogin : exit/Successfully Logged In
+
+state "Seller Home" as SellerHome
+SellerHome : entry/Logged In Seller
+SellerHome : do/Display Seller Dashboard
+SellerHome : exit/Sale Products
+SellerHome : exit/Promote Products
+SellerHome : exit/Chat
+SellerHome : exit/Logout
+
+state "Customer Home" as CustomerHome
+CustomerHome : entry/Customer Logged in
+CustomerHome : do/Display Recommended/Promoted Products
+CustomerHome : exit/View Product
+CustomerHome : exit/Buy Product
+CustomerHome : exit/Chat
+CustomerHome : exit/Report Seller
+CustomerHome : exit/Rate and Review
+
+state "View Product" as ViewProduct
+ViewProduct : entry/To View Products
+ViewProduct : do/Search and View Products
+ViewProduct : exit/Return to home
+ViewProduct : exit/Buy Product
+
+state "Buy Product" as BuyProduct
+BuyProduct : entry/Opted to Buy
+BuyProduct : do/Add product to cart
+BuyProduct : exit/Proceed to Checkout
+
+state "Make Purchase" as MakePurchase
+MakePurchase : entry/Proceeded to Checkout
+MakePurchase : do/Enable payment
+MakePurchase : exit/Payment Successful
+MakePurchase : exit/Payment Unsuccessful
+MakePurchase : exit/Return to Home
+
+state "Customer Chat" as CustomerChat
+CustomerChat : entry/To Chat
+CustomerChat : do/Chat with Seller
+CustomerChat : exit/Return to Home
+
+state "Report Seller" as ReportSeller
+ReportSeller : entry/To Report Seller
+ReportSeller : entry/Seller in Purchase History
+ReportSeller : do/Issue Report to Seller
+ReportSeller : exit/Return to Home
+
+state "Rate and Review" as RateReview
+RateReview : entry/To Rate and Review
+RateReview : entry/Product Delivered
+RateReview : do/Rate and Review the product
+RateReview : exit/Return to Home
+
+state "Sale Products" as SaleProducts
+SaleProducts : entry/To Sale Products
+SaleProducts : do/Add new Product to Seller Inventory
+SaleProducts : exit/Product added Successfully
+SaleProducts : exit/Return to Home State
+
+state "Promote Products" as PromoteProducts
+PromoteProducts : entry/To Promote Products
+PromoteProducts : entry/Product in Sale
+PromoteProducts : do/Promote a Product
+PromoteProducts : exit/Return to Home State
+
+state "Seller Chat" as SellerChat
+SellerChat : entry/To Chat
+SellerChat : entry/Seller Product in Sale
+SellerChat : entry/Message from Customer
+SellerChat : do/Enable chat with Customer
+SellerChat : exit/Return to Home State
+
+state "Logout" as Logout
+Logout : entry/To Logout User
+Logout : do/Logout User
+Logout : exit/User Logged out
+
+[*] --> CustomerLogin
+CustomerLogin --> SellerRegistration : [New Seller]
+CustomerLogin --> J0 : [Registered Seller]
+SellerHome --> PromoteProducts : [Promote Products]
+SellerHome --> SaleProducts : [Sale Products]
+SellerHome --> SellerChat : [Seller Chat]
+CustomerLogin --> SellerVerification : [New Seller]
+
+SellerRegistration --> SellerVerification
+SellerVerification --> SellerLogin
+SellerLogin --> SellerHome : [Go To Home]
+SellerHome --> CustomerHome : [Go To Home]
+
+CustomerHome --> ViewProduct : [View Products]
+CustomerHome --> CustomerChat : [Chat]
+CustomerHome --> ReportSeller : [Report Seller]
+CustomerHome --> RateReview : [Rate and Review]
+CustomerHome --> Logout : [Logout]
+
+ViewProduct --> CustomerHome : [Not to Buy]
+ViewProduct --> BuyProduct : [Proceed to Buy]
+
+BuyProduct --> MakePurchase
+MakePurchase --> CustomerHome
+
+CustomerChat --> CustomerHome
+ReportSeller --> CustomerHome
+RateReview --> CustomerHome
+PromoteProducts --> SellerHome : [Go To Home]
+SaleProducts --> SellerHome : [Go To Home]
+SellerChat --> SellerHome : [Return to Home State]
+Logout --> [*]
+J0 <<choice>>
+J0 --> SellerRegistration : [New Seller]
+J0 -->
+@enduml
+
+---
+
+Historical repair example 2
+Violation:
+- unreachable_state
+
+Invalid PlantUML:
+@startuml
+title UML State Transition Diagram - Healthcare Portal
+
+[*] --> Idle : Start
+
+state "Idle" as Idle
+Idle : entry/Welcome
+Idle : do/Waiting for user action
+Idle : exit/Register/Login
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/MainMenu/InvalidRegister
+
+state "InvalidRegister" as InvalidRegister
+InvalidRegister : entry/Invalid registration
+InvalidRegister : do/Cannot register
+InvalidRegister : exit/Abnormal termination
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid credentials
+Login : exit/MainMenu/InvalidLogin
+
+state "InvalidLogin" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state "MainMenu" as MainMenu
+MainMenu : entry/MainMenu
+MainMenu : do/Access facilities
+MainMenu : exit/Waiting for user choice
+
+state "ReadContent" as ReadContent
+ReadContent : entry/ReadContent
+ReadContent : do/View news/expert content
+ReadContent --> MainMenu : Continue
+
+state "HealthInfo" as HealthInfo
+HealthInfo : entry/HealthInfo
+HealthInfo : do/Check symptoms or fitness
+HealthInfo --> MainMenu : Continue
+
+state "ViewResult" as ViewResult
+ViewResult : entry/ViewResult
+ViewResult : do/View results
+ViewResult --> MainMenu : Continue
+ViewResult --> Logout : Finish
+
+state "ProcessInsurance" as ProcessInsurance
+ProcessInsurance : entry/ProcessInsurance
+ProcessInsurance : do/Validate insurance
+ProcessInsurance --> InsurancePayment : Approved
+ProcessInsurance --> CashPayment : Rejected
+
+state "PaymentSelection" as PaymentSelection
+PaymentSelection : entry/PaymentSelection
+PaymentSelection : do/Choose payment method
+PaymentSelection --> CashPayment : Cash
+PaymentSelection --> InsurancePayment : Insurance
+
+state "CashPayment" as CashPayment
+CashPayment : entry/CashPayment
+CashPayment : do/Inform cash details
+CashPayment --> MainMenu : Complete
+
+state "InsurancePayment" as InsurancePayment
+InsurancePayment : entry/InsurancePayment
+InsurancePayment : do/Process insurance payment
+InsurancePayment --> MainMenu : Complete
+
+MainMenu --> ProcessInsurance : Select Insurance
+MainMenu --> ReadContent : News/Expert Content
+MainMenu --> HealthInfo : Check Symptoms/Fitness
+MainMenu --> ViewResult : View Results
+MainMenu --> PaymentSelection : Make Payment
+MainMenu --> Logout : Logout
+
+InvalidRegister --> [*] : Abnormal termination
+InvalidLogin --> [*] : Abnormal termination
+
+Logout --> [*] : Session ended
+@enduml
+
+Repaired PlantUML:
+@startuml
+title UML State Transition Diagram - Healthcare Portal
+
+[*] --> Idle : Start
+
+state "Idle" as Idle
+Idle : entry/Welcome
+Idle : do/Waiting for user action
+Idle : exit/Register/Login
+
+Idle --> Register : Register
+Idle --> Login : Login
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/MainMenu/InvalidRegister
+
+Register --> MainMenu : Valid registration
+Register --> InvalidRegister : Invalid registration
+
+state "InvalidRegister" as InvalidRegister
+InvalidRegister : entry/Invalid registration
+InvalidRegister : do/Cannot register
+InvalidRegister : exit/Abnormal termination
+
+InvalidRegister --> [*] : Abnormal completion
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid credentials
+Login : exit/MainMenu/InvalidLogin
+
+Login --> MainMenu : Valid login
+Login --> InvalidLogin : Invalid login
+
+state "InvalidLogin" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+InvalidLogin --> [*] : Abnormal completion
+
+state "MainMenu" as MainMenu
+MainMenu : entry/MainMenu
+MainMenu : do/Access facilities
+MainMenu : exit/Waiting for user choice
+
+MainMenu --> ReadContent : View content
+MainMenu --> HealthInfo : Check health info
+MainMenu --> ProcessInsurance : Process insurance
+MainMenu --> PaymentSelection : Make payment
+MainMenu --> ViewResult : View result
+MainMenu --> Logout : Logout
+
+state "ReadContent" as ReadContent
+ReadContent : entry/ReadContent
+ReadContent : do/View news/expert content
+ReadContent : exit/MainMenu
+
+ReadContent --> MainMenu : Back to main menu
+
+state "HealthInfo" as HealthInfo
+HealthInfo : entry/HealthInfo
+HealthInfo : do/Check symptoms or fitness
+HealthInfo : exit/MainMenu
+
+HealthInfo --> MainMenu : Back to main menu
+
+state "ViewResult" as ViewResult
+ViewResult : entry/ViewResult
+ViewResult : do/View results
+ViewResult : exit/Continue/Logout
+
+ViewResult --> Continue : Continue using system
+ViewResult --> Logout : Logout
+
+state "ProcessInsurance" as ProcessInsurance
+ProcessInsurance : entry/ProcessInsurance
+ProcessInsurance : do/Validate insurance
+ProcessInsurance : exit/InsuranceApproved/InsuranceRejected
+
+ProcessInsurance --> InsurancePayment : Insurance approved
+ProcessInsurance --> [*] : Insurance rejected
+
+state "PaymentSelection" as PaymentSelection
+PaymentSelection : entry/PaymentSelection
+PaymentSelection : do/Choose payment method
+PaymentSelection : exit/CashPayment/InsurancePayment
+
+PaymentSelection --> CashPayment : Cash selected
+PaymentSelection --> InsurancePayment : Insurance selected
+
+state "CashPayment" as CashPayment
+CashPayment : entry/CashPayment
+CashPayment : do/Inform cash details
+CashPayment : exit/CompletePayment
+
+CashPayment --> MainMenu : Payment complete
+
+state "InsurancePayment" as InsurancePayment
+InsurancePayment : entry/InsurancePayment
+InsurancePayment : do/Process insurance payment
+InsurancePayment : exit/PaymentComplete
+
+InsurancePayment --> MainMenu : Payment complete
+
+state "Continue" as Continue
+Continue : entry/Continue
+Continue : do/Continue using system
+Continue : exit/MainMenu
+
+Continue --> MainMenu : Back to main menu
+
+state "Logout" as Logout
+Logout : entry/Logout
+Logout : do/Log out user
+Logout : exit/SystemTerminated
+
+Logout --> [*] :
+@enduml
+
+Now repair only the target issue. Return one corrected PlantUML diagram.
