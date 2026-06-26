@@ -1684,6 +1684,41 @@ def build_syntax_grounded_pattern_rules_repair_prompt(
     )
 
 
+def build_sequential_syntax_grounded_pattern_rules_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+) -> str:
+    validation_issues = _prioritized_repair_issues(validation)
+    target_issue = validation_issues[0] if validation_issues else ""
+    target_issues = [target_issue] if target_issue else []
+    syntax_patterns = format_syntax_patterns(target_issues)
+    structural_patterns = format_all_structural_validation_patterns()
+    return (
+        "You are a sequential PlantUML repair assistant.\n"
+        "Fix exactly one validation issue in this attempt: the target issue below.\n"
+        "Use only the PlantUML syntax patterns relevant to this target issue.\n"
+        "The uppercase identifiers in the patterns are placeholders, not literal state names.\n"
+        "Replace placeholders only with existing or requirement-supported states, events, and guards.\n"
+        "Make the smallest possible edit.\n"
+        "Keep unaffected states, transitions, labels, and behavior unchanged.\n"
+        "Do not copy placeholder identifiers into the final diagram.\n"
+        "Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.\n\n"
+        "Requirement:\n"
+        f"{requirement}\n\n"
+        "Candidate PlantUML:\n"
+        f"{candidate_puml}\n\n"
+        "Target validation issue for THIS attempt:\n"
+        + (f"- {target_issue}" if target_issue else "- none")
+        + "\n\n"
+        + structural_patterns
+        + "\n\nValid PlantUML repair patterns for the target issue:\n"
+        + syntax_patterns
+        + "\n\nNow repair only the target issue. Return one corrected PlantUML diagram."
+    )
+
+
 def build_full_pattern_repair_prompt(
     requirement: str,
     candidate_puml: str,
@@ -1804,6 +1839,36 @@ def build_sequential_example_guided_repair_prompt(
         + "\n".join(f"- {hint}" for hint in repair_guidance)
         + "\n\n--- Historical Repair Examples for the Target Issue ---\n"
         + example_block
+        + "\n\nNow repair only the target issue. Return one corrected PlantUML diagram."
+    )
+
+
+def build_sequential_baseline_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+) -> str:
+    validation_issues = _prioritized_repair_issues(validation)
+    target_issue = validation_issues[0] if validation_issues else ""
+    target_issues = [target_issue] if target_issue else []
+    repair_guidance = _repair_guidance_for_issues(target_issues)
+    return (
+        "You are a sequential UML repair assistant.\n"
+        "Fix exactly one validation issue in this attempt: the target issue below.\n"
+        "Make the smallest possible edit that fixes the target issue.\n"
+        "Preserve all unaffected states, transitions, names, labels, and requirement-supported behavior.\n"
+        "Do not try to solve later issues unless the same small edit naturally fixes them.\n"
+        "Do not introduce any new validation issue.\n"
+        "Output ONLY corrected PlantUML. No explanations.\n\n"
+        "Target requirement:\n"
+        f"{requirement}\n\n"
+        "Candidate PlantUML to repair:\n"
+        f"{candidate_puml}\n\n"
+        "Target validation issue for THIS attempt:\n"
+        + (f"- {target_issue}" if target_issue else "- none")
+        + "\n\nRepair guidance for the target issue:\n"
+        + "\n".join(f"- {hint}" for hint in repair_guidance)
         + "\n\nNow repair only the target issue. Return one corrected PlantUML diagram."
     )
 
