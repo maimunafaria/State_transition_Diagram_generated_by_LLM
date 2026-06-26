@@ -1,0 +1,157 @@
+{
+  "run_id": "open_source__deepseek_r1_14b__rag__examples_only",
+  "case_id": "case_34_green_rides",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nGreen Rides — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall display journey details upon user login and destination selection.\n2. The system shall allow users to activate driving mode or choose other options after viewing journey details.\n3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.\n4. The system shall inform relevant authorities in the event of an accident.\n5. The system shall send notifications during driving or in case of an accident.\n6. The system shall allow users to provide feedback upon completion of their journey.\n\nReference context (use as support; the target requirement above is primary):\n\nExample requirement:\nSmart Traffic Management System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall monitor traffic conditions whenever vehicles are on the road or pedestrians are waiting to cross.\n2. The system shall control street lights according to traffic conditions.\n3. The system shall manage traffic signals in response to detected situations.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML state chart diagram\n\nstate \"idle\" as Idle\nIdle : entry/road empty\nIdle : do/remain same\nIdle : exit/encounter a vehicle\nIdle : exit/people waiting to cross road\n\nstate \"Analyse traffic flow\" as AnalyseTrafficFlow\nAnalyseTrafficFlow : entry/encounter a vehicle\nAnalyseTrafficFlow : entry/people waiting to cross road\nAnalyseTrafficFlow : do/analyse traffic density\nAnalyseTrafficFlow : exit/set signal\nAnalyseTrafficFlow : exit/emergency situation\n\nstate \"smart lights\" as SmartLights\nSmartLights : entry/population density\nSmartLights : do/turn on/off street lights\nSmartLights : exit/population density is zero\n\nstate \"Pedestrians detection\" as PedestriansDetection\nPedestriansDetection : entry/pedestrians waiting to cross\nPedestriansDetection : do/change signal to red\nPedestriansDetection : exit/pedestrians crossed\n\nstate \"Traffic signal\" as TrafficSignal\nTrafficSignal : entry/vehicles at signal\nTrafficSignal : do/read number plate\nTrafficSignal : exit/signal empty\nTrafficSignal : exit/vehicle crossed the signal\nTrafficSignal : exit/number plate captured\n\nstate \"Medical Emergency\" as MedicalEmergency\nMedicalEmergency : entry/emergency situation\nMedicalEmergency : do/call medical assistance\nMedicalEmergency : exit/number plate captured\n\nstate \"Number plate recognition\" as NumberPlateRecognition\nNumberPlateRecognition : entry/number plate captured\nNumberPlateRecognition : do/get details about driver\nNumberPlateRecognition : exit/penalty check\n\nstate \"penalty check\" as PenaltyCheck\nPenaltyCheck : entry/law violation\nPenaltyCheck : do/check violation count\nPenaltyCheck : exit/no violation committed\nPenaltyCheck : exit/exceeding speed limit\nPenaltyCheck : exit/seat belt violation\nPenaltyCheck : exit/helmet violation\n\nstate \"speeding\" as Speeding\nSpeeding : entry/exceeding speed limit\nSpeeding : do/violation count+1\nSpeeding : exit/impose penalty\n\nstate \"seat belt violation\" as SeatBeltViolation\nSeatBeltViolation : entry/not wearing seat belt\nSeatBeltViolation : do/violation count +1\nSeatBeltViolation : exit/impose penalty\n\nstate \"helmet violation\" as HelmetViolation\nHelmetViolation : entry/not wearing a helmet\nHelmetViolation : do/violation count +1\nHelmetViolation : exit/impose penalty\n\nstate \"fine payment\" as FinePayment\nFinePayment : entry/impose penalty\nFinePayment : exit/paid\nFinePayment : exit/not paid\nFinePayment : exit/violation count>3\n\nstate \"warning\" as Warning\nWarning : entry/not paid\nWarning : do/send court notice to driver\nWarning : exit/abnormal termination\n\nstate \"Hold license\" as HoldLicense\nHoldLicense : entry/violation count>3\nHoldLicense : do/temporary license cancellation\nHoldLicense : exit/repayment of fine\nHoldLicense : exit/after the probation period\n\nstate J0 <<choice>>\nstate J1 <<choice>>\nstate J2 <<choice>>\nstate Merge1 <<choice>>\nstate Merge2 <<choice>>\n\n[*] --> J0\n\nJ0 --> Idle\nSmartLights --> J0 \nPedestriansDetection --> J0 \nTrafficSignal --> J0 \n\nIdle --> AnalyseTrafficFlow\nAnalyseTrafficFlow --> J1 : [possible activities]\n\nJ1 --> SmartLights\nJ1 --> PedestriansDetection\nAnalyseTrafficFlow --> TrafficSignal : [signal empty]\nAnalyseTrafficFlow --> MedicalEmergency : [emergency situation]\n\nTrafficSignal --> NumberPlateRecognition\nMedicalEmergency --> NumberPlateRecognition\nNumberPlateRecognition --> PenaltyCheck\n\nPenaltyCheck --> J2 : [possibilities]\nJ2 --> Speeding\nJ2 --> SeatBeltViolation\nJ2 --> HelmetViolation\nPenaltyCheck --> Merge2 : [no violations]\n\nSpeeding --> Merge1\nSeatBeltViolation --> Merge1\nHelmetViolation --> Merge1\n\nMerge1 --> FinePayment : [total fine amount calculation]\n\nFinePayment --> Warning : [fine not paid]\nFinePayment --> HoldLicense : [violation count>3]\nFinePayment --> Merge2 : [paid]\n\nHoldLicense --> Merge2 : [repayment of fine]\n\nMerge2 --> [*] : [any one of the three possibilities]\n\nWarning --> [*]\n\n@enduml\n```\n\nExample requirement:\nEquihealth — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow new users to create an account.\n2. The system shall check if a user's registration is completed before allowing them to sign in.\n3. The system shall display different dashboards based on the user type after they sign in (patient, health worker, or government official).\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML state machine diagram\n\n[*] --> J1 : [check user]\nstate J1 <<choice>>\nstate J2 <<choice>>\nstate J3 <<choice>>\nstate J4 <<choice>>\nstate \"Register\" as Register\nRegister : entry/when the user are user\nRegister : do/Register process\nRegister : exit/ successful registration\nRegister : exit/ invalid registration\n\nstate \"Login\" as Login {\n\n  state \"Patient dashboard\" as PatientDashboard\n  PatientDashboard : entry/if the user is logged in as patient\n  PatientDashboard : do/dashboard is displayed\n  PatientDashboard : exit/when user logout\n\n  state \"Health worker Dashboard\" as HealthWorkerDashboard\n  HealthWorkerDashboard : entry/if the user is logged in as health worker\n  HealthWorkerDashboard : do/display the health worker dashboard\n  HealthWorkerDashboard : exit/if health worker logout\n\n  state \"Government dashboard\" as GovernmentDashboard\n  GovernmentDashboard : entry/if the user is government official\n  GovernmentDashboard : do/display government dashboard\n  GovernmentDashboard : exit/after his activity is finished\n\n  state \"Data Entry\" as DataEntry\n  DataEntry : entry/if the data entry is logged in as patient\n  DataEntry : do/data entry is processed\n  DataEntry : exit/after data entry is completed\n  DataEntry : exit/send the data for validation\n\n  state \"Validation of medical data\" as ValidationMedicalData\n  ValidationMedicalData : entry/if the data entry by the patient is completed\n  ValidationMedicalData : do/validate the data by healthworker\n  ValidationMedicalData : exit/after validation of medical data is completed\n\n  state \"Health Financing\" as HealthPlanning\n  HealthPlanning : entry/analysis of data should be done\n  HealthPlanning : do/the basis of analysed data the best health schemes are drafted\n  HealthPlanning : exit/ the health schemes are sent to the government dashboard\n\n  state \"Analysis\" as Analysis\n  Analysis : entry/if the data entered is validated\n  Analysis : do/analysis of data\n  Analysis : exit/after analysis of data\n  Analysis : exit/send data to health monitoring\n  Analysis : exit/send data to activity scheduling module\n\n  state \"Activity Scheduling\" as ActivityScheduling\n  ActivityScheduling : entry/analysis of data should be done\n  ActivityScheduling : do/activity is scheduled for the healthworkers\n  ActivityScheduling : exit/the activity scheduling is complete\n  ActivityScheduling : exit/send data to alert module\n  ActivityScheduling : exit/send the schedule to health worker dashboard\n\n  state \"Alerts\" as Alerts\n  Alerts : entry/when data from analysis is received\n  Alerts : do/prepare alerts\n  Alerts : exit/after sending alerts patient dashboard and health worker dashboard\n\n  [*] --> LJ\n  state LJ <<choice>>\n\n  LJ --> PatientDashboard\n  LJ --> HealthWorkerDashboard\n  LJ --> GovernmentDashboard\n\n  PatientDashboard --> DataEntry\n  DataEntry --> ValidationMedicalData\n  DataEntry --> Analysis\n\n  Analysis --> ActivityScheduling\n  Analysis --> Alerts\n  Analysis --> HealthPlanning\n  Alerts --> PatientDashboard\n  Alerts --> HealthWorkerDashboard\n  ActivityScheduling --> HealthWorkerDashboard\n  HealthWorkerDashboard --> ValidationMedicalData\n  HealthPlanning --> GovernmentDashboard\n}\n\nstate \"Logout\" as Logout\nLogout : entry/when the user completes his process\nLogout : do/logout user\nLogout : exit/successfully logged out\n\nJ1 --> Register : [ new user ]\nRegister --> J2\nJ1 --> J2\nJ2 --> J3\nJ3 --> Login\nJ3 --> J4\nLogin --> J4\nJ4 --> Logout\nJ2 --> [*]\nLogout --> [*]\n\n@enduml\n```\n\nExample requirement:\nCar Care — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to choose whether they are using the service center side or the car owner side.\n2. The system shall allow service center users to register or log in if already registered.\n\nReference PlantUML excerpt:\n```plantuml\n@startuml\ntitle UML state machine diagram\n\nstate PortalChoice1 <<choice>>\nstate PortalChoice2 <<choice>>\nstate PortalChoice3 <<choice>>\nstate ServiceJoin <<choice>>\nstate OwnerJoin <<choice>>\n\n\n[*] --> PortalChoice1\n\nPortalChoice1 --> PortalChoice2 : [Service Center Portal]\nPortalChoice1 --> PortalChoice3 : [Car Owner Portal]\n\nPortalChoice2 --> ServiceCenterRegistration : [New Service Center]\nPortalChoice2 --> ServiceJoin : [Registered Service center]\nPortalChoice3 --> CarOwnerRegistration : [New Car Owner]\nPortalChoice3 --> OwnerJoin : [Registered Car Owner]\n\nstate \"Service Center Registration\" as ServiceCenterRegistration\nServiceCenterRegistration : entry / Unregistered service center\nServiceCenterRegistration : do / Enter Valid Credentials\nServiceCenterRegistration : exit / Account registered\n\nstate \"Service Center Verification\" as ServiceCenterVerification\nServiceCenterVerification : entry / Service Center account registered\nServiceCenterVerification : do / Verify Service center\nServiceCenterVerification : exit / Login Service center\n\nstate \"Service Center Login\" as ServiceCenterLogin\nServiceCenterLogin : entry / Verified Service Center\nServiceCenterLogin : entry / Service Center not logged in\nServiceCenterLogin : do / Authenticate Service Center\nServiceCenterLogin : exit / Logged In Successfully\n\nstate \"Service center Home\" as ServiceCenterHome\nServiceCenterHome : entry / Logged in Service Center\nServiceCenterHome : do / Display home page\nServiceCenterHome : exit / Enter Damaged parts list\nServiceCenterHome : exit / Expiry Notification page\nServiceCenterHome : exit / Updating Information list\n\nstate \"Expiry Notification page\" as ExpiryNotification\nExpiryNotification : entry / To view expiry notification\nExpiryNotification : do / Send service request to Car owner\nExpiryNotification : exit / Return to Service center home page\n\nstate \"Entering Damaged parts list\" as DamagedParts\nDamagedParts : entry / To enter Damaged parts list\nDamagedParts : do / Preparing and entering damaged parts list\nDamagedParts : exit / Return to service center home page\n\nstate \"Updating parts Information\" as UpdatingParts\nUpdatingParts : entry / To update changed parts information\nUpdatingParts : do / Update Information\nUpdatingParts : exit / Return to Service center home page\n\nstate \"Logout\" as Logout\nLogout : entry / To Logout\nLogout : do / Logout\nLogout : exit / Logged out Successfully\n\nstate \"Car Owner Registration\" as CarOwnerRegistration\nCarOwnerRegistration : entry / Unregistered Car Owner\nCarOwnerRegistration : do / Enter valid Credentials\nCarOwnerRegistration : exit / Account registered\n\nstate \"Car owner Verification\" as CarOwnerVerification\nCarOwnerVerification : entry / Car owner account registered\nCarOwnerVerification : do / Verify Car owner\nCarOwnerVerification : exit / Login Car Owner\n\nstate \"Car Owner Login\" as CarOwnerLogin\nCarOwnerLogin : entry / Verified Car Owner\nCarOwnerLogin : entry / Car owner not logged in\nCarOwnerLogin : do / Authenticate Car Owner\nCarOwnerLogin : exit / Logged In Successfully\n\nstate \"Car Owner Home\" as CarOwnerHome\nCarOwnerHome : entry / Logged in Car Owner\nCarOwnerHome : do / Display home page\nCarOwnerHome : exit / View parts information\nCarOwnerHome : exit / Service\nCarOwnerHome : exit / Report\n\nstate \"Report\" as Report\nReport : entry / To Report Service center\nReport : do / Enter the report\nReport : exit / Return to car owner home page\n\nstate \"View Parts Information\" as ViewPartsInformation\nViewPartsInformation : entry / To view parts information\nViewPartsInformation : do / View car parts Information\nViewPartsInformation : exit / Return to Car owner home page\n\nstate \"Service\" as Service\nService : entry / Service request from service center\nService : do / Accept or deny request\nService : exit / Return to Car Owner home page\n\nstate \"Choose parts\" as ChooseParts\nChooseParts : entry / To choose selected parts\nChooseParts : do / Choose the part to be serviced\nChooseParts : exit / Return to service page\n\nstate \"Make Payment\" as MakePayment\nMakePayment : entry / To make payments\nMakePayment : do / Make payments\nMakePayment : exit / Return to Service page\n\n\nstate ServiceHomeChoice <<choice>>\nstate ServiceLoginChoice <<choice>>\nstate OwnerHomeChoice <<choice>>\nstate OwnerLoginChoice <<choice>>\nstate FinalJoin <<choice>>\n\n\nServiceCenterRegistration --> ServiceCenterVerification\nServiceCenterVerification --> ServiceJoin\nServiceJoin --> ServiceCenterLogin\nServiceCenterLogin --> ServiceLoginChoice\nServiceLoginChoice --> ServiceCenterHome\nExpiryNotification --> ServiceLoginChoice \nUpdatingParts --> ServiceLoginChoice \nDamagedParts --> ServiceLoginChoice \n\nServiceCenterHome --> ServiceHomeChoice : [Possible Activities]\nServiceHomeChoice --> ExpiryNotification\nServiceHomeChoice --> DamagedParts\nServiceHomeChoice --> UpdatingParts\nServiceHomeChoice --> FinalJoin\n\nFinalJoin --> Logout\nLogout --> [*]\n\n\n\nCarOwnerRegistration --> CarOwnerVerification\nCarOwnerVerification --> OwnerJoin\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Green Rides — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall display journey details upon user login and destination selection.\n2. The system shall allow users to activate driving mode or choose other options after viewing journey details.\n3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.\n4. The system shall inform relevant authorities in the event of an accident.\n5. The system shall send notifications during driving or in case of an accident.\n6. The system shall allow users to provide feedback upon completion of their journey.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag__examples_only\\case_34_green_rides\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 0,
+    "transition_count": 0
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "vector",
+      "top_k": 3,
+      "query_domains": [
+        "order"
+      ],
+      "retrieved_docs": [
+        {
+          "name": "dataset_examples/case_23_smart_traffic_management_system.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.0338771343231201,
+          "clipped_chars": 4262
+        },
+        {
+          "name": "dataset_examples/case_27_equihealth.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.077803134918213,
+          "clipped_chars": 3894
+        },
+        {
+          "name": "dataset_examples/case_19_car_care.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.1068538427352905,
+          "clipped_chars": 5319
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_initial_state_transition ([*] --> state)",
+        "missing_final_state_transition (state --> [*])",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "missing_initial_state_transition ([*] --> state)",
+        "missing_final_state_transition (state --> [*])",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_initial_state_transition ([*] --> state)",
+          "missing_final_state_transition (state --> [*])",
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 0,
+        "transition_count": 0
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag__examples_only\\case_34_green_rides\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 0,
+    "state_fn": 10,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 0,
+    "transition_fn": 10,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 0,
+    "state_fn_relaxed": 10,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 0,
+    "transition_fn_relaxed": 10,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 0,
+    "transition_fn_semantic": 10,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "hallucination_state_rate": 0.0,
+    "hallucination_transition_rate": 0.0,
+    "hallucination_state_rate_relaxed": 0.0,
+    "hallucination_transition_rate_relaxed": 0.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  }
+}

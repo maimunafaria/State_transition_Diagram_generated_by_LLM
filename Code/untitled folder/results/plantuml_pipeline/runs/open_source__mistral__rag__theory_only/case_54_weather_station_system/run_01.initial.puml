@@ -1,0 +1,24 @@
+@startuml
+state Running
+state Config
+state Controlled
+state Shutdown
+
+Running:
+    [*] --> Running: Restart
+    Running:clock: CollectData: DataCollection
+    Running:clock: PrepareSummary: SummaryPreparation
+    Running:clock: CheckStatus: StatusChecking
+    Running:remoteControl: MoveToControlled: ControlledMode
+    Running:shutdownCommand: ReturnToShutdown: ShutDown
+
+Config:
+    Config:SaveChanges: SaveChanges --> Running: ReturnToRunning
+    Config:PowerSavingSettings: PowerSaving --> Running: ReturnToRunning
+
+Controlled:
+    Controlled:remoteControl: MoveToRunning: ReturnToRunning
+
+Shutdown:
+    Shutdown:shutdownCommand: Restart: Restart
+@enduml

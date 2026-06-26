@@ -1,0 +1,39 @@
+@startuml
+state Startup {
+  [*] --> Checking
+  Checking: Check if everything is working upon power-on
+  Checking --> ReadyToUse : everything is fine during startup
+  Checking --> Problem : there is a problem during startup
+
+  state Problem {
+    [*]
+    Problem --> Stopped
+  }
+
+  state ReadyToUse {
+    [*]
+    ReadyToUse --> Resettable : user can reset it
+    ReadyToUse --> Activatable : user can activate it
+    ReadyToUse --> Offable : user can turn it off
+
+    state Activatable {
+      [*] --> Monitoring
+      Monitoring: The system shall start monitoring if it is activated
+      Monitoring --> Alarm : a sensor is triggered during monitoring
+      Monitoring --> Normal : continue monitoring if it turns out to be a false alarm or the time ends
+    }
+
+    state Resettable {
+      [*] --> ReadyToUse
+    }
+
+    state Offable {
+      [*] --> Idle
+    }
+
+    state Alarm {
+      [*] --> Normal : The system shall stop and return to normal when the user enters the password at any time
+    }
+  }
+}
+@enduml

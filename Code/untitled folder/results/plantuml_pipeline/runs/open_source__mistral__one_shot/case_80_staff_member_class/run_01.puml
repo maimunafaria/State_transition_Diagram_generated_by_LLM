@@ -1,0 +1,45 @@
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [assign or add to campaign]
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state "Assigned" as Assigned
+Assigned : entry/when staff member is assigned to a client or campaign
+Assigned : do/staff member works on the assignment
+Assigned : exit/when staff member completes the assignment
+Assigned : exit/when staff member switches to another assignment
+
+state "Unassigned" as Unassigned {
+  state "Working" as Working
+  Working : entry/when staff member is unassigned but currently working
+  Working : do/staff member continues working without an assignment
+  Working : exit/when staff member completes work or switches to an assignment
+
+  state "Unemployed" as Unemployed
+  Unemployed : entry/when staff member leaves the job
+  Unemployed : do/staff member is marked as unemployed
+  Unemployed : exit/after some time has passed, record is archived
+}
+
+state "Archived" as Archived {
+  state "Former Employee" as FormerEmployee
+  FormerEmployee : entry/when staff member's record is archived
+  FormerEmployee : do/staff member's record is stored in the archive
+  FormerEmployee : exit/after some time has passed, record is deleted
+}
+
+J1 --> Assigned : [assign to client or campaign]
+Assigned --> J2
+J1 --> J2
+J2 --> J3
+J3 --> Unassigned
+Unassigned --> Working
+Working --> Assigned
+Working --> Unemployed
+Unemployed --> FormerEmployee
+FormerEmployee --> Archived
+Archived --> [*]
+
+@enduml

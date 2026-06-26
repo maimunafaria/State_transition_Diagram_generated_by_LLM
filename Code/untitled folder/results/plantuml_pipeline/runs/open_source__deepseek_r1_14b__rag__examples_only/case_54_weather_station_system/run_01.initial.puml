@@ -1,0 +1,32 @@
+@startuml
+title Weather Station State Machine
+
+state "Shutdown" as Shutdown
+state "Running" as Running
+state "Configuration" as Configuration
+state "Data Collection" as DataCollection
+state "Summary Preparation" as SummaryPreparation
+state "Status Check" as StatusCheck
+state "Controlled Mode" as ControlledMode
+
+[*] --> Shutdown : Power Off
+
+Shutdown --> Running : Startup/Restart
+
+Running --> Configuration : Settings Changed or Power Saving Requested
+Running --> DataCollection : Clock Triggered
+Running --> SummaryPreparation : Summary Request
+Running --> StatusCheck : Status Request
+Running --> ControlledMode : Remote Control Command
+Running --> Shutdown : Shutdown Command
+
+Configuration --> Running : Settings Completed
+
+DataCollection --> Running : Data Collected
+SummaryPreparation --> Running : Summary Sent
+StatusCheck --> Running : Status Transmitted
+
+ControlledMode --> Shutdown : Shutdown Command
+ControlledMode --> Running : Resume Command
+
+@enduml

@@ -1,0 +1,98 @@
+@startuml
+title UML State Chart Diagram
+
+state "E Ticketing" as E_Ticketing {
+  [*] --> CreateAccount
+
+  state "Create Account" as CreateAccount
+  state "Validate Registration" as ValidateRegistration
+  state "Login" as Login
+  state "Check Ticket Status" as CheckTicketStatus
+  state "Book Ticket" as BookTicket
+  state "Manage Account Details" as ManageAccountDetails
+  state "Logout" as Logout
+
+  CreateAccount --> [*] : [Invalid]
+  CreateAccount --> ValidateRegistration : [Valid]
+
+  ValidateRegistration --> Login : [Successful Registration]
+  ValidateRegistration --> CreateAccount : [Invalid Registration]
+
+  Login --> CheckTicketStatus : [Logged In]
+  Login --> BookTicket : [Logged In]
+  Login --> ManageAccountDetails : [Logged In]
+  Login --> Logout : [Logged Out]
+
+  CheckTicketStatus --> [*] : [Logout]
+  BookTicket --> [*] : [Payment Successful]
+  ManageAccountDetails --> [*] : [Logout]
+}
+
+state "Registration" as Registration {
+  [*] --> EnterDetails
+
+  state "Enter Details" as EnterDetails
+  state "Successful Registration" as SuccessfulRegistration
+  state "Re-enter Details" as ReEnterDetails
+
+  EnterDetails --> GetMemberID : [Valid]
+  EnterDetails --> ReEnterDetails : [Invalid]
+  ReEnterDetails --> EnterDetails
+  GetMemberID --> SuccessfulRegistration
+}
+
+state "Authentication" as Authentication {
+  [*] --> AuthEnterMemberID
+
+  state "Enter Member_ID" as AuthEnterMemberID
+  state "Enter Password" as EnterPassword
+  state "successful Login" as SuccessfulLogin
+  state "Invalid Member_ID or Password" as InvalidCreds
+
+  AuthEnterMemberID --> EnterPassword
+  EnterPassword --> SuccessfulLogin : [Valid]
+  EnterPassword --> InvalidCreds : [Invalid]
+}
+
+state "Search Tickets" as SearchTickets {
+  [*] --> CheckTicketStatus
+
+  state "Check Ticket Status" as CheckTicketStatus
+  state "View Ticket Details" as ViewTicketDetails
+  state "Cancel Ticket" as CancelTicket
+
+  CheckTicketStatus --> ViewTicketDetails : [Found]
+  CheckTicketStatus --> CancelTicket : [Not Found]
+}
+
+state "Get Tickets" as GetTickets {
+  [*] --> BookTicket
+
+  state "Book Ticket" as BookTicket
+  state "Confirm Payment" as ConfirmPayment
+  state "View Booking Details" as ViewBookingDetails
+
+  BookTicket --> ConfirmPayment : [Paid]
+  BookTicket --> ViewBookingDetails : [Not Paid]
+}
+
+state StartE_Ticketing <<choice>>
+
+[*] --> StartE_Ticketing
+StartE_Ticketing --> E_Ticketing
+StartE_Ticketing --> Registration
+StartE_Ticketing --> Authentication
+StartE_Ticketing --> SearchTickets
+StartE_Ticketing --> GetTickets
+
+SuccessfulRegistration --> AuthEnterMemberID
+
+SuccessfulLogin --> CheckTicketStatus
+SuccessfulLogin --> BookTicket
+SuccessfulLogin --> ManageAccountDetails
+
+
+ConfirmPayment --> [*]
+ViewBookingDetails --> [*]
+
+@enduml

@@ -1,0 +1,71 @@
+@startuml
+title UML State Chart Diagram for E Ticketing For Bus
+
+state "User Registration" as UserRegistration {
+  [*] --> EnterDetails
+
+  state "Enter Details" as EnterDetails
+  state "Validate Details" as ValidateDetails
+  state "Successful Registration" as SuccessfulRegistration
+  state "Invalid Details" as InvalidDetails
+
+  EnterDetails --> ValidateDetails : [Valid]
+  EnterDetails --> InvalidDetails : [Invalid]
+  ValidateDetails --> SuccessfulRegistration
+}
+
+state "User Authentication" as UserAuthentication {
+  [*] --> Login
+
+  state "Login" as Login
+  state "Verify Credentials" as VerifyCredentials
+  state "Successful Login" as SuccessfulLogin
+  state "Invalid Credentials" as InvalidCreds
+
+  Login --> VerifyCredentials : [Valid]
+  Login --> InvalidCreds : [Invalid]
+  VerifyCredentials --> SuccessfulLogin
+}
+
+state "User Home" as UserHome {
+  [*] --> CheckTicketStatus
+
+  state "Check Ticket Status" as CheckTicketStatus
+  state "Book Ticket" as BookTicket
+  state "Manage Account" as ManageAccount
+  state "Logout" as Logout
+
+  CheckTicketStatus --> BookTicket : [Book ticket]
+  CheckTicketStatus --> ManageAccount : [Manage account]
+  BookTicket --> ConfirmBooking
+  ConfirmBooking --> MakePayment
+  MakePayment --> [*]
+
+  BookTicket --> [*] : [Cancel booking]
+
+  ManageAccount --> [*] : [Logout]
+}
+
+state "Confirm Booking" as ConfirmBooking {
+  [*] --> MakePayment
+
+  state "Make Payment" as MakePayment
+  state "Payment Successful" as PaymentSuccessful
+  state "Payment Failed" as PaymentFailed
+
+  MakePayment --> PaymentSuccessful : [Success]
+  MakePayment --> PaymentFailed : [Failure]
+
+  PaymentSuccessful --> [*]
+}
+
+state StartJoin <<choice>>
+
+[*] --> UserRegistration
+UserRegistration --> UserAuthentication
+UserAuthentication --> UserHome
+
+SuccessfulRegistration --> Login
+SuccessfulLogin --> CheckTicketStatus
+
+@enduml

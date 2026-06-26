@@ -1,0 +1,39 @@
+@startuml
+title UML State Machine Diagram - Safehome Security System
+
+[*] --> StartupCheck
+
+state "Startup Check" as StartupCheck {
+  [*] --> CheckComponents
+  state "Components OK" as ComponentsOK
+  state "Problem during startup" as ProblemDuringStartup
+
+  CheckComponents --> ComponentsOK : [All components are OK]
+  CheckComponents --> ProblemDuringStartup : [Problem detected]
+}
+
+state "Ready to Use" as ReadyToUse {
+  ComponentsOK --> Reset
+  ComponentsOK --> Activate
+  ComponentsOK --> TurnOff
+
+  state "Activated" as Activated {
+    Activate --> Monitoring
+    state "Monitoring" as Monitoring {
+      [*] --> SensorTriggered
+      state "Alarm activated and alerts sent" as AlarmActivatedAndAlertsSent
+      state "False alarm or time ended" as FalseAlarmOrTimeEnded
+
+      SensorTriggered --> AlarmActivatedAndAlertsSent : [Sensor triggered]
+      SensorTriggered --> FalseAlarmOrTimeEnded : [False alarm or time ended]
+    }
+  }
+}
+
+state "Password Entered" as PasswordEntered {
+  TurnOff --> PasswordEntered
+  Activated --> PasswordEntered : [User enters password]
+  state "Return to Normal" as ReturnToNormal
+  ReturnToNormal --> [*]
+}
+@enduml

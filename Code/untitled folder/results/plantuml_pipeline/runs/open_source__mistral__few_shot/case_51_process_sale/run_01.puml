@@ -1,0 +1,34 @@
+@startuml
+title UML state machine diagram - Process Sale
+
+state "Waiting for Customer" as WaitingForCustomer
+WaitingForCustomer : entry / No Customer Present
+
+state "Selecting Items" as SelectingItems
+SelectingItems : entry / Customer Present
+SelectingItems : do / Enter items one by one
+SelectingItems : exit / All Items Selected
+
+state "Payment" as Payment
+Payment : entry / All Items Selected
+Payment : do / Verify payment method
+Payment : [cash] --> CashPaid : [payment verified]
+Payment : [card or check] --> VerifyingPayment : [payment verification in progress]
+
+state CashPaid {
+    CashPaid : exit / Sale Completed
+}
+
+state VerifyingPayment {
+    VerifyingPayment : entry / Payment Verification in Progress
+    VerifyingPayment : do / Verify payment
+    VerifyingPayment : exit / Payment Approved : [payment approved]
+    VerifyingPayment : exit / Payment Denied : [payment denied]
+}
+
+SelectingItems --> Payment
+CashPaid --> WaitingForCustomer
+VerifyingPayment --> CashPaid
+VerifyingPayment --> PaymentDenied : [payment denied]
+WaitingForCustomer : entry / No Customer Present
+@enduml

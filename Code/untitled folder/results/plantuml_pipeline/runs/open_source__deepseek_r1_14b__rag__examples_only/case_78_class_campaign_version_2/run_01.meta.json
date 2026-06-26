@@ -1,0 +1,157 @@
+{
+  "run_id": "open_source__deepseek_r1_14b__rag__examples_only",
+  "case_id": "case_78_class_campaign_version_2",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nClass Campaign Version 2 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start a campaign after a manager and staff are assigned.\n2. The system shall activate the campaign once everything is approved and the contract is signed.\n3. The system shall prepare adverts during the campaign.\n4. The system shall approve and schedule the adverts.\n5. The system shall run the adverts.\n6. The system shall allow extension or adjustment of the campaign while it is running.\n7. The system shall complete the campaign and prepare a final statement after all adverts have finished.\n8. The system shall handle payment after the campaign completion and generate a refund if the amount paid is less than required.\n9. The system shall wait for the correct balance to be settled if the amount paid exceeds the required amount.\n10. The system shall mark the campaign as paid once the full amount is properly paid.\n11. The system shall archive the campaign and release all assigned staff and managers.\n\nReference context (use as support; the target requirement above is primary):\n\nExample requirement:\nClass Campaign Final Version — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall activate a campaign once a manager and staff are assigned, it is approved, and the contract is signed.\n2. The system shall allow surveys to be carried out and evaluated during the campaign.\n3. The system shall prepare, approve, schedule, and run adverts during the campaign.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Campaign State Machine (Final Version)\n\n[*] --> Commissioned : /assignManager; assignStaff\n\nstate Commissioned\nstate Suspended\nstate Completed\nstate Paid\n\nCommissioned --> Active : authorized(authorizationCode)\\n[contract signed]\\n/setCampaignActive\nCommissioned --> Completed : campaignCancelled;\\ncalculateCosts;\\nprepareFinalStatement\nstate Active {\n\n  state Monitoring {\n    [*] --> Survey\n\n    state Survey\n    state Evaluation\n    state H1 <<history>>\n\n    Survey --> Evaluation : surveyComplete\n    Evaluation --> Survey : runSurvey\n  }\n\n  --\n\n  state Running {\n    [*] --> AdvertPreparation\n\n    state AdvertPreparation\n    state Scheduling\n    state \"Running Adverts\" as RunningAdverts\n    state H2 <<history>>\n\n    AdvertPreparation --> Scheduling : advertsApproved\\n/authorize\n    Scheduling --> RunningAdverts : confirmSchedule\n    RunningAdverts --> AdvertPreparation : extendCampaign\\n/modifyBudget\n  }\n\n}\n\n\nActive --> Suspended : suspendCampaign\\n/stopAdverts\nSuspended --> Active : resumeCampaign\n\n\nActive --> Completed : campaignCancelled\\n/cancelSchedule;\\ncalculateCosts;\\nprepareFinalStatement\nAdvertPreparation --> Completed : campaignCompleted\\n/prepareFinalStatement\n\n\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment = 0]\nCompleted --> Completed : paymentReceived(payment)\\n[paymentDue - payment > 0]\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment < 0]\\n/generateRefund\n\n\nPaid --> [*] : archiveCampaign\\n/unassignStaff;\\nunassignManager\n\n@enduml\n```\n\nExample requirement:\nClass Campaign — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall begin a campaign once a manager and staff are assigned.\n2. The system shall activate and start running a campaign upon approval and signing of the contract.\n3. The system shall prepare a final statement when the campaign is finished and move the process toward completion.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle State machine for Campaign\n\nstate Commissioned\nstate Active\nstate Completed\nstate Paid\n\n[*] --> Commissioned : /assignManager;\\nassignStaff\n\nCommissioned --> Active : Authorized(authorizationCode)\\n[contract signed]\\n/setCampaignActive\n\nActive --> Completed : campaignCompleted\\n/prepareFinalStatement\n\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment = zero]\nCompleted --> Completed : paymentReceived(payment)\\n[paymentDue - payment > zero]\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment < zero]\\n/generateRefund\n\nPaid --> [*] : archiveCampaign\\n/unassignStaff;\\nunassignManager\n\n@enduml\n```\n\nExample requirement:\nArt Gallery Mananement System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall verify login credentials upon submission.\n2. The system shall display an error message and prevent further interaction if login details are incorrect.\n3. The system shall allow users to view products or update their information after a successful login.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Chart Diagram\n\n\n[*] --> Login\n\nstate Login\nLogin : entry / getInfo\nLogin : do / verifyData\nLogin : exit / verified\n\nstate LoginDecision <<choice>>\nLogin --> LoginDecision\n\nstate \"Valid Login\" as ValidLogin\nValidLogin : entry / contain Info\nValidLogin : do / allow Access to system\nValidLogin : exit / gallery Entry\n\nstate \"Invalid Login\" as InvalidLogin\nInvalidLogin : entry / wrong Info\nInvalidLogin : do / display Error message\nInvalidLogin : exit / return To Start\n\nLoginDecision --> ValidLogin\nLoginDecision --> InvalidLogin\n\nstate NavChoice <<choice>>\nValidLogin --> NavChoice\n\nstate Gallery\nGallery : entry / show Products\nGallery : do / allow to select Products\nGallery : exit / save Products\n\nstate Update\nUpdate : entry / contain Info\nUpdate : do / take New Info\nUpdate : exit / save new Info\n\nNavChoice --> Gallery\nNavChoice --> Update\n\nUpdate --> [*]\n\nstate Order\nOrder : entry / select Items\nOrder : do / allowto order If products In Stock\nOrder : exit / verification\n\nstate Cart\nCart : entry / contain Selected Items\nCart : do / all billing Info\nCart : exit / payment Method\n\nGallery --> Order\nOrder --> Cart\n\nstate Payment\nPayment : entry / get Payment Method\nPayment : do / confirm Payment\nPayment : exit / verify\n\nCart --> Payment\n\nstate PayDecision <<choice>>\nPayment --> PayDecision\n\nstate \"Valid Payment\" as ValidPayment\nValidPayment : entry / payment Method\nValidPayment : do / get Cash\nValidPayment : exit / confirmation of product\n\nstate \"Invalid Payment\" as InvalidPayment\nInvalidPayment : entry / wrong Entry\nInvalidPayment : do / error Message\nInvalidPayment : exit / return\n\nPayDecision --> ValidPayment\nPayDecision --> InvalidPayment\n\n\nstate Delivery\nDelivery : entry / take out Order\nDelivery : do / deliver Product\nDelivery : exit / exit System\n\nValidPayment --> Delivery\nDelivery --> [*]\n\nInvalidPayment --> [*]\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Class Campaign Version 2 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start a campaign after a manager and staff are assigned.\n2. The system shall activate the campaign once everything is approved and the contract is signed.\n3. The system shall prepare adverts during the campaign.\n4. The system shall approve and schedule the adverts.\n5. The system shall run the adverts.\n6. The system shall allow extension or adjustment of the campaign while it is running.\n7. The system shall complete the campaign and prepare a final statement after all adverts have finished.\n8. The system shall handle payment after the campaign completion and generate a refund if the amount paid is less than required.\n9. The system shall wait for the correct balance to be settled if the amount paid exceeds the required amount.\n10. The system shall mark the campaign as paid once the full amount is properly paid.\n11. The system shall archive the campaign and release all assigned staff and managers.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag__examples_only\\case_78_class_campaign_version_2\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "multiple_initial_state_transitions (Commissioned, Scheduling)",
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 9,
+    "transition_count": 11
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "multiple_initial_state_transitions (Commissioned, Scheduling)",
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "vector",
+      "top_k": 3,
+      "query_domains": [
+        "payment"
+      ],
+      "retrieved_docs": [
+        {
+          "name": "dataset_examples/case_79_class_campaign_final_version.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.2692733705043793,
+          "clipped_chars": 1971
+        },
+        {
+          "name": "dataset_examples/case_77_class_campaign.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.3663683831691742,
+          "clipped_chars": 1074
+        },
+        {
+          "name": "dataset_examples/case_35_art_gallery_mananement_system.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.9152566194534302,
+          "clipped_chars": 2300
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (Commissioned, Scheduling)",
+        "missing_final_state_transition (state --> [*])",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (Commissioned, Scheduling)",
+        "missing_final_state_transition (state --> [*])",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (Commissioned, Scheduling)",
+          "missing_final_state_transition (state --> [*])",
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 9,
+        "transition_count": 11
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag__examples_only\\case_78_class_campaign_version_2\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.6666666666666666,
+    "state_recall": 0.8571428571428571,
+    "state_f1": 0.75,
+    "state_tp": 6,
+    "state_fp": 3,
+    "state_fn": 1,
+    "transition_precision": 0.18181818181818182,
+    "transition_recall": 0.25,
+    "transition_f1": 0.2105263157894737,
+    "transition_tp": 2,
+    "transition_fp": 9,
+    "transition_fn": 6,
+    "state_precision_relaxed": 0.7777777777777778,
+    "state_recall_relaxed": 1.0,
+    "state_f1_relaxed": 0.8750000000000001,
+    "state_tp_relaxed": 7,
+    "state_fp_relaxed": 2,
+    "state_fn_relaxed": 0,
+    "transition_precision_relaxed": 0.6,
+    "transition_recall_relaxed": 0.8571428571428571,
+    "transition_f1_relaxed": 0.7058823529411764,
+    "transition_tp_relaxed": 6,
+    "transition_fp_relaxed": 4,
+    "transition_fn_relaxed": 1,
+    "transition_precision_semantic": 0.6363636363636364,
+    "transition_recall_semantic": 0.875,
+    "transition_f1_semantic": 0.7368421052631579,
+    "transition_tp_semantic": 7,
+    "transition_fp_semantic": 4,
+    "transition_fn_semantic": 1,
+    "transition_event_similarity_mean": 0.9096807953950812,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "multiple_initial_state_transitions (Commissioned, Scheduling)",
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "hallucination_state_rate": 0.3333333333333333,
+    "hallucination_transition_rate": 0.8181818181818182,
+    "hallucination_state_rate_relaxed": 0.2222222222222222,
+    "hallucination_transition_rate_relaxed": 0.4,
+    "missing_transition_rate": 0.75,
+    "missing_transition_rate_relaxed": 0.14285714285714285,
+    "overall_f1": 0.48026315789473684,
+    "overall_f1_relaxed": 0.7904411764705883,
+    "weighted_f1_relaxed_70_30": 0.8242647058823529,
+    "overall_f1_semantic": 0.805921052631579,
+    "weighted_f1_semantic_70_30": 0.8335526315789474,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "multiple_initial_state_transitions (Commissioned, Scheduling)",
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  }
+}

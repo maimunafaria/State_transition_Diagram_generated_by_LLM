@@ -1,0 +1,66 @@
+@startuml
+title UML state machine diagram
+
+[*] --> J1 : [user login and destination selection]
+
+state J1 <<choice>>
+
+state "Driving Mode" as DrivingMode
+DrivingMode : entry/user activates driving mode or chooses other options
+DrivingMode : do/perform action based on user choice
+DrivingMode : exit/user completes journey
+
+state "Select Place to Eat" as SelectPlaceToEat {
+  state "View Menu" as ViewMenu
+  ViewMenu : entry/user selects place to eat
+  ViewMenu : do/view menu details
+  ViewMenu : exit/user places order or exits
+
+  state "Place Order" as PlaceOrder
+  PlaceOrder : entry/user decides to place an order
+  PlaceOrder : do/place order
+  PlaceOrder : exit/order placed successfully or user cancels
+}
+
+state "Inform Authorities" as InformAuthorities
+InformAuthorities : entry/information of accident is provided
+InformAuthorities : do/notify relevant authorities
+InformAuthorities : exit/confirmation received
+
+state "Notifications" as Notifications {
+  state "Driving Notification" as DrivingNotification
+  DrivingNotification : entry/user is driving
+  DrivingNotification : do/send notification
+  DrivingNotification : exit/notification sent or user stops driving
+
+  state "Accident Notification" as AccidentNotification
+  AccidentNotification : entry/accident occurs
+  AccidentNotification : do/send accident notification
+  AccidentNotification : exit/notification sent or accident handled
+}
+
+state "Feedback" as Feedback {
+  state "Provide Feedback" as ProvideFeedback
+  ProvideFeedback : entry/user completes journey
+  ProvideFeedback : do/give feedback
+  ProvideFeedback : exit/feedback submitted or user exits
+}
+
+J1 --> DrivingMode
+
+DrivingMode --> SelectPlaceToEat
+SelectPlaceToEat --> ViewMenu
+ViewMenu --> PlaceOrder
+PlaceOrder --> [*]
+
+DrivingMode --> InformAuthorities
+InformAuthorities --> Notifications
+Notifications --> DrivingNotification
+Notifications --> AccidentNotification
+AccidentNotification --> [*]
+
+DrivingMode --> Feedback
+Feedback --> ProvideFeedback : [user provides feedback]
+ProvideFeedback --> [*]
+
+@enduml

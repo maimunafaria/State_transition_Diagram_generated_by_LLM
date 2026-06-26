@@ -1,0 +1,21 @@
+@startuml
+state "Waiting for User" as WaitingUser
+state "Checking PIN" as CheckingPIN
+state "Invalid PIN" as InvalidPIN
+state "Card Held for Security" as CardHeld
+state "Options Displayed" as OptionsDisplayed
+state "Processing Request" as ProcessingRequest
+state "Return Card" as ReturnCard
+
+[*] --> WaitingUser [*]
+WaitingUser --> CheckingPIN : user arrives
+CheckingPIN --> InvalidPIN : PIN is incorrect
+InvalidPIN --> CardHeld : too many attempts
+CardHeld --> WaitingUser : card held for security
+WaitingUser --> CheckingPIN : retry or cancel
+CheckingPIN --> OptionsDisplayed : PIN is correct
+OptionsDisplayed --> ProcessingRequest : user selects option
+ProcessingRequest --> ReturnCard : request processed
+
+note right of InvalidPIN: "The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times."
+@enduml

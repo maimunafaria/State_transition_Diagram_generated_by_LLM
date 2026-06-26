@@ -1,0 +1,35 @@
+@startuml
+hide empty package
+
+skinparam packageStyle rectangular
+skinparam packageFillColor #f2f2f2
+
+package "System States" {
+    state UnregisteredCitizen
+    state RegisteringCitizen
+    state LoggedOut
+    state LoggedInCitizen
+    state UploadingDocuments
+    state CertificateApplied
+    state VerificationRequested
+    state VerificationCompleted
+    state LoggedOutRegistrar
+    state RequestingCertificates
+}
+
+UnregisteredCitizen -- RegisteringCitizen: Register
+RegisteringCitizen -- LoggedOutRegistrar: LoginFailed
+RegisteringCitizen -- LoggedInCitizen: LoginSuccessful
+LoggedOutRegistrar -- UnregisteredCitizen: RequestVerification
+
+LoggedInCitizen -- UploadingDocuments: UploadDocument
+UploadingDocuments -- UploadingDocuments: ContinueUploading
+UploadingDocuments -- CertificateApplied: ApplyForCertificate
+CertificateApplied -- CertificateApplied: Reapply
+
+LoggedInCitizen -- LoggedOut: Logout
+Registrar -- LoggedOutRegistrar: Login
+LoggedOutRegistrar -- RequestingCertificates: RequestCertificates
+RequestingCertificates -- RequestingCertificates: ContinueRequesting
+
+@enduml

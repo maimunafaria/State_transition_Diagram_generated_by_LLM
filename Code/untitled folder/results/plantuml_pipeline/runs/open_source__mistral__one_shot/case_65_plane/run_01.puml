@@ -1,0 +1,31 @@
+@startuml
+
+[*] --> Order
+state Order <<initial>>
+state Arrival
+state Preparation
+state Operations
+state Maintenance
+state Service
+state OutOfService
+state Removed
+
+Order --> Arrival : plane arrives
+Arrival --> Preparation : upon arrival
+Preparation --> [choose(Condition, Schedule, MaintenanceNeeded)]
+Condition --> Operations : scheduled flights
+Condition --> Maintenance : no more scheduled flights or maintenance required
+Maintenance --> Service : after checking and servicing
+Service --> Preparation : ready for operations
+
+Operations --> [choose(ScheduledFlights, MaintenanceNeeded)]
+ScheduledFlights --> Operations
+MaintenanceNeeded --> Maintenance
+
+Maintenance --> Service
+Service --> Preparation
+
+Preparation --> OutOfService : no longer available for use
+OutOfService --> Removed : permanently withdrawn from service
+
+@enduml

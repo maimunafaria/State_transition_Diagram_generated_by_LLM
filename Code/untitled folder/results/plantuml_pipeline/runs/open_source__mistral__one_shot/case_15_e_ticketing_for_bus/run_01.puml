@@ -1,0 +1,39 @@
+@startuml
+title ETicketing For Bus State Transition Diagram
+
+state "Not Registered" as NotRegistered
+[*] --> NotRegistered
+
+state "Registering" {
+    state R <<registration>>
+    NotRegistered --> R : registerAccount
+    R --> NotRegistered : invalidRegistration
+}
+
+state "Logged In" {
+    state L <<login>>
+    NotRegistered --> L : login(u,p) / validateUser
+    L --> NotRegistered : invalidLogin
+
+    state TicketStatus {
+        state TS1 <<ticket status 1>>
+        state TS2 <<ticket status 2>>
+        state TS3 <<ticket status 3>>
+        L --> TS1 : checkTicketStatus
+        TS1 --> TS2 : ticketAvailable
+        TS2 --> TS3 : bookTicket
+        TS3 --> L : makePayment / confirmBooking
+    }
+
+    state AccountManagement {
+        state AM1 <<account management 1>>
+        state AM2 <<account management 2>>
+        L --> AM1 : editAccountDetails
+        AM1 --> L : saveEditedDetails
+        AM1 --> NotRegistered : deleteAccount
+        AM1 --> L : cancelDelete
+
+        AM2 --> L : logout
+}
+
+@enduml

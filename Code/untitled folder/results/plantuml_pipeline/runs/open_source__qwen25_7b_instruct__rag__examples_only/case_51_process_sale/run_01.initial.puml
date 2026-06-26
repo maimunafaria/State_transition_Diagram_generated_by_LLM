@@ -1,0 +1,28 @@
+@startuml
+title UML State Chart Diagram for Process Sale
+
+
+[*] --> WaitingForSale
+
+state "Waiting for new sale" as WaitingForSale
+state "Recording items" as RecordingItems
+state "Waiting for payment" as WaitingPayment
+
+WaitingForSale --> RecordingItems : enter item
+RecordingItems --> RecordingItems : enter item
+RecordingItems --> WaitingPayment : all items added
+WaitingPayment --> CashPayment : pay with cash
+WaitingPayment --> CardOrCheckVerification : verify card or check
+CardOrCheckVerification --> PaymentApproved : payment verified
+CardOrCheckVerification --> [*] : cancel payment
+
+state "Cash Payment" as CashPayment
+CashPayment : complete sale immediately
+
+state "Payment Approved" as PaymentApproved
+PaymentApproved : complete sale
+
+WaitingPayment --> PaymentApproved : payment approved
+PaymentApproved --> WaitingForSale : end of sale
+
+@enduml

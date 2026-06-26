@@ -1,0 +1,38 @@
+@startuml
+title ATM Control - Polished Requirement Specification for Scenario 7
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForCustomerChoice
+state ProcessingRequest
+
+state Ejecting
+state Confiscating
+state Terminating
+state ClosedDown
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> Confiscating : Third Invalid PIN, Card Stolen, Card Expired / Confiscate, Update Status
+ValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+WaitingForCustomerChoice --> Ejecting : Cancel / Eject
+
+WaitingForCustomerChoice --> ProcessingRequest : Request Selected / Process Request, Display Wait
+
+ProcessingRequest --> Terminating : Request Approved / Process Request, Update Status
+ProcessingRequest --> Confiscating : Card Stolen, Card Expired / Confiscate, Update Status
+
+Terminating --> Idle : After (Elapsed Time) [Closedown Not Requested]
+
+Confiscating --> Terminating : Card Confiscated / Display Confiscated
+
+ClosedDown --> Idle : System Down / Display System Down
+
+@enduml

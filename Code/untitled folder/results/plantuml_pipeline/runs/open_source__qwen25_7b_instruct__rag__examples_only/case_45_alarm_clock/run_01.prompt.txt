@@ -1,0 +1,164 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Alarm Clock — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall be in an off state initially.
+2. The system shall support when the user sets an alarm time, the system shall activate the alarm.
+3. The system shall ensure that the user shall be able to turn off the activated alarm.
+4. The system shall support when the current time matches the set alarm time, the system shall start ringing the alarm.
+5. The system shall ensure that once the alarm is ringing, the user shall be able to stop it.
+6. The system shall support after stopping the alarm, the system shall remain active for the next scheduled alarm time.
+
+Reference context (use as support; the target requirement above is primary):
+
+Example requirement:
+Microwave Oven Operation — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check for proper functioning before starting.
+2. The system shall alert the user and stop operation if an issue is detected.
+3. The system shall start cooking and run for the set time if no issues are detected.
+4. The system shall emit a sound to notify the user upon completion of cooking.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Microwave Oven Operation
+
+state Operation {
+
+  state Checking
+  Checking : do / Check Status
+
+  state Cook
+  Cook : do / Run Generator
+
+  state Alarm
+  Alarm : do / Display Event
+
+  state Done
+  Done : do / Buzzer On for 5 Secs.
+
+  [*] --> Checking
+
+  Checking --> Cook : OK
+  Checking --> Alarm : Turntable Fault
+  Checking --> Alarm : Emitter Fault
+
+  Cook --> Done : Timeout
+  Cook --> Cook : Time
+}
+
+state Disabled
+state Waiting
+
+Operation --> Disabled : Door Open
+Operation --> Waiting : Cancel
+
+Alarm --> Disabled
+Done --> Waiting
+
+@enduml
+```
+
+Example requirement:
+Oven — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to open the door whenever it is closed.
+2. The system shall allow the user to place food inside or remove it from the microwave when the door is open.
+3. The system shall require the user to close the door after placing food inside.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Microwave Oven Control - State Diagram
+
+[*] --> DoorShut
+
+state "Door Shut" as DoorShut
+state "Door Open" as DoorOpen
+state "Door Open With Item" as DoorOpenItem
+state "Door Shut With Item" as DoorShutItem
+state "Ready To Cook" as ReadyToCook
+state Cooking
+
+DoorShut --> DoorOpen : Door Opened
+DoorOpen --> DoorShut : Door Closed
+
+DoorOpen --> DoorOpenItem : Item Placed
+DoorOpenItem --> DoorOpen : Item Removed
+
+DoorOpenItem --> DoorShutItem : Door Closed
+DoorShutItem --> DoorOpenItem : Door Opened
+
+DoorShutItem --> ReadyToCook : Cooking Time Entered
+ReadyToCook --> ReadyToCook : Cooking Time Entered
+
+ReadyToCook --> Cooking : Start
+
+Cooking --> DoorOpenItem : Door Opened
+Cooking --> DoorShutItem : Timer Expired
+
+@enduml
+```
+
+Example requirement:
+Alert Notifier — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall initialize a component to detect updates upon initial loading.
+2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.
+3. The system shall process detected updates by storing them and evaluating their significance.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Alert Notifier Component States
+
+[*] --> InitializeComponent : Load Component
+
+state "Initialize\nComponent" as InitializeComponent
+state "Waiting for Update" as WaitingForUpdate
+state "Processing Update" as ProcessingUpdate
+state "Unloading Component" as UnloadingComponent
+
+WaitingForUpdate : do / checkForUpdate
+
+ProcessingUpdate : entry / storeUpdate
+ProcessingUpdate : do / evaluateUpdate
+ProcessingUpdate : exit / [update > delta] Operator.Notify(update)
+
+UnloadingComponent : exit / compMgr.compUnloaded()
+
+InitializeComponent --> WaitingForUpdate : [ init. success ]
+InitializeComponent --> UnloadingComponent : [ init. failure ]
+
+WaitingForUpdate --> ProcessingUpdate : stock update
+ProcessingUpdate --> WaitingForUpdate
+
+WaitingForUpdate --> UnloadingComponent : shutdown
+
+UnloadingComponent --> [*]
+
+@enduml
+```
+
+Now return only the final PlantUML.

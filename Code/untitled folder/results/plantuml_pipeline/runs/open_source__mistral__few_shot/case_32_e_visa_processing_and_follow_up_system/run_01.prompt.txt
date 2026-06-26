@@ -1,0 +1,256 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Cd Player — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start in a stopped state.
+2. The system shall begin playing music when a disc is inserted and the user presses play.
+3. The system shall allow the user to pause the music at any time while it is playing.
+4. The system shall stop the music temporarily when paused but allow resuming from the same point.
+5. The system shall allow the user to stop the player at any time, regardless of whether the music is playing or paused.
+6. The system shall return to a stopped state when the player is stopped.
+7. The system shall allow switching to another disc and continuing playback if multiple discs are available.
+8. The system shall remain in a stopped state when no more discs are left.
+
+Example 1 PlantUML:
+@startuml
+title CD Player State Machine
+
+[*] --> Stopped
+
+state Playing
+Playing : do / read disc
+
+state Stopped
+state Paused
+
+Stopped --> Playing : press play [disc in tray]
+Playing --> Stopped : press stop
+Playing --> Stopped : [no more discs]
+
+Playing --> Paused : press pause
+Paused --> Playing : press play
+Paused --> Stopped : press stop
+
+Playing --> Playing : [another disc] / change disc
+
+@enduml
+
+Example 2 Requirement:
+Loggedin Mechanism — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall prompt the user to enter their username.
+2. The system shall terminate the login process and exit if the user cancels at any point.
+3. The system shall check the entered username against its records.
+4. The system shall prompt for a password if the username is valid.
+5. The system shall verify both the username and password to allow login.
+6. The system shall allow the user to try again if the credentials are incorrect.
+7. The system shall increase the number of failed attempts with each incorrect entry.
+8. The system shall limit the number of login attempts for a user.
+9. The system shall block further login attempts if the maximum number of attempts is reached.
+10. The system shall prevent login if it cannot recognize the user during any step.
+
+Example 2 PlantUML:
+@startuml
+title LoggingOn State Machine
+
+state LoggingOn {
+  [*] --> AcceptingUserName
+
+  state AcceptingUserName
+  state AcceptingPassword
+  state VerifyingDetails
+
+  state BadDetails {
+    state BadUsername
+    state BadPassword
+  }
+
+  BadDetails : entry / ++tries
+
+  AcceptingUserName --> AcceptingPassword : ok
+
+  AcceptingUserName --> Canceling : cancel
+
+  AcceptingPassword --> VerifyingDetails : ok
+  AcceptingPassword --> Canceling : cancel
+
+  VerifyingDetails --> BadUsername : badUserName
+  VerifyingDetails --> BadPassword : badPassword
+  VerifyingDetails --> Authenticated : detailsVerified
+
+  BadDetails --> AcceptingUserName : [tries < 4]
+  BadDetails --> Fail : [tries = 4]
+}
+
+LoggingOn : entry / tries := 0
+
+state Canceling
+state Authenticated
+state Fail
+Fail : entry / logFailure
+userRecognized --> AcceptingPassword
+@enduml
+
+Example 3 Requirement:
+Business Process Outsourcing Bpo Management System Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to upload a new request.
+2. The system shall enable a BPO organization to save the details of a project.
+3. The system shall allow a client to search for a suitable project category.
+4. The system shall enable an BPO organization to accept or decline a request from a client.
+5. The system shall allow a client to decide whether to proceed with an accepted project or reject it.
+6. The system shall update the project status after acceptance by both parties.
+7. The system shall allow a client to track the progress of a project.
+8. The system shall enable an BPO organization to update the progress of a project.
+9. The system shall upload a final project once work is completed.
+10. The system shall perform a quality check on the final project.
+11. The system shall restart the process if a client is unsatisfied with the final project.
+12. The system shall make payment if the client is satisfied with the final project.
+13. The system shall deliver the project after payment.
+14. The system shall allow a client to provide a rating for the completed project.
+
+Example 3 PlantUML:
+@startuml
+title UML State Machine Diagram (Upload or Accept Request)
+
+state "Upload or Accept request" as UAR {
+
+    [*] --> ChoiceUser
+
+
+    UAR : entry / Regarding request details
+    UAR : do / Project dealings
+    UAR : exit / After finishing rating
+
+
+    state ChoiceUser <<choice>>
+
+    ChoiceUser --> EnterDetails : [user = BPO organization]
+    ChoiceUser --> SearchCategory : [user = client]
+
+
+    state "Enter project details" as EnterDetails
+    state "Update database" as UpdateDB
+
+    EnterDetails --> UpdateDB
+    UpdateDB --> [*]
+
+
+    state "Search project category" as SearchCategory
+    state ChoiceBPO <<choice>>
+    state ChoiceClient <<choice>>
+
+    SearchCategory --> ChoiceBPO
+
+    ChoiceBPO --> EndDecline : [BPO org declines]
+    ChoiceBPO --> ChoiceClient : [BPO org accepts]
+
+    ChoiceClient --> EndReject : [client rejects]
+    ChoiceClient --> UpdateStatus : [client accepts]
+
+    state EndDecline <<choice>>
+    EndDecline --> [*]
+
+    state EndReject <<choice>>
+    EndReject --> [*]
+
+    state "Update status of project" as UpdateStatus
+
+    state ChoiceTracking <<choice>>
+
+    UpdateStatus --> ChoiceTracking
+
+    ChoiceTracking --> DisplayProgress : [client wishes to track]
+    ChoiceTracking --> UpdateProgress : [user = BPO org]
+
+    state "Display progress" as DisplayProgress
+    DisplayProgress --> [*]
+
+    state "Update progress" as UpdateProgress
+
+
+    UpdateProgress --> UploadFinal : [End of project]
+
+    state "Upload final project" as UploadFinal
+
+    state QualityCheck <<choice>>
+
+    UploadFinal --> QualityCheck : [Quality check]
+
+    QualityCheck --> Payment : [satisfied]
+    QualityCheck --> ChoiceTracking : [Not satisfied]
+
+    state Payment
+    state Shipment
+    state Rating
+
+    Payment --> Shipment
+    Shipment --> Rating
+
+    Rating --> [*]
+}
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.

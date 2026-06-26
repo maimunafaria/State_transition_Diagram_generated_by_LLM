@@ -57,6 +57,7 @@ def _existing_base_run_for_repair(
     case_id: str,
     run_index: int,
     few_shot_count: int,
+    source_runs_root: Path | None = None,
 ) -> dict[str, str] | None:
     if not cfg.use_structural_validation:
         return None
@@ -108,7 +109,8 @@ def _existing_base_run_for_repair(
     prompt_path = None
     selected_base_run_id = ""
     for candidate_base_run_id in base_run_candidates:
-        base_dir = results_root / "runs" / candidate_base_run_id / case_id
+        runs_root = source_runs_root or (results_root / "runs")
+        base_dir = runs_root / candidate_base_run_id / case_id
         candidate_puml_path = base_dir / f"run_{run_index:02d}.puml"
         if candidate_puml_path.exists():
             selected_base_run_id = candidate_base_run_id
@@ -472,6 +474,11 @@ def command_validate(args: argparse.Namespace) -> int:
 def command_run(args: argparse.Namespace) -> int:
     dataset_root = _resolve_root(args.dataset_root)
     results_root = _resolve_root(args.results_root)
+    repair_source_runs_root = (
+        _resolve_root(args.repair_source_runs_root)
+        if str(getattr(args, "repair_source_runs_root", "")).strip()
+        else None
+    )
     rag_docs_dir = _resolve_root(args.rag_docs_dir)
     rag_db_dir = _resolve_root(args.rag_db_dir)
     split_output = _resolve_root(args.split_output)
@@ -630,6 +637,9 @@ def command_run(args: argparse.Namespace) -> int:
         "rag_domain_hints": sorted(rag_domain_hints),
         "rag_ablation_tag": args.rag_ablation_tag,
         "repair_ablation_tag": args.repair_ablation_tag,
+        "repair_source_runs_root": (
+            str(repair_source_runs_root) if repair_source_runs_root else ""
+        ),
         "runs_per_case": args.runs,
         "few_shot_count": args.few_shot_count,
         "few_shot_prompt_structure": args.few_shot_prompt_structure,
@@ -676,6 +686,7 @@ def command_run(args: argparse.Namespace) -> int:
                         case_id=case.case_id,
                         run_index=run_index,
                         few_shot_count=args.few_shot_count,
+                        source_runs_root=repair_source_runs_root,
                     )
                     (
                         final_puml,

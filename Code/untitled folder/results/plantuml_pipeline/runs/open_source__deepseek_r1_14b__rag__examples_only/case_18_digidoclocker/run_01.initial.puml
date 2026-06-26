@@ -1,0 +1,87 @@
+@startuml
+title UML State Machine Diagram (Digidoclocker System)
+
+[*] --> UserIdentification
+
+state "User Identification" {
+  [*] --> CitizenLogin
+  [*] --> RegistrarLogin
+}
+
+state Registration {
+  entry / Get Registration Details
+  do / Validate Details
+  exit / Registered or NotRegistered
+}
+
+Registration --> Login : [Valid Registration]
+Registration --> [*] : [Invalid Registration]
+
+state Login {
+  entry / Get Login Details
+  do / Validate Login
+  exit / LoggedIn or InvalidLogin
+}
+
+Login --> MainMenu : [Valid Login]
+Login --> [*] : [Invalid Login]
+
+state MainMenu <<choice>> {
+  [*] --> UploadDocuments : [Upload Documents]
+  [*] --> ViewProfile : [View Profile]
+  [*] --> ApplyCertificate : [Apply for Certificate]
+  [*] --> RequestMore : [Continue Uploading]
+  [*] --> RequestVerification : [Request Verification]
+}
+
+state "Upload Documents" as UploadDocuments {
+  entry / Start Upload
+  do / Upload Document
+  exit / Continue or Finish
+}
+
+UploadDocuments --> MainMenu : [Continue Uploading]
+UploadDocuments --> [*] : [Finish]
+
+state ViewProfile {
+  entry / View Profile
+  do / Display Profile
+  exit / Back to Menu
+}
+
+ViewProfile --> MainMenu
+
+state "Apply for Certificate" as ApplyCertificate {
+  entry / Start Application
+  do / Process Application
+  exit / Applied or Rejected
+}
+
+ApplyCertificate --> IssueCertificate : [Approved]
+ApplyCertificate --> MainMenu : [Rejected]
+
+state "Issue Certificate" as IssueCertificate {
+  entry / Validate Request
+  do / Issue Certificate
+  exit / Back to Menu
+}
+
+IssueCertificate --> MainMenu
+
+state "Request Verification" as RequestVerification {
+  entry / Request for Verification
+  do / Verify Request
+  exit / Verified or Rejected
+}
+
+RequestVerification --> MainMenu : [Verified]
+RequestVerification --> [*] : [Rejected]
+
+state EndSession {
+  entry / End Current Session
+  do / Logout User
+  exit / System Ready
+}
+
+MainMenu --> EndSession : [End Session]
+@enduml

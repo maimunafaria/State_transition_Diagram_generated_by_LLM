@@ -1,0 +1,77 @@
+@startuml
+title UML State Machine Diagram
+
+[*] --> J1 : [initial choice]
+state J1 <<choice>>
+
+J1 --> Register : [new user]
+J1 --> Login : [existing user]
+
+state "Register" as Register {
+  entry/when new user starts registration
+  do/register process
+  exit/ successful registration
+  exit/ invalid registration
+}
+
+Register --> J2
+
+state J2 <<choice>>
+J2 --> Login : [successful registration]
+J2 --> [*] : [invalid registration]
+
+state "Login" as Login {
+  entry/when user provides credentials
+  do/authentication process
+  exit/ successful login
+  exit/ failed login
+}
+
+Login --> J3
+
+state J3 <<choice>>
+J3 --> CheckLocation : [check weather]
+J3 --> Logout : [logout]
+
+state "Check Location" as CheckLocation {
+  entry/when location is entered
+  do/validate the entered location
+  exit/ valid location
+  exit/ invalid location
+}
+
+CheckLocation --> J4
+
+state J4 <<choice>>
+J4 --> ChooseWeatherInfo : [valid location]
+J4 --> [*] : [invalid location]
+
+state "Choose Weather Info" as ChooseWeatherInfo {
+  entry/when valid location is entered
+  do/select weather parameters to check
+  exit/ selected information updated and shown
+}
+
+ChooseWeatherInfo --> AdditionalDetails
+
+state "Additional Details" as AdditionalDetails {
+  entry/when user wants more info
+  do/view additional details (alerts, analysis, prediction, graph)
+  exit/ back to login or logout
+}
+
+AdditionalDetails --> J5
+
+state J5 <<choice>>
+J5 --> Logout : [logout]
+J5 --> Login : [back to login]
+
+state "Logout" as Logout {
+  entry/when user logs out
+  do/end the session
+  exit/successfully logged out
+}
+
+Logout --> [*]
+
+@enduml

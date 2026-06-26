@@ -1,0 +1,179 @@
+You convert natural language software requirements into UML state machine diagrams in PlantUML format.
+
+Rules:
+
+- Output ONLY PlantUML code.
+
+- Start with @startuml and end with @enduml.
+
+- Use [*] for exactly one initial transition.
+
+- Use --> for transitions.
+
+- Include transition labels when requirement evidence exists.
+
+- Do not add explanations or markdown fences.
+
+Target requirement:
+
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.
+
+Reference context (use as support; the target requirement above is primary):
+
+Example requirement:
+Alert Notifier — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall initialize a component to detect updates upon initial loading.
+2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.
+3. The system shall process detected updates by storing them and evaluating their significance.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Alert Notifier Component States
+
+[*] --> InitializeComponent : Load Component
+
+state "Initialize\nComponent" as InitializeComponent
+state "Waiting for Update" as WaitingForUpdate
+state "Processing Update" as ProcessingUpdate
+state "Unloading Component" as UnloadingComponent
+
+WaitingForUpdate : do / checkForUpdate
+
+ProcessingUpdate : entry / storeUpdate
+ProcessingUpdate : do / evaluateUpdate
+ProcessingUpdate : exit / [update > delta] Operator.Notify(update)
+
+UnloadingComponent : exit / compMgr.compUnloaded()
+
+InitializeComponent --> WaitingForUpdate : [ init. success ]
+InitializeComponent --> UnloadingComponent : [ init. failure ]
+
+WaitingForUpdate --> ProcessingUpdate : stock update
+ProcessingUpdate --> WaitingForUpdate
+
+WaitingForUpdate --> UnloadingComponent : shutdown
+
+UnloadingComponent --> [*]
+
+@enduml
+```
+
+Example requirement:
+Microwave Oven Operation — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check for proper functioning before starting.
+2. The system shall alert the user and stop operation if an issue is detected.
+3. The system shall start cooking and run for the set time if no issues are detected.
+4. The system shall emit a sound to notify the user upon completion of cooking.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Microwave Oven Operation
+
+state Operation {
+
+  state Checking
+  Checking : do / Check Status
+
+  state Cook
+  Cook : do / Run Generator
+
+  state Alarm
+  Alarm : do / Display Event
+
+  state Done
+  Done : do / Buzzer On for 5 Secs.
+
+  [*] --> Checking
+
+  Checking --> Cook : OK
+  Checking --> Alarm : Turntable Fault
+  Checking --> Alarm : Emitter Fault
+
+  Cook --> Done : Timeout
+  Cook --> Cook : Time
+}
+
+state Disabled
+state Waiting
+
+Operation --> Disabled : Door Open
+Operation --> Waiting : Cancel
+
+Alarm --> Disabled
+Done --> Waiting
+
+@enduml
+```
+
+Example requirement:
+Ui — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to open a budget-checking window from the main screen.
+2. The system shall wait for the user to select a client before proceeding with the checking process.
+3. The system shall require users to select a campaign related to the chosen client before allowing them to check information.
+
+Reference PlantUML:
+```plantuml
+@startuml
+title Check Budget Window State Machine
+
+state "Main Window" as MainWindow
+state "5 Alert Dialog" as AlertDialog
+
+state "Check Budget Window" as CBW {
+  [*] --> NoClientSelected
+
+  state "1 No Client Selected" as NoClientSelected
+
+  state "Selection Flow" as SelectionFlow {
+    [*] --> NoCampaignSelected
+
+    state "2 No Campaign Selected" as NoCampaignSelected
+
+    state "Result Flow" as ResultFlow {
+      [*] --> Blank
+      state "3 Blank" as Blank
+      state "4 Display Result" as DisplayResult
+
+      Blank --> DisplayResult : checkButtonClicked()
+      DisplayResult --> DisplayResult : checkButtonClicked()
+    }
+
+    NoCampaignSelected --> ResultFlow : campaignSelected()
+    ResultFlow --> ResultFlow : campaignSelected()
+  }
+
+  NoClientSelected --> SelectionFlow : clientSelected()
+  SelectionFlow --> SelectionFlow : clientSelected()
+  state H <<history*>>
+}
+
+MainWindow --> CBW : checkCampaignBudget\nMenuSelected()
+
+CBW --> AlertDialog : closeButtonClicked()
+
+AlertDialog --> MainWindow : OK
+AlertDialog --> H : Cancel
+
+@enduml
+```
+
+Now return only the final PlantUML.

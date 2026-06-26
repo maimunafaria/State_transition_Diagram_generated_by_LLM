@@ -65,6 +65,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output root for run artifacts and metrics",
     )
     p_run.add_argument(
+        "--repair-source-runs-root",
+        default="",
+        help=(
+            "Optional runs directory containing frozen raw outputs to reuse as "
+            "repair inputs. Repair results are still written under --results-root."
+        ),
+    )
+    p_run.add_argument(
         "--rag-docs-dir",
         default=str(DEFAULT_RAG_DOCS_DIR),
         help="RAG documents directory",

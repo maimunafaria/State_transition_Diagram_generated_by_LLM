@@ -1,0 +1,43 @@
+@startuml
+title Weather Station System States
+
+[*] --> Running : ShutdownCommandReceived
+
+state "Running" as Running {
+  state "Data Collection" as DataCollection
+  state "Summary Preparation" as SummaryPreparation
+  state "Status Checking" as StatusChecking
+  state "Controlled Mode" as ControlledMode
+
+  DataCollection : do / ClockTriggered
+  SummaryPreparation : do / PrepareWeatherSummary
+  StatusChecking : do / CheckStatus
+  ControlledMode : do / RemoteControlReceived
+
+  Running --> DataCollection : [clock. tick]
+  Running --> SummaryPreparation : [summary request]
+  Running --> StatusChecking : [status check request]
+  Running --> ControlledMode : [remote control command]
+}
+
+state Shutdown {
+  state "Shutting Down" as ShuttingDown
+  ShuttingDown : do / ExecuteShutdownCommand
+
+  [*] --> ShuttingDown
+  ShuttingDown --> Running : [shutdown. cancel]
+  ShuttingDown --> [*] : SuccessfulShutdown
+}
+
+state Configuration {
+  state "Configuration Mode" as ConfigurationMode
+  ConfigurationMode : do / ChangesMade
+
+  [*] --> ConfigurationMode
+  ConfigurationMode --> Running : [configuration complete]
+}
+
+Running --> Shutdown : ShutdownCommandReceived
+Running --> Configuration : PowerSavingSettingsChanged
+
+@enduml

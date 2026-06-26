@@ -1,0 +1,141 @@
+{
+  "run_id": "open_source__deepseek_r1_14b__rag__examples_only",
+  "case_id": "case_41_video_suggestion_system",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nVideo Suggestion System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall receive a video suggestion request from a user.\n2. The system shall identify the user who made the video suggestion request.\n3. The system shall gather different types of videos simultaneously based on the user's profile or preferences, trending videos from the user’s area, videos with similar tags, videos from similar genres, and promoted videos .\n4. The system shall add additional details such as thumbnails and view counts to the suggested videos.\n5. The system shall send the suggested videos to the user.\n\nReference context (use as support; the target requirement above is primary):\n\nExample requirement:\nDisplayitem — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to browse products through a catalog.\n2. The system shall enable users to view items directly or explore different ways of browsing in the catalog.\n3. The system shall allow users to browse products using an index, either alphabetically or by category.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle BrowseCatalog State Machine\n[*] --> BrowseCatalog\nstate BrowseCatalog {\n\n  \n\n  state DisplayingItem\n\n  state DisplayingIndex {\n\n    [*] --> Alphabetical\n\n    state Alphabetical\n    state ByCategory\n\n    Alphabetical --> ByCategory : byCategory\n    ByCategory --> Alphabetical : alphabetical\n  }\n\n  state H <<history*>>\n\n  DisplayingItem --> DisplayingIndex : goToIndex\n  DisplayingIndex --> DisplayingItem : selectProduct\n\n  H --> DisplayingIndex\n}\n\nstate DisplayingBasket\nstate CheckingOut\n\nBrowseCatalog --> DisplayingBasket : goToBasket\nDisplayingIndex --> CheckingOut : goToCheckout\n\nDisplayingBasket --> H : goToCatalog\nCheckingOut --> H : goToCatalog\n\nBrowseCatalog --> [*] : exit\n\n@enduml\n```\n\nExample requirement:\nArt Gallery Mananement System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall verify login credentials upon submission.\n2. The system shall display an error message and prevent further interaction if login details are incorrect.\n3. The system shall allow users to view products or update their information after a successful login.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Chart Diagram\n\n\n[*] --> Login\n\nstate Login\nLogin : entry / getInfo\nLogin : do / verifyData\nLogin : exit / verified\n\nstate LoginDecision <<choice>>\nLogin --> LoginDecision\n\nstate \"Valid Login\" as ValidLogin\nValidLogin : entry / contain Info\nValidLogin : do / allow Access to system\nValidLogin : exit / gallery Entry\n\nstate \"Invalid Login\" as InvalidLogin\nInvalidLogin : entry / wrong Info\nInvalidLogin : do / display Error message\nInvalidLogin : exit / return To Start\n\nLoginDecision --> ValidLogin\nLoginDecision --> InvalidLogin\n\nstate NavChoice <<choice>>\nValidLogin --> NavChoice\n\nstate Gallery\nGallery : entry / show Products\nGallery : do / allow to select Products\nGallery : exit / save Products\n\nstate Update\nUpdate : entry / contain Info\nUpdate : do / take New Info\nUpdate : exit / save new Info\n\nNavChoice --> Gallery\nNavChoice --> Update\n\nUpdate --> [*]\n\nstate Order\nOrder : entry / select Items\nOrder : do / allowto order If products In Stock\nOrder : exit / verification\n\nstate Cart\nCart : entry / contain Selected Items\nCart : do / all billing Info\nCart : exit / payment Method\n\nGallery --> Order\nOrder --> Cart\n\nstate Payment\nPayment : entry / get Payment Method\nPayment : do / confirm Payment\nPayment : exit / verify\n\nCart --> Payment\n\nstate PayDecision <<choice>>\nPayment --> PayDecision\n\nstate \"Valid Payment\" as ValidPayment\nValidPayment : entry / payment Method\nValidPayment : do / get Cash\nValidPayment : exit / confirmation of product\n\nstate \"Invalid Payment\" as InvalidPayment\nInvalidPayment : entry / wrong Entry\nInvalidPayment : do / error Message\nInvalidPayment : exit / return\n\nPayDecision --> ValidPayment\nPayDecision --> InvalidPayment\n\n\nstate Delivery\nDelivery : entry / take out Order\nDelivery : do / deliver Product\nDelivery : exit / exit System\n\nValidPayment --> Delivery\nDelivery --> [*]\n\nInvalidPayment --> [*]\n\n@enduml\n```\n\nExample requirement:\nFor Online College Magazine System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall require a person to either create an account or log in.\n2. The system shall allow admins to add, edit, or remove user profiles.\n3. The system shall enable admins to review articles and decide on their publication or rejection.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Machine Diagram\n\nstate StartChoice <<choice>>\nstate AdminChoice <<choice>>\nstate EditorChoice <<choice>>\nstate ReadFeedbackChoice <<choice>>\nstate EndJoin <<choice>>\n\n[*] --> StartChoice\n\nstate Register\nRegister : do / Fill details\nRegister : exit / Registration successful\n\nstate Login\nLogin : entry / Registered user\nLogin : do / Enter login credentials\nLogin : exit / Valid username and password\n\nstate \"Manage profiles\" as ManageProfiles\nManageProfiles : entry / Admin logged in\nManageProfiles : do / Manage profile in database\nManageProfiles : do / Add, delete or edit profiles if necessary\nManageProfiles : exit / Action completed\n\nstate \"Invalid user\" as InvalidUser\nInvalidUser : entry / Invalid login or invalid registration\nInvalidUser : do / Block entry to system\nInvalidUser : exit / Abnormal termination\n\nstate Writing\nWriting : entry / Writer logged in\nWriting : do / Write article\nWriting : exit / Send to editor\n\nstate Editing\nEditing : entry / Editor logged in and article to be edited\nEditing : do / Edit article\nEditing : exit / Send to moderator/admin\n\nstate Publishing\nPublishing : entry / Admin logged in and article to be approved\nPublishing : do / Choose to approve and publish or reject article\nPublishing : do / Add article to database if approved\nPublishing : exit / Publish article\n\nstate Search\nSearch : entry / Choose to search for articles\nSearch : do / Read searched articles\nSearch : exit / Completed reading\n\nstate Reading\nReading : entry / Published article\nReading : do / Read article\nReading : exit / Completed reading\n\nstate Feedback\nFeedback : entry / Reader chosen to give feedback\nFeedback : do / Get feedback\nFeedback : exit / Feedback entry successful\n\nStartChoice --> Register\nStartChoice --> Login\n\nRegister --> AdminChoice\nLogin --> EditorChoice\n\nAdminChoice --> ManageProfiles\nAdminChoice --> InvalidUser\n\nEditorChoice --> Writing\nEditorChoice --> Editing\nEditorChoice --> InvalidUser\n\nWriting --> Editing\nEditing --> Publishing\nManageProfiles --> Publishing\n\nInvalidUser --> [*]\n\nPublishing --> Reading\nReading --> Reading\n\nSearch --> Search\nReading --> ReadFeedbackChoice\n\nReadFeedbackChoice --> Search\nReadFeedbackChoice --> Feedback\n\nFeedback --> EndJoin\nSearch --> EndJoin\n\nEndJoin --> [*]\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Video Suggestion System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall receive a video suggestion request from a user.\n2. The system shall identify the user who made the video suggestion request.\n3. The system shall gather different types of videos simultaneously based on the user's profile or preferences, trending videos from the user’s area, videos with similar tags, videos from similar genres, and promoted videos .\n4. The system shall add additional details such as thumbnails and view counts to the suggested videos.\n5. The system shall send the suggested videos to the user.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag__examples_only\\case_41_video_suggestion_system\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "initial_state": "ReceivingRequest",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 5,
+    "transition_count": 4
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "vector",
+      "top_k": 3,
+      "query_domains": [],
+      "retrieved_docs": [
+        {
+          "name": "dataset_examples/case_63_displayitem.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.1692461967468262,
+          "clipped_chars": 1128
+        },
+        {
+          "name": "dataset_examples/case_35_art_gallery_mananement_system.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.2393611669540405,
+          "clipped_chars": 2300
+        },
+        {
+          "name": "dataset_examples/case_21_for_online_college_magazine_system.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.2540788650512695,
+          "clipped_chars": 2678
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": "ReceivingRequest",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 5,
+        "transition_count": 4
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag__examples_only\\case_41_video_suggestion_system\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 5,
+    "state_fn": 12,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 4,
+    "transition_fn": 14,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 5,
+    "state_fn_relaxed": 11,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 4,
+    "transition_fn_relaxed": 14,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 4,
+    "transition_fn_semantic": 14,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  }
+}

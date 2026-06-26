@@ -1,0 +1,418 @@
+{
+  "run_id": "open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair",
+  "case_id": "case_28_ott_based_system_mini_reel",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nAccount — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start an account as empty when it is first opened.\n2. The system shall activate an account and make it ready to use after setting it up and making an initial deposit.\n3. The system shall allow a user to deposit money while the account is active.\n4. The system shall allow a user to withdraw money while the account is active.\n5. The system shall allow a user to check account details like balance while the account is active.\n6. The system shall make an account inactive if all the money is withdrawn.\n7. The system shall allow closing an account after it has become inactive.\n8. The system shall render an account unusable once it is closed.\n\nExample 1 PlantUML:\n@startuml\ntitle State diagram for the Account class\n\n[*] --> EmptyAcct : Open\n\nstate \"Empty\\nacct\" as EmptyAcct\nstate \"Set up\\nacct\" as SetupAcct\nstate \"Working\\nacct\" as WorkingAcct\nstate \"Nonworking\\nacct\" as NonworkingAcct\nstate \"Dead\\nacct\" as DeadAcct\n\nEmptyAcct --> SetupAcct : Setup Acct\nSetupAcct --> WorkingAcct : Deposit (initial)\n\nWorkingAcct --> WorkingAcct : Deposit\nWorkingAcct --> WorkingAcct : Withdraw\nWorkingAcct --> WorkingAcct : Balance\\ncredit\\nacctInfo\n\nWorkingAcct --> NonworkingAcct : Withdrawal (final)\nNonworkingAcct --> DeadAcct : Close\nDeadAcct --> [*]\n\n@enduml\n\nExample 2 Requirement:\nTelephone — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall provide a dial tone upon receiver pickup.\n2. The system shall start processing the entered number when the user begins entering digits.\n3. The system shall inform the user or play a message if the entered number is incomplete or incorrect.\n4. The system shall play a message to prompt the user if they stop dialing for a while.\n5. The system shall attempt to connect the call once a valid number is entered.\n6. The system shall play a busy tone if the line is busy.\n7. The system shall start ringing on the other end if the connection goes through.\n8. The system shall connect the call and allow both parties to talk when the person being called answers.\n9. The system shall end the call and return to an idle state if either party hangs up.\n10. The system shall allow calls to be stopped or terminated at any point.\n\nExample 2 PlantUML:\n@startuml\ntitle Telephone State Machine\n\n[*] --> Idle\n\nIdle --> Active : lift receiver / get dial tone\nActive --> Idle : caller hangs up / disconnect\n\nstate Active {\n\n    [*] --> DialTone\n\n    state DialTone\n    DialTone : do / play dial tone\n\n    DialTone --> Dialing : dial digit(n)\n    DialTone --> TimeOut : after (15 sec.)\n\n    state Dialing\n\n    Dialing --> Dialing : dial digit(n) [incomplete]\n    Dialing --> Connecting : dial digit(n) [valid] / connect\n    Dialing --> Invalid : dial digit(n) [invalid]\n    Dialing --> TimeOut : after (15 sec.)\n\n    state Invalid\n    Invalid : do / play message\n\n    state TimeOut\n    TimeOut : do / play message\n\n    state Connecting\n    Connecting --> Busy : busy\n    Connecting --> Ringing : connected\n\n    state Busy\n    Busy : do / play busy tone\n\n    state Ringing\n    Ringing : do / play ringing tone\n\n    Ringing --> Talking : callee answers / enable speech\n\n    state Talking\n    Talking --> Pinned : callee hangs up\n    Talking --> Pinned : callee answers\n\n    state Pinned\n\n}\n\nActive --> [*] : terminate\nActive --> [*] : abort\n\n@enduml\n\nExample 3 Requirement:\nCovid — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to create an account by entering their details.\n2. The system shall allow users to sign in using a correct username and password.\n3. The system shall enable logged-in users to read blogs shared by recovered patients.\n4. The system shall allow users to update the number of infected people in their area, triggering updates on infection statistics and mask demand.\n5. The system shall enable users in home quarantine to share their information.\n6. The system shall allow doctors to view shared information from quarantined users and suggest medicines.\n7. The system shall enable users to view a list of nearby medical shops and purchase medicines online.\n8. The system shall allow assigning workers to clean an area, updating the cleanliness status accordingly.\n\nExample 3 PlantUML:\n@startuml\ntitle UML state machine diagram\n\nstate \"Idle\" as Idle\nIdle : entry/To action\nIdle : do/Remain in same state\nIdle : exit/Login / Register\n\nstate \"Register\" as Register\nRegister : entry/Register\nRegister : do/Register after validating\nRegister : exit/Login/Invalid registration\n\nstate \"Invalid registration\" as InvalidRegistration\nInvalidRegistration : entry/Invalid registration\nInvalidRegistration : do/Cannot register\nInvalidRegistration : exit/Abnormal termination\n\nstate \"Login\" as Login\nLogin : entry/Login\nLogin : do/Login using valid username and password\nLogin : exit/Invalid login/To home page\n\nstate \"Invalid login\" as InvalidLogin\nInvalidLogin : entry/Invalid login\nInvalidLogin : do/Cannot login\nInvalidLogin : exit/Abnormal termination\n\nstate \"Read blog\" as ReadBlog\nReadBlog : entry/To home page\nReadBlog : entry/Read blogs of recovered patients\nReadBlog : exit/Idle\n\nstate \"Update current no. of infected people\" as UpdateInfected\nUpdateInfected : entry/To home page\nUpdateInfected : do/Update current no. of infected people in the locality\nUpdateInfected : exit/View\n\nstate \"View number of infected people in the locality\" as ViewInfected\nViewInfected : entry/View\nViewInfected : do/View number of infected people in the locality\nViewInfected : exit/Idle\n\nstate \"No. of deaths in the locality\" as DeathCount\nDeathCount : entry/View\nDeathCount : do/View no. of deaths in the locality\nDeathCount : exit/Idle\n\nstate \"View mask demand\" as ViewMaskDemand\nViewMaskDemand : entry/View\nViewMaskDemand : do/View mask demand in the locality\nViewMaskDemand : exit/Stock\n\nstate \"Stock up\" as StockUp\nStockUp : entry/Stock\nStockUp : do/Stock up masks and gloves by the shops\nStockUp : exit/End\n\nstate \"Send patient info\" as SendPatientInfo\nSendPatientInfo : entry/To home page\nSendPatientInfo : do/Update data by home quarantined patients\nSendPatientInfo : exit/View patient info\n\nstate \"View patient info\" as ViewPatientInfo\nViewPatientInfo : entry/View patient info\nViewPatientInfo : do/View patient info by the medical professional\nViewPatientInfo : exit/Prescribe\n\nstate \"Prescribe medicines if needed\" as PrescribeMedicines\nPrescribeMedicines : entry/Prescribe\nPrescribeMedicines : do/Prescribe medicines if needed\nPrescribeMedicines : exit/View data from doc\n\nstate \"View data shared by doctor\" as ViewDoctorData\nViewDoctorData : entry/View data from doc\nViewDoctorData : do/View data shared by doctor\nViewDoctorData : exit/Buy medicines\n\nstate \"List all medical shops\" as ListMedicalShops\nListMedicalShops : entry/To home page\nListMedicalShops : do/List all medical shops in the locality\nListMedicalShops : exit/Buy medicines\n\nstate \"Assign corporation worker\" as AssignWorker\nAssignWorker : entry/To home page\nAssignWorker : do/Assign workers to disinfect in an area\nAssignWorker : exit/Update status\n\nstate \"Update status of cleanliness\" as CleanlinessStatus\nCleanlinessStatus : entry/Update status\nCleanlinessStatus : do/Update status of cleanliness in the locality\nCleanlinessStatus : exit/End\n\nstate \"Buy medicines\" as BuyMedicines\nBuyMedicines : entry/Buy medicines\nBuyMedicines : do/Buy medicines if needed\nBuyMedicines : exit/End\n\nstate J1 <<choice>>\nstate J2 <<choice>>\nstate J3 <<choice>>\nstate J4 <<choice>>\nstate J5 <<choice>>\nstate J6 <<choice>>\nstate J7 <<choice>>\n[*] --> Idle\n\nIdle --> J1\nJ1 --> Register\nJ1 --> Login\n\nRegister --> J2\nJ2 --> Login\nJ2 --> InvalidRegistration\nInvalidRegistration --> [*]\n\nLogin --> J3\nJ3 --> InvalidLogin\nJ3 --> ReadBlog\nJ3 --> UpdateInfected\nJ3 --> SendPatientInfo\nJ3 --> ListMedicalShops\nJ3 --> AssignWorker\nInvalidLogin --> [*]\n\nReadBlog --> J7\nUpdateInfected --> J4\nViewInfected --> J7\nDeathCount --> J7\nJ7 --> Idle\nJ4 --> ViewInfected\nJ4 --> DeathCount\nJ4 --> ViewMaskDemand\n\nViewMaskDemand --> StockUp\nStockUp --> J6\n\nSendPatientInfo --> ViewPatientInfo\nViewPatientInfo --> PrescribeMedicines\nPrescribeMedicines --> ViewDoctorData\nViewDoctorData --> J5\nListMedicalShops --> J5\nJ5 --> BuyMedicines\nBuyMedicines --> J6\n\nAssignWorker --> CleanlinessStatus\nCleanlinessStatus --> J6\n\nJ6 --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nOtt Based System Mini Reel — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create an account.\n2. The system shall enable a user to watch videos after they have created an account.\n3. The system shall permit a user to upload videos.\n4. The system shall allow a user to save videos in their likes list during video viewing.\n5. The system shall enable a user to view their saved videos from the likes list.\n6. The system shall allow a user to enter the discussion option.\n",
+  "requirement_used": "Ott Based System Mini Reel — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create an account.\n2. The system shall enable a user to watch videos after they have created an account.\n3. The system shall permit a user to upload videos.\n4. The system shall allow a user to save videos in their likes list during video viewing.\n5. The system shall enable a user to view their saved videos from the likes list.\n6. The system shall allow a user to enter the discussion option.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_28_ott_based_system_mini_reel\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "unreachable_states_detected",
+      "unreachable: Invalid registration"
+    ],
+    "initial_state": "Idle",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [
+      "Invalid registration"
+    ],
+    "state_count": 9,
+    "transition_count": 7
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "unreachable_states_detected",
+      "unreachable: Invalid registration"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__llama31_8b_instruct__few_shot",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: Invalid registration",
+        "orphan_states_detected",
+        "orphan: Invalid registration"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: Invalid registration",
+        "orphan_states_detected",
+        "orphan: Invalid registration"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": false,
+      "previous_score": 5,
+      "repair_score": 5,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: Invalid registration",
+        "orphan_states_detected",
+        "orphan: Invalid registration"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: Invalid registration",
+        "orphan_states_detected",
+        "orphan: Invalid registration"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 1,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: Invalid registration",
+        "orphan_states_detected",
+        "orphan: Invalid registration"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "accepted": true,
+      "previous_score": 5,
+      "repair_score": 2,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: Invalid registration"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: Invalid registration"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: Invalid registration"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: Invalid registration"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 3,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "unreachable_states_detected",
+        "unreachable: Invalid registration"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: Invalid registration"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: Invalid registration"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 4,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "unreachable_states_detected",
+        "unreachable: Invalid registration"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: Invalid registration"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: Invalid registration"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 5,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "unreachable_states_detected",
+        "unreachable: Invalid registration"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 5,
+      "strict_state_diagram_valid": false,
+      "remaining_issues": [
+        "unreachable_states_detected",
+        "unreachable: Invalid registration"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])",
+          "unreachable_states_detected",
+          "unreachable: Invalid registration",
+          "orphan_states_detected",
+          "orphan: Invalid registration"
+        ],
+        "initial_state": "Idle",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Invalid registration"
+        ],
+        "state_count": 9,
+        "transition_count": 7
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_28_ott_based_system_mini_reel\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])",
+          "unreachable_states_detected",
+          "unreachable: Invalid registration",
+          "orphan_states_detected",
+          "orphan: Invalid registration"
+        ],
+        "initial_state": "Idle",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Invalid registration"
+        ],
+        "state_count": 9,
+        "transition_count": 7
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 5,
+      "repair_score": 5,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_28_ott_based_system_mini_reel\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_28_ott_based_system_mini_reel\\run_01.repair_01.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: Invalid registration"
+        ],
+        "initial_state": "Idle",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Invalid registration"
+        ],
+        "state_count": 9,
+        "transition_count": 7
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": true,
+      "previous_score": 5,
+      "repair_score": 2,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_28_ott_based_system_mini_reel\\run_01.repair_02.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_28_ott_based_system_mini_reel\\run_01.repair_02.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: Invalid registration"
+        ],
+        "initial_state": "Idle",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Invalid registration"
+        ],
+        "state_count": 9,
+        "transition_count": 7
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_28_ott_based_system_mini_reel\\run_01.repair_03.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_28_ott_based_system_mini_reel\\run_01.repair_03.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: Invalid registration"
+        ],
+        "initial_state": "Idle",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Invalid registration"
+        ],
+        "state_count": 9,
+        "transition_count": 7
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_28_ott_based_system_mini_reel\\run_01.repair_04.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_28_ott_based_system_mini_reel\\run_01.repair_04.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: Invalid registration"
+        ],
+        "initial_state": "Idle",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Invalid registration"
+        ],
+        "state_count": 9,
+        "transition_count": 7
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_28_ott_based_system_mini_reel\\run_01.repair_05.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_28_ott_based_system_mini_reel\\run_01.repair_05.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 9,
+    "state_fn": 11,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 7,
+    "transition_fn": 11,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 9,
+    "state_fn_relaxed": 10,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 7,
+    "transition_fn_relaxed": 11,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 7,
+    "transition_fn_semantic": 11,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "unreachable_states_detected",
+      "unreachable: Invalid registration"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "unreachable_states_detected",
+      "unreachable: Invalid registration"
+    ]
+  },
+  "reused_base_run": {
+    "run_id": "open_source__llama31_8b_instruct__few_shot",
+    "strategy": "few_shot",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot\\case_28_ott_based_system_mini_reel\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot\\case_28_ott_based_system_mini_reel\\run_01.prompt.txt"
+  }
+}

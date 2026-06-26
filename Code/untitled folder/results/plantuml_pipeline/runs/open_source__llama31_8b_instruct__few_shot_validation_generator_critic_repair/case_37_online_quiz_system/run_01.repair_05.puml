@@ -1,0 +1,87 @@
+@startuml
+title Online Quiz System States
+
+[*] --> UserType
+
+state UserType <<choice>>
+UserType --> Registration : [New user]
+UserType --> Login : [Registered user]
+
+state "Registration" as Registration {
+    UserType --> GettingDetails : [New user]
+
+    state GettingDetails
+    state ChoiceReg <<choice>>
+    state "Update Database" as UpdateDB
+    state EndInvalid <<choice>>
+
+    ChoiceReg --> UpdateDB : [valid]
+    ChoiceReg --> EndInvalid : [invalid]
+
+    EndInvalid --> Registration
+
+}
+
+Registration : entry / New user
+Registration : do / Registration
+Registration : exit / After updation
+
+UpdateDB --> Login : [verified]
+
+state Login
+Login : do / Enter username and password
+Login : exit / After verification
+
+Login --> Profile : [valid uname & pwd]
+
+state "Profile" as Profile {
+    UserType --> ChoiceProfile : [Registered user]
+
+    state ChoiceProfile <<choice>>
+    state "Teacher Profile" as TeacherProfile
+    state "Student Profile" as StudentProfile
+
+    ChoiceProfile --> TeacherProfile : [Teacher]
+    ChoiceProfile --> StudentProfile : [Student]
+
+
+}
+
+Profile : entry / View or Edit profile
+Profile : do / Upload or Accept request
+Profile : do / Search users
+Profile : do / View current deals
+Profile : exit / Logout
+
+    TeacherProfile --> CreateQuiz : [Create new quiz]
+    TeacherProfile --> EditQuiz : [Edit existing quiz]
+    TeacherProfile --> SaveDraft : [Save as draft]
+    TeacherProfile --> PostQuiz : [Post for students]
+
+    StudentProfile --> SelectQuiz : [Select quiz]
+    StudentProfile --> AnswerQuiz : [Answer quiz]
+    StudentProfile --> SubmitQuiz : [Submit quiz]
+    StudentProfile --> ViewResult : [View result]
+
+    CreateQuiz --> SaveDraft : [Save as draft]
+    CreateQuiz --> PostQuiz : [Post for students]
+
+    EditQuiz --> SaveDraft : [Save as draft]
+    EditQuiz --> PostQuiz : [Post for students]
+
+    SaveDraft --> PostQuiz : [Post for students]
+
+    PostQuiz --> ViewResult : [View result]
+
+    SelectQuiz --> AnswerQuiz : [Answer quiz]
+    SelectQuiz --> SubmitQuiz : [Submit quiz]
+
+    AnswerQuiz --> SubmitQuiz : [Submit quiz]
+
+    SubmitQuiz --> ViewResult : [View result]
+
+    ViewResult --> [*]
+
+    Logout --> [*]
+
+@enduml

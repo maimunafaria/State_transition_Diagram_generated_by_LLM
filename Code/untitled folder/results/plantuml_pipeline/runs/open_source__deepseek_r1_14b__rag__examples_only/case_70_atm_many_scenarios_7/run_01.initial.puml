@@ -1,0 +1,37 @@
+@startuml
+title ATM Control - Scenario 7: PIN Validation and Customer Options
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForCustomerChoice
+state ProcessingRequest
+state Ejecting
+state Confiscating
+state Terminating
+
+Idle : entry / Display Welcome
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu
+ValidatingPIN --> ValidatingPIN : Invalid PIN (1st Try) / Invalid PIN Prompt
+ValidatingPIN --> Confiscating : Third Invalid PIN /\nConfiscate
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+WaitingForCustomerChoice --> Ejecting : Cancel / Eject
+
+WaitingForCustomerChoice --> ProcessingRequest : Option Selected /\nProcess Request, Display Processing
+
+ProcessingRequest --> Ejecting : Rejected / Eject
+ProcessingRequest --> Terminating : Approved / Complete Transaction
+
+Ejecting --> Terminating : Card Ejected / Display Ejected
+Confiscating --> Terminating : Card Confiscated / Display Confiscated
+
+Terminating --> Idle : After (Elapsed Time)\n[Close Down Not Requested]
+@enduml

@@ -1,0 +1,65 @@
+@startuml
+title UML State Machine Diagram (Bus Ticketing System)
+
+[*] --> UserType
+
+state UserType <<choice>>
+UserType --> Registration : [New user]
+UserType --> Login : [Registered user]
+
+state "Registration" as Registration {
+    [*] --> GettingDetails
+
+    state GettingDetails
+    state ChoiceReg <<choice>>
+    state "Update Database" as UpdateDB
+    state EndInvalid <<choice>>
+
+    GettingDetails --> ChoiceReg : [Registration verification]
+    ChoiceReg --> UpdateDB : [valid]
+    ChoiceReg --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+Registration : entry / New user
+Registration : do / Registration
+Registration : exit / After updation
+
+UpdateDB --> Login : [verified]
+
+state Login
+Login : do / Enter username and password
+Login : exit / After verification
+
+Login --> Profile : [valid uname & pwd]
+
+state "Profile" as Profile {
+    [*] --> ChoiceProfile
+
+    state ChoiceProfile <<choice>>
+    state "Check Ticket Status" as CheckStatus
+    state "Book a Ticket" as BookTicket
+    state "Manage Account Details" as ManageAccount
+    state "Logout" as Logout
+
+    ChoiceProfile --> CheckStatus : [check status]
+    ChoiceProfile --> BookTicket : [book ticket]
+    ChoiceProfile --> ManageAccount : [manage account details]
+    ChoiceProfile --> Logout : [logout]
+
+
+}
+
+Profile : entry / View or Edit profile
+Profile : do / Upload or Accept request
+Profile : do / Search users
+Profile : do / View current deals
+Profile : exit / Logout
+
+    CheckStatus --> [*] : [Logout]
+    BookTicket --> [*] : [Logout]
+    ManageAccount --> [*] : [Logout]
+    Logout --> [*]
+
+@enduml

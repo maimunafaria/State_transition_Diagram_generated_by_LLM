@@ -1,0 +1,56 @@
+@startuml
+title ATM Control - Greet User and Check PIN
+
+[*] --> Greeting
+
+state Greeting
+Greeting : do / Display Welcome Message
+
+state InsertingCard
+InsertingCard : do / Card Inserted
+
+state CheckingPIN
+CheckingPIN : entry / Card inserted
+CheckingPIN : do / Validate PIN
+CheckingPIN : exit / Valid PIN
+
+CheckingPIN --> InvalidPIN
+InvalidPIN : entry / Incorrect PIN
+InvalidPIN : do / Ask for PIN again
+InvalidPIN --> CheckingPIN
+
+CheckingPIN --> SecurityHold : [Too Many Attempts] /\nCard Confiscated, Update Status
+SecurityHold : exit / Display Confiscated
+
+CheckingPIN --> ReturnCard : Cancel / Eject
+ReturnCard : exit / Display Ejected
+
+ValidPIN --> Options
+Options : entry / Valid PIN
+Options : do / Display Menu
+
+state Withdrawal
+Withdrawal : entry / Select Withdrawal
+Withdrawal : do / Request Withdrawal, Display Wait
+
+state CheckingInformation
+CheckingInformation : entry / Select Check Information
+CheckingInformation : do / Show Account Info
+
+state MakingTransfer
+MakingTransfer : entry / Select Make Transfer
+MakingTransfer : do / Transfer Funds
+
+Options --> Withdrawal
+Options --> CheckingInformation
+Options --> MakingTransfer
+
+Withdrawal --> ProcessingWithdrawal
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash, Update Status
+ProcessingWithdrawal --> Ejecting : Rejected / Eject
+
+CheckingInformation --> ReturnCard : Cancel / Eject
+MakingTransfer --> ReturnCard : Cancel / Eject
+
+Ejecting --> Terminating : Card Ejected / Display Ejected
+@enduml

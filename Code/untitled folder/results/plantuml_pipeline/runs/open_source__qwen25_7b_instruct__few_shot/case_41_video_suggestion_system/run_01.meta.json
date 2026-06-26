@@ -1,0 +1,93 @@
+{
+  "run_id": "open_source__qwen25_7b_instruct__few_shot",
+  "case_id": "case_41_video_suggestion_system",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nAtm Many Scenarios Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the entered PIN is correct.\n2. The system shall ask the user to try again if the entered PIN is incorrect.\n3. The system shall keep the card for security reasons if the PIN is entered incorrectly too many times or if the card is invalid.\n4. The system shall show available options and wait for the user's choice if the entered PIN is correct.\n5. The system shall allow the user to cancel the operation at any point during this process.\n6. The system shall return the card when the user cancels the operation.\n\nExample 1 PlantUML:\n@startuml\ntitle Same Event and Action on Different Transitions\n\n[*] --> Idle\n\nstate Idle\nstate \"Waiting for PIN\" as WaitingForPIN\nstate \"Validating PIN\" as ValidatingPIN\nstate \"Waiting for Customer Choice\" as WaitingForChoice\nstate Confiscating\nstate Ejecting\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu\nValidatingPIN --> Confiscating : Third Invalid PIN,\\nCard Stolen, Card Expired /\\nConfiscate\n\nWaitingForPIN --> Ejecting : Cancel / Eject\nValidatingPIN --> Ejecting : Cancel / Eject\nWaitingForChoice --> Ejecting : Cancel / Eject\n\n@enduml\n\nExample 2 Requirement:\nAtm Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the inserted card is valid.\n2. The system shall prompt the user to select an amount to withdraw if the card is valid.\n3. The system shall verify the transaction after the user selects an amount.\n4. The system shall return the card to the user once the transaction is completed.\n5. The system shall go out of service and not allow any operation if the machine is not working.\n\nExample 2 PlantUML:\n@startuml\ntitle ATM State Machine\n\n[*] --> VerifyCard\n\nstate \"VerifyCard <<final>>\" as VerifyCard\n\nstate ReadAmount {\n  [*] --> SelectAmount\n  state SelectAmount\n  SelectAmount --> [*] : amount\n}\n\nstate OutOfService\nstate \"VerifyTransaction <<final>>\" as VerifyTransaction\nstate ReleaseCard\n\nVerifyCard --> ReadAmount : acceptCard\nReadAmount --> OutOfService : outOfService\nReadAmount --> VerifyTransaction\nVerifyTransaction --> ReleaseCard : releaseCard / <<final>>\n\n@enduml\n\nExample 3 Requirement:\nFor Online College Magazine System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall require a person to either create an account or log in.\n2. The system shall allow admins to add, edit, or remove user profiles.\n3. The system shall enable admins to review articles and decide on their publication or rejection.\n4. The system shall permit content creators to write articles and send them for editing.\n5. The system shall have editors review articles from content creators and pass them for approval.\n6. The system shall restrict access if a login attempt is invalid.\n7. The system shall make published articles available for user reading.\n8. The system shall allow users to search for more articles during their reading session.\n9. The system shall enable users to provide feedback after reading articles.\n10. The system shall end when users complete their search or provide feedback.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Machine Diagram\n\nstate StartChoice <<choice>>\nstate AdminChoice <<choice>>\nstate EditorChoice <<choice>>\nstate ReadFeedbackChoice <<choice>>\nstate EndJoin <<choice>>\n\n[*] --> StartChoice\n\nstate Register\nRegister : do / Fill details\nRegister : exit / Registration successful\n\nstate Login\nLogin : entry / Registered user\nLogin : do / Enter login credentials\nLogin : exit / Valid username and password\n\nstate \"Manage profiles\" as ManageProfiles\nManageProfiles : entry / Admin logged in\nManageProfiles : do / Manage profile in database\nManageProfiles : do / Add, delete or edit profiles if necessary\nManageProfiles : exit / Action completed\n\nstate \"Invalid user\" as InvalidUser\nInvalidUser : entry / Invalid login or invalid registration\nInvalidUser : do / Block entry to system\nInvalidUser : exit / Abnormal termination\n\nstate Writing\nWriting : entry / Writer logged in\nWriting : do / Write article\nWriting : exit / Send to editor\n\nstate Editing\nEditing : entry / Editor logged in and article to be edited\nEditing : do / Edit article\nEditing : exit / Send to moderator/admin\n\nstate Publishing\nPublishing : entry / Admin logged in and article to be approved\nPublishing : do / Choose to approve and publish or reject article\nPublishing : do / Add article to database if approved\nPublishing : exit / Publish article\n\nstate Search\nSearch : entry / Choose to search for articles\nSearch : do / Read searched articles\nSearch : exit / Completed reading\n\nstate Reading\nReading : entry / Published article\nReading : do / Read article\nReading : exit / Completed reading\n\nstate Feedback\nFeedback : entry / Reader chosen to give feedback\nFeedback : do / Get feedback\nFeedback : exit / Feedback entry successful\n\nStartChoice --> Register\nStartChoice --> Login\n\nRegister --> AdminChoice\nLogin --> EditorChoice\n\nAdminChoice --> ManageProfiles\nAdminChoice --> InvalidUser\n\nEditorChoice --> Writing\nEditorChoice --> Editing\nEditorChoice --> InvalidUser\n\nWriting --> Editing\nEditing --> Publishing\nManageProfiles --> Publishing\n\nInvalidUser --> [*]\n\nPublishing --> Reading\nReading --> Reading\n\nSearch --> Search\nReading --> ReadFeedbackChoice\n\nReadFeedbackChoice --> Search\nReadFeedbackChoice --> Feedback\n\nFeedback --> EndJoin\nSearch --> EndJoin\n\nEndJoin --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nVideo Suggestion System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall receive a video suggestion request from a user.\n2. The system shall identify the user who made the video suggestion request.\n3. The system shall gather different types of videos simultaneously based on the user's profile or preferences, trending videos from the user’s area, videos with similar tags, videos from similar genres, and promoted videos .\n4. The system shall add additional details such as thumbnails and view counts to the suggested videos.\n5. The system shall send the suggested videos to the user.\n",
+  "requirement_used": "Video Suggestion System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall receive a video suggestion request from a user.\n2. The system shall identify the user who made the video suggestion request.\n3. The system shall gather different types of videos simultaneously based on the user's profile or preferences, trending videos from the user’s area, videos with similar tags, videos from similar genres, and promoted videos .\n4. The system shall add additional details such as thumbnails and view counts to the suggested videos.\n5. The system shall send the suggested videos to the user.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__few_shot\\case_41_video_suggestion_system\\run_01.puml",
+  "validation": {
+    "valid": false,
+    "errors": [
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "warnings": [],
+    "initial_state": "Idle",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 7,
+    "transition_count": 6
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_68_atm_many_scenarios_3",
+        "case_61_atm_3",
+        "case_21_for_online_college_magazine_system"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "valid": false,
+      "errors": [
+        "missing_final_state_transition (state --> [*])",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 7,
+    "state_fn": 12,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 6,
+    "transition_fn": 14,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 7,
+    "state_fn_relaxed": 11,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 6,
+    "transition_fn_relaxed": 14,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 6,
+    "transition_fn_semantic": 14,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": false,
+    "structural_errors": [
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "structural_warnings": [],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0
+  }
+}

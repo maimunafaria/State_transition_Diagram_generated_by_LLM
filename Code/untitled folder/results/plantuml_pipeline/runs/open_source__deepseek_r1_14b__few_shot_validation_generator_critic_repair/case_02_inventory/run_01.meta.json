@@ -1,0 +1,152 @@
+{
+  "run_id": "open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair",
+  "case_id": "case_02_inventory",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nCd Player — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start in a stopped state.\n2. The system shall begin playing music when a disc is inserted and the user presses play.\n3. The system shall allow the user to pause the music at any time while it is playing.\n4. The system shall stop the music temporarily when paused but allow resuming from the same point.\n5. The system shall allow the user to stop the player at any time, regardless of whether the music is playing or paused.\n6. The system shall return to a stopped state when the player is stopped.\n7. The system shall allow switching to another disc and continuing playback if multiple discs are available.\n8. The system shall remain in a stopped state when no more discs are left.\n\nExample 1 PlantUML:\n@startuml\ntitle CD Player State Machine\n\n[*] --> Stopped\n\nstate Playing\nPlaying : do / read disc\n\nstate Stopped\nstate Paused\n\nStopped --> Playing : press play [disc in tray]\nPlaying --> Stopped : press stop\nPlaying --> Stopped : [no more discs]\n\nPlaying --> Paused : press pause\nPaused --> Playing : press play\nPaused --> Stopped : press stop\n\nPlaying --> Playing : [another disc] / change disc\n\n@enduml\n\nExample 2 Requirement:\nE Ration Shop — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to raise a complaint directly.\n2. The system shall end the process after a user raises a complaint.\n3. The system shall allow users to authenticate their identity using an OTP.\n4. The system shall allow multiple attempts for OTP authentication if the initial attempt fails.\n5. The system shall enable users to view items based on different categories once they are successfully authenticated.\n6. The system shall allow users to select items for purchase after viewing them.\n7. The system shall provide users with the option to pay either through an online method or by cash on delivery.\n8. The system shall deliver the product after the payment is completed.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Machine Diagram\n\n\n[*] --> C1\n\nstate C1 <<choice>>\nC1 --> Auth : [possibilities to start]\nC1 --> Complaints\n\n\nstate \"Authentication of aadhar card by OTP\" as Auth\nAuth : entry / card holder\nAuth : do / Generates OTP\nAuth : do / OTP should match\nAuth : exit / authentication completed\n\nstate Complaints\nComplaints : entry / fill\nComplaints : do / raise a complaint\nComplaints : exit / complaint send\n\nComplaints --> [*]\n\nAuth --> Auth \nAuth --> ViewItems\n\nstate \"View items\" as ViewItems\nViewItems : entry / from Authentication\nViewItems : do / items shown based on category\nViewItems : do / select items required\nViewItems : exit / after selecting\n\nViewItems --> Purchase\n\nstate \"make purchase\" as Purchase\nPurchase : entry / from view items\nPurchase : do / payment\nPurchase : exit / chose the mode of payment\n\n\nstate C2 <<choice>>\nPurchase --> C2 : [possibilities for payment]\n\nstate PAYTM\nPAYTM : entry / make purchase\nPAYTM : do / making payment\nPAYTM : exit / payment done\n\nstate COD\nCOD : entry / make purchase\nCOD : do / making payment\nCOD : exit / payment done\n\nC2 --> PAYTM\nC2 --> COD\n\n\nstate C3 <<choice>>\nPAYTM --> C3\nCOD --> C3\n\nC3 --> Delivery : [payment completed]\n\n\nstate Delivery\nDelivery : entry / COD\nDelivery : entry / PAYTM\nDelivery : do / product delivered\n\nDelivery --> [*]\n\n@enduml\n\nExample 3 Requirement:\nAdvocate Diary — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to explore blogs and news updates.\n2. The system shall permit users to leave at any time after viewing blogs and news updates.\n3. The system shall enable users to create an account by providing their details.\n4. The system shall check the provided details during account creation.\n5. The system shall prevent users from proceeding if the provided details are incorrect during account creation.\n6. The system shall allow users to sign in using a password after creating an account.\n7. The system shall check the entered password during sign-in.\n8. The system shall allow users to add a new case after signing in.\n9. The system shall require users to select a category ( civil or criminal ) when adding a new case.\n10. The system shall allow users to enter details for the selected category when adding a new case.\n11. The system shall enable users to set reminders after entering case details.\n12. The system shall allow users to upload related documents for their cases.\n13. The system shall enable users to file something online after signing in.\n14. The system shall allow users to download model forms after signing in.\n15. The system shall enable users to view references ( quick or book )after signing in.\n16. The system shall allow users to provide feedback after signing in.\n17. The system shall permit users to leave the system after completing their tasks.\n\nExample 3 PlantUML:\n@startuml\ntitle UML state machine diagram\n\nstate \"View blogs as news updates\" as ViewBlogs\nViewBlogs : entry/Visit page\nViewBlogs : do/Shows blogs and news updates\nViewBlogs : exit/Leave the page\n\nstate \"Register\" as Register\nRegister : entry/New user\nRegister : do/Verify details\nRegister : exit/Verified details\n\nstate \"Login\" as Login\nLogin : entry/Registered\nLogin : do/Verify password\nLogin : exit/View details\n\nstate \"View details and logs\" as ViewDetails\nViewDetails : entry/Login\nViewDetails : do/Show details of case and logs\nViewDetails : exit/Do required function\n\nstate \"Add case\" as AddCase\nAddCase : entry/Wants to add case\nAddCase : do/Show Category\nAddCase : exit/Selects a category\n\nstate \"Civil\" as Civil\nCivil : entry/Selects this category\nCivil : do/update view table\nCivil : exit/Allows to add details\n\nstate \"Criminal\" as Criminal\nCriminal : entry/Selects this category\nCriminal : do/Update the view table\nCriminal : exit/Allows to add details\n\nstate \"Add details\" as AddDetails\nAddDetails : entry/Selects category\nAddDetails : do/Add details about case\nAddDetails : exit/Update view table\n\nstate \"Add remainder\" as AddReminder\nAddReminder : entry/Adds details\nAddReminder : do/Add remainder\nAddReminder : exit/Update calender\n\nstate \"Upload document\" as UploadDocument\nUploadDocument : entry/Add details\nUploadDocument : do/Upload documents\nUploadDocument : exit/leave page\n\nstate \"File online\" as FileOnline\nFileOnline : entry/Prefers online filing\nFileOnline : do/Select category\nFileOnline : exit/Click a link\n\nstate \"Redirect to page\" as RedirectPage\nRedirectPage : entry/Click a link\nRedirectPage : do/Redirects to page\nRedirectPage : exit/Returns to page\n\nstate \"Download model forms\" as DownloadForms\nDownloadForms : entry/wants to download forms\nDownloadForms : do/Select a form\nDownloadForms : exit/Downloads form\n\nstate \"Reference\" as Reference\nReference : entry/Pefers to refer\nReference : do/Select a category\nReference : exit/prefered categoried is showed\n\nstate \"Quick References\" as QuickReferences\nQuickReferences : entry/Selects quick references\nQuickReferences : do/Shows some Quick references\nQuickReferences : exit/Leave the page\n\nstate \"Books\" as Books\nBooks : entry/Selects books\nBooks : do/Shows books\nBooks : exit/Leave page\n\nstate \"Feedback\" as Feedback\nFeedback : entry/Wants to give feedback\nFeedback : do/Add feedback\nFeedback : exit/Exit page\n\nstate \"Logout\" as Logout\nLogout : entry/Wants to leave the site\nLogout : do/The session of logged in user ended\nLogout : exit/Leave the site\n\nstate J1 <<choice>>\nstate J2 <<choice>>\nstate J3 <<choice>>\nstate J4 <<choice>>\nstate J5 <<choice>>\nstate J6 <<choice>>\n\nstate J10 <<choice>>\n\n[*] --> J1\n\nJ1 --> ViewBlogs\nJ1 --> Register\n\nViewBlogs --> [*]\n\nRegister --> J2\nJ2 --> [*] : [Invalid Credentials]\nJ2 --> Login : [Valid]\n\nLogin --> [*] : [Improper]\nLogin --> ViewDetails : [Proper]\n\nViewDetails --> J3\n\nJ3 --> AddCase\nJ3 --> FileOnline\nJ3 --> DownloadForms\nJ3 --> Reference\nJ3 --> Feedback\n\nAddCase --> J4\nJ4 --> Civil\nJ4 --> Criminal\n\nCivil --> J5\nCriminal --> J5\nJ5 --> AddDetails\nAddDetails --> AddReminder\nAddReminder --> UploadDocument\nUploadDocument --> J10\n\nFileOnline --> RedirectPage\nRedirectPage --> J10\n\nDownloadForms --> J10\n\nReference --> J6\nJ6 --> QuickReferences\nJ6 --> Books\nQuickReferences --> J10\nBooks --> J10\n\nFeedback --> J10\n\nJ10 --> Logout\nLogout --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nInventory — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to add new goods to the inventory.\n2. The system shall allow the user to update the price of existing items in the inventory.\n3. The system shall allow the user to remove goods from the inventory that are no longer required.\n4. The system shall identify expired goods and notify the user about their removal from the inventory.\n5. The system shall allow the user to place an order to a supplier for additional goods when required.\n6. The system shall generate an invoice for the order once it is placed.\n7. The system shall allow the user to search for items available in the inventory and select them for purchase.\n8. The system shall calculate the applicable discount and tax based on the selected items.\n9. The system shall generate a receipt for the customer after the purchase.\n10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.\n11. The system shall record customer requests for items that may not be currently available.\n12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.\n",
+  "requirement_used": "Inventory — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to add new goods to the inventory.\n2. The system shall allow the user to update the price of existing items in the inventory.\n3. The system shall allow the user to remove goods from the inventory that are no longer required.\n4. The system shall identify expired goods and notify the user about their removal from the inventory.\n5. The system shall allow the user to place an order to a supplier for additional goods when required.\n6. The system shall generate an invoice for the order once it is placed.\n7. The system shall allow the user to search for items available in the inventory and select them for purchase.\n8. The system shall calculate the applicable discount and tax based on the selected items.\n9. The system shall generate a receipt for the customer after the purchase.\n10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.\n11. The system shall record customer requests for items that may not be currently available.\n12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "Start",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 13,
+    "transition_count": 19
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__deepseek_r1_14b__few_shot",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": true,
+      "previous_score": 1,
+      "repair_score": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 1,
+      "strict_state_diagram_valid": true,
+      "remaining_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])"
+        ],
+        "initial_state": "Start",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 13,
+        "transition_count": 21
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "Start",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 13,
+        "transition_count": 19
+      },
+      "strict_state_diagram_valid": true,
+      "accepted": true,
+      "previous_score": 1,
+      "repair_score": 0,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_02_inventory\\run_01.repair_01.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 13,
+    "state_fn": 16,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 19,
+    "transition_fn": 11,
+    "state_precision_relaxed": 0.23076923076923078,
+    "state_recall_relaxed": 0.1875,
+    "state_f1_relaxed": 0.20689655172413793,
+    "state_tp_relaxed": 3,
+    "state_fp_relaxed": 10,
+    "state_fn_relaxed": 13,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 19,
+    "transition_fn_relaxed": 11,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 19,
+    "transition_fn_semantic": 11,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.7692307692307693,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.10344827586206896,
+    "weighted_f1_relaxed_70_30": 0.14482758620689654,
+    "overall_f1_semantic": 0.10344827586206896,
+    "weighted_f1_semantic_70_30": 0.14482758620689654,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  },
+  "reused_base_run": {
+    "run_id": "open_source__deepseek_r1_14b__few_shot",
+    "strategy": "few_shot",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot\\case_02_inventory\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot\\case_02_inventory\\run_01.prompt.txt"
+  }
+}

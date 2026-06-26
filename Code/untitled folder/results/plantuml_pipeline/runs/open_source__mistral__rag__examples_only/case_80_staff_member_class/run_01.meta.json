@@ -1,0 +1,178 @@
+{
+  "run_id": "open_source__mistral__rag__examples_only",
+  "case_id": "case_80_staff_member_class",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nStaff Member Class — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow assigning a staff member to a client or adding them to a campaign.\n2. The system shall allow removing assignments from staff members, returning them to an unassigned state.\n3. The system shall enable staff members to switch between different assignments during their work period.\n4. The system shall mark a staff member as unemployed when they leave the job.\n5. The system shall archive the record of a former employee after some time has passed.\n\nReference context (use as support; the target requirement above is primary):\n\nExample requirement:\nStudent Counselling Management System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a student to log in.\n2. The system shall prompt the student to try again if login details are incorrect.\n3. The system shall proceed with registration and payment upon a successful login.\n4. The system shall end there if the registration payment is not completed.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Chart Diagram\n\n[*] --> StartMerge\n\nstate StartMerge <<choice>>\nstate Login\nstate LoginDecision <<choice>>\nstate \"Invalid Login\" as InvalidLogin\nstate \"Valid Login\" as ValidLogin\nstate RegistrationDecision <<choice>>\nstate \"Failed Registration\" as FailedRegistration\nstate \"Rank Declaration\" as RankDeclaration\nstate \"Enrollment Fees\" as EnrollmentFees\nstate PaymentDecision <<choice>>\nstate \"Invalid Payment\" as InvalidPayment\nstate \"Valid Payment\" as ValidPayment\nstate \"Choice Filing\" as ChoiceFiling\nstate ChoiceDecision <<choice>>\nstate \"Failed choice filing\" as FailedChoiceFiling\nstate \"Seat Allotment\" as SeatAllotment\nstate \"Admit Letter Generation\" as AdmitLetterGeneration\nstate \"Accept/Decline\" as AcceptDecline\n\nLogin : entry / To Action\nLogin : do / Log in to the system\nLogin : exit / Username and password entered\n\nInvalidLogin : entry / Trying to log in\nInvalidLogin : do / Invalid username and password\nInvalidLogin : exit / Back to login page\n\nValidLogin : entry / Student logged in\nValidLogin : do / Registration form submission with payment\nValidLogin : exit / Student Registered\n\nFailedRegistration : entry / Payment not made\nFailedRegistration : do / Throw an error\nFailedRegistration : exit / Abnormal termination\n\nRankDeclaration : entry / Student registered\nRankDeclaration : do / Declare ranks for all the students\nRankDeclaration : exit / Rank published\n\nEnrollmentFees : entry / Rank declared\nEnrollmentFees : do / Pay enrollment fees\nEnrollmentFees : exit / Payment done\n\nInvalidPayment : entry / Payment not made\nInvalidPayment : do / Show the errors\nInvalidPayment : exit / Abnormal Termination\n\nValidPayment : entry / Payment made\nValidPayment : do / Allow to fill choices\nValidPayment : exit / log out from payment portal\n\nChoiceFiling : entry / Valid payment\nChoiceFiling : do / Fill choices\nChoiceFiling : exit / Lock choices\n\nFailedChoiceFiling : entry / Invalid choices\nFailedChoiceFiling : do / Show the errors\nFailedChoiceFiling : exit / Abnormal Termination\n\nSeatAllotment : entry / Choices must be locked\nSeatAllotment : do / Allot seats based on rank\nSeatAllotment : exit / Publish alloted results\n\nAdmitLetterGeneration : entry / Seat alotted\nAdmitLetterGeneration : do / Generate admit letter\nAdmitLetterGeneration : exit / Publish admit letters to students and colleges\n\nAcceptDecline : entry / Received admit letter\nAcceptDecline : do / Accept/Decline\nAcceptDecline : exit / After decision is made\n\nStartMerge --> Login\nLogin --> LoginDecision\nLoginDecision --> InvalidLogin\nLoginDecision --> ValidLogin\nInvalidLogin --> StartMerge\n\nValidLogin --> RegistrationDecision\nRegistrationDecision --> FailedRegistration\nRegistrationDecision --> RankDeclaration\n\nRankDeclaration --> EnrollmentFees\nEnrollmentFees --> PaymentDecision\nPaymentDecision --> InvalidPayment\nPaymentDecision --> ValidPayment\n\nValidPayment --> ChoiceFiling\nChoiceFiling --> ChoiceDecision\nChoiceDecision --> FailedChoiceFiling\nChoiceDecision --> SeatAllotment\n\nSeatAllotment --> AdmitLetterGeneration\nAdmitLetterGeneration --> AcceptDecline\nAcceptDecline --> [*]\n\nFailedRegistration --> [*]\nInvalidPayment --> [*]\nFailedChoiceFiling --> [*]\n\n@enduml\n```\n\nExample requirement:\nDevice Handout — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall collect personal details from a donor during registration.\n2. The system shall check the entered personal details after registration.\n3. The system shall collect contact information from a donor after verifying their personal details.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Machine Diagram\n\n[*] --> DonorRegistration\n\nstate \"donor registration\" as DonorRegistration\nDonorRegistration : entry / enter personal details\nDonorRegistration : do / verify details\nDonorRegistration : exit / request contact details\n\nstate \"get contacts\" as GetContacts\nGetContacts : entry / registered donor\nGetContacts : do / receive contact details\nGetContacts : exit / donate a device\n\nstate \"device details\" as DeviceDetails\nDeviceDetails : entry / gave contacts\nDeviceDetails : do / receive details\nDeviceDetails : exit / request approval\n\nstate \"device verification\" as DeviceVerification\nDeviceVerification : entry / provided device details\nDeviceVerification : do / check details\nDeviceVerification : exit / acknowledge donor\n\nstate Decision <<choice>>\n\nstate approved\napproved : entry / device verified\napproved : do / choose an executive\napproved : exit / send details to executive\n\nstate rejected\nrejected : entry / fails verification\nrejected : do / notify donor\nrejected : exit / device not accepted\n\nstate \"picked up\" as PickedUp\nPickedUp : entry / executive receives details\nPickedUp : do / executive picks product\nPickedUp : exit / acknowledges status of product\n\nDonorRegistration --> GetContacts\nGetContacts --> DeviceDetails\nDeviceDetails --> DeviceVerification\nDeviceVerification --> Decision\n\nDecision --> approved : [passes verification]\nDecision --> rejected : [fails verification]\n\napproved --> PickedUp\n\nPickedUp --> [*]\nrejected --> [*]\n\n@enduml\n```\n\nExample requirement:\nClass Campaign — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall begin a campaign once a manager and staff are assigned.\n2. The system shall activate and start running a campaign upon approval and signing of the contract.\n3. The system shall prepare a final statement when the campaign is finished and move the process toward completion.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle State machine for Campaign\n\nstate Commissioned\nstate Active\nstate Completed\nstate Paid\n\n[*] --> Commissioned : /assignManager;\\nassignStaff\n\nCommissioned --> Active : Authorized(authorizationCode)\\n[contract signed]\\n/setCampaignActive\n\nActive --> Completed : campaignCompleted\\n/prepareFinalStatement\n\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment = zero]\nCompleted --> Completed : paymentReceived(payment)\\n[paymentDue - payment > zero]\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment < zero]\\n/generateRefund\n\nPaid --> [*] : archiveCampaign\\n/unassignStaff;\\nunassignManager\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Staff Member Class — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow assigning a staff member to a client or adding them to a campaign.\n2. The system shall allow removing assignments from staff members, returning them to an unassigned state.\n3. The system shall enable staff members to switch between different assignments during their work period.\n4. The system shall mark a staff member as unemployed when they leave the job.\n5. The system shall archive the record of a former employee after some time has passed.",
+  "puml_path": "/Users/faria/State_transition_Diagram_generated_by_LLM/results/plantuml_pipeline/runs/open_source__mistral__rag__examples_only/case_80_staff_member_class/run_01.puml",
+  "validation": {
+    "valid": false,
+    "errors": [
+      "plantuml_syntax_error: Some diagram description contains errors"
+    ],
+    "warnings": [
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: CampaignAssigned, CampaignAssigned(anotherCampaign), ClientAssigned, ClientAssigned(anotherClient)"
+    ],
+    "initial_state": "Assigned",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [
+      "CampaignAssigned",
+      "CampaignAssigned(anotherCampaign)",
+      "ClientAssigned",
+      "ClientAssigned(anotherClient)"
+    ],
+    "state_count": 8,
+    "transition_count": 6
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "plantuml_syntax_error: Some diagram description contains errors",
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: CampaignAssigned, CampaignAssigned(anotherCampaign), ClientAssigned, ClientAssigned(anotherClient)"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "vector",
+      "top_k": 3,
+      "query_domains": [
+        "employee"
+      ],
+      "retrieved_docs": [
+        {
+          "name": "dataset_examples/case_31_student_counselling_management_system.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.01048743724823,
+          "clipped_chars": 3636
+        },
+        {
+          "name": "dataset_examples/case_10_device_handout.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.0137560367584229,
+          "clipped_chars": 1889
+        },
+        {
+          "name": "dataset_examples/case_77_class_campaign.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.0171185731887817,
+          "clipped_chars": 1074
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": false,
+      "strict_state_diagram_valid": false,
+      "errors": [
+        "plantuml_syntax_error: Some diagram description contains errors"
+      ],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: CampaignAssigned, CampaignAssigned(anotherCampaign), ClientAssigned, ClientAssigned(anotherClient)"
+      ],
+      "strict_issues": [
+        "plantuml_syntax_error: Some diagram description contains errors",
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: CampaignAssigned, CampaignAssigned(anotherCampaign), ClientAssigned, ClientAssigned(anotherClient)"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": false,
+        "errors": [
+          "plantuml_syntax_error: Some diagram description contains errors"
+        ],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])",
+          "unreachable_states_detected",
+          "unreachable: CampaignAssigned, CampaignAssigned(anotherCampaign), ClientAssigned, ClientAssigned(anotherClient)"
+        ],
+        "initial_state": "Assigned",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "CampaignAssigned",
+          "CampaignAssigned(anotherCampaign)",
+          "ClientAssigned",
+          "ClientAssigned(anotherClient)"
+        ],
+        "state_count": 8,
+        "transition_count": 6
+      },
+      "strict_state_diagram_valid": false,
+      "path": "/Users/faria/State_transition_Diagram_generated_by_LLM/results/plantuml_pipeline/runs/open_source__mistral__rag__examples_only/case_80_staff_member_class/run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 8,
+    "state_fn": 8,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 6,
+    "transition_fn": 5,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 8,
+    "state_fn_relaxed": 7,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 6,
+    "transition_fn_relaxed": 5,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 6,
+    "transition_fn_semantic": 5,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": false,
+    "structural_errors": [
+      "plantuml_syntax_error: Some diagram description contains errors"
+    ],
+    "structural_warnings": [
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: CampaignAssigned, CampaignAssigned(anotherCampaign), ClientAssigned, ClientAssigned(anotherClient)"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "plantuml_syntax_error: Some diagram description contains errors",
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: CampaignAssigned, CampaignAssigned(anotherCampaign), ClientAssigned, ClientAssigned(anotherClient)"
+    ]
+  }
+}

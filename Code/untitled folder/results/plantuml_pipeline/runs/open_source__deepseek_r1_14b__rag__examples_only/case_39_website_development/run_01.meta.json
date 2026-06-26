@@ -1,0 +1,148 @@
+{
+  "run_id": "open_source__deepseek_r1_14b__rag__examples_only",
+  "case_id": "case_39_website_development",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nWebsite Development — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to navigate from the homepage using a navigation bar.\n2. The system shall display information about projects when selected by the user.\n3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.\n4. The system shall display information about career opportunities when selected by the user.\n5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.\n6. The system shall check submitted job applications after they are submitted.\n\nReference context (use as support; the target requirement above is primary):\n\nExample requirement:\nFor Online College Magazine System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall require a person to either create an account or log in.\n2. The system shall allow admins to add, edit, or remove user profiles.\n3. The system shall enable admins to review articles and decide on their publication or rejection.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Machine Diagram\n\nstate StartChoice <<choice>>\nstate AdminChoice <<choice>>\nstate EditorChoice <<choice>>\nstate ReadFeedbackChoice <<choice>>\nstate EndJoin <<choice>>\n\n[*] --> StartChoice\n\nstate Register\nRegister : do / Fill details\nRegister : exit / Registration successful\n\nstate Login\nLogin : entry / Registered user\nLogin : do / Enter login credentials\nLogin : exit / Valid username and password\n\nstate \"Manage profiles\" as ManageProfiles\nManageProfiles : entry / Admin logged in\nManageProfiles : do / Manage profile in database\nManageProfiles : do / Add, delete or edit profiles if necessary\nManageProfiles : exit / Action completed\n\nstate \"Invalid user\" as InvalidUser\nInvalidUser : entry / Invalid login or invalid registration\nInvalidUser : do / Block entry to system\nInvalidUser : exit / Abnormal termination\n\nstate Writing\nWriting : entry / Writer logged in\nWriting : do / Write article\nWriting : exit / Send to editor\n\nstate Editing\nEditing : entry / Editor logged in and article to be edited\nEditing : do / Edit article\nEditing : exit / Send to moderator/admin\n\nstate Publishing\nPublishing : entry / Admin logged in and article to be approved\nPublishing : do / Choose to approve and publish or reject article\nPublishing : do / Add article to database if approved\nPublishing : exit / Publish article\n\nstate Search\nSearch : entry / Choose to search for articles\nSearch : do / Read searched articles\nSearch : exit / Completed reading\n\nstate Reading\nReading : entry / Published article\nReading : do / Read article\nReading : exit / Completed reading\n\nstate Feedback\nFeedback : entry / Reader chosen to give feedback\nFeedback : do / Get feedback\nFeedback : exit / Feedback entry successful\n\nStartChoice --> Register\nStartChoice --> Login\n\nRegister --> AdminChoice\nLogin --> EditorChoice\n\nAdminChoice --> ManageProfiles\nAdminChoice --> InvalidUser\n\nEditorChoice --> Writing\nEditorChoice --> Editing\nEditorChoice --> InvalidUser\n\nWriting --> Editing\nEditing --> Publishing\nManageProfiles --> Publishing\n\nInvalidUser --> [*]\n\nPublishing --> Reading\nReading --> Reading\n\nSearch --> Search\nReading --> ReadFeedbackChoice\n\nReadFeedbackChoice --> Search\nReadFeedbackChoice --> Feedback\n\nFeedback --> EndJoin\nSearch --> EndJoin\n\nEndJoin --> [*]\n\n@enduml\n```\n\nExample requirement:\nDisplayitem — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to browse products through a catalog.\n2. The system shall enable users to view items directly or explore different ways of browsing in the catalog.\n3. The system shall allow users to browse products using an index, either alphabetically or by category.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle BrowseCatalog State Machine\n[*] --> BrowseCatalog\nstate BrowseCatalog {\n\n  \n\n  state DisplayingItem\n\n  state DisplayingIndex {\n\n    [*] --> Alphabetical\n\n    state Alphabetical\n    state ByCategory\n\n    Alphabetical --> ByCategory : byCategory\n    ByCategory --> Alphabetical : alphabetical\n  }\n\n  state H <<history*>>\n\n  DisplayingItem --> DisplayingIndex : goToIndex\n  DisplayingIndex --> DisplayingItem : selectProduct\n\n  H --> DisplayingIndex\n}\n\nstate DisplayingBasket\nstate CheckingOut\n\nBrowseCatalog --> DisplayingBasket : goToBasket\nDisplayingIndex --> CheckingOut : goToCheckout\n\nDisplayingBasket --> H : goToCatalog\nCheckingOut --> H : goToCatalog\n\nBrowseCatalog --> [*] : exit\n\n@enduml\n```\n\nExample requirement:\nOnline Marketplace — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall require the user to provide their details and create an account before they can join as a seller or customer.\n2. The system shall allow the user to sign in and access their workspace after completing registration and verification.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML state machine diagram\n\nstate \"Seller Registration\" as SellerRegistration\nSellerRegistration : entry/Unregistered Seller\nSellerRegistration : do/Get Valid Seller Credentials\nSellerRegistration : exit/Seller Account Registered\n\nstate \"Seller Verification\" as SellerVerification\nSellerVerification : entry/Seller Account Registered\nSellerVerification : do/Verify Seller\nSellerVerification : exit/Login Seller\n\nstate \"Seller Login\" as SellerLogin\nSellerLogin : entry/Unverified Seller\nSellerLogin : entry/Seller not logged in\nSellerLogin : do/Authenticate Seller\nSellerLogin : exit/Logged In Successfully\n\nstate \"Customer Login\" as CustomerLogin\nCustomerLogin : entry/Not Logged In\nCustomerLogin : do/Authenticate Customer\nCustomerLogin : exit/Successfully Logged In\n\nstate \"Seller Home\" as SellerHome\nSellerHome : entry/Logged In Seller\nSellerHome : do/Display Seller Dashboard\nSellerHome : exit/Sale Products\nSellerHome : exit/Promote Products\nSellerHome : exit/Chat\nSellerHome : exit/Logout\n\nstate \"Customer Home\" as CustomerHome\nCustomerHome : entry/Customer Logged in\nCustomerHome : do/Display Recommended/Promoted Products\nCustomerHome : exit/View Product\nCustomerHome : exit/Buy Product\nCustomerHome : exit/Chat\nCustomerHome : exit/Report Seller\nCustomerHome : exit/Rate and Review\n\nstate \"View Product\" as ViewProduct\nViewProduct : entry/To View Products\nViewProduct : do/Search and View Products\nViewProduct : exit/Return to home\nViewProduct : exit/Buy Product\n\nstate \"Buy Product\" as BuyProduct\nBuyProduct : entry/Opted to Buy\nBuyProduct : do/Add product to cart\nBuyProduct : exit/Proceed to Checkout\n\nstate \"Make Purchase\" as MakePurchase\nMakePurchase : entry/Proceeded to Checkout\nMakePurchase : do/Enable payment\nMakePurchase : exit/Payment Successful\nMakePurchase : exit/Payment Unsuccessful\nMakePurchase : exit/Return to Home\n\nstate \"Chat\" as CustomerChat\nCustomerChat : entry/To Chat\nCustomerChat : do/Chat with Seller\nCustomerChat : exit/Return to Home\n\nstate \"Report Seller\" as ReportSeller\nReportSeller : entry/To Report Seller\nReportSeller : entry/Seller in Purchase History\nReportSeller : do/Issue Report to Seller\nReportSeller : exit/Return to Home\n\nstate \"Rate and Review\" as RateReview\nRateReview : entry/To Rate and Review\nRateReview : entry/Product Delivered\nRateReview : do/Rate and Review the product\nRateReview : exit/Return to Home\n\nstate \"Sale Products\" as SaleProducts\nSaleProducts : entry/To Sale Products\nSaleProducts : do/Add new Product to Seller Inventory\nSaleProducts : exit/Product added Successfully\nSaleProducts : exit/Return to Home State\n\nstate \"Promote Products\" as PromoteProducts\nPromoteProducts : entry/To Promote Products\nPromoteProducts : entry/Product in Sale\nPromoteProducts : do/Promote a Product\nPromoteProducts : exit/Return to Home State\n\nstate \"Chat\" as SellerChat\nSellerChat : entry/To Chat\nSellerChat : entry/Seller Product in Sale\nSellerChat : entry/Message from Customer\nSellerChat : do/Enable chat with Customer\nSellerChat : exit/Return to Home State\n\nstate \"Logout\" as Logout\nLogout : entry/To Logout User\nLogout : do/Logout User\nLogout : exit/User Logged out\n\nstate J0 <<choice>>\nstate J1 <<choice>>\nstate J2 <<choice>>\nstate J3 <<choice>>\nstate J4 <<choice>>\nstate J5 <<choice>>\nstate J6 <<choice>>\nstate J7 <<choice>>\nstate J8 <<choice>>\n\n[*] --> J0\nJ0 --> J1 : [Seller Portal]\nJ0 --> CustomerLogin : [Customer Portal]\n\nJ1 --> SellerRegistration : [New Seller]\nJ1 --> J2 : [Registered Seller]\n\nSellerRegistration --> SellerVerification\nSellerVerification --> J2\nJ2 --> SellerLogin\n\nCustomerLogin --> J3\nSellerLogin --> J7\nJ7 --> SellerHome : [Go To Home]\n\nJ3 --> CustomerHome : [Go To Home]\n\nCustomerHome --> J4 : [Possible Activities]\nJ4 --> ViewProduct : [View Products]\nJ4 --> CustomerChat : [Chat]\nJ4 --> ReportSeller : [Report Seller]\nJ4 --> RateReview : [Rate and Review]\nJ4 --> J8 : [Logout]\n\nViewProduct --> J5\nJ5 --> J3 : [Not to Buy]\nJ5 --> BuyProduct : [Proceed to Buy]\n\nBuyProduct --> MakePurchase\nMakePurchase --> J3\n\nCustomerChat --> J3\nReportSeller --> J3\nRateReview --> J3\n\nSellerHome --> J6 : [Possible Activities]\nJ6 --> PromoteProducts : [Promote Products]\nJ6 --> SellerChat : [Chat]\nJ6 --> SaleProducts\nJ6 --> J8 : [Logout]\n\nSaleProducts --> J7\n\nPromoteProducts --> J7\nSellerChat --> J7\n\nJ8 -->  Logout\nLogout --> [*]\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Website Development — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to navigate from the homepage using a navigation bar.\n2. The system shall display information about projects when selected by the user.\n3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.\n4. The system shall display information about career opportunities when selected by the user.\n5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.\n6. The system shall check submitted job applications after they are submitted.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag__examples_only\\case_39_website_development\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "choice_node_without_outgoing_transitions (PhotoVideoChoice)",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "initial_state": "Homepage",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 8,
+    "transition_count": 8
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "choice_node_without_outgoing_transitions (PhotoVideoChoice)",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "vector",
+      "top_k": 3,
+      "query_domains": [],
+      "retrieved_docs": [
+        {
+          "name": "dataset_examples/case_21_for_online_college_magazine_system.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.9944288730621338,
+          "clipped_chars": 2678
+        },
+        {
+          "name": "dataset_examples/case_63_displayitem.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.029407024383545,
+          "clipped_chars": 1128
+        },
+        {
+          "name": "dataset_examples/case_03_online_marketplace.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.0401843786239624,
+          "clipped_chars": 4717
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "choice_node_without_outgoing_transitions (PhotoVideoChoice)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "choice_node_without_outgoing_transitions (PhotoVideoChoice)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "choice_node_without_outgoing_transitions (PhotoVideoChoice)",
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": "Homepage",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 8
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag__examples_only\\case_39_website_development\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.125,
+    "state_recall": 0.07142857142857142,
+    "state_f1": 0.09090909090909091,
+    "state_tp": 1,
+    "state_fp": 7,
+    "state_fn": 13,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 8,
+    "transition_fn": 19,
+    "state_precision_relaxed": 0.125,
+    "state_recall_relaxed": 0.07142857142857142,
+    "state_f1_relaxed": 0.09090909090909091,
+    "state_tp_relaxed": 1,
+    "state_fp_relaxed": 7,
+    "state_fn_relaxed": 13,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 8,
+    "transition_fn_relaxed": 19,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 8,
+    "transition_fn_semantic": 19,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "choice_node_without_outgoing_transitions (PhotoVideoChoice)",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "hallucination_state_rate": 0.875,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.875,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.045454545454545456,
+    "overall_f1_relaxed": 0.045454545454545456,
+    "weighted_f1_relaxed_70_30": 0.06363636363636363,
+    "overall_f1_semantic": 0.045454545454545456,
+    "weighted_f1_semantic_70_30": 0.06363636363636363,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "choice_node_without_outgoing_transitions (PhotoVideoChoice)",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  }
+}

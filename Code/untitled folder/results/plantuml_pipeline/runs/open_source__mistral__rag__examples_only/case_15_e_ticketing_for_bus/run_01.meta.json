@@ -1,0 +1,150 @@
+{
+  "run_id": "open_source__mistral__rag__examples_only",
+  "case_id": "case_15_e_ticketing_for_bus",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nE Ticketing For Bus — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create a new account.\n2. The system shall validate the registration of a new user.\n3. The system shall allow the user to log in upon successful registration.\n4. The system shall provide options for logged-in users to check their ticket status.\n5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.\n6. The system shall enable users to manage their account details such as editing or deleting them.\n7. The system shall log out the user after they complete any action.\n\nReference context (use as support; the target requirement above is primary):\n\nExample requirement:\nBook Bank Management System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to register by entering their details.\n2. The system shall issue a member ID and complete the registration upon correct entry of details.\n3. The system shall require the user to re-enter their details upon incorrect entry of details.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Chart Diagram\n\nstate \"Registration\" as Registration {\n  [*] --> RegEnterDetails\n\n  state \"Enter Details\" as RegEnterDetails\n  state \"Get Member_ID\" as GetMemberID\n  state \"Successful Registration\" as SuccessfulRegistration\n  state \"Re-enter Details\" as ReEnterDetails\n\n  RegEnterDetails --> GetMemberID : [Valid]\n  RegEnterDetails --> ReEnterDetails : [Invalid]\n  ReEnterDetails --> RegEnterDetails\n  GetMemberID --> SuccessfulRegistration\n}\n\nstate \"Authentication\" as Authentication {\n  [*] --> AuthEnterMemberID\n\n  state \"Enter Member_ID\" as AuthEnterMemberID\n  state \"Enter Password\" as EnterPassword\n  state \"successful Login\" as SuccessfulLogin\n  state \"Invalid Member_ID or Password\" as InvalidCreds\n\n  AuthEnterMemberID --> EnterPassword\n  EnterPassword --> SuccessfulLogin : [Valid]\n  EnterPassword --> InvalidCreds : [Invalid]\n}\n\nstate \"Search Books\" as SearchBooks {\n  [*] --> EnterBookDetails\n\n  state \"Enter Book Details\" as EnterBookDetails\n  state \"Display Suggestion\" as DisplaySuggestion\n  state \"choose Alternate option\" as ChooseAlternate\n\n  EnterBookDetails --> DisplaySuggestion : [Found]\n  EnterBookDetails --> ChooseAlternate : [Not Found]\n}\n\nstate \"Get Books\" as GetBooksState {\n  [*] --> GetEnterBookID\n\n  state \"Enter Book_ID\" as GetEnterBookID\n  state \"Enter Member_ID\" as GetEnterMemberID\n  state \"Obtain Books\" as ObtainBooks\n  state \"Pay Fine Amount\" as PayFineAmount\n\n  GetEnterBookID --> GetEnterMemberID\n  GetEnterMemberID --> ObtainBooks : [Active Member]\n  GetEnterMemberID --> PayFineAmount : [Inactive Member]\n}\n\nstate \"Buy Books\" as BuyBooks {\n  [*] --> BuyEnterBookID\n\n  state \"Enter Book_ID\" as BuyEnterBookID\n  state \"Display Book Amount\" as DisplayBookAmount\n  state \"Get Books\" as BuyGetBooks\n  state BuyNotPaidEnd <<choice>>\n\n  BuyEnterBookID --> DisplayBookAmount\n  DisplayBookAmount --> BuyGetBooks : [Paid]\n  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]\n  BuyNotPaidEnd --> [*]\n}\n\nstate StartJoin <<choice>>\n\n[*] --> StartJoin\nStartJoin --> Registration\nStartJoin --> Authentication\nStartJoin --> SearchBooks\nStartJoin --> GetBooksState\nStartJoin --> BuyBooks\n\nSuccessfulRegistration --> AuthEnterMemberID\n\nSuccessfulLogin --> EnterBookDetails\nSuccessfulLogin --> GetEnterBookID\nSuccessfulLogin --> BuyEnterBookID\n\n\nObtainBooks --> [*]\nBuyGetBooks --> [*]\n\n@enduml\n```\n\nExample requirement:\nCar Care — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to choose whether they are using the service center side or the car owner side.\n2. The system shall allow service center users to register or log in if already registered.\n\nReference PlantUML excerpt:\n```plantuml\n@startuml\ntitle UML state machine diagram\n\nstate PortalChoice1 <<choice>>\nstate PortalChoice2 <<choice>>\nstate PortalChoice3 <<choice>>\nstate ServiceJoin <<choice>>\nstate OwnerJoin <<choice>>\n\n\n[*] --> PortalChoice1\n\nPortalChoice1 --> PortalChoice2 : [Service Center Portal]\nPortalChoice1 --> PortalChoice3 : [Car Owner Portal]\n\nPortalChoice2 --> ServiceCenterRegistration : [New Service Center]\nPortalChoice2 --> ServiceJoin : [Registered Service center]\nPortalChoice3 --> CarOwnerRegistration : [New Car Owner]\nPortalChoice3 --> OwnerJoin : [Registered Car Owner]\n\nstate \"Service Center Registration\" as ServiceCenterRegistration\nServiceCenterRegistration : entry / Unregistered service center\nServiceCenterRegistration : do / Enter Valid Credentials\nServiceCenterRegistration : exit / Account registered\n\nstate \"Service Center Verification\" as ServiceCenterVerification\nServiceCenterVerification : entry / Service Center account registered\nServiceCenterVerification : do / Verify Service center\nServiceCenterVerification : exit / Login Service center\n\nstate \"Service Center Login\" as ServiceCenterLogin\nServiceCenterLogin : entry / Verified Service Center\nServiceCenterLogin : entry / Service Center not logged in\nServiceCenterLogin : do / Authenticate Service Center\nServiceCenterLogin : exit / Logged In Successfully\n\nstate \"Service center Home\" as ServiceCenterHome\nServiceCenterHome : entry / Logged in Service Center\nServiceCenterHome : do / Display home page\nServiceCenterHome : exit / Enter Damaged parts list\nServiceCenterHome : exit / Expiry Notification page\nServiceCenterHome : exit / Updating Information list\n\nstate \"Expiry Notification page\" as ExpiryNotification\nExpiryNotification : entry / To view expiry notification\nExpiryNotification : do / Send service request to Car owner\nExpiryNotification : exit / Return to Service center home page\n\nstate \"Entering Damaged parts list\" as DamagedParts\nDamagedParts : entry / To enter Damaged parts list\nDamagedParts : do / Preparing and entering damaged parts list\nDamagedParts : exit / Return to service center home page\n\nstate \"Updating parts Information\" as UpdatingParts\nUpdatingParts : entry / To update changed parts information\nUpdatingParts : do / Update Information\nUpdatingParts : exit / Return to Service center home page\n\nstate \"Logout\" as Logout\nLogout : entry / To Logout\nLogout : do / Logout\nLogout : exit / Logged out Successfully\n\nstate \"Car Owner Registration\" as CarOwnerRegistration\nCarOwnerRegistration : entry / Unregistered Car Owner\nCarOwnerRegistration : do / Enter valid Credentials\nCarOwnerRegistration : exit / Account registered\n\nstate \"Car owner Verification\" as CarOwnerVerification\nCarOwnerVerification : entry / Car owner account registered\nCarOwnerVerification : do / Verify Car owner\nCarOwnerVerification : exit / Login Car Owner\n\nstate \"Car Owner Login\" as CarOwnerLogin\nCarOwnerLogin : entry / Verified Car Owner\nCarOwnerLogin : entry / Car owner not logged in\nCarOwnerLogin : do / Authenticate Car Owner\nCarOwnerLogin : exit / Logged In Successfully\n\nstate \"Car Owner Home\" as CarOwnerHome\nCarOwnerHome : entry / Logged in Car Owner\nCarOwnerHome : do / Display home page\nCarOwnerHome : exit / View parts information\nCarOwnerHome : exit / Service\nCarOwnerHome : exit / Report\n\nstate \"Report\" as Report\nReport : entry / To Report Service center\nReport : do / Enter the report\nReport : exit / Return to car owner home page\n\nstate \"View Parts Information\" as ViewPartsInformation\nViewPartsInformation : entry / To view parts information\nViewPartsInformation : do / View car parts Information\nViewPartsInformation : exit / Return to Car owner home page\n\nstate \"Service\" as Service\nService : entry / Service request from service center\nService : do / Accept or deny request\nService : exit / Return to Car Owner home page\n\nstate \"Choose parts\" as ChooseParts\nChooseParts : entry / To choose selected parts\nChooseParts : do / Choose the part to be serviced\nChooseParts : exit / Return to service page\n\nstate \"Make Payment\" as MakePayment\nMakePayment : entry / To make payments\nMakePayment : do / Make payments\nMakePayment : exit / Return to Service page\n\n\nstate ServiceHomeChoice <<choice>>\nstate ServiceLoginChoice <<choice>>\nstate OwnerHomeChoice <<choice>>\nstate OwnerLoginChoice <<choice>>\nstate FinalJoin <<choice>>\n\n\nServiceCenterRegistration --> ServiceCenterVerification\nServiceCenterVerification --> ServiceJoin\nServiceJoin --> ServiceCenterLogin\nServiceCenterLogin --> ServiceLoginChoice\nServiceLoginChoice --> ServiceCenterHome\nExpiryNotification --> ServiceLoginChoice \nUpdatingParts --> ServiceLoginChoice \nDamagedParts --> ServiceLoginChoice \n\nServiceCenterHome --> ServiceHomeChoice : [Possible Activities]\nServiceHomeChoice --> ExpiryNotification\nServiceHomeChoice --> DamagedParts\nServiceHomeChoice --> UpdatingParts\nServiceHomeChoice --> FinalJoin\n\nFinalJoin --> Logout\nLogout --> [*]\n\n\n\nCarOwnerRegistration --> CarOwnerVerification\nCarOwnerVerification --> OwnerJoin\n```\n\nExample requirement:\nBusiness Process Outsourcing Bpo Management System Scenario 1 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall prompt the user to choose whether they are a new user or an already registered user.\n2. The system shall require new users to enter their details for registration and end the process if the details are invalid.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Machine Diagram (User System)\n\n[*] --> UserType\n\nstate UserType <<choice>>\nUserType --> Registration : [New user]\nUserType --> Login : [Registered user]\n\nstate \"Registration\" as Registration {\n    [*] --> GettingDetails\n\n    state GettingDetails\n    state ChoiceReg <<choice>>\n    state \"Update Database\" as UpdateDB\n    state EndInvalid <<choice>>\n\n    GettingDetails --> ChoiceReg : [Registration verification]\n    ChoiceReg --> UpdateDB : [valid]\n    ChoiceReg --> EndInvalid : [invalid]\n\n    EndInvalid --> [*]\n}\n\nRegistration : entry / New user\nRegistration : do / Registration\nRegistration : exit / After updation\n\nUpdateDB --> Login : [verified]\n\nstate Login\nLogin : do / Enter username and password\nLogin : exit / After verification\n\nLogin --> Profile : [valid uname & pwd]\n\nstate \"Profile\" as Profile {\n    [*] --> ChoiceProfile\n\n    state ChoiceProfile <<choice>>\n    state \"View or Edit profile\" as EditProfile\n    state \"Upload or Accept request\" as UploadReq\n    state \"Search users\" as SearchUsers\n    state \"View current deals\" as ViewDeals\n\n    ChoiceProfile --> EditProfile : [edit profile data]\n    ChoiceProfile --> UploadReq : [new project]\n    ChoiceProfile --> SearchUsers : [search user]\n    ChoiceProfile --> ViewDeals : [current deals]\n\n    \n}\n\nProfile : entry / View or Edit profile\nProfile : do / Upload or Accept request\nProfile : do / Search users\nProfile : do / View current deals\nProfile : exit / Logout\n\n    EditProfile --> [*] : [Logout]\n    UploadReq --> [*] : [Logout]\n    SearchUsers --> [*] : [Logout]\n    ViewDeals --> [*] : [Logout]\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "E Ticketing For Bus — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create a new account.\n2. The system shall validate the registration of a new user.\n3. The system shall allow the user to log in upon successful registration.\n4. The system shall provide options for logged-in users to check their ticket status.\n5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.\n6. The system shall enable users to manage their account details such as editing or deleting them.\n7. The system shall log out the user after they complete any action.",
+  "puml_path": "/Users/faria/State_transition_Diagram_generated_by_LLM/results/plantuml_pipeline/runs/open_source__mistral__rag__examples_only/case_15_e_ticketing_for_bus/run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "multiple_initial_state_transitions (UserType, GettingDetails, ChoiceProfile)",
+      "choice_node_without_outgoing_transitions (EndInvalid)"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 13,
+    "transition_count": 11
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "multiple_initial_state_transitions (UserType, GettingDetails, ChoiceProfile)",
+      "choice_node_without_outgoing_transitions (EndInvalid)"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "vector",
+      "top_k": 3,
+      "query_domains": [
+        "payment"
+      ],
+      "retrieved_docs": [
+        {
+          "name": "dataset_examples/case_38_book_bank_management_system.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.8078613877296448,
+          "clipped_chars": 2755
+        },
+        {
+          "name": "dataset_examples/case_19_car_care.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.8819591999053955,
+          "clipped_chars": 5319
+        },
+        {
+          "name": "dataset_examples/case_11_business_process_outsourcing_bpo_management_system_1.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.9004073143005371,
+          "clipped_chars": 2019
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (UserType, GettingDetails, ChoiceProfile)",
+        "choice_node_without_outgoing_transitions (EndInvalid)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (UserType, GettingDetails, ChoiceProfile)",
+        "choice_node_without_outgoing_transitions (EndInvalid)"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (UserType, GettingDetails, ChoiceProfile)",
+          "choice_node_without_outgoing_transitions (EndInvalid)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 13,
+        "transition_count": 11
+      },
+      "strict_state_diagram_valid": false,
+      "path": "/Users/faria/State_transition_Diagram_generated_by_LLM/results/plantuml_pipeline/runs/open_source__mistral__rag__examples_only/case_15_e_ticketing_for_bus/run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.15384615384615385,
+    "state_recall": 0.16666666666666666,
+    "state_f1": 0.16,
+    "state_tp": 2,
+    "state_fp": 11,
+    "state_fn": 10,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 11,
+    "transition_fn": 10,
+    "state_precision_relaxed": 0.15384615384615385,
+    "state_recall_relaxed": 0.16666666666666666,
+    "state_f1_relaxed": 0.16,
+    "state_tp_relaxed": 2,
+    "state_fp_relaxed": 11,
+    "state_fn_relaxed": 10,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 11,
+    "transition_fn_relaxed": 10,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 11,
+    "transition_fn_semantic": 10,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "multiple_initial_state_transitions (UserType, GettingDetails, ChoiceProfile)",
+      "choice_node_without_outgoing_transitions (EndInvalid)"
+    ],
+    "hallucination_state_rate": 0.8461538461538461,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.8461538461538461,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.08,
+    "overall_f1_relaxed": 0.08,
+    "weighted_f1_relaxed_70_30": 0.11199999999999999,
+    "overall_f1_semantic": 0.08,
+    "weighted_f1_semantic_70_30": 0.11199999999999999,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "multiple_initial_state_transitions (UserType, GettingDetails, ChoiceProfile)",
+      "choice_node_without_outgoing_transitions (EndInvalid)"
+    ]
+  }
+}

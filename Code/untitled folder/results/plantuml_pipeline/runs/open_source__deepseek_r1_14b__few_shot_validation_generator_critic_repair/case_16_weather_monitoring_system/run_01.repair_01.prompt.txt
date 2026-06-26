@@ -1,0 +1,127 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.
+
+Candidate PlantUML:
+@startuml
+title UML State Chart Diagram
+
+[*] --> CreateUser
+
+state CreateUser
+CreateUser : entry / start registration
+CreateUser : do / validate registration
+CreateUser : exit / registration complete or failed
+
+state CreateUserDecision <<choice>>
+CreateUser --> CreateUserDecision
+
+state "Successful Registration" as SuccessReg
+SuccessReg : entry / registration completed
+SuccessReg : do / proceed to login
+SuccessReg : exit / move to login
+
+state "Failed Registration" as FailReg
+FailReg : entry / registration failed
+FailReg : do / end process
+FailReg : exit / return
+
+CreateUserDecision --> SuccessReg
+CreateUserDecision --> FailReg
+
+state Login
+Login : entry / start login
+Login : do / validate credentials
+Login : exit / login successful or failed
+
+state LoginDecision <<choice>>
+SuccessReg --> Login
+Login --> LoginDecision
+
+state "Successful Login" as SuccessLogin
+SuccessLogin : entry / login completed
+SuccessLogin : do / proceed to weather check
+SuccessLogin : exit / move to weather check
+
+state "Failed Login" as FailLogin
+FailLogin : entry / login failed
+FailLogin : do / end process
+FailLogin : exit / return
+
+LoginDecision --> SuccessLogin
+LoginDecision --> FailLogin
+
+state WeatherCheck
+WeatherCheck : entry / check location
+WeatherCheck : do / validate location
+WeatherCheck : exit / location valid or invalid
+
+state LocationInvalid
+LocationInvalid : entry / invalid location entered
+LocationInvalid : do / end process
+LocationInvalid : exit / return
+
+WeatherCheck --> LocationInvalid
+
+state WeatherSelection <<choice>>
+WeatherCheck --> WeatherSelection
+
+state WeatherInfo
+WeatherInfo : entry / display selected info
+WeatherInfo : do / update and show info
+WeatherInfo : exit / proceed to additional details
+
+state AdditionalDetails
+AdditionalDetails : entry / view additional details
+AdditionalDetails : do / choose action
+AdditionalDetails : exit / proceed accordingly
+
+state Logout
+Logout : entry / start logout
+Logout : do / end session
+Logout : exit / return
+
+WeatherSelection --> WeatherInfo
+WeatherInfo --> AdditionalDetails
+
+AdditionalDetails --> WeatherInfo
+AdditionalDetails --> Logout
+
+Logout --> [*]
+
+SuccessLogin --> WeatherCheck
+WeatherInfo --> AdditionalDetails
+AdditionalDetails --> [*]
+
+@enduml
+
+
+Validation issues to fix:
+- duplicate_transitions_detected (1)
+- choice_node_without_guarded_outgoing_transitions (CreateUserDecision)
+- choice_node_without_guarded_outgoing_transitions (LoginDecision)
+- choice_node_without_guarded_outgoing_transitions (WeatherSelection)
+
+Repair guidance for these issues:
+- Remove duplicate transitions or merge their labels into one transition.
+- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].

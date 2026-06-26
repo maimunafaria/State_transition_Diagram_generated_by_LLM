@@ -1,0 +1,93 @@
+{
+  "run_id": "open_source__deepseek_r1_14b__few_shot",
+  "case_id": "case_15_e_ticketing_for_bus",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nAtm Many Scenarios Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the entered PIN is correct.\n2. The system shall ask the user to try again if the entered PIN is incorrect.\n3. The system shall keep the card for security reasons if the PIN is entered incorrectly too many times or if the card is invalid.\n4. The system shall show available options and wait for the user's choice if the entered PIN is correct.\n5. The system shall allow the user to cancel the operation at any point during this process.\n6. The system shall return the card when the user cancels the operation.\n\nExample 1 PlantUML:\n@startuml\ntitle Same Event and Action on Different Transitions\n\n[*] --> Idle\n\nstate Idle\nstate \"Waiting for PIN\" as WaitingForPIN\nstate \"Validating PIN\" as ValidatingPIN\nstate \"Waiting for Customer Choice\" as WaitingForChoice\nstate Confiscating\nstate Ejecting\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu\nValidatingPIN --> Confiscating : Third Invalid PIN,\\nCard Stolen, Card Expired /\\nConfiscate\n\nWaitingForPIN --> Ejecting : Cancel / Eject\nValidatingPIN --> Ejecting : Cancel / Eject\nWaitingForChoice --> Ejecting : Cancel / Eject\n\n@enduml\n\nExample 2 Requirement:\nDiet Care — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to choose between entering their information or consulting a professional nutritionist.\n2. The system shall enable users who choose consultation to speak with a nutritionist and rate the experience afterward.\n3. The system shall analyze the information entered by the user.\n4. The system shall identify if the user has an unhealthy diet, a disease or deficiency, or follows a healthy diet based on the analyzed information.\n5. The system shall provide suitable food suggestions if the analysis indicates an unhealthy diet.\n6. The system shall provide food suggestions to help with the identified disease or deficiency if found during the analysis.\n7. The system shall appreciate users for following a healthy diet if their diet is already healthy.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\n\n\nstate StartChoice <<choice>>\n\nstate Input\nInput : entry / validate user\nInput : do / provide data to model\nInput : exit / processing of data\n\nstate Consult\nConsult : entry / user's choice of consultation\nConsult : do / consult professional nutritionist\nConsult : exit / rate professional nutritionist\n\nstate Analysis\nAnalysis : entry / input data for processing\nAnalysis : do / analyse data\nAnalysis : exit / detect unhealthy diet or deficiencies\n\nstate \"Unhealthy diet\" as UnhealthyDiet\nUnhealthyDiet : entry / detection of unhealthy diet\nUnhealthyDiet : do / find healthy diet\nUnhealthyDiet : exit / suggest to users\n\nstate \"Disease or deficiencies\" as DiseaseDef\nDiseaseDef : entry / presence of disease or deficiencies\nDiseaseDef : do / find food that fights that disease\nDiseaseDef : exit / suggest to users\n\nstate \"Healthy diet\" as HealthyDiet\nHealthyDiet : do / presence of healthy diet\nHealthyDiet : do / appreciate user's diet\nHealthyDiet : exit / terminate\n\nstate Suggestion\nSuggestion : entry / presence of disease or deficiency or unhealthy diet\nSuggestion : do / search for nutrient food\nSuggestion : exit / suggest to users\n\nstate AnalysisChoice <<choice>>\nstate MergeSuggest <<choice>>\n\n[*] --> StartChoice\nStartChoice --> Input\nStartChoice --> Consult\n\nInput --> Analysis\nAnalysis --> AnalysisChoice\nAnalysis --> Analysis\nAnalysisChoice --> UnhealthyDiet\nAnalysisChoice --> DiseaseDef\nAnalysisChoice --> HealthyDiet\n\nUnhealthyDiet --> MergeSuggest\nDiseaseDef --> MergeSuggest\n\nMergeSuggest --> Suggestion\n\nConsult --> [*]\nHealthyDiet --> [*]\nSuggestion --> [*]\n\n@enduml\n\nExample 3 Requirement:\nStartup Meet — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to select their roll (investor, entrepreneur, or mentor).\n2. The system shall enable the user to sign in after choosing a role.\n3. The system shall allow the signed-in user to submit a startup idea.\n4. The system shall review the submitted startup idea.\n5. The system shall provide mentorship based on the review result.\n6. The system shall make an investment decision if the startup idea is presented to an investor.\n7. The system shall provide funding based on the investment decision.\n8. The system shall end the process once all actions are completed.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\n[*] --> UserType\n\nstate UserType <<choice>>\n\nUserType --> InvestorLogin : [Investor user]\nUserType --> EntrepreneurLogin : [Entrepreneur user]\nUserType --> MentorLogin : [Mentor user]\n\nstate \"Investor Login\" as InvestorLogin\nInvestorLogin : entry / Action needed\nInvestorLogin : do / enter login credentials\nInvestorLogin : exit / Entered into system\n\nstate \"Entrepreneur Login\" as EntrepreneurLogin\nEntrepreneurLogin : entry / Action needed\nEntrepreneurLogin : do / enter login credentials\nEntrepreneurLogin : exit / Entered into system\n\nstate \"Mentor Login\" as MentorLogin\nMentorLogin : entry / Action needed\nMentorLogin : do / enter login credentials\nMentorLogin : exit / Entered into system\n\nstate MergeLogin <<choice>>\n\nInvestorLogin --> MergeLogin\nEntrepreneurLogin --> MergeLogin\nMentorLogin --> MergeLogin\n\nstate \"Startup idea\" as StartupIdea\nStartupIdea : entry / Submitted by entrepreneur\nStartupIdea : do / file the idea\nStartupIdea : exit / accept or decline state\n\nMergeLogin --> StartupIdea\n\nstate \"Decision on Startup idea\" as DecisionIdea\nDecisionIdea : entry / startup idea state\nDecisionIdea : do / accept or decline\nDecisionIdea : exit / NIL\n\nStartupIdea --> DecisionIdea\n\nstate ChoiceDecision <<choice>>\nDecisionIdea --> ChoiceDecision\n\nstate \"Accept mentorship\" as AcceptMentorship\nAcceptMentorship : entry / decision on mentorship\nAcceptMentorship : do / mentorship\nAcceptMentorship : exit / NIL\n\nstate \"Present Idea\" as PresentIdea\nPresentIdea : entry / Decision on startup\nPresentIdea : do / present idea to investor\nPresentIdea : exit / Decision on investing\n\nstate \"Investment\" as Investment\nInvestment : entry / Decision to invest\nInvestment : do / give investment\nInvestment : exit / share in profit\n\nChoiceDecision --> AcceptMentorship\nChoiceDecision --> PresentIdea\n\nstate MergeEnd <<choice>>\n\nAcceptMentorship --> MergeEnd\nPresentIdea --> Investment\nInvestment --> MergeEnd\nChoiceDecision --> MergeEnd\nMergeEnd --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nE Ticketing For Bus — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create a new account.\n2. The system shall validate the registration of a new user.\n3. The system shall allow the user to log in upon successful registration.\n4. The system shall provide options for logged-in users to check their ticket status.\n5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.\n6. The system shall enable users to manage their account details such as editing or deleting them.\n7. The system shall log out the user after they complete any action.\n",
+  "requirement_used": "E Ticketing For Bus — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create a new account.\n2. The system shall validate the registration of a new user.\n3. The system shall allow the user to log in upon successful registration.\n4. The system shall provide options for logged-in users to check their ticket status.\n5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.\n6. The system shall enable users to manage their account details such as editing or deleting them.\n7. The system shall log out the user after they complete any action.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot\\case_15_e_ticketing_for_bus\\run_01.puml",
+  "validation": {
+    "valid": false,
+    "errors": [
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "warnings": [],
+    "initial_state": "Start",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 11,
+    "transition_count": 13
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_68_atm_many_scenarios_3",
+        "case_30_diet_care",
+        "case_40_startup_meet"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "valid": false,
+      "errors": [
+        "missing_final_state_transition (state --> [*])",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.2727272727272727,
+    "state_recall": 0.25,
+    "state_f1": 0.2608695652173913,
+    "state_tp": 3,
+    "state_fp": 8,
+    "state_fn": 9,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 13,
+    "transition_fn": 10,
+    "state_precision_relaxed": 0.2727272727272727,
+    "state_recall_relaxed": 0.25,
+    "state_f1_relaxed": 0.2608695652173913,
+    "state_tp_relaxed": 3,
+    "state_fp_relaxed": 8,
+    "state_fn_relaxed": 9,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 13,
+    "transition_fn_relaxed": 10,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 13,
+    "transition_fn_semantic": 10,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": false,
+    "structural_errors": [
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "structural_warnings": [],
+    "hallucination_state_rate": 0.7272727272727273,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.7272727272727273,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.13043478260869565,
+    "overall_f1_relaxed": 0.13043478260869565,
+    "weighted_f1_relaxed_70_30": 0.18260869565217389,
+    "overall_f1_semantic": 0.13043478260869565,
+    "weighted_f1_semantic_70_30": 0.18260869565217389
+  }
+}

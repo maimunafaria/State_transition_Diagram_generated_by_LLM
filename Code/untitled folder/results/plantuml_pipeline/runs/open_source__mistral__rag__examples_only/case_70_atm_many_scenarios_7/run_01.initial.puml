@@ -1,0 +1,24 @@
+@startuml
+title ATM Control - Greet User and Check PIN
+
+[*] --> Idle
+
+state Idle
+state "Waiting for Card Insertion" as WaitingForCardInsertion
+state "Waiting for PIN" as WaitingForPIN
+state "Validating PIN" as ValidatingPIN
+state Greeting
+state Confiscating
+state Ejecting
+
+Idle --> Greeting : Arrival / Display Welcome
+Greeting --> WaitingForCardInsertion : Card Inserted / Get PIN
+
+WaitingForCardInsertion --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> Confiscating : Third Invalid PIN,\nCard Stolen, Card Expired /\nConfiscate
+ValidatingPIN --> Ejecting : Cancel / Eject
+WaitingForCardInsertion --> Ejecting : Cancel / Eject
+
+@enduml

@@ -1,0 +1,48 @@
+@startuml
+title Green Rides State Machine
+
+[*] --> Login
+
+state "Login <<initial>>" as Login
+
+state "DisplayJourneyDetails" {
+  [*] --> ViewDetails
+  state ViewDetails
+  ViewDetails --> SelectOptions : activateDrivingMode
+  ViewDetails --> SelectOptions : chooseOtherOptions
+}
+
+state SelectOptions {
+  state "ActivateDrivingMode"
+  state "ChooseOtherOptions"
+  "ActivateDrivingMode" --> "DrivingMode" : enterDrivingMode
+  "ChooseOtherOptions" --> "OtherOptions" : selectOptions
+}
+
+state "OtherOptions" {
+  state "SelectPlaceToEat" {
+    "SelectPlaceToEat" --> "ViewMenu" : viewMenu
+    state ViewMenu
+    ViewMenu --> "PlaceOrder" : placeOrder
+    "PlaceOrder" --> "OrderPlaced" : orderPlaced
+  }
+  "OtherOptions" --> "OrderPlaced" : orderPlaced
+}
+
+state "OrderPlaced" : orderPlaced
+
+state "DrivingMode" {
+  state "InformAuthorities" : informAuthorities
+  state "SendNotifications" : sendNotifications
+  "DrivingMode" --> "InformAuthorities" : accidentDetected
+  "DrivingMode" --> "SendNotifications" : sendNotificationsDuringDrive
+}
+
+state "SendNotificationsDuringDrive" : sendNotificationsDuringDrive
+
+state "Feedback" : provideFeedback
+"Feedback" --> "JourneyCompleted" : feedbackProvided
+
+state "JourneyCompleted" : journeyCompleted : <<final>>
+
+@enduml

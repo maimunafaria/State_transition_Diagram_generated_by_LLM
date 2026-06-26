@@ -1,0 +1,36 @@
+@startuml
+[*] --> LoggedIn
+
+state LoggedIn {
+  state AppliedVisa {
+    state PendingPayment {
+      [*] --> PaymentConfirmed
+      PendingPayment --> CancelledApplication : user_cancels
+    }
+    PaymentConfirmed --> ApplicationAccepted
+    ApplicationAccepted --> StatusUpdated : visa_status_updated
+  }
+  state ViewStatus {
+    [*] --> CheckingStatus
+    CheckingStatus --> ViewedStatus
+    ViewedStatus --> CheckedStatus : user_checks
+    CheckedStatus --> GaveFeedback : user_gives_feedback
+  }
+  state ModifyDetails {
+    [*] --> ModifiedDetails
+    ModifiedDetails --> LoggedIn : user_logs_out
+  }
+  state ViewDetails {
+    [*] --> ViewedDetails
+    ViewedDetails --> LoggedIn : user_logs_out
+  }
+  state GiveFeedback {
+    [*] --> FeedbackGiven
+    FeedbackGiven --> LoggedIn : user_logs_out
+  }
+  state Logout {
+    [*] --> LoggedOut
+  }
+}
+LoggedIn --> [*] : Logout
+@enduml

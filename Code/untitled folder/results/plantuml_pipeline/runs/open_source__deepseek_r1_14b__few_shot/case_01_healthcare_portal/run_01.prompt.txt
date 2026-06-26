@@ -1,0 +1,368 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Online Pharmacy Management System Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow admins to update medicine details.
+2. The system shall allow admins to manage customer orders.
+3. The system shall allow admins to view delivery addresses related to customer orders.
+4. The system shall allow admins to update attendance records.
+5. The system shall allow admins to update salary details.
+
+Example 1 PlantUML:
+@startuml
+title UML State Machine Diagram - Admin
+
+[*] --> UpdateMedicine
+
+state "Update medicine" as UpdateMedicine
+state "Manage orders" as ManageOrders
+state "View delivery address" as ViewDeliveryAddress
+state "Update attendance" as UpdateAttendance
+state "Update salary" as UpdateSalary
+
+UpdateMedicine --> ManageOrders
+ManageOrders --> ViewDeliveryAddress
+ViewDeliveryAddress --> UpdateAttendance
+UpdateAttendance --> UpdateSalary
+UpdateSalary --> [*]
+
+@enduml
+
+Example 2 Requirement:
+Art Gallery Mananement System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall verify login credentials upon submission.
+2. The system shall display an error message and prevent further interaction if login details are incorrect.
+3. The system shall allow users to view products or update their information after a successful login.
+4. The system shall allow users to select items and place an order when viewing products.
+5. The system shall add selected product items to the order and prepare billing details.
+6. The system shall allow users to choose a payment method after adding products to their order.
+7. The system shall process and deliver the order if the payment is successful.
+8. The system shall end the process without further action if the payment fails.
+9. The system shall allow users to save updated information after entering new details.
+
+Example 2 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+
+[*] --> Login
+
+state Login
+Login : entry / getInfo
+Login : do / verifyData
+Login : exit / verified
+
+state LoginDecision <<choice>>
+Login --> LoginDecision
+
+state "Valid Login" as ValidLogin
+ValidLogin : entry / contain Info
+ValidLogin : do / allow Access to system
+ValidLogin : exit / gallery Entry
+
+state "Invalid Login" as InvalidLogin
+InvalidLogin : entry / wrong Info
+InvalidLogin : do / display Error message
+InvalidLogin : exit / return To Start
+
+LoginDecision --> ValidLogin
+LoginDecision --> InvalidLogin
+
+state NavChoice <<choice>>
+ValidLogin --> NavChoice
+
+state Gallery
+Gallery : entry / show Products
+Gallery : do / allow to select Products
+Gallery : exit / save Products
+
+state Update
+Update : entry / contain Info
+Update : do / take New Info
+Update : exit / save new Info
+
+NavChoice --> Gallery
+NavChoice --> Update
+
+Update --> [*]
+
+state Order
+Order : entry / select Items
+Order : do / allowto order If products In Stock
+Order : exit / verification
+
+state Cart
+Cart : entry / contain Selected Items
+Cart : do / all billing Info
+Cart : exit / payment Method
+
+Gallery --> Order
+Order --> Cart
+
+state Payment
+Payment : entry / get Payment Method
+Payment : do / confirm Payment
+Payment : exit / verify
+
+Cart --> Payment
+
+state PayDecision <<choice>>
+Payment --> PayDecision
+
+state "Valid Payment" as ValidPayment
+ValidPayment : entry / payment Method
+ValidPayment : do / get Cash
+ValidPayment : exit / confirmation of product
+
+state "Invalid Payment" as InvalidPayment
+InvalidPayment : entry / wrong Entry
+InvalidPayment : do / error Message
+InvalidPayment : exit / return
+
+PayDecision --> ValidPayment
+PayDecision --> InvalidPayment
+
+
+state Delivery
+Delivery : entry / take out Order
+Delivery : do / deliver Product
+Delivery : exit / exit System
+
+ValidPayment --> Delivery
+Delivery --> [*]
+
+InvalidPayment --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Covid — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to create an account by entering their details.
+2. The system shall allow users to sign in using a correct username and password.
+3. The system shall enable logged-in users to read blogs shared by recovered patients.
+4. The system shall allow users to update the number of infected people in their area, triggering updates on infection statistics and mask demand.
+5. The system shall enable users in home quarantine to share their information.
+6. The system shall allow doctors to view shared information from quarantined users and suggest medicines.
+7. The system shall enable users to view a list of nearby medical shops and purchase medicines online.
+8. The system shall allow assigning workers to clean an area, updating the cleanliness status accordingly.
+
+Example 3 PlantUML:
+@startuml
+title UML state machine diagram
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Login / Register
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state "Invalid registration" as InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state "Invalid login" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state "Read blog" as ReadBlog
+ReadBlog : entry/To home page
+ReadBlog : entry/Read blogs of recovered patients
+ReadBlog : exit/Idle
+
+state "Update current no. of infected people" as UpdateInfected
+UpdateInfected : entry/To home page
+UpdateInfected : do/Update current no. of infected people in the locality
+UpdateInfected : exit/View
+
+state "View number of infected people in the locality" as ViewInfected
+ViewInfected : entry/View
+ViewInfected : do/View number of infected people in the locality
+ViewInfected : exit/Idle
+
+state "No. of deaths in the locality" as DeathCount
+DeathCount : entry/View
+DeathCount : do/View no. of deaths in the locality
+DeathCount : exit/Idle
+
+state "View mask demand" as ViewMaskDemand
+ViewMaskDemand : entry/View
+ViewMaskDemand : do/View mask demand in the locality
+ViewMaskDemand : exit/Stock
+
+state "Stock up" as StockUp
+StockUp : entry/Stock
+StockUp : do/Stock up masks and gloves by the shops
+StockUp : exit/End
+
+state "Send patient info" as SendPatientInfo
+SendPatientInfo : entry/To home page
+SendPatientInfo : do/Update data by home quarantined patients
+SendPatientInfo : exit/View patient info
+
+state "View patient info" as ViewPatientInfo
+ViewPatientInfo : entry/View patient info
+ViewPatientInfo : do/View patient info by the medical professional
+ViewPatientInfo : exit/Prescribe
+
+state "Prescribe medicines if needed" as PrescribeMedicines
+PrescribeMedicines : entry/Prescribe
+PrescribeMedicines : do/Prescribe medicines if needed
+PrescribeMedicines : exit/View data from doc
+
+state "View data shared by doctor" as ViewDoctorData
+ViewDoctorData : entry/View data from doc
+ViewDoctorData : do/View data shared by doctor
+ViewDoctorData : exit/Buy medicines
+
+state "List all medical shops" as ListMedicalShops
+ListMedicalShops : entry/To home page
+ListMedicalShops : do/List all medical shops in the locality
+ListMedicalShops : exit/Buy medicines
+
+state "Assign corporation worker" as AssignWorker
+AssignWorker : entry/To home page
+AssignWorker : do/Assign workers to disinfect in an area
+AssignWorker : exit/Update status
+
+state "Update status of cleanliness" as CleanlinessStatus
+CleanlinessStatus : entry/Update status
+CleanlinessStatus : do/Update status of cleanliness in the locality
+CleanlinessStatus : exit/End
+
+state "Buy medicines" as BuyMedicines
+BuyMedicines : entry/Buy medicines
+BuyMedicines : do/Buy medicines if needed
+BuyMedicines : exit/End
+
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+state J7 <<choice>>
+[*] --> Idle
+
+Idle --> J1
+J1 --> Register
+J1 --> Login
+
+Register --> J2
+J2 --> Login
+J2 --> InvalidRegistration
+InvalidRegistration --> [*]
+
+Login --> J3
+J3 --> InvalidLogin
+J3 --> ReadBlog
+J3 --> UpdateInfected
+J3 --> SendPatientInfo
+J3 --> ListMedicalShops
+J3 --> AssignWorker
+InvalidLogin --> [*]
+
+ReadBlog --> J7
+UpdateInfected --> J4
+ViewInfected --> J7
+DeathCount --> J7
+J7 --> Idle
+J4 --> ViewInfected
+J4 --> DeathCount
+J4 --> ViewMaskDemand
+
+ViewMaskDemand --> StockUp
+StockUp --> J6
+
+SendPatientInfo --> ViewPatientInfo
+ViewPatientInfo --> PrescribeMedicines
+PrescribeMedicines --> ViewDoctorData
+ViewDoctorData --> J5
+ListMedicalShops --> J5
+J5 --> BuyMedicines
+BuyMedicines --> J6
+
+AssignWorker --> CleanlinessStatus
+CleanlinessStatus --> J6
+
+J6 --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.

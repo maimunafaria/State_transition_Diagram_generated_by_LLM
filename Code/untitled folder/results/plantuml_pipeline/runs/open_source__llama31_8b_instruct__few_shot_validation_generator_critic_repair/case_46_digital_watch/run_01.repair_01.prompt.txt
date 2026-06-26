@@ -1,0 +1,85 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.
+
+Candidate PlantUML:
+@startuml
+title Digital Watch System States
+
+[*] --> AdjustTime
+
+state "Adjust Time" as AdjustTime
+state "Switch Mode" as SwitchMode
+state "Increase Value" as IncreaseValue
+state "Alarm On/Off" as AlarmOnOff
+state "Alarm Triggered" as AlarmTriggered
+state "Alarm Stopped" as AlarmStopped
+state "Light On/Off" as LightOnOff
+
+AdjustTime : entry / View time
+AdjustTime : do / Adjust time settings
+AdjustTime : exit / Time adjusted
+
+SwitchMode : entry / Switch mode
+SwitchMode : do / Switch mode
+SwitchMode : exit / Mode switched
+
+IncreaseValue : entry / Increase value
+IncreaseValue : do / Increase value
+IncreaseValue : exit / Value increased
+
+AlarmOnOff : entry / Turn alarm on/off
+AlarmOnOff : do / Alarm on/off
+AlarmOnOff : exit / Alarm status updated
+
+AlarmTriggered : entry / Alarm triggered
+AlarmTriggered : do / Alarm triggered
+AlarmTriggered : exit / Alarm triggered
+
+AlarmStopped : entry / Alarm stopped
+AlarmStopped : do / Alarm stopped
+AlarmStopped : exit / Alarm stopped
+
+LightOnOff : entry / Turn light on/off
+LightOnOff : do / Light on/off
+LightOnOff : exit / Light status updated
+
+AdjustTime --> SwitchMode : [press button]
+SwitchMode --> IncreaseValue : [press button]
+IncreaseValue --> AdjustTime : [press button]
+AdjustTime --> AlarmOnOff : [press button]
+AlarmOnOff --> AlarmTriggered : [alarm on]
+AlarmTriggered --> AlarmStopped : [alarm off]
+AlarmStopped --> AdjustTime : [press button]
+AdjustTime --> LightOnOff : [press button]
+LightOnOff --> AlarmOnOff : [press button]
+
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+- unreachable_states_detected
+- unreachable: Adjust Time, Alarm On/Off, Alarm Stopped, Alarm Triggered, Increase Value, Light On/Off, Switch Mode
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.

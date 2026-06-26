@@ -1,0 +1,93 @@
+{
+  "run_id": "open_source__llama31_8b_instruct__few_shot",
+  "case_id": "case_51_process_sale",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nCd Player — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start in a stopped state.\n2. The system shall begin playing music when a disc is inserted and the user presses play.\n3. The system shall allow the user to pause the music at any time while it is playing.\n4. The system shall stop the music temporarily when paused but allow resuming from the same point.\n5. The system shall allow the user to stop the player at any time, regardless of whether the music is playing or paused.\n6. The system shall return to a stopped state when the player is stopped.\n7. The system shall allow switching to another disc and continuing playback if multiple discs are available.\n8. The system shall remain in a stopped state when no more discs are left.\n\nExample 1 PlantUML:\n@startuml\ntitle CD Player State Machine\n\n[*] --> Stopped\n\nstate Playing\nPlaying : do / read disc\n\nstate Stopped\nstate Paused\n\nStopped --> Playing : press play [disc in tray]\nPlaying --> Stopped : press stop\nPlaying --> Stopped : [no more discs]\n\nPlaying --> Paused : press pause\nPaused --> Playing : press play\nPaused --> Stopped : press stop\n\nPlaying --> Playing : [another disc] / change disc\n\n@enduml\n\nExample 2 Requirement:\nAtm Many Scenarios Scenario 6 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the entered PIN is correct.\n2. The system shall ask for the PIN again if it is incorrect.\n3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.\n4. The system shall return the card if the user cancels the process at any moment during this stage.\n5. The system shall display options for the user to choose from if the PIN is correct.\n6. The system shall process the withdrawal request and check if it can approve the transaction.\n7. The system shall cancel everything and return the card if the withdrawal request is rejected.\n8. The system shall dispense cash, print a receipt, and return the card if the withdrawal request is approved.\n9. The system shall stop the operation if it runs out of cash during the process.\n10. The system shall reset itself to be ready for the next user after completing or ending the session.\n\nExample 2 PlantUML:\n@startuml\ntitle ATM Control - Validate PIN and Withdraw Funds\n\n[*] --> Idle\n\nstate Idle\nstate WaitingForPIN\nstate ValidatingPIN\nstate WaitingForCustomerChoice\nstate ProcessingWithdrawal\nstate Dispensing\nstate Printing\nstate Ejecting\nstate Confiscating\nstate Terminating\nstate ClosedDown\n\nIdle : entry / Display Welcome\nClosedDown : entry / Display System Down\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nWaitingForPIN --> Confiscating : Card Confiscated / display Confiscated\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> Confiscating : Card Stolen, Card Expired /\\nConfiscate, Update Status\nValidatingPIN --> Confiscating : Third Invalid PIN /\\nConfiscate\n\nValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu\n\nWaitingForPIN --> Ejecting : Cancel / Eject\nWaitingForCustomerChoice --> Ejecting : Cancel / Eject\nValidatingPIN --> Ejecting : Cancel / Eject\n\nWaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected /\\nRequest Withdrawal, Display Wait\n\nProcessingWithdrawal --> Dispensing : Withdrawal Approved /\\nDispense Cash, Update Status\nProcessingWithdrawal --> Ejecting : Rejected / Eject\n\nDispensing --> Printing : Cash Dispensed /\\nPrint Receipt,\\nDisplay Cash Dispensed,\\nConfirm Cash Dispensed\nDispensing --> ClosedDown : Insufficient Cash / Eject\n\nPrinting --> Ejecting : Receipt Printed / Eject\n\nEjecting --> Terminating : Card Ejected / Display Ejected\nConfiscating --> Terminating : Card Confiscated / Display Confiscated\n\nTerminating --> Idle : After (Elapsed Time)\\n[Closedown Not Requested]\n\n\n@enduml\n\nExample 3 Requirement:\nStartup Meet — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to select their roll (investor, entrepreneur, or mentor).\n2. The system shall enable the user to sign in after choosing a role.\n3. The system shall allow the signed-in user to submit a startup idea.\n4. The system shall review the submitted startup idea.\n5. The system shall provide mentorship based on the review result.\n6. The system shall make an investment decision if the startup idea is presented to an investor.\n7. The system shall provide funding based on the investment decision.\n8. The system shall end the process once all actions are completed.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\n[*] --> UserType\n\nstate UserType <<choice>>\n\nUserType --> InvestorLogin : [Investor user]\nUserType --> EntrepreneurLogin : [Entrepreneur user]\nUserType --> MentorLogin : [Mentor user]\n\nstate \"Investor Login\" as InvestorLogin\nInvestorLogin : entry / Action needed\nInvestorLogin : do / enter login credentials\nInvestorLogin : exit / Entered into system\n\nstate \"Entrepreneur Login\" as EntrepreneurLogin\nEntrepreneurLogin : entry / Action needed\nEntrepreneurLogin : do / enter login credentials\nEntrepreneurLogin : exit / Entered into system\n\nstate \"Mentor Login\" as MentorLogin\nMentorLogin : entry / Action needed\nMentorLogin : do / enter login credentials\nMentorLogin : exit / Entered into system\n\nstate MergeLogin <<choice>>\n\nInvestorLogin --> MergeLogin\nEntrepreneurLogin --> MergeLogin\nMentorLogin --> MergeLogin\n\nstate \"Startup idea\" as StartupIdea\nStartupIdea : entry / Submitted by entrepreneur\nStartupIdea : do / file the idea\nStartupIdea : exit / accept or decline state\n\nMergeLogin --> StartupIdea\n\nstate \"Decision on Startup idea\" as DecisionIdea\nDecisionIdea : entry / startup idea state\nDecisionIdea : do / accept or decline\nDecisionIdea : exit / NIL\n\nStartupIdea --> DecisionIdea\n\nstate ChoiceDecision <<choice>>\nDecisionIdea --> ChoiceDecision\n\nstate \"Accept mentorship\" as AcceptMentorship\nAcceptMentorship : entry / decision on mentorship\nAcceptMentorship : do / mentorship\nAcceptMentorship : exit / NIL\n\nstate \"Present Idea\" as PresentIdea\nPresentIdea : entry / Decision on startup\nPresentIdea : do / present idea to investor\nPresentIdea : exit / Decision on investing\n\nstate \"Investment\" as Investment\nInvestment : entry / Decision to invest\nInvestment : do / give investment\nInvestment : exit / share in profit\n\nChoiceDecision --> AcceptMentorship\nChoiceDecision --> PresentIdea\n\nstate MergeEnd <<choice>>\n\nAcceptMentorship --> MergeEnd\nPresentIdea --> Investment\nInvestment --> MergeEnd\nChoiceDecision --> MergeEnd\nMergeEnd --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nProcess Sale — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall wait for a new sale.\n2. The system shall enter items one by one as they are selected by the customer.\n3. The system shall move to payment after all items have been added.\n4. The system shall complete the sale immediately if the customer pays with cash.\n5. The system shall verify the payment if the customer chooses to pay by card or check.\n6. The system shall complete the sale once the payment is approved.\n7. The system shall return to waiting for the next customer after the payment has been finished.\n",
+  "requirement_used": "Process Sale — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall wait for a new sale.\n2. The system shall enter items one by one as they are selected by the customer.\n3. The system shall move to payment after all items have been added.\n4. The system shall complete the sale immediately if the customer pays with cash.\n5. The system shall verify the payment if the customer chooses to pay by card or check.\n6. The system shall complete the sale once the payment is approved.\n7. The system shall return to waiting for the next customer after the payment has been finished.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot\\case_51_process_sale\\run_01.puml",
+  "validation": {
+    "valid": false,
+    "errors": [
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "warnings": [],
+    "initial_state": "WaitingForSale",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 5,
+    "transition_count": 6
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_57_cd_player",
+        "case_69_atm_many_scenarios_6",
+        "case_40_startup_meet"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "valid": false,
+      "errors": [
+        "missing_final_state_transition (state --> [*])",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.2,
+    "state_recall": 0.25,
+    "state_f1": 0.22222222222222224,
+    "state_tp": 1,
+    "state_fp": 4,
+    "state_fn": 3,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 6,
+    "transition_fn": 7,
+    "state_precision_relaxed": 0.2,
+    "state_recall_relaxed": 0.25,
+    "state_f1_relaxed": 0.22222222222222224,
+    "state_tp_relaxed": 1,
+    "state_fp_relaxed": 4,
+    "state_fn_relaxed": 3,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 6,
+    "transition_fn_relaxed": 6,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 6,
+    "transition_fn_semantic": 7,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": false,
+    "structural_errors": [
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "structural_warnings": [],
+    "hallucination_state_rate": 0.8,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.8,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.11111111111111112,
+    "overall_f1_relaxed": 0.11111111111111112,
+    "weighted_f1_relaxed_70_30": 0.15555555555555556,
+    "overall_f1_semantic": 0.11111111111111112,
+    "weighted_f1_semantic_70_30": 0.15555555555555556
+  }
+}

@@ -1,0 +1,111 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Ui — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to open a budget-checking window from the main screen.
+2. The system shall wait for the user to select a client before proceeding with the checking process.
+3. The system shall require users to select a campaign related to the chosen client before allowing them to check information.
+4. The system shall display results only after both a client and a campaign are selected.
+5. The system shall allow users to refresh or recheck information by pressing the check button again.
+6. The system shall prompt users with a confirmation message before closing the window.
+7. The system shall return to the main screen if the user confirms closing the window.
+8. The system shall keep the window open and allow further interaction if the user cancels the close action.
+
+Example 1 PlantUML:
+@startuml
+title Check Budget Window State Machine
+
+state "Main Window" as MainWindow
+state "5 Alert Dialog" as AlertDialog
+
+state "Check Budget Window" as CBW {
+  [*] --> NoClientSelected
+
+  state "1 No Client Selected" as NoClientSelected
+
+  state "Selection Flow" as SelectionFlow {
+    [*] --> NoCampaignSelected
+
+    state "2 No Campaign Selected" as NoCampaignSelected
+
+    state "Result Flow" as ResultFlow {
+      [*] --> Blank
+      state "3 Blank" as Blank
+      state "4 Display Result" as DisplayResult
+
+      Blank --> DisplayResult : checkButtonClicked()
+      DisplayResult --> DisplayResult : checkButtonClicked()
+    }
+
+    NoCampaignSelected --> ResultFlow : campaignSelected()
+    ResultFlow --> ResultFlow : campaignSelected()
+  }
+
+  NoClientSelected --> SelectionFlow : clientSelected()
+  SelectionFlow --> SelectionFlow : clientSelected()
+  state H <<history*>>
+}
+
+MainWindow --> CBW : checkCampaignBudget\nMenuSelected()
+
+CBW --> AlertDialog : closeButtonClicked()
+
+AlertDialog --> MainWindow : OK
+AlertDialog --> H : Cancel
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Staff Member Class — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow assigning a staff member to a client or adding them to a campaign.
+2. The system shall allow removing assignments from staff members, returning them to an unassigned state.
+3. The system shall enable staff members to switch between different assignments during their work period.
+4. The system shall mark a staff member as unemployed when they leave the job.
+5. The system shall archive the record of a former employee after some time has passed.

@@ -1,0 +1,168 @@
+{
+  "run_id": "open_source__mistral__few_shot",
+  "case_id": "case_32_e_visa_processing_and_follow_up_system",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nCd Player — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start in a stopped state.\n2. The system shall begin playing music when a disc is inserted and the user presses play.\n3. The system shall allow the user to pause the music at any time while it is playing.\n4. The system shall stop the music temporarily when paused but allow resuming from the same point.\n5. The system shall allow the user to stop the player at any time, regardless of whether the music is playing or paused.\n6. The system shall return to a stopped state when the player is stopped.\n7. The system shall allow switching to another disc and continuing playback if multiple discs are available.\n8. The system shall remain in a stopped state when no more discs are left.\n\nExample 1 PlantUML:\n@startuml\ntitle CD Player State Machine\n\n[*] --> Stopped\n\nstate Playing\nPlaying : do / read disc\n\nstate Stopped\nstate Paused\n\nStopped --> Playing : press play [disc in tray]\nPlaying --> Stopped : press stop\nPlaying --> Stopped : [no more discs]\n\nPlaying --> Paused : press pause\nPaused --> Playing : press play\nPaused --> Stopped : press stop\n\nPlaying --> Playing : [another disc] / change disc\n\n@enduml\n\nExample 2 Requirement:\nLoggedin Mechanism — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall prompt the user to enter their username.\n2. The system shall terminate the login process and exit if the user cancels at any point.\n3. The system shall check the entered username against its records.\n4. The system shall prompt for a password if the username is valid.\n5. The system shall verify both the username and password to allow login.\n6. The system shall allow the user to try again if the credentials are incorrect.\n7. The system shall increase the number of failed attempts with each incorrect entry.\n8. The system shall limit the number of login attempts for a user.\n9. The system shall block further login attempts if the maximum number of attempts is reached.\n10. The system shall prevent login if it cannot recognize the user during any step.\n\nExample 2 PlantUML:\n@startuml\ntitle LoggingOn State Machine\n\nstate LoggingOn {\n  [*] --> AcceptingUserName\n\n  state AcceptingUserName\n  state AcceptingPassword\n  state VerifyingDetails\n\n  state BadDetails {\n    state BadUsername\n    state BadPassword\n  }\n\n  BadDetails : entry / ++tries\n\n  AcceptingUserName --> AcceptingPassword : ok\n\n  AcceptingUserName --> Canceling : cancel\n\n  AcceptingPassword --> VerifyingDetails : ok\n  AcceptingPassword --> Canceling : cancel\n\n  VerifyingDetails --> BadUsername : badUserName\n  VerifyingDetails --> BadPassword : badPassword\n  VerifyingDetails --> Authenticated : detailsVerified\n\n  BadDetails --> AcceptingUserName : [tries < 4]\n  BadDetails --> Fail : [tries = 4]\n}\n\nLoggingOn : entry / tries := 0\n\nstate Canceling\nstate Authenticated\nstate Fail\nFail : entry / logFailure\nuserRecognized --> AcceptingPassword\n@enduml\n\nExample 3 Requirement:\nBusiness Process Outsourcing Bpo Management System Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to upload a new request.\n2. The system shall enable a BPO organization to save the details of a project.\n3. The system shall allow a client to search for a suitable project category.\n4. The system shall enable an BPO organization to accept or decline a request from a client.\n5. The system shall allow a client to decide whether to proceed with an accepted project or reject it.\n6. The system shall update the project status after acceptance by both parties.\n7. The system shall allow a client to track the progress of a project.\n8. The system shall enable an BPO organization to update the progress of a project.\n9. The system shall upload a final project once work is completed.\n10. The system shall perform a quality check on the final project.\n11. The system shall restart the process if a client is unsatisfied with the final project.\n12. The system shall make payment if the client is satisfied with the final project.\n13. The system shall deliver the project after payment.\n14. The system shall allow a client to provide a rating for the completed project.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Machine Diagram (Upload or Accept Request)\n\nstate \"Upload or Accept request\" as UAR {\n\n    [*] --> ChoiceUser\n\n\n    UAR : entry / Regarding request details\n    UAR : do / Project dealings\n    UAR : exit / After finishing rating\n\n\n    state ChoiceUser <<choice>>\n\n    ChoiceUser --> EnterDetails : [user = BPO organization]\n    ChoiceUser --> SearchCategory : [user = client]\n\n\n    state \"Enter project details\" as EnterDetails\n    state \"Update database\" as UpdateDB\n\n    EnterDetails --> UpdateDB\n    UpdateDB --> [*]\n\n\n    state \"Search project category\" as SearchCategory\n    state ChoiceBPO <<choice>>\n    state ChoiceClient <<choice>>\n\n    SearchCategory --> ChoiceBPO\n\n    ChoiceBPO --> EndDecline : [BPO org declines]\n    ChoiceBPO --> ChoiceClient : [BPO org accepts]\n\n    ChoiceClient --> EndReject : [client rejects]\n    ChoiceClient --> UpdateStatus : [client accepts]\n\n    state EndDecline <<choice>>\n    EndDecline --> [*]\n\n    state EndReject <<choice>>\n    EndReject --> [*]\n\n    state \"Update status of project\" as UpdateStatus\n\n    state ChoiceTracking <<choice>>\n\n    UpdateStatus --> ChoiceTracking\n\n    ChoiceTracking --> DisplayProgress : [client wishes to track]\n    ChoiceTracking --> UpdateProgress : [user = BPO org]\n\n    state \"Display progress\" as DisplayProgress\n    DisplayProgress --> [*]\n\n    state \"Update progress\" as UpdateProgress\n\n\n    UpdateProgress --> UploadFinal : [End of project]\n\n    state \"Upload final project\" as UploadFinal\n\n    state QualityCheck <<choice>>\n\n    UploadFinal --> QualityCheck : [Quality check]\n\n    QualityCheck --> Payment : [satisfied]\n    QualityCheck --> ChoiceTracking : [Not satisfied]\n\n    state Payment\n    state Shipment\n    state Rating\n\n    Payment --> Shipment\n    Shipment --> Rating\n\n    Rating --> [*]\n}\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nE Visa Processing And Follow Up System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create an account.\n2. The system shall allow a user to log in after they have created an account.\n3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .\n4. The system shall allow a user to view the status after they have applied for a visa.\n5. The system shall allow a user to check the status after they have viewed it.\n6. The system shall allow a user to cancel an application after they have logged in.\n7. The system shall allow a user to modify their details after they have logged in.\n8. The system shall allow a user to view their details after they have logged in.\n9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..\n10. The system shall allow a user to give feedback after they have checked the status.\n11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.\n",
+  "requirement_used": "E Visa Processing And Follow Up System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create an account.\n2. The system shall allow a user to log in after they have created an account.\n3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .\n4. The system shall allow a user to view the status after they have applied for a visa.\n5. The system shall allow a user to check the status after they have viewed it.\n6. The system shall allow a user to cancel an application after they have logged in.\n7. The system shall allow a user to modify their details after they have logged in.\n8. The system shall allow a user to view their details after they have logged in.\n9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..\n10. The system shall allow a user to give feedback after they have checked the status.\n11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.",
+  "puml_path": "/Users/faria/State_transition_Diagram_generated_by_LLM/results/plantuml_pipeline/runs/open_source__mistral__few_shot/case_32_e_visa_processing_and_follow_up_system/run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "unreachable_states_detected",
+      "unreachable: Approved, CancelApplication, CheckDocument, CreateAccount, GiveFeedback, LoggedIn, Logout, ModifyDetails, Rejected, ViewDetails",
+      "orphan_states_detected",
+      "orphan: CreateAccount, LoggedIn"
+    ],
+    "initial_state": "Login",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [
+      "Approved",
+      "CancelApplication",
+      "CheckDocument",
+      "CreateAccount",
+      "GiveFeedback",
+      "LoggedIn",
+      "Logout",
+      "ModifyDetails",
+      "Rejected",
+      "ViewDetails"
+    ],
+    "state_count": 16,
+    "transition_count": 7
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "unreachable_states_detected",
+      "unreachable: Approved, CancelApplication, CheckDocument, CreateAccount, GiveFeedback, LoggedIn, Logout, ModifyDetails, Rejected, ViewDetails",
+      "orphan_states_detected",
+      "orphan: CreateAccount, LoggedIn"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_57_cd_player",
+        "case_64_loggedin_mechanism",
+        "case_13_business_process_outsourcing_bpo_management_system_3"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: Approved, CancelApplication, CheckDocument, CreateAccount, GiveFeedback, LoggedIn, Logout, ModifyDetails, Rejected, ViewDetails",
+        "orphan_states_detected",
+        "orphan: CreateAccount, LoggedIn"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: Approved, CancelApplication, CheckDocument, CreateAccount, GiveFeedback, LoggedIn, Logout, ModifyDetails, Rejected, ViewDetails",
+        "orphan_states_detected",
+        "orphan: CreateAccount, LoggedIn"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: Approved, CancelApplication, CheckDocument, CreateAccount, GiveFeedback, LoggedIn, Logout, ModifyDetails, Rejected, ViewDetails",
+          "orphan_states_detected",
+          "orphan: CreateAccount, LoggedIn"
+        ],
+        "initial_state": "Login",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Approved",
+          "CancelApplication",
+          "CheckDocument",
+          "CreateAccount",
+          "GiveFeedback",
+          "LoggedIn",
+          "Logout",
+          "ModifyDetails",
+          "Rejected",
+          "ViewDetails"
+        ],
+        "state_count": 16,
+        "transition_count": 7
+      },
+      "strict_state_diagram_valid": false,
+      "path": "/Users/faria/State_transition_Diagram_generated_by_LLM/results/plantuml_pipeline/runs/open_source__mistral__few_shot/case_32_e_visa_processing_and_follow_up_system/run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0625,
+    "state_recall": 0.05,
+    "state_f1": 0.05555555555555556,
+    "state_tp": 1,
+    "state_fp": 15,
+    "state_fn": 19,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 7,
+    "transition_fn": 27,
+    "state_precision_relaxed": 0.5625,
+    "state_recall_relaxed": 0.45,
+    "state_f1_relaxed": 0.5,
+    "state_tp_relaxed": 9,
+    "state_fp_relaxed": 7,
+    "state_fn_relaxed": 11,
+    "transition_precision_relaxed": 0.14285714285714285,
+    "transition_recall_relaxed": 0.037037037037037035,
+    "transition_f1_relaxed": 0.058823529411764705,
+    "transition_tp_relaxed": 1,
+    "transition_fp_relaxed": 6,
+    "transition_fn_relaxed": 26,
+    "transition_precision_semantic": 0.14285714285714285,
+    "transition_recall_semantic": 0.037037037037037035,
+    "transition_f1_semantic": 0.058823529411764705,
+    "transition_tp_semantic": 1,
+    "transition_fp_semantic": 6,
+    "transition_fn_semantic": 26,
+    "transition_event_similarity_mean": 0.7,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "unreachable_states_detected",
+      "unreachable: Approved, CancelApplication, CheckDocument, CreateAccount, GiveFeedback, LoggedIn, Logout, ModifyDetails, Rejected, ViewDetails",
+      "orphan_states_detected",
+      "orphan: CreateAccount, LoggedIn"
+    ],
+    "hallucination_state_rate": 0.9375,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.4375,
+    "hallucination_transition_rate_relaxed": 0.8571428571428571,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 0.9629629629629629,
+    "overall_f1": 0.02777777777777778,
+    "overall_f1_relaxed": 0.27941176470588236,
+    "weighted_f1_relaxed_70_30": 0.3676470588235294,
+    "overall_f1_semantic": 0.27941176470588236,
+    "weighted_f1_semantic_70_30": 0.3676470588235294,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "unreachable_states_detected",
+      "unreachable: Approved, CancelApplication, CheckDocument, CreateAccount, GiveFeedback, LoggedIn, Logout, ModifyDetails, Rejected, ViewDetails",
+      "orphan_states_detected",
+      "orphan: CreateAccount, LoggedIn"
+    ]
+  }
+}

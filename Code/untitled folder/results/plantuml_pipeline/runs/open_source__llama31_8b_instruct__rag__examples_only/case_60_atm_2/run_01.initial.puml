@@ -1,0 +1,36 @@
+@startuml
+title ATM Control - Withdraw Funds
+
+[*] --> SelectAmount
+
+state Idle
+state WaitingForCustomerChoice
+state ProcessingWithdrawal
+state Dispensing
+state Printing
+state Ejecting
+state Terminating
+state ClosedDown
+
+Idle : entry / Display Welcome
+ClosedDown : entry / Display System Down
+
+Idle --> WaitingForCustomerChoice : Card Inserted / Get PIN
+
+
+WaitingForCustomerChoice --> SelectAmount : Withdrawal Selected /\nRequest Withdrawal, Display Wait
+
+
+SelectAmount --> ProcessingWithdrawal : amount Entered / Validate Amount
+ProcessingWithdrawal --> Dispensing : Withdrawal Approved /\nDispense Cash, Update Status
+ProcessingWithdrawal --> Ejecting : Rejected / Eject
+
+Dispensing --> Printing : Cash Dispensed /\nPrint Receipt,\nDisplay Cash Dispensed,\nConfirm Cash Dispensed
+Dispensing --> ClosedDown : Insufficient Cash / Eject
+
+Printing --> Ejecting : Receipt Printed / Eject
+
+Ejecting --> Terminating : Card Ejected / Display Ejected
+
+
+@enduml

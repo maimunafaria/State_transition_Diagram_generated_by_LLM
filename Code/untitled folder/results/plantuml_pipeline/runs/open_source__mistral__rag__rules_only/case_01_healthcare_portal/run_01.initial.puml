@@ -1,0 +1,58 @@
+@startuml
+[*] --> RegisteredUser
+
+state RegisteredUser {
+  state FailedRegistration {
+    [*] --> EndAccess
+  }
+
+  state SuccessfulRegistration {
+    [*] --> LoggedIn
+  }
+}
+
+LoggedIn {
+  state SignInFailed {
+    [*] --> EndAccess
+  }
+
+  state SignedIn {
+    state AvailableFacilities {
+      [*] --> AccessFacilities
+    }
+
+    state NewsAndContent {
+      [*] --> ReadNewsOrContent
+    }
+
+    state HealthInformation {
+      [*] --> CheckSymptomsOrFitness
+      CheckSymptomsOrFitness --> ContinueOrEndSession : result
+    }
+
+    state Payment {
+      state CashPayment {
+        [*] --> CashPaymentDetails
+      }
+
+      state InsurancePayment {
+        [*] --> ProcessInsurance
+        ProcessInsurance --> CompletePayment : success
+      }
+
+      CashPaymentDetails --> PayCash : confirm
+      InsurancePayment --> PayInsurance : confirm
+    }
+
+    Payment --> [*] : finishSession
+
+    state Feedback {
+      [*] --> CollectFeedback
+    }
+
+    Feedback --> Logout : complete
+  }
+
+  LoggedIn --> Logout : endSession
+}
+@enduml

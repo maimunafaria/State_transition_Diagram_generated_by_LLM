@@ -1,0 +1,91 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Candidate PlantUML:
+@startuml
+title Online Quiz System State Diagram
+
+[*] --> Start
+
+state Start
+state "LoggedIn" as LoggedIn
+state "TeacherMenu" as TeacherMenu
+state "StudentMenu" as StudentMenu
+state "CreatingQuiz" as CreatingQuiz
+state "EditingQuiz" as EditingQuiz
+state "ViewingQuizResults" as ViewingResults
+state "SelectingQuiz" as SelectingQuiz
+state "AnsweringQuiz" as AnsweringQuiz
+state "SubmittingQuiz" as SubmittingQuiz
+state "ViewingResult" as ViewingResult
+
+Start --> LoggedIn : login/register
+
+LoggedIn --> TeacherMenu : choose teacher role
+LoggedIn --> StudentMenu : choose student role
+
+TeacherMenu --> CreatingQuiz : create new quiz
+TeacherMenu --> EditingQuiz : edit existing quiz
+TeacherMenu --> ViewingResults : view results
+TeacherMenu --> LoggedIn : logout
+
+CreatingQuiz --> TeacherMenu : save as draft
+CreatingQuiz --> TeacherMenu : post quiz
+
+EditingQuiz --> TeacherMenu : save changes
+EditingQuiz --> TeacherMenu : discard changes
+
+ViewingResults --> TeacherMenu : back to menu
+
+StudentMenu --> SelectingQuiz : select quiz
+
+SelectingQuiz --> AnsweringQuiz : select a quiz
+
+AnsweringQuiz --> SubmittingQuiz : submit quiz
+
+SubmittingQuiz --> StudentMenu : cancel submission
+SubmittingQuiz --> ViewingResult : submit completed
+
+ViewingResult --> StudentMenu : back to menu
+
+[*] <-- LoggedIn : logout
+[*] <-- ViewingResult : system ends
+[*] <-- SubmittingQuiz : system ends
+[*] <-- AnsweringQuiz : system ends
+[*] <-- SelectingQuiz : system ends
+[*] <-- ViewingResults : system ends
+[*] <-- EditingQuiz : system ends
+[*] <-- CreatingQuiz : system ends
+[*] <-- TeacherMenu : system ends
+[*] <-- StudentMenu : system ends
+
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].

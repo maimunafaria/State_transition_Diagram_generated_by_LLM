@@ -1,0 +1,54 @@
+@startuml
+
+Inventory - Inventory System
+Customer - Customer
+Supplier - Supplier
+
+Good - Good
+Order - Order
+Invoice - Invoice
+Receipt - Receipt
+Request - Request
+Transaction - Transaction
+
+Inventory:
+    state AddGood[Add Good]
+    state UpdatePrice[Update Price]
+    state RemoveGood[Remove Good]
+    state ExpiredGoods[Expired Goods]
+    state OrderSupplier[Order Supplier]
+    state GenerateInvoice[Generate Invoice]
+    state SearchItems[Search Items]
+    state CalculateDiscountTax[Calculate Discount and Tax]
+    state GenerateReceipt[Generate Receipt]
+    state ReplaceItemOrCancel[Replace Item or Cancel]
+    state RecordRequest[Record Request]
+    state ViewTransactions[View Transactions]
+
+Customer:
+    state PlaceOrder[Place Order]
+    state PayConfirmation[Payment Confirmation]
+
+Supplier:
+    state ReceiveOrder[Receive Order]
+
+Inventory - AddGood: [*] --> AddGood
+AddGood - UpdatePrice: PlaceOrder --> UpdatePrice
+UpdatePrice - RemoveGood: GenerateInvoice --> RemoveGood
+RemoveGood - ExpiredGoods: PayConfirmation --> ExpiredGoods
+ExpiredGoods - NotifyUser[Notify User]: *
+ExpiredGoods - RemoveExpiredGoods: *
+RemoveExpiredGoods - RemoveGood: NotifyUser --> RemoveExpiredGoods
+OrderSupplier - OrderReceived[Order Received]: ReceiveOrder --> OrderReceived
+OrderReceived - GenerateInvoice: *
+GenerateInvoice - SearchItems: *
+SearchItems - CalculateDiscountTax: *
+CalculateDiscountTax - GenerateReceipt: *
+GenerateReceipt - PlaceOrder: *
+PlaceOrder - PayConfirmation: *
+PayConfirmation - ReplaceItemOrCancel: *
+ReplaceItemOrCancel - RecordRequest: *
+RecordRequest - ViewTransactions: *
+ViewTransactions - [*]: ViewTransactions --> [*]
+
+@enduml

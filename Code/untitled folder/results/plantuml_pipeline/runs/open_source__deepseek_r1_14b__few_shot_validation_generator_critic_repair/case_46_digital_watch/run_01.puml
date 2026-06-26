@@ -1,0 +1,47 @@
+@startuml
+title State diagram of the system operations of "Digital Watch"
+
+state "Normal State" as NormalState
+state "Adjusting Time State" as AdjustingTime
+state "Alarm State" as AlarmState
+state "Light On State" as LightOn
+state "Alarm Off State" as AlarmOff
+
+[*] --> NormalState
+
+NormalState : entry / Initial state
+NormalState : do / Display current time
+NormalState : exit / Button pressed to adjust time
+
+NormalState --> AdjustingTime : button pressed (adjust time)
+
+AdjustingTime : entry / Adjusting time/settings
+AdjustingTime : do / Change hour, minutes, alarm hour, or alarm minutes
+AdjustingTime : exit / Button released or next adjustment
+
+AdjustingTime --> AdjustingTime : increase value
+AdjustingTime --> NormalState : button released
+
+AdjustingTime --> AlarmState : alarm time reached
+
+AlarmState : entry / Alarm triggered
+AlarmState : do / Ring alarm
+AlarmState : exit / Button pressed to stop alarm
+
+AlarmState --> AlarmOff : button pressed (stop alarm)
+
+AlarmOff : entry / Alarm stopped
+AlarmOff : do / No alarm active
+AlarmOff : exit / Return to normal state
+
+AlarmOff --> [*] : button released
+
+NormalState --> LightOn : button pressed (light on)
+
+LightOn : entry / Light activated
+LightOn : do / Light is on
+LightOn : exit / Button released
+
+LightOn --> [*] : button released
+
+@enduml

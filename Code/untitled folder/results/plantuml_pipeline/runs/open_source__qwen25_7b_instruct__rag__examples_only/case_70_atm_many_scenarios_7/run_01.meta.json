@@ -1,0 +1,166 @@
+{
+  "run_id": "open_source__qwen25_7b_instruct__rag__examples_only",
+  "case_id": "case_70_atm_many_scenarios_7",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nAtm Many Scenarios Scenario 7 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall greet the user when they arrive.\n2. The system shall check the PIN after the card is inserted.\n3. The system shall allow the user to try again if the entered PIN is incorrect.\n4. The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times.\n5. The system shall return the card if the user cancels the operation.\n6. The system shall display available options (withdrawing money, checking information, or making a transfer) for the user to choose from if the PIN is correct.\n7. The system shall process the selected request after the user makes a choice.\n\nReference context (use as support; the target requirement above is primary):\n\nExample requirement:\nAtm Many Scenarios Scenario 6 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the entered PIN is correct.\n2. The system shall ask for the PIN again if it is incorrect.\n3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle ATM Control - Validate PIN and Withdraw Funds\n\n[*] --> Idle\n\nstate Idle\nstate WaitingForPIN\nstate ValidatingPIN\nstate WaitingForCustomerChoice\nstate ProcessingWithdrawal\nstate Dispensing\nstate Printing\nstate Ejecting\nstate Confiscating\nstate Terminating\nstate ClosedDown\n\nIdle : entry / Display Welcome\nClosedDown : entry / Display System Down\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nWaitingForPIN --> Confiscating : Card Confiscated / display Confiscated\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> Confiscating : Card Stolen, Card Expired /\\nConfiscate, Update Status\nValidatingPIN --> Confiscating : Third Invalid PIN /\\nConfiscate\n\nValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu\n\nWaitingForPIN --> Ejecting : Cancel / Eject\nWaitingForCustomerChoice --> Ejecting : Cancel / Eject\nValidatingPIN --> Ejecting : Cancel / Eject\n\nWaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected /\\nRequest Withdrawal, Display Wait\n\nProcessingWithdrawal --> Dispensing : Withdrawal Approved /\\nDispense Cash, Update Status\nProcessingWithdrawal --> Ejecting : Rejected / Eject\n\nDispensing --> Printing : Cash Dispensed /\\nPrint Receipt,\\nDisplay Cash Dispensed,\\nConfirm Cash Dispensed\nDispensing --> ClosedDown : Insufficient Cash / Eject\n\nPrinting --> Ejecting : Receipt Printed / Eject\n\nEjecting --> Terminating : Card Ejected / Display Ejected\nConfiscating --> Terminating : Card Confiscated / Display Confiscated\n\nTerminating --> Idle : After (Elapsed Time)\\n[Closedown Not Requested]\n\n\n@enduml\n```\n\nExample requirement:\nAtm Many Scenarios Scenario 9 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to choose to transfer money after entering the correct PIN.\n2. The system shall process the transfer request if it is approved.\n3. The system shall print a receipt for approved transfers and queries.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle ATM Control - Processing Transaction\n\nstate \"Waiting for Customer Choice\" as WaitingForChoice\n\nstate \"Processing Transaction\" as ProcessingTransaction {\n  state \"Processing Transfer\" as ProcessingTransfer\n  state \"Processing Query\" as ProcessingQuery\n  state \"Processing Withdrawal\" as ProcessingWithdrawal\n}\n\nstate Ejecting\nstate Printing\nstate Dispensing\n\nWaitingForChoice --> ProcessingTransfer : Transfer Selected /\\nRequest Transfer,\\nDisplay Wait\nWaitingForChoice --> ProcessingQuery : Query Selected /\\nRequest Query,\\nDisplay Wait\nWaitingForChoice --> ProcessingWithdrawal : Withdrawal Selected /\\nRequest Withdrawal,\\nDisplay Wait\n\nProcessingTransaction --> Ejecting : Rejected /\\nEject,\\nDisplay Apology\nProcessingTransfer --> Printing : Transfer Approved /\\nPrint Receipt,\\nUpdate Status\nProcessingQuery --> Printing : Query Approved /\\nPrint Receipt,\\nUpdate Status\nProcessingWithdrawal --> Dispensing : Withdrawal Approved /\\nDispense Cash,\\nUpdate Status\n\n@enduml\n```\n\nExample requirement:\nAtm Many Scenarios Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the entered PIN is correct.\n2. The system shall ask the user to try again if the entered PIN is incorrect.\n3. The system shall keep the card for security reasons if the PIN is entered incorrectly too many times or if the card is invalid.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Same Event and Action on Different Transitions\n\n[*] --> Idle\n\nstate Idle\nstate \"Waiting for PIN\" as WaitingForPIN\nstate \"Validating PIN\" as ValidatingPIN\nstate \"Waiting for Customer Choice\" as WaitingForChoice\nstate Confiscating\nstate Ejecting\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu\nValidatingPIN --> Confiscating : Third Invalid PIN,\\nCard Stolen, Card Expired /\\nConfiscate\n\nWaitingForPIN --> Ejecting : Cancel / Eject\nValidatingPIN --> Ejecting : Cancel / Eject\nWaitingForChoice --> Ejecting : Cancel / Eject\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Atm Many Scenarios Scenario 7 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall greet the user when they arrive.\n2. The system shall check the PIN after the card is inserted.\n3. The system shall allow the user to try again if the entered PIN is incorrect.\n4. The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times.\n5. The system shall return the card if the user cancels the operation.\n6. The system shall display available options (withdrawing money, checking information, or making a transfer) for the user to choose from if the PIN is correct.\n7. The system shall process the selected request after the user makes a choice.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag__examples_only\\case_70_atm_many_scenarios_7\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: ClosedDown",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "initial_state": "Idle",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [
+      "ClosedDown"
+    ],
+    "state_count": 9,
+    "transition_count": 13
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: ClosedDown",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "vector",
+      "top_k": 3,
+      "query_domains": [],
+      "retrieved_docs": [
+        {
+          "name": "dataset_examples/case_69_atm_many_scenarios_6.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.3675795793533325,
+          "clipped_chars": 2051
+        },
+        {
+          "name": "dataset_examples/case_72_atm_many_scenarios_9.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.5105124115943909,
+          "clipped_chars": 1378
+        },
+        {
+          "name": "dataset_examples/case_68_atm_many_scenarios_3.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.5800856351852417,
+          "clipped_chars": 1156
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: ClosedDown",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: ClosedDown",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])",
+          "unreachable_states_detected",
+          "unreachable: ClosedDown",
+          "plantuml_command_not_found_for_official_syntax_check"
+        ],
+        "initial_state": "Idle",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "ClosedDown"
+        ],
+        "state_count": 9,
+        "transition_count": 13
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag__examples_only\\case_70_atm_many_scenarios_7\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.4444444444444444,
+    "state_recall": 0.4444444444444444,
+    "state_f1": 0.4444444444444444,
+    "state_tp": 4,
+    "state_fp": 5,
+    "state_fn": 5,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 13,
+    "transition_fn": 10,
+    "state_precision_relaxed": 0.6666666666666666,
+    "state_recall_relaxed": 0.75,
+    "state_f1_relaxed": 0.7058823529411765,
+    "state_tp_relaxed": 6,
+    "state_fp_relaxed": 3,
+    "state_fn_relaxed": 2,
+    "transition_precision_relaxed": 0.3076923076923077,
+    "transition_recall_relaxed": 0.5714285714285714,
+    "transition_f1_relaxed": 0.4,
+    "transition_tp_relaxed": 4,
+    "transition_fp_relaxed": 9,
+    "transition_fn_relaxed": 3,
+    "transition_precision_semantic": 0.23076923076923078,
+    "transition_recall_semantic": 0.3,
+    "transition_f1_semantic": 0.2608695652173913,
+    "transition_tp_semantic": 3,
+    "transition_fp_semantic": 10,
+    "transition_fn_semantic": 7,
+    "transition_event_similarity_mean": 0.8506230529595015,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: ClosedDown",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "hallucination_state_rate": 0.5555555555555556,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.3333333333333333,
+    "hallucination_transition_rate_relaxed": 0.6923076923076923,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 0.42857142857142855,
+    "overall_f1": 0.2222222222222222,
+    "overall_f1_relaxed": 0.5529411764705883,
+    "weighted_f1_relaxed_70_30": 0.6141176470588235,
+    "overall_f1_semantic": 0.4833759590792839,
+    "weighted_f1_semantic_70_30": 0.5723785166240409,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "missing_final_state_transition (state --> [*])",
+      "unreachable_states_detected",
+      "unreachable: ClosedDown",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+@startuml
+title E-Ticketing System State Diagram
+
+state "Unauthenticated" as Unauthenticated {
+    [*] --> Registration : [Register]
+    [*] --> Login : [Login]
+}
+
+state Registration {
+    [*] --> RegDetails : [Enter Details]
+    RegDetails --> RegValid : [Valid]
+    RegDetails --> RegInvalid : [Invalid]
+    RegInvalid --> [*]
+    RegValid --> Login
+}
+
+state Login {
+    RegValid --> Login
+    Login --> RegValid : [Forgot Password]
+    Login --> LoggedIn : [Valid Credentials]
+    Login --> [*] : [Invalid Credentials]
+}
+
+state LoggedIn {
+    [*] --> TicketCheck : [Check Tickets]
+    [*] --> AccountManage : [Manage Account]
+    TicketCheck --> BookTicket : [Book Ticket]
+    BookTicket --> Payment : [Confirm Booking]
+    Payment --> OrderComplete : [Payment Confirmed]
+    OrderComplete --> [*] : [Logout]
+}
+
+state RegDetails <<choice>>
+state RegValid <<choice>>
+state RegInvalid <<choice>>
+state TicketCheck <<choice>>
+state BookTicket <<choice>>
+state Payment <<choice>>
+state OrderComplete <<choice>>
+
+RegValid --> RegDetails
+RegValid --> Login
+RegInvalid --> [*]
+
+TicketCheck --> BookTicket
+TicketCheck --> OrderComplete
+BookTicket --> Payment
+Payment --> OrderComplete
+OrderComplete --> [*]
+
+@enduml
