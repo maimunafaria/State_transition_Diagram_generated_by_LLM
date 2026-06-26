@@ -1,0 +1,85 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Inventory — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to add new goods to the inventory.
+2. The system shall allow the user to update the price of existing items in the inventory.
+3. The system shall allow the user to remove goods from the inventory that are no longer required.
+4. The system shall identify expired goods and notify the user about their removal from the inventory.
+5. The system shall allow the user to place an order to a supplier for additional goods when required.
+6. The system shall generate an invoice for the order once it is placed.
+7. The system shall allow the user to search for items available in the inventory and select them for purchase.
+8. The system shall calculate the applicable discount and tax based on the selected items.
+9. The system shall generate a receipt for the customer after the purchase.
+10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.
+11. The system shall record customer requests for items that may not be currently available.
+12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.
+
+Candidate PlantUML:
+@startuml
+title Inventory State Machine
+
+[*] --> Idle
+
+state Idle
+state Adding
+state Updating
+state Removing
+state Expired
+state Ordering
+state Invoicing
+state Searching
+state Billing
+state Cancelled
+state Replaced
+state Summary
+
+Idle --> Adding : addNewGoods
+Adding --> Idle : saveGoods
+
+Idle --> Updating : updatePrice
+Updating --> Idle : savePrice
+
+Idle --> Removing : removeGoods
+Removing --> Idle : removeGoods
+
+Idle --> Ordering : placeOrder
+Ordering --> Invoicing : generateInvoice
+Invoicing --> Idle : saveInvoice
+
+Idle --> Searching : searchItems
+Searching --> Idle : selectItems
+
+Idle --> Expired : identifyExpiredGoods
+Expired --> Idle : notifyUser
+
+Idle --> Billing : generateReceipt
+Billing --> Cancelled : cancelReceipt
+Billing --> Replaced : replaceItem
+Billing --> Summary : saveTransaction
+
+Idle --> Summary : viewSummary
+
+@enduml
+
+
+Validation issues:
+- missing_final_state_transition (state --> [*])
+
+Validator details:
+- Current initial state: Idle
+- State count: 12
+- Transition count: 18
+
+Valid PlantUML repair patterns:
+Pattern 1: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT

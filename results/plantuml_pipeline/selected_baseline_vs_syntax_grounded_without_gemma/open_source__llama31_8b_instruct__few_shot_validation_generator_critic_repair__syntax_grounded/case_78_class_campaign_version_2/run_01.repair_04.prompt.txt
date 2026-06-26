@@ -1,0 +1,185 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Class Campaign Version 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start a campaign after a manager and staff are assigned.
+2. The system shall activate the campaign once everything is approved and the contract is signed.
+3. The system shall prepare adverts during the campaign.
+4. The system shall approve and schedule the adverts.
+5. The system shall run the adverts.
+6. The system shall allow extension or adjustment of the campaign while it is running.
+7. The system shall complete the campaign and prepare a final statement after all adverts have finished.
+8. The system shall handle payment after the campaign completion and generate a refund if the amount paid is less than required.
+9. The system shall wait for the correct balance to be settled if the amount paid exceeds the required amount.
+10. The system shall mark the campaign as paid once the full amount is properly paid.
+11. The system shall archive the campaign and release all assigned staff and managers.
+
+Candidate PlantUML:
+@startuml
+title Campaign State Machine Diagram
+
+state "Idle" as Idle
+Idle : entry/No campaign assigned
+Idle : do/Remain in same state
+Idle : exit/Assign manager and staff / Start campaign
+
+state "Start Campaign" as StartCampaign
+StartCampaign : entry/Manager and staff assigned
+StartCampaign : do/Start campaign
+StartCampaign : exit/Activate campaign
+
+state "Activate Campaign" as ActivateCampaign
+ActivateCampaign : entry/Campaign activated
+ActivateCampaign : do/Prepare adverts
+ActivateCampaign : exit/Approve adverts
+
+state "Prepare Adverts" as PrepareAdverts
+PrepareAdverts : entry/Adverts prepared
+PrepareAdverts : do/Approve adverts
+PrepareAdverts : exit/Schedule adverts
+
+state "Schedule Adverts" as ScheduleAdverts
+ScheduleAdverts : entry/Adverts scheduled
+ScheduleAdverts : do/Run adverts
+ScheduleAdverts : exit/Adjust campaign
+
+state "Adjust Campaign" as AdjustCampaign
+AdjustCampaign : entry/Campaign adjusted
+AdjustCampaign : do/Run adverts
+AdjustCampaign : exit/Complete campaign
+
+state "Complete Campaign" as CompleteCampaign
+CompleteCampaign : entry/Campaign completed
+CompleteCampaign : do/Prepare final statement
+CompleteCampaign : exit/Pay campaign
+
+state "Pay Campaign" as PayCampaign
+PayCampaign : entry/Pay campaign
+PayCampaign : do/Handle payment
+PayCampaign : exit/Archive campaign
+
+state "Archive Campaign" as ArchiveCampaign
+ArchiveCampaign : entry/Campaign archived
+ArchiveCampaign : do/Release staff and managers
+ArchiveCampaign : exit/End
+
+state "Refund Campaign" as RefundCampaign
+RefundCampaign : entry/Refund campaign
+RefundCampaign : do/Generate refund
+RefundCampaign : exit/Wait for balance
+
+state "Wait for Balance" as WaitForBalance
+WaitForBalance : entry/Wait for balance
+WaitForBalance : do/Wait for balance
+WaitForBalance : exit/Mark campaign as paid
+
+state "Mark Campaign as Paid" as MarkCampaignAsPaid
+MarkCampaignAsPaid : entry/Mark campaign as paid
+MarkCampaignAsPaid : do/Mark campaign as paid
+MarkCampaignAsPaid : exit/End
+
+[*] --> Idle: START_EVENT
+
+Idle --> StartCampaign: [Manager and staff assigned]
+StartCampaign --> ActivateCampaign: ACTIVATE_CAMPAIGN_EVENT
+ActivateCampaign --> PrepareAdverts: PREPARE_ADVERTS_EVENT
+PrepareAdverts --> ScheduleAdverts: SCHEDULE_ADVERTS_EVENT
+ScheduleAdverts --> AdjustCampaign: ADJUST_CAMPAIGN_EVENT
+AdjustCampaign --> CompleteCampaign: COMPLETE_CAMPAIGN_EVENT
+
+CompleteCampaign --> PayCampaign: PAY_CAMPAIGN_EVENT
+PayCampaign --> ArchiveCampaign: ARCHIVE_CAMPAIGN_EVENT
+ArchiveCampaign --> End: END_EVENT
+
+RefundCampaign --> WaitForBalance: REFUND_CAMPAIGN_EVENT
+WaitForBalance --> MarkCampaignAsPaid: MARK_CAMPAIGN_AS_PAID_EVENT
+MarkCampaignAsPaid --> End: END_EVENT
+
+state J1 <<choice>>
+J1 --> StartCampaign : [Manager and staff assigned]
+J1 --> RefundCampaign : [Refund campaign]
+
+state J2 <<choice>>
+J2 --> PrepareAdverts : [Prepare adverts]
+J2 --> ScheduleAdverts : [Schedule adverts]
+
+state J3 <<choice>>
+J3 --> AdjustCampaign : [Adjust campaign]
+J3 --> CompleteCampaign : [Complete campaign]
+
+state J4 <<choice>>
+J4 --> PayCampaign : [Pay campaign]
+J4 --> ArchiveCampaign : [Archive campaign]
+
+state J5 <<choice>>
+J5 --> WaitForBalance : [Wait for balance]
+J5 --> MarkCampaignAsPaid : [Mark campaign as paid]
+
+state J6 <<choice>>
+J6 --> Idle : [No campaign assigned]
+J6 --> StartCampaign : [Manager and staff assigned]
+
+state J7 <<choice>>
+J7 --> ActivateCampaign : [Activate campaign]
+J7 --> PrepareAdverts : [Prepare adverts]
+
+state J8 <<choice>>
+J8 --> ScheduleAdverts : [Schedule adverts]
+J8 --> AdjustCampaign : [Adjust campaign]
+
+state J9 <<choice>>
+J9 --> CompleteCampaign : [Complete campaign]
+J9 --> PayCampaign : [Pay campaign]
+
+state J10 <<choice>>
+J10 --> RefundCampaign : [Refund campaign]
+J10 --> WaitForBalance : [Wait for balance]
+
+state J11 <<choice>>
+J11 --> MarkCampaignAsPaid : [Mark campaign as paid]
+J11 --> ArchiveCampaign : [Archive campaign]
+
+state J12 <<choice>>
+J12 --> StartCampaign : [Manager and staff assigned]
+J12 --> ActivateCampaign : [Activate campaign]
+
+state J13 <<choice>>
+J13 --> PrepareAdverts : [Prepare adverts]
+J13 --> ScheduleAdverts : [Schedule adverts]
+
+state J14 <<choice>>
+J14 --> AdjustCampaign : [Adjust campaign]
+J14 --> CompleteCampaign : [Complete campaign]
+
+state J15 <<choice>>
+J15 --> PayCampaign : [Pay campaign
+@enduml
+
+
+Validation issues:
+- missing_final_state_transition (state --> [*])
+- unreachable: J1, J10, J11, J12, J13, J14, J15, J2, J3, J4, J5, J6, J7, J8, J9, Mark Campaign as Paid, Refund Campaign, Wait for Balance
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: Idle
+- Unreachable states: J1, J10, J11, J12, J13, J14, J15, J2, J3, J4, J5, J6, J7, J8, J9, Mark Campaign as Paid, Refund Campaign, Wait for Balance
+- State count: 28
+- Transition count: 41
+
+Valid PlantUML repair patterns:
+Pattern 1: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 2: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT

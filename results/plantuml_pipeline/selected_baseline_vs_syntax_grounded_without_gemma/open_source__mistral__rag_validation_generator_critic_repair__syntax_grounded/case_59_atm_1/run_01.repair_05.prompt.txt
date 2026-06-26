@@ -1,0 +1,62 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Atm Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose or enter a withdrawal amount.
+2. The system shall support predefined amounts for selection by the user.
+3. The system shall allow users to input their own custom withdrawal amount.
+4. The system shall provide an option for the user to cancel the transaction at any point.
+5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.
+
+Candidate PlantUML:
+@startuml
+title ATM Control - Withdrawal Scenario
+
+state "Waiting for Input" as WaitingForInput
+state "Choosing Amount" as ChoosingAmount
+state "Selecting Predefined Amount" as SelectingPredefinedAmount
+state "Entering Custom Amount" as EnteringCustomAmount
+state "Cancelling Transaction" as CancellingTransaction
+state "Processing Withdrawal" as ProcessingWithdrawal
+state "Dispensing Cash" as DispensingCash
+state "Printing Receipt" as PrintingReceipt
+state "Ejecting Card" as EjectingCard
+
+WaitingForInput --> ChoosingAmount : User chooses option
+ChoosingAmount --> SelectingPredefinedAmount : Predefined amount selected
+ChoosingAmount --> EnteringCustomAmount : Custom amount entered
+SelectingPredefinedAmount --> DispensingCash : Amount dispensed
+EnteringCustomAmount --> ProcessingWithdrawal : Valid amount entered
+ProcessingWithdrawal --> DispensingCash : Withdrawal approved
+ProcessingWithdrawal --> EjectingCard : Rejected / Eject, Display Apology
+CancellingTransaction --> EjectingCard : Cancel / Eject
+DispensingCash --> PrintingReceipt : Cash dispensed
+PrintingReceipt --> EjectingCard : Receipt printed
+EjectingCard --> "Waiting for Input" : Card ejected
+@enduml
+
+
+Validation issues:
+- missing_initial_state_transition ([*] --> state)
+- missing_final_state_transition (state --> [*])
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 9
+- Transition count: 11
+
+Valid PlantUML repair patterns:
+Pattern 1: missing initial transition
+[*] --> INITIAL_STATE
+
+Pattern 2: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT

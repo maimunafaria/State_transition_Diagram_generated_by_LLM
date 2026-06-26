@@ -1,0 +1,101 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Staff Member Class — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow assigning a staff member to a client or adding them to a campaign.
+2. The system shall allow removing assignments from staff members, returning them to an unassigned state.
+3. The system shall enable staff members to switch between different assignments during their work period.
+4. The system shall mark a staff member as unemployed when they leave the job.
+5. The system shall archive the record of a former employee after some time has passed.
+
+Candidate PlantUML:
+@startuml
+title Staff Member State Machine
+
+state "Unassigned" as Unassigned {
+  [*] --> AssignToClient : [assign to client]
+  AssignToClient --> AssignedToClient : [assigned to client]
+  AssignToClient --> AddToCampaign : [add to campaign]
+  AddToCampaign --> AssignedToCampaign : [assigned to campaign]
+}
+
+state "Assigned to client" as AssignedToClient {
+  AssignedToClient --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AssignedToCampaign : [switch to campaign]
+  AssignedToClient --> LeaveJob : [leave job]
+}
+
+state "Assigned to campaign" as AssignedToCampaign {
+  AssignedToCampaign --> SwitchAssignments : [switch assignments]
+  SwitchAssignments --> Unassigned : [switch to unassigned]
+  SwitchAssignments --> AssignedToClient : [switch to client]
+  AssignedToCampaign --> LeaveJob : [leave job]
+}
+
+state "Unemployed" as Unemployed {
+  LeaveJob --> Unemployed : [leave job]
+  Unemployed --> ArchiveRecord : [archive record]
+}
+
+state "Archived" as Archived {
+  ArchiveRecord --> Archived : [archive record]
+}
+
+Unassigned : entry / staff member is unassigned
+AssignedToClient : entry / staff member is assigned to client
+AssignedToCampaign : entry / staff member is assigned to campaign
+Unemployed : entry / staff member is unemployed
+Archived : entry / staff member record is archived
+
+state Choice <<choice>>
+Choice --> AssignToClient : [assign to client]
+Choice --> AddToCampaign : [add to campaign]
+Choice --> SwitchAssignments : [switch assignments]
+Choice --> LeaveJob : [leave job]
+Choice --> ArchiveRecord : [archive record]
+
+TERMINAL_STATE "Archived" as Archived {
+  [*] --> Archived : COMPLETION_EVENT
+}
+
+Unassigned --> Unemployed : leave job
+AssignedToClient --> Unemployed : leave job
+AssignedToCampaign --> Unemployed : leave job
+
+@enduml
+
+
+Validation issues:
+- multiple_initial_state_transitions (AssignToClient, Archived)
+- missing_final_state_transition (state --> [*])
+- duplicate_transitions_detected (1)
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 13
+- Transition count: 21
+- Duplicate transition count: 1
+
+Valid PlantUML repair patterns:
+Pattern 1: exactly one top-level initial transition
+[*] --> INITIAL_STATE
+
+' Replace every additional [*] --> OTHER_STATE with a normal supported transition
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Pattern 2: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 3: merge duplicate transitions
+' Keep one transition for the same source and target
+SOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT

@@ -1,0 +1,121 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Atm Many Scenarios Scenario 7 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall greet the user when they arrive.
+2. The system shall check the PIN after the card is inserted.
+3. The system shall allow the user to try again if the entered PIN is incorrect.
+4. The system shall keep the card for security if it is invalid or the PIN is entered incorrectly too many times.
+5. The system shall return the card if the user cancels the operation.
+6. The system shall display available options (withdrawing money, checking information, or making a transfer) for the user to choose from if the PIN is correct.
+7. The system shall process the selected request after the user makes a choice.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram
+
+state "Arrival" as Arrival
+state "PIN Verification" as PINVerification
+state "Invalid PIN" as InvalidPIN
+state "Card Held" as CardHeld
+state "Return Card" as ReturnCard
+state "Options Displayed" as OptionsDisplayed
+state "Request Processing" as RequestProcessing
+
+state "Greeting" as Greeting
+Greeting : entry / User arrives
+Greeting : do / Display greeting
+Greeting : exit / User proceeds
+
+state "Card Insertion" as CardInsertion
+CardInsertion : entry / User inserts card
+CardInsertion : do / Check card validity
+CardInsertion : exit / Proceed to PIN verification
+
+state "PIN Entry" as PINEntry
+PINEntry : entry / User enters PIN
+PINEntry : do / Verify PIN
+PINEntry : exit / Proceed to next state
+
+state "Cancel Operation" as CancelOperation
+CancelOperation : entry / User cancels operation
+CancelOperation : do / Return card
+CancelOperation : exit / Operation cancelled
+
+state "Too Many Incorrect PINs" as TooManyIncorrectPINs
+TooManyIncorrectPINs : entry / User enters incorrect PIN too many times
+TooManyIncorrectPINs : do / Hold card for security
+TooManyIncorrectPINs : exit / Card held
+
+state "Correct PIN" as CorrectPIN
+CorrectPIN : entry / User enters correct PIN
+CorrectPIN : do / Display options
+CorrectPIN : exit / Options displayed
+
+state "Withdraw Money" as WithdrawMoney
+WithdrawMoney : entry / User selects withdraw money
+WithdrawMoney : do / Process withdraw money request
+WithdrawMoney : exit / Request processed
+
+state "Check Information" as CheckInformation
+CheckInformation : entry / User selects check information
+CheckInformation : do / Process check information request
+CheckInformation : exit / Request processed
+
+state "Make Transfer" as MakeTransfer
+MakeTransfer : entry / User selects make transfer
+MakeTransfer : do / Process make transfer request
+MakeTransfer : exit / Request processed
+
+state "Invalid Request" as InvalidRequest
+InvalidRequest : entry / User selects invalid request
+InvalidRequest : do / Display error message
+InvalidRequest : exit / Request not processed
+
+Arrival --> Greeting
+Greeting --> CardInsertion
+
+CardInsertion --> PINVerification
+PINVerification --> PINEntry
+
+PINEntry --> PINVerification : Incorrect PIN
+PINVerification --> CorrectPIN : Correct PIN
+PINVerification --> InvalidPIN : Invalid PIN
+PINVerification --> CancelOperation : Cancel operation
+
+CorrectPIN --> OptionsDisplayed
+OptionsDisplayed --> WithdrawMoney
+OptionsDisplayed --> CheckInformation
+OptionsDisplayed --> MakeTransfer
+OptionsDisplayed --> InvalidRequest
+
+WithdrawMoney --> RequestProcessing
+CheckInformation --> RequestProcessing
+MakeTransfer --> RequestProcessing
+
+InvalidPIN --> InvalidPIN
+CancelOperation --> ReturnCard
+TooManyIncorrectPINs --> CardHeld
+
+CardHeld --> [*]
+ReturnCard --> [*]
+RequestProcessing --> [*]
+
+@enduml
+
+
+Validation issues to fix:
+- missing_initial_state_transition ([*] --> state)
+
+Repair guidance for these issues:
+- Add one clear initial transition from [*] to the first lifecycle state.

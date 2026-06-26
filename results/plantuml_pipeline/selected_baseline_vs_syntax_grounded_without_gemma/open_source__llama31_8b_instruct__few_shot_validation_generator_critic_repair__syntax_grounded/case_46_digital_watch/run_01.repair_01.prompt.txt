@@ -1,0 +1,94 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.
+
+Candidate PlantUML:
+@startuml
+title Digital Watch System States
+
+[*] --> AdjustTime
+
+state "Adjust Time" as AdjustTime
+state "Switch Mode" as SwitchMode
+state "Increase Value" as IncreaseValue
+state "Alarm On/Off" as AlarmOnOff
+state "Alarm Triggered" as AlarmTriggered
+state "Alarm Stopped" as AlarmStopped
+state "Light On/Off" as LightOnOff
+
+AdjustTime : entry / View time
+AdjustTime : do / Adjust time settings
+AdjustTime : exit / Time adjusted
+
+SwitchMode : entry / Switch mode
+SwitchMode : do / Switch mode
+SwitchMode : exit / Mode switched
+
+IncreaseValue : entry / Increase value
+IncreaseValue : do / Increase value
+IncreaseValue : exit / Value increased
+
+AlarmOnOff : entry / Turn alarm on/off
+AlarmOnOff : do / Alarm on/off
+AlarmOnOff : exit / Alarm status updated
+
+AlarmTriggered : entry / Alarm triggered
+AlarmTriggered : do / Alarm triggered
+AlarmTriggered : exit / Alarm triggered
+
+AlarmStopped : entry / Alarm stopped
+AlarmStopped : do / Alarm stopped
+AlarmStopped : exit / Alarm stopped
+
+LightOnOff : entry / Turn light on/off
+LightOnOff : do / Light on/off
+LightOnOff : exit / Light status updated
+
+AdjustTime --> SwitchMode : [press button]
+SwitchMode --> IncreaseValue : [press button]
+IncreaseValue --> AdjustTime : [press button]
+AdjustTime --> AlarmOnOff : [press button]
+AlarmOnOff --> AlarmTriggered : [alarm on]
+AlarmTriggered --> AlarmStopped : [alarm off]
+AlarmStopped --> AdjustTime : [press button]
+AdjustTime --> LightOnOff : [press button]
+LightOnOff --> AlarmOnOff : [press button]
+
+@enduml
+
+
+Validation issues:
+- missing_final_state_transition (state --> [*])
+- unreachable: Adjust Time, Alarm On/Off, Alarm Stopped, Alarm Triggered, Increase Value, Light On/Off, Switch Mode
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: AdjustTime
+- Unreachable states: Adjust Time, Alarm On/Off, Alarm Stopped, Alarm Triggered, Increase Value, Light On/Off, Switch Mode
+- State count: 8
+- Transition count: 9
+
+Valid PlantUML repair patterns:
+Pattern 1: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 2: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT

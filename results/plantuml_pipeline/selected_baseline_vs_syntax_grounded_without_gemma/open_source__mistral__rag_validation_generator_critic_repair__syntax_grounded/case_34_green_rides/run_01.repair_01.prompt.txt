@@ -1,0 +1,74 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Green Rides — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display journey details upon user login and destination selection.
+2. The system shall allow users to activate driving mode or choose other options after viewing journey details.
+3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.
+4. The system shall inform relevant authorities in the event of an accident.
+5. The system shall send notifications during driving or in case of an accident.
+6. The system shall allow users to provide feedback upon completion of their journey.
+
+Candidate PlantUML:
+@startuml
+title UML state machine diagram
+
+state ServiceCenterHome
+ServiceCenterHome : entry / Logged in Service Center
+ServiceCenterHome : do / Display home page
+ServiceCenterHome : exit / Enter Damaged parts list
+ServiceCenterHome : exit / Expiry Notification page
+ServiceCenterHome : exit / Updating Information list
+
+state ExpiryNotification
+ExpiryNotification : entry / To view expiry notification
+ExpiryNotification : do / Send service request to Car owner
+ExpiryNotification : exit / Return to Service center home page
+
+state Entering Damaged parts list
+Entering Damaged parts list : entry / To enter Damaged parts list
+Entering Damaged parts list : do / Preparing and entering damaged parts list
+Entering Damaged parts list : exit / Return to service center home page
+
+state Updating parts Information
+Updating parts Information : entry / To update changed parts information
+Updating parts Information : do / Update Information
+Updating parts Information : exit / Return to Service center home page
+
+state Logout
+Logout : entry / To Logout
+Logout : do / Logout
+Logout : exit / Logged out Successfully
+@enduml
+
+
+Validation issues:
+- missing_initial_state_transition ([*] --> state)
+- missing_final_state_transition (state --> [*])
+- orphan: ExpiryNotification, Logout, ServiceCenterHome
+- orphan_states_detected
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 3
+- Transition count: 0
+
+Valid PlantUML repair patterns:
+Pattern 1: missing initial transition
+[*] --> INITIAL_STATE
+
+Pattern 2: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 3: connect a requirement-supported orphan state
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT

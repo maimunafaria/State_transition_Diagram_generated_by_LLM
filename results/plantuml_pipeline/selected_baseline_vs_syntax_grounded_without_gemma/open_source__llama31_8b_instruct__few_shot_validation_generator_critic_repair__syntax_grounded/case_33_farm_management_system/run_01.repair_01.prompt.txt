@@ -1,0 +1,84 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Farm Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to log in.
+2. The system shall display the main area after a user signs in, allowing them to choose what to check.
+3. The system shall show market conditions when the user selects this option.
+4. The system shall show the market report if the customer selects market condition.
+4. The system shall require users to provide a photo when they choose pest control help.
+4. The system shall show the pest control techniques if the customer selects pest control help.
+5. The system shall provide soil-related suggestions ( which crops are suitable ) after receiving soil information from the user.
+6. The system shall offer weather insights based on the provided location.
+7. The system shall display labour availability details after receiving a location from the user.
+8. The system shall allow users to continue using the service after viewing any of these results.
+9. The system shall end the session when a user logs out.
+
+Candidate PlantUML:
+@startuml
+title Farm Management System
+
+state "Logged Out" as LoggedOut
+state "Logged In" as LoggedIn
+state "Main Area" as MainArea
+state "Market Conditions" as MarketConditions
+state "Market Report" as MarketReport
+state "Pest Control Help" as PestControlHelp
+state "Pest Control Techniques" as PestControlTechniques
+state "Soil Suggestions" as SoilSuggestions
+state "Weather Insights" as WeatherInsights
+state "Labour Availability" as LabourAvailability
+state "Session Ended" as SessionEnded
+
+[*] --> LoggedOut
+
+LoggedIn --> MainArea : User Signs In
+MainArea --> MarketConditions : User Selects Market Conditions
+MarketConditions --> MarketReport : User Selects Market Report
+MarketReport --> LoggedIn : User Returns to Main Area
+
+MainArea --> PestControlHelp : User Selects Pest Control Help
+PestControlHelp --> PestControlTechniques : User Provides Photo
+PestControlTechniques --> LoggedIn : User Returns to Main Area
+
+MainArea --> SoilSuggestions : User Provides Soil Information
+SoilSuggestions --> LoggedIn : User Returns to Main Area
+
+MainArea --> WeatherInsights : User Provides Location
+WeatherInsights --> LoggedIn : User Returns to Main Area
+
+MainArea --> LabourAvailability : User Provides Location
+LabourAvailability --> LoggedIn : User Returns to Main Area
+
+LoggedIn --> SessionEnded : User Logs Out
+
+@enduml
+
+
+Validation issues:
+- missing_final_state_transition (state --> [*])
+- unreachable: Labour Availability, Logged In, Main Area, Market Conditions, Market Report, Pest Control Help, Pest Control Techniques, Session Ended, Soil Suggestions, Weather Insights
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: Logged Out
+- Unreachable states: Labour Availability, Logged In, Main Area, Market Conditions, Market Report, Pest Control Help, Pest Control Techniques, Session Ended, Soil Suggestions, Weather Insights
+- State count: 11
+- Transition count: 14
+
+Valid PlantUML repair patterns:
+Pattern 1: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 2: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT

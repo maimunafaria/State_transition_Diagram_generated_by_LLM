@@ -1,0 +1,212 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Candidate PlantUML:
+@startuml
+[*] --> CreateUser
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+state Choice3 <<choice>>
+state Choice4 <<choice>>
+state Choice5 <<choice>>
+state Choice6 <<choice>>
+state Choice7 <<choice>>
+state Choice8 <<choice>>
+state Choice9 <<choice>>
+state Choice10 <<choice>>
+state Choice11 <<choice>>
+
+CreateUser : entry / nil
+CreateUser : do / Create account
+CreateUser : exit / Login
+
+CreateUser --> Login : user creates account
+
+Login : entry / nil
+Login : do / Login
+Login : exit / Application
+
+Login --> Application : user logs in
+
+Application : entry / Login
+Application : do / Apply for visa
+Application : exit / Payment
+
+Application --> Payment : user applies for visa
+
+Payment : entry / Application
+Payment : do / Make payment
+Payment : exit / Accepted
+
+Payment --> Accepted : payment made
+
+Accepted : entry / Payment
+Accepted : do / Accept application
+Accepted : exit / Status
+
+Accepted --> Status : application accepted
+
+Status : entry / Accepted
+Status : do / View status
+Status : exit / Check status
+
+Status --> CheckStatus : user views status
+
+CheckStatus : entry / Status
+CheckStatus : do / Check status
+CheckStatus : exit / Cancel
+
+CheckStatus --> Cancel : user checks status
+
+Cancel : entry / CheckStatus
+Cancel : do / Cancel application
+Cancel : exit / Logout
+
+Cancel --> Logout : user cancels application
+
+ModifyDetails : entry / Login
+ModifyDetails : do / Modify details
+ModifyDetails : exit / Logout
+
+ModifyDetails --> Logout : user modifies details
+
+ViewDetails : entry / Login
+ViewDetails : do / View details
+ViewDetails : exit / Logout
+
+ViewDetails --> Logout : user views details
+
+ViewPurpose : entry / Login
+ViewPurpose : do / View purpose
+ViewPurpose : exit / Update status
+
+ViewPurpose --> UpdateStatus : user views purpose
+
+UpdateStatus : entry / ViewPurpose
+UpdateStatus : do / Update status
+UpdateStatus : exit / Logout
+
+UpdateStatus --> Logout : user updates status
+
+GiveFeedback : entry / CheckStatus
+GiveFeedback : do / Give feedback
+GiveFeedback : exit / Logout
+
+GiveFeedback --> Logout : user gives feedback
+
+Logout : entry / nil
+Logout : do / Logout
+Logout : exit / [*]
+
+Choice1 --> Login : [user creates account]
+Choice2 --> Application : [user logs in]
+Choice3 --> Payment : [user applies for visa]
+Choice4 --> Accepted : [payment made]
+Choice5 --> Status : [application accepted]
+Choice6 --> CheckStatus : [user views status]
+Choice7 --> Cancel : [user checks status]
+Choice8 --> ModifyDetails : [user modifies details]
+Choice9 --> ViewDetails : [user views details]
+Choice10 --> UpdateStatus : [user updates status]
+Choice11 --> GiveFeedback : [user gives feedback]
+
+TERMINAL_STATE Logout --> [*] : COMPLETION_EVENT
+Login --> Choice1 : SUPPORTED_EVENT
+Application --> Choice2 : SUPPORTED_EVENT
+Payment --> Choice3 : SUPPORTED_EVENT
+Accepted --> Choice4 : SUPPORTED_EVENT
+Status --> Choice5 : SUPPORTED_EVENT
+CheckStatus --> Choice6 : SUPPORTED_EVENT
+Cancel --> Choice7 : SUPPORTED_EVENT
+ModifyDetails --> Choice8 : SUPPORTED_EVENT
+ViewDetails --> Choice9 : SUPPORTED_EVENT
+UpdateStatus --> Choice10 : SUPPORTED_EVENT
+GiveFeedback --> Choice11 : SUPPORTED_EVENT
+
+state DECISION_NODE1 <<choice>>
+Login --> DECISION_NODE1 : SUPPORTED_EVENT
+DECISION_NODE1 --> Application : [user logs in]
+DECISION_NODE1 --> Login : [user creates account]
+
+state DECISION_NODE2 <<choice>>
+Application --> DECISION_NODE2 : SUPPORTED_EVENT
+DECISION_NODE2 --> Payment : [user applies for visa]
+DECISION_NODE2 --> Application : [application accepted]
+
+state DECISION_NODE3 <<choice>>
+Payment --> DECISION_NODE3 : SUPPORTED_EVENT
+DECISION_NODE3 --> Accepted : [payment made]
+DECISION_NODE3 --> Payment : [make payment]
+
+state DECISION_NODE4 <<choice>>
+Accepted --> DECISION_NODE4 : SUPPORTED_EVENT
+DECISION_NODE4 --> Status : [application accepted]
+DECISION_NODE4 --> Accepted : [accept application]
+
+state DECISION_NODE5 <<choice>>
+Status --> DECISION_NODE5 : SUPPORTED_EVENT
+DECISION_NODE5 --> CheckStatus : [user views status]
+DECISION_NODE5 --> Status : [view status]
+
+state DECISION_NODE6 <<choice>>
+CheckStatus --> DECISION_NODE6 : SUPPORTED_EVENT
+DECISION_NODE6 --> Cancel : [user checks status]
+DECISION_NODE6 --> CheckStatus : [check status]
+
+state DECISION_NODE7 <<choice>>
+Cancel --> DECISION_NODE7 : SUPPORTED_EVENT
+DECISION_NODE7 --> Logout : [user cancels application]
+DECISION_NODE7 --> Cancel : [cancel application]
+
+state DECISION_NODE8 <<choice>>
+ModifyDetails --> DECISION_NODE8
+@enduml
+
+
+Validation issues:
+- missing_final_state_transition (state --> [*])
+- unreachable: Choice10, Choice11, Choice8, Choice9, DECISION_NODE8, GiveFeedback, ModifyDetails, UpdateStatus, ViewDetails, ViewPurpose
+- unreachable_states_detected
+- choice_node_without_outgoing_transitions (DECISION_NODE8)
+
+Validator details:
+- Current initial state: CreateUser
+- Unreachable states: Choice10, Choice11, Choice8, Choice9, DECISION_NODE8, GiveFeedback, ModifyDetails, UpdateStatus, ViewDetails, ViewPurpose
+- State count: 33
+- Transition count: 57
+
+Valid PlantUML repair patterns:
+Pattern 1: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 2: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Pattern 3: valid guarded choice node
+state DECISION_NODE <<choice>>
+SOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]

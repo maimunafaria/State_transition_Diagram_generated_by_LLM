@@ -1,0 +1,102 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Class Campaign Version 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start a campaign after a manager and staff are assigned.
+2. The system shall activate the campaign once everything is approved and the contract is signed.
+3. The system shall prepare adverts during the campaign.
+4. The system shall approve and schedule the adverts.
+5. The system shall run the adverts.
+6. The system shall allow extension or adjustment of the campaign while it is running.
+7. The system shall complete the campaign and prepare a final statement after all adverts have finished.
+8. The system shall handle payment after the campaign completion and generate a refund if the amount paid is less than required.
+9. The system shall wait for the correct balance to be settled if the amount paid exceeds the required amount.
+10. The system shall mark the campaign as paid once the full amount is properly paid.
+11. The system shall archive the campaign and release all assigned staff and managers.
+
+Candidate PlantUML:
+@startuml
+title Campaign State Machine (Final Version)
+
+[*] --> Commissioned : assignManager; assignStaff
+
+state Commissioned
+state Suspended
+state Completed
+state Paid
+
+Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+Commissioned --> Completed : campaignCancelled;\ncalculateCosts;\nprepareFinalStatement
+state Active {
+
+  state Monitoring {
+    [*] --> Survey
+
+    state Survey
+    state Evaluation
+    state H1 <<history>>
+
+    Survey --> Evaluation : surveyComplete
+    Evaluation --> Survey : runSurvey
+  }
+
+  --
+
+  state Running {
+    [*] --> AdvertPreparation
+
+    state AdvertPreparation
+    state Scheduling
+    state "Running Adverts" as RunningAdverts
+    state H2 <<history>>
+
+    AdvertPreparation --> Scheduling : advertsApproved\n/authorize
+    Scheduling --> RunningAdverts : confirmSchedule
+    RunningAdverts --> AdvertPreparation : extendCampaign\n/modifyBudget
+  }
+
+}
+
+Active --> Suspended : suspendCampaign\n/stopAdverts
+Suspended --> Active : resumeCampaign
+
+Active --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+AdvertPreparation --> Completed : campaignCompleted\n/prepareFinalStatement
+
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > 0]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
+
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+@enduml
+
+
+Validation issues:
+- multiple_initial_state_transitions (Commissioned, Survey, AdvertPreparation)
+- orphan: H1, H2, Monitoring, Running
+- orphan_states_detected
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 14
+- Transition count: 14
+
+Valid PlantUML repair patterns:
+Pattern 1: exactly one top-level initial transition
+[*] --> INITIAL_STATE
+
+' Replace every additional [*] --> OTHER_STATE with a normal supported transition
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Pattern 2: connect a requirement-supported orphan state
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT

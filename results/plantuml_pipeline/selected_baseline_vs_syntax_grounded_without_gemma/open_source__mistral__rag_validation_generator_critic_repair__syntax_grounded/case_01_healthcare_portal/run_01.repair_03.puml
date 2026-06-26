@@ -1,0 +1,107 @@
+@startuml
+title Healthcare Portal - User Login State Machine Diagram
+
+state PortalChoice1 <<choice>>
+state PortalChoice2 <<choice>>
+state PortalChoice3 <<choice>>
+state ServiceCenterRegistration <<choice>>
+state OwnerJoin <<choice>>
+state ServiceCenterVerification
+state ServiceCenterLogin
+state ServiceCenterHome
+state Logout
+state NewsContent
+state HealthInfo
+state PaymentSelection
+state InsuranceCheck
+state DoctorConsultationPayment
+state DrugPurchasePayment
+state FeedbackCollection
+
+[*] --> PortalChoice1
+
+PortalChoice1 --> PortalChoice2 : [Healthcare Portal]
+PortalChoice1 --> PortalChoice3 : [Patient Portal]
+
+PortalChoice2 --> ServiceCenterRegistration : [New User Registration]
+PortalChoice2 --> ServiceJoin : [Registered User]
+PortalChoice3 --> CarOwnerRegistration : [New Patient Registration]
+PortalChoice3 --> OwnerJoin : [Registered Patient]
+
+state "Service Center Registration" as ServiceCenterRegistration
+ServiceCenterRegistration : entry / Unregistered user
+ServiceCenterRegistration : do / Enter Valid Credentials
+ServiceCenterRegistration : exit / Account registered
+
+state "Service Center Verification" as ServiceCenterVerification
+ServiceCenterVerification : entry / User account registered
+ServiceCenterVerification : do / Verify User
+ServiceCenterVerification : exit / Login Successful
+
+state "Service Center Login" as ServiceCenterLogin
+ServiceCenterLogin : entry / Verified User
+ServiceCenterLogin : entry / User not logged in
+ServiceCenterLogin : do / Authenticate User
+ServiceCenterLogin : exit / Logged In Successfully
+
+state "Service center Home" as ServiceCenterHome
+ServiceCenterHome : entry / Logged in User
+ServiceCenterHome : do / Display home page
+ServiceCenterHome : exit / Read News and Expert Content
+ServiceCenterHome : exit / Check Symptoms or Fitness
+ServiceCenterHome : exit / Logout
+
+state "Read News and Expert Content" as NewsContent
+NewsContent : entry / To read news and expert content
+NewsContent : do / Display news and expert content
+NewsContent : exit / Return to Service center home page
+
+state "Check Symptoms or Fitness" as HealthInfo
+HealthInfo : entry / To check symptoms or fitness
+HealthInfo : do / Check symptoms or fitness
+HealthInfo : exit / Return to Service center home page
+
+state "Logout" as Logout
+Logout : entry / To Logout
+Logout : do / Logout
+Logout : exit / Logged out Successfully
+
+ServiceCenterHome --> NewsContent : [Read News and Expert Content]
+ServiceCenterHome --> HealthInfo : [Check Symptoms or Fitness]
+NewsContent --> ServiceCenterHome : [Return to Service center home page]
+HealthInfo --> ServiceCenterHome : [Return to Service center home page]
+ServiceCenterHome --> Logout : [Logout]
+
+state "Payment Selection" as PaymentSelection
+PaymentSelection : entry / To select payment method
+PaymentSelection : do / Display payment methods
+PaymentSelection : exit / Select Cash or Insurance
+
+state "Insurance Check" as InsuranceCheck
+InsuranceCheck : entry / To check insurance for finance-related services
+InsuranceCheck : do / Process and validate insurance
+InsuranceCheck : exit / Insurance processed successfully
+
+state "Doctor Consultation Payment" as DoctorConsultationPayment
+DoctorConsultationPayment : entry / To pay for doctor consultation
+DoctorConsultationPayment : do / Check payment with insurance and complete the process
+DoctorConsultationPayment : exit / Payment completed successfully
+
+state "Drug Purchase Payment" as DrugPurchasePayment
+DrugPurchasePayment : entry / To pay for drug or supplement purchases
+DrugPurchasePayment : do / Select payment method (cash or insurance)
+DrugPurchasePayment : exit / Cash payment details provided if chosen as the payment method
+DrugPurchasePayment --> InsuranceCheck : [Insurance-based payments]
+InsuranceCheck --> DrugPurchasePayment : [Complete the payment process for insurance-based payments]
+
+state "Feedback Collection" as FeedbackCollection
+FeedbackCollection : entry / To collect user feedback after service completion
+FeedbackCollection : do / Collect and store user feedback
+FeedbackCollection : exit / Feedback collected successfully
+
+ServiceCenterHome --> PaymentSelection : [Select payment method]
+PaymentSelection --> InsuranceCheck : [Insurance check]
+InsuranceCheck --> DrugPurchasePayment : [Drug or supplement purchases]
+DrugPurchasePayment --> InsuranceCheck : [Insurance-based payments]
+PaymentSelection --> DoctorConsultationPayment : [Doctor consultation
+@enduml

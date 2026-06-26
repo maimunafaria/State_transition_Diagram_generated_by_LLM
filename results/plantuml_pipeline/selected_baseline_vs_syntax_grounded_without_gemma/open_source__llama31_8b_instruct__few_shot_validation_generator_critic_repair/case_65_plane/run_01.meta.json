@@ -1,0 +1,397 @@
+{
+  "run_id": "open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair",
+  "case_id": "case_65_plane",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nControlpanel Class — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check the entered password.\n2. The system shall allow the user to continue making selections if the password is correct.\n3. The system shall limit the number of incorrect password attempts a user can make.\n4. The system shall lock and not allow further access for a certain period after too many incorrect attempts.\n5. The system shall allow users to try accessing again after the lockout period has passed.\n\nExample 1 PlantUML:\n@startuml\ntitle State Diagram - Control Panel\n\n[*] --> Reading : Key hit\n\nstate Reading\nstate Comparing\nstate Locked\nstate Selecting\n\n\nComparing : do / validatePassword\n\n\nReading --> Comparing : Password entered\n\n\nComparing --> Comparing : Password incorrect\\nnumberOfTries < maxTries\n\n\nComparing --> Locked : numberOfTries > maxTries\n\n\nComparing --> Selecting : Password correct\n\n\nLocked --> Locked : Timer <= lockedTime\n\n\nLocked --> Reading : Timer > lockedTime\n\n\nSelecting --> Reading : Activation successful\n\n@enduml\n\nExample 2 Requirement:\nE Province — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall register a new user.\n2. The system shall end the process if registration details are not accepted.\n3. The system shall allow a user to log in after successful registration.\n4. The system shall provide multiple login attempts if the details are incorrect.\n5. The system shall allow the user to cancel a certificate after logging in.\n6. The system shall allow the user to apply for certificates after logging in.\n7. The system shall allow the user to view their profile after logging in.\n8. The system shall allow the user to update their profile after logging in.\n9. The system shall require the user to fill in the form and upload required details when applying for certificates.\n10. The system shall allow users to apply for more certificates as needed.\n11. The system shall allow the user to continue applying or finish once a certificate request is processed.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Machine Diagram (Certificate Management)\n\n\n[*] --> Registration\n\nstate Registration\nRegistration : entry / Get the Registration Details\nRegistration : do / Validate the Details\nRegistration : exit / Valid or Invalid Registration\n\n\nRegistration --> [*] : [Invalid Registration]\n\n\nRegistration --> Login : [Valid Registration]\n\n\nstate Login\nLogin : entry / Get the Login Details\nLogin : do / Validate the Login Details\nLogin : exit / Valid or Invalid Login\n\n\nLogin --> Login : [Invalid Login]\n\n\nLogin --> Choice1 : [Valid Login]\n\n\nstate Choice1 <<choice>>\n\nChoice1 --> CancelCert : [Cancel the Certificate]\nChoice1 --> RequestCert : [Applying for Certificates]\nChoice1 --> ViewProfile : [Profile Viewing]\nChoice1 --> UpdateProfile : [Profile Updation]\n\n\nstate \"Cancellation of Certificates\" as CancelCert\nCancelCert : entry / Certificate is asked for Cancellation\nCancelCert : do / Certificate is Canceled\nCancelCert : exit / Move to End\n\nCancelCert --> EndMerge\n\nstate \"Request for Certificates\" as RequestCert\nRequestCert : entry / Fill the Form and Upload the Details\nRequestCert : do / Request for Certificates\nRequestCert : exit / Apply for another Certificate or Move to End\n\nRequestCert --> RequestCert : [Apply for another Certificate if needed]\n\nRequestCert --> IssueCert : [Certificates requested]\n\nstate \"Issuing the Certificates\" as IssueCert\nIssueCert : entry / Validating Details\nIssueCert : do / Issuing the Certificates\nIssueCert : exit / Updating the Database\n\nIssueCert --> RequestCert : [Certificate is issued]\nRequestCert --> EndMerge : [End]\n\nstate \"View Profile\" as ViewProfile\nViewProfile : entry / View the Profile\nViewProfile : do / Display the Profile\nViewProfile : exit / Exit from Profile Viewing\n\nViewProfile --> EndMerge : [End]\n\n\nstate \"Update the Profile\" as UpdateProfile\nUpdateProfile : entry / Update the User's Profile\nUpdateProfile : do / Citizen Profile is updated\nUpdateProfile : exit / Move to End\n\nUpdateProfile --> EndMerge : [End]\n\n\nstate EndMerge <<choice>>\n\nEndMerge --> [*]\n\n@enduml\n\nExample 3 Requirement:\nCovid — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to create an account by entering their details.\n2. The system shall allow users to sign in using a correct username and password.\n3. The system shall enable logged-in users to read blogs shared by recovered patients.\n4. The system shall allow users to update the number of infected people in their area, triggering updates on infection statistics and mask demand.\n5. The system shall enable users in home quarantine to share their information.\n6. The system shall allow doctors to view shared information from quarantined users and suggest medicines.\n7. The system shall enable users to view a list of nearby medical shops and purchase medicines online.\n8. The system shall allow assigning workers to clean an area, updating the cleanliness status accordingly.\n\nExample 3 PlantUML:\n@startuml\ntitle UML state machine diagram\n\nstate \"Idle\" as Idle\nIdle : entry/To action\nIdle : do/Remain in same state\nIdle : exit/Login / Register\n\nstate \"Register\" as Register\nRegister : entry/Register\nRegister : do/Register after validating\nRegister : exit/Login/Invalid registration\n\nstate \"Invalid registration\" as InvalidRegistration\nInvalidRegistration : entry/Invalid registration\nInvalidRegistration : do/Cannot register\nInvalidRegistration : exit/Abnormal termination\n\nstate \"Login\" as Login\nLogin : entry/Login\nLogin : do/Login using valid username and password\nLogin : exit/Invalid login/To home page\n\nstate \"Invalid login\" as InvalidLogin\nInvalidLogin : entry/Invalid login\nInvalidLogin : do/Cannot login\nInvalidLogin : exit/Abnormal termination\n\nstate \"Read blog\" as ReadBlog\nReadBlog : entry/To home page\nReadBlog : entry/Read blogs of recovered patients\nReadBlog : exit/Idle\n\nstate \"Update current no. of infected people\" as UpdateInfected\nUpdateInfected : entry/To home page\nUpdateInfected : do/Update current no. of infected people in the locality\nUpdateInfected : exit/View\n\nstate \"View number of infected people in the locality\" as ViewInfected\nViewInfected : entry/View\nViewInfected : do/View number of infected people in the locality\nViewInfected : exit/Idle\n\nstate \"No. of deaths in the locality\" as DeathCount\nDeathCount : entry/View\nDeathCount : do/View no. of deaths in the locality\nDeathCount : exit/Idle\n\nstate \"View mask demand\" as ViewMaskDemand\nViewMaskDemand : entry/View\nViewMaskDemand : do/View mask demand in the locality\nViewMaskDemand : exit/Stock\n\nstate \"Stock up\" as StockUp\nStockUp : entry/Stock\nStockUp : do/Stock up masks and gloves by the shops\nStockUp : exit/End\n\nstate \"Send patient info\" as SendPatientInfo\nSendPatientInfo : entry/To home page\nSendPatientInfo : do/Update data by home quarantined patients\nSendPatientInfo : exit/View patient info\n\nstate \"View patient info\" as ViewPatientInfo\nViewPatientInfo : entry/View patient info\nViewPatientInfo : do/View patient info by the medical professional\nViewPatientInfo : exit/Prescribe\n\nstate \"Prescribe medicines if needed\" as PrescribeMedicines\nPrescribeMedicines : entry/Prescribe\nPrescribeMedicines : do/Prescribe medicines if needed\nPrescribeMedicines : exit/View data from doc\n\nstate \"View data shared by doctor\" as ViewDoctorData\nViewDoctorData : entry/View data from doc\nViewDoctorData : do/View data shared by doctor\nViewDoctorData : exit/Buy medicines\n\nstate \"List all medical shops\" as ListMedicalShops\nListMedicalShops : entry/To home page\nListMedicalShops : do/List all medical shops in the locality\nListMedicalShops : exit/Buy medicines\n\nstate \"Assign corporation worker\" as AssignWorker\nAssignWorker : entry/To home page\nAssignWorker : do/Assign workers to disinfect in an area\nAssignWorker : exit/Update status\n\nstate \"Update status of cleanliness\" as CleanlinessStatus\nCleanlinessStatus : entry/Update status\nCleanlinessStatus : do/Update status of cleanliness in the locality\nCleanlinessStatus : exit/End\n\nstate \"Buy medicines\" as BuyMedicines\nBuyMedicines : entry/Buy medicines\nBuyMedicines : do/Buy medicines if needed\nBuyMedicines : exit/End\n\nstate J1 <<choice>>\nstate J2 <<choice>>\nstate J3 <<choice>>\nstate J4 <<choice>>\nstate J5 <<choice>>\nstate J6 <<choice>>\nstate J7 <<choice>>\n[*] --> Idle\n\nIdle --> J1\nJ1 --> Register\nJ1 --> Login\n\nRegister --> J2\nJ2 --> Login\nJ2 --> InvalidRegistration\nInvalidRegistration --> [*]\n\nLogin --> J3\nJ3 --> InvalidLogin\nJ3 --> ReadBlog\nJ3 --> UpdateInfected\nJ3 --> SendPatientInfo\nJ3 --> ListMedicalShops\nJ3 --> AssignWorker\nInvalidLogin --> [*]\n\nReadBlog --> J7\nUpdateInfected --> J4\nViewInfected --> J7\nDeathCount --> J7\nJ7 --> Idle\nJ4 --> ViewInfected\nJ4 --> DeathCount\nJ4 --> ViewMaskDemand\n\nViewMaskDemand --> StockUp\nStockUp --> J6\n\nSendPatientInfo --> ViewPatientInfo\nViewPatientInfo --> PrescribeMedicines\nPrescribeMedicines --> ViewDoctorData\nViewDoctorData --> J5\nListMedicalShops --> J5\nJ5 --> BuyMedicines\nBuyMedicines --> J6\n\nAssignWorker --> CleanlinessStatus\nCleanlinessStatus --> J6\n\nJ6 --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nPlane — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall place a newly acquired plane in an 'Order' state until it is delivered.\n2. The system shall transition a plane from 'Arrival' to 'Preparation' upon its arrival.\n3. The system shall assign a prepared plane to either 'Operations' or 'Maintenance' based on its condition and schedule.\n4. The system shall keep a plane in the 'Operations' state if it still has scheduled flights.\n5. The system shall send a plane to 'Maintenance' when there are no more scheduled flights or maintenance is required.\n6. The system shall transition a plane from 'Maintenance' to 'Preparation' after checking and servicing it until it is ready for operations.\n7. The system shall take a plane out of service if it is no longer available for use.\n8. The system shall remove a plane from its operations when it is permanently withdrawn from service.\n",
+  "requirement_used": "Plane — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall place a newly acquired plane in an 'Order' state until it is delivered.\n2. The system shall transition a plane from 'Arrival' to 'Preparation' upon its arrival.\n3. The system shall assign a prepared plane to either 'Operations' or 'Maintenance' based on its condition and schedule.\n4. The system shall keep a plane in the 'Operations' state if it still has scheduled flights.\n5. The system shall send a plane to 'Maintenance' when there are no more scheduled flights or maintenance is required.\n6. The system shall transition a plane from 'Maintenance' to 'Preparation' after checking and servicing it until it is ready for operations.\n7. The system shall take a plane out of service if it is no longer available for use.\n8. The system shall remove a plane from its operations when it is permanently withdrawn from service.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_65_plane\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "multiple_initial_state_transitions (Order, Plane is no longer available)",
+      "choice_node_without_guarded_outgoing_transitions (End)"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 7,
+    "transition_count": 8
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "multiple_initial_state_transitions (Order, Plane is no longer available)",
+      "choice_node_without_guarded_outgoing_transitions (End)"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__llama31_8b_instruct__few_shot",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: End, Plane is no longer available",
+        "choice_node_without_outgoing_transitions (End)"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: End, Plane is no longer available",
+        "choice_node_without_outgoing_transitions (End)"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": true,
+      "previous_score": 3,
+      "repair_score": 2,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (Order, Plane is no longer available)",
+        "choice_node_without_guarded_outgoing_transitions (End)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (Order, Plane is no longer available)",
+        "choice_node_without_guarded_outgoing_transitions (End)"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: End"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: End"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 2,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (Order, Plane is no longer available)",
+        "choice_node_without_guarded_outgoing_transitions (End)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: End"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: End"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 3,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (Order, Plane is no longer available)",
+        "choice_node_without_guarded_outgoing_transitions (End)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: End"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: End"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 4,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (Order, Plane is no longer available)",
+        "choice_node_without_guarded_outgoing_transitions (End)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: End"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: End"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 5,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (Order, Plane is no longer available)",
+        "choice_node_without_guarded_outgoing_transitions (End)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 5,
+      "strict_state_diagram_valid": false,
+      "remaining_issues": [
+        "multiple_initial_state_transitions (Order, Plane is no longer available)",
+        "choice_node_without_guarded_outgoing_transitions (End)"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: End, Plane is no longer available",
+          "choice_node_without_outgoing_transitions (End)"
+        ],
+        "initial_state": "Order",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "End",
+          "Plane is no longer available"
+        ],
+        "state_count": 7,
+        "transition_count": 8
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_65_plane\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (Order, Plane is no longer available)",
+          "choice_node_without_guarded_outgoing_transitions (End)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 7,
+        "transition_count": 8
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": true,
+      "previous_score": 3,
+      "repair_score": 2,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_65_plane\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_65_plane\\run_01.repair_01.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: End"
+        ],
+        "initial_state": "Order",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "End"
+        ],
+        "state_count": 7,
+        "transition_count": 9
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_65_plane\\run_01.repair_02.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_65_plane\\run_01.repair_02.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: End"
+        ],
+        "initial_state": "Order",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "End"
+        ],
+        "state_count": 7,
+        "transition_count": 9
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_65_plane\\run_01.repair_03.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_65_plane\\run_01.repair_03.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: End"
+        ],
+        "initial_state": "Order",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "End"
+        ],
+        "state_count": 7,
+        "transition_count": 9
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_65_plane\\run_01.repair_04.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_65_plane\\run_01.repair_04.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: End"
+        ],
+        "initial_state": "Order",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "End"
+        ],
+        "state_count": 7,
+        "transition_count": 9
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_65_plane\\run_01.repair_05.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_65_plane\\run_01.repair_05.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 7,
+    "state_fn": 4,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 8,
+    "transition_fn": 5,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 7,
+    "state_fn_relaxed": 4,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 8,
+    "transition_fn_relaxed": 5,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 8,
+    "transition_fn_semantic": 5,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "multiple_initial_state_transitions (Order, Plane is no longer available)",
+      "choice_node_without_guarded_outgoing_transitions (End)"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "multiple_initial_state_transitions (Order, Plane is no longer available)",
+      "choice_node_without_guarded_outgoing_transitions (End)"
+    ]
+  },
+  "reused_base_run": {
+    "run_id": "open_source__llama31_8b_instruct__few_shot",
+    "strategy": "few_shot",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot\\case_65_plane\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot\\case_65_plane\\run_01.prompt.txt"
+  }
+}

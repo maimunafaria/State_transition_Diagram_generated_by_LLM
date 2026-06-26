@@ -1,0 +1,106 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Ott Based System Mini Reel — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall enable a user to watch videos after they have created an account.
+3. The system shall permit a user to upload videos.
+4. The system shall allow a user to save videos in their likes list during video viewing.
+5. The system shall enable a user to view their saved videos from the likes list.
+6. The system shall allow a user to enter the discussion option.
+
+Candidate PlantUML:
+@startuml
+title State diagram for the Ott Based System Mini Reel class
+
+[*] --> Idle
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Create Account / Watch Video
+
+state "Create Account" as CreateAccount
+CreateAccount : entry/Create Account
+CreateAccount : do/Create account after validating
+CreateAccount : exit/Watch Video / Invalid registration
+
+state "Invalid registration" as InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state "Watch Video" as WatchVideo
+WatchVideo : entry/Watch Video
+WatchVideo : do/Watch video after login
+WatchVideo : exit/Upload Video / Save Video
+
+state "Upload Video" as UploadVideo
+UploadVideo : entry/Upload Video
+UploadVideo : do/Upload video
+UploadVideo : exit/Save Video / Discussion
+
+state "Save Video" as SaveVideo
+SaveVideo : entry/Save Video
+SaveVideo : do/Save video in likes list
+SaveVideo : exit/View Saved Videos / Discussion
+
+state "View Saved Videos" as ViewSavedVideos
+ViewSavedVideos : entry/View Saved Videos
+ViewSavedVideos : do/View saved videos
+ViewSavedVideos : exit/Discussion
+
+state "Discussion" as Discussion
+Discussion : entry/Discussion
+Discussion : do/Enter discussion option
+Discussion : exit/End
+
+state "End" as End
+End : entry/End
+End : do/End
+End : exit/[*]
+
+Idle --> CreateAccount
+CreateAccount --> WatchVideo
+WatchVideo --> UploadVideo
+UploadVideo --> SaveVideo
+SaveVideo --> ViewSavedVideos
+ViewSavedVideos --> Discussion
+Discussion --> End
+
+@enduml
+
+
+Validation issues:
+- missing_final_state_transition (state --> [*])
+- orphan: Invalid registration
+- orphan_states_detected
+- unreachable: Invalid registration
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: Idle
+- Unreachable states: Invalid registration
+- State count: 9
+- Transition count: 7
+
+Valid PlantUML repair patterns:
+Pattern 1: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 2: connect a requirement-supported orphan state
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Pattern 3: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT

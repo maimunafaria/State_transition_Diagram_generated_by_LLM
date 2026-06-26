@@ -1,0 +1,142 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Farm Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to log in.
+2. The system shall display the main area after a user signs in, allowing them to choose what to check.
+3. The system shall show market conditions when the user selects this option.
+4. The system shall show the market report if the customer selects market condition.
+4. The system shall require users to provide a photo when they choose pest control help.
+4. The system shall show the pest control techniques if the customer selects pest control help.
+5. The system shall provide soil-related suggestions ( which crops are suitable ) after receiving soil information from the user.
+6. The system shall offer weather insights based on the provided location.
+7. The system shall display labour availability details after receiving a location from the user.
+8. The system shall allow users to continue using the service after viewing any of these results.
+9. The system shall end the session when a user logs out.
+
+Candidate PlantUML:
+@startuml
+title UML State Chart Diagram
+
+[*] --> Login
+
+state Login {
+  [*] --> ValidLogin
+  ValidLogin : entry / verifyData
+  ValidLogin : do / allow Access to system
+  ValidLogin : exit / mainArea
+}
+
+state MainArea <<choice>> {
+  MainArea --> MarketConditions
+  MainArea --> PestControlHelp
+  MainArea --> SoilSuggestions
+  MainArea --> WeatherInsights
+  MainArea --> LabourAvailability
+}
+
+state MarketConditions {
+  [*] --> [*]
+}
+
+state PestControlHelp {
+  [*] --> Techniques : provideTechniques
+  Techniques : entry / provideTechniques
+  Techniques : do / showTechniques
+  Techniques : exit / mainArea
+}
+
+state SoilSuggestions {
+  [*] --> Suggestions : provideSuggestions
+  Suggestions : entry / receiveSoilInfo
+  Suggestions : do / suggestCrops
+  Suggestions : exit / mainArea
+}
+
+state WeatherInsights {
+  [*] --> Insights : provideInsights
+  Insights : entry / receiveLocation
+  Insights : do / showWeather
+  Insights : exit / mainArea
+}
+
+state LabourAvailability {
+  [*] --> Availability : provideAvailability
+  Availability : entry / receiveLocation
+  Availability : do / showLabour
+  Availability : exit / mainArea
+}
+
+Login --> ValidLogin
+
+ValidLogin --> MainArea
+
+MainArea --> MarketConditions
+MainArea --> PestControlHelp
+MainArea --> SoilSuggestions
+MainArea --> WeatherInsights
+MainArea --> LabourAvailability
+
+PestControlHelp --> Techniques
+
+SoilSuggestions --> Suggestions
+
+WeatherInsights --> Insights
+
+LabourAvailability --> Availability
+
+Techniques --> [*]
+
+Suggestions --> [*]
+
+Insights --> [*]
+
+Availability --> [*]
+
+[*] --> Logout
+
+Logout : entry / endSession
+@enduml
+
+
+Validation issues:
+- candidate_line_22: invalid [*] -> [*] transition
+- multiple_initial_state_transitions (Login, ValidLogin, Techniques, Suggestions, Insights, Availability, Logout)
+- duplicate_transitions_detected (5)
+- choice_node_without_guarded_outgoing_transitions (MainArea)
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 13
+- Transition count: 11
+- Duplicate transition count: 5
+
+Valid PlantUML repair patterns:
+Pattern 1: replace direct pseudo-state termination
+' Replace [*] --> [*] with a real terminal-state transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 2: exactly one top-level initial transition
+[*] --> INITIAL_STATE
+
+' Replace every additional [*] --> OTHER_STATE with a normal supported transition
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Pattern 3: merge duplicate transitions
+' Keep one transition for the same source and target
+SOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT
+
+Pattern 4: valid guarded choice node
+state DECISION_NODE <<choice>>
+SOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]

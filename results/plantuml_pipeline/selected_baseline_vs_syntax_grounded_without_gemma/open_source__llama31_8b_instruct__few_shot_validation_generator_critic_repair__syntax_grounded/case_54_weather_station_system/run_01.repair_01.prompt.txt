@@ -1,0 +1,99 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.
+
+Candidate PlantUML:
+@startuml
+title Weather Station System State Machine
+
+[*] --> ShutDown
+state ShutDown
+ShutDown : do / restart system
+
+state ConfigMode
+ConfigMode : entry / configuration mode
+ConfigMode : do / configure system
+ConfigMode : exit / return to running state
+
+state Running
+Running : entry / collect data
+Running : do / collect data
+Running : exit / return to running state
+
+state Controlled
+Controlled : entry / remote control
+Controlled : do / control system
+Controlled : exit / return to running state
+
+state ShutDown
+ShutDown : entry / shutdown command
+ShutDown : do / shut down system
+
+state DataCollection
+DataCollection : entry / collect data
+DataCollection : do / collect data
+DataCollection : exit / return to running state
+
+state SummaryPreparation
+SummaryPreparation : entry / prepare summary
+SummaryPreparation : do / prepare summary
+SummaryPreparation : exit / return to running state
+
+state StatusChecking
+StatusChecking : entry / check status
+StatusChecking : do / check status
+StatusChecking : exit / return to running state
+
+ShutDown --> ConfigMode : restart
+ConfigMode --> Running : configuration complete
+Running --> DataCollection : clock triggered
+DataCollection --> Running : data collection complete
+Running --> SummaryPreparation : summary request
+SummaryPreparation --> Running : summary prepared
+Running --> StatusChecking : status request
+StatusChecking --> Running : status checked
+Running --> Controlled : remote control
+Controlled --> Running : remote control released
+Running --> ShutDown : shutdown command
+
+[*] --> Running
+@enduml
+
+
+Validation issues:
+- multiple_initial_state_transitions (ShutDown, Running)
+- missing_final_state_transition (state --> [*])
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 7
+- Transition count: 11
+
+Valid PlantUML repair patterns:
+Pattern 1: exactly one top-level initial transition
+[*] --> INITIAL_STATE
+
+' Replace every additional [*] --> OTHER_STATE with a normal supported transition
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Pattern 2: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT

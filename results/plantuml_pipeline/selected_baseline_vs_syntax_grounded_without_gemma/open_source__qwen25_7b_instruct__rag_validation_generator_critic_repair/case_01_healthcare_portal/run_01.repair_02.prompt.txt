@@ -1,0 +1,103 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram for Healthcare Portal
+
+[*] --> Register
+
+state Register {
+  [*] --> Login : [registration successful]
+  Login : [registration failed]
+}
+
+state Login {
+  [*] --> Dashboard : [login successful]
+  Dashboard : [logout]
+}
+
+state Dashboard {
+  [*] --> News : [read news]
+  News : [back to dashboard]
+  [*] --> Facilities : [access facilities]
+  Facilities : [back to dashboard]
+  [*] --> SymptomCheck : [check symptoms]
+  SymptomCheck : [back to dashboard]
+  [*] --> FitnessCheck : [use fitness checking options]
+  FitnessCheck : [back to dashboard]
+  [*] --> Payment : [select payment method]
+  Payment : [finish session]
+}
+
+state Payment {
+  [*] --> InsurancePayment : [insurance payment]
+  InsurancePayment : [complete payment]
+  InsurancePayment : [cash payment]
+  InsurancePayment --> CashPayment : [choose cash payment]
+  CashPayment : [display cash payment details]
+  CashPayment : [finish session]
+}
+
+state InsurancePayment {
+  [*] --> DoctorConsultation : [doctor consultation]
+  DoctorConsultation : [complete payment]
+}
+
+state DoctorConsultation {
+  [*] --> PaymentComplete : [payment completed]
+  PaymentComplete : [finish session]
+}
+
+state CashPayment {
+  [*] --> FinishSession : [finish session]
+}
+
+state FinishSession {
+  [*] --> Feedback : [provide feedback]
+  Feedback : [finish session]
+}
+
+state Feedback {
+  [*] --> Logout : [logout]
+  Logout : [logout successfully]
+}
+
+@enduml
+
+
+Validation issues to fix:
+- multiple_initial_state_transitions (Register, Login, Dashboard, News, Facilities, SymptomCheck, FitnessCheck, Payment, InsurancePayment, DoctorConsultation, PaymentComplete, FinishSession, Feedback, Logout)
+- missing_final_state_transition (state --> [*])
+
+Repair guidance for these issues:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].

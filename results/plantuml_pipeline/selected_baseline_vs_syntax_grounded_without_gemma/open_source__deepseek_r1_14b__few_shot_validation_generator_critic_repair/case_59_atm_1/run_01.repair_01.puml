@@ -1,0 +1,64 @@
+@startuml
+title UML State Chart Diagram
+
+state "Initial" as Initial
+Initial --> InsertCard : Start
+
+state "Insert Card" as InsertCard
+InsertCard : entry / Insert the card
+InsertCard : do / Verify card
+InsertCard : exit / Card verified
+
+state "Select Amount" as SelectAmount
+SelectAmount : entry / Select amount options
+SelectAmount : do / Display predefined amounts and custom option
+SelectAmount : exit / User selects an option
+
+state "Select Predefined Amount" as SelectPredefined
+SelectPredefined : entry / Predefined amount selected
+SelectPredefined : do / Verify amount
+SelectPredefined : exit / Amount selected
+
+state "Enter Custom Amount" as EnterCustomAmount
+EnterCustomAmount : entry / Custom amount selected
+EnterCustomAmount : do / Validate custom amount
+EnterCustomAmount : exit / Amount entered
+
+state "Check Balance" as CheckBalance
+CheckBalance : entry / Amount selected
+CheckBalance : do / Check available balance
+CheckBalance : exit / Balance sufficient or not
+
+state "Dispense Cash" as DispenseCash
+DispenseCash : entry / Sufficient balance
+DispenseCash : do / Dispense the cash
+DispenseCash : exit / Transaction complete
+
+state "Cancel Transaction" as CancelTransaction
+CancelTransaction : entry / Cancel option selected
+CancelTransaction : do / Stop transaction
+CancelTransaction : exit / Transaction aborted
+
+state "Return Card" as ReturnCard
+ReturnCard : entry / Transaction completed or aborted
+ReturnCard : do / Return the card
+ReturnCard : exit / Card returned
+
+InsertCard --> SelectAmount : proceed to select amount
+InsertCard --> CancelTransaction : cancel immediately
+
+SelectAmount --> SelectPredefined : select predefined amount
+SelectAmount --> EnterCustomAmount : enter custom amount
+SelectAmount --> CancelTransaction : cancel transaction
+
+SelectPredefined --> CheckBalance : check balance for predefined amount
+EnterCustomAmount --> CheckBalance : check balance for custom amount
+
+CheckBalance --> DispenseCash : balance sufficient
+CheckBalance --> CheckBalance : balance insufficient (loop)
+
+DispenseCash --> ReturnCard : transaction complete
+CancelTransaction --> ReturnCard : transaction aborted
+
+ReturnCard --> [*] : process complete
+@enduml

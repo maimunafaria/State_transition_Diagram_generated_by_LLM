@@ -1,0 +1,95 @@
+@startuml
+title Healthcare Portal - User State Machine Diagram
+
+state PortalChoice1 <<choice>>
+state PortalChoice2 <<choice>>
+state PortalChoice3 <<choice>>
+state ServiceCenterRegistration <<choice>>
+state OwnerJoin <<choice>>
+state Login <<choice>>
+state HomePage <<choice>>
+state NewsContent <<choice>>
+state HealthInfo <<choice>>
+state PaymentSelection <<choice>>
+state CashPaymentDetails <<choice>>
+state InsurancePayment <<choice>>
+state FeedbackCollection <<choice>>
+state Logout <<choice>>
+
+[*] --> PortalChoice1
+
+PortalChoice1 --> PortalChoice2 : [Healthcare Portal]
+PortalChoice1 --> PortalChoice3 : [Patient Portal]
+
+PortalChoice2 --> ServiceCenterRegistration : [New User Registration]
+PortalChoice2 --> Login : [Registered User]
+PortalChoice3 --> OwnerJoin : [New Patient Registration]
+PortalChoice3 --> Login : [Registered Patient]
+
+state "Service Center Registration" as ServiceCenterRegistration
+ServiceCenterRegistration : entry / Unregistered user
+ServiceCenterRegistration : do / Enter Valid Credentials
+ServiceCenterRegistration : exit / Account registered
+
+state "User Verification" as UserVerification
+UserVerification : entry / User account registered
+UserVerification : do / Verify User
+UserVerification : exit / Login Successful
+
+state "User Login" as UserLogin
+UserLogin : entry / Verified User
+UserLogin : entry / User not logged in
+UserLogin : do / Authenticate User
+UserLogin : exit / Logged In Successfully
+
+state "Home Page" as HomePage
+HomePage : entry / Logged in User
+HomePage : do / Display home page
+HomePage : exit / News and Expert Content
+HomePage : exit / Health-related Information
+HomePage : exit / Facilities Access
+
+state "News and Expert Content" as NewsContent
+NewsContent : entry / To read news and expert content
+NewsContent : do / Read news and expert content
+NewsContent : exit / Return to Home Page
+
+state "Health-related Information" as HealthInfo
+HealthInfo : entry / To check symptoms or use fitness checking options
+HealthInfo : do / Provide health-related information
+HealthInfo : exit / Return to Home Page
+
+state "Payment Selection" as PaymentSelection
+PaymentSelection : entry / To select payment method
+PaymentSelection : do / Select Cash or Insurance
+PaymentSelection : exit / Enter Payment Details
+
+state "Cash Payment Details" as CashPaymentDetails
+CashPaymentDetails : entry / To view cash payment details
+CashPaymentDetails : do / Send cash payment details
+CashPaymentDetails : exit / Return to Payment Selection
+
+state "Insurance Payment" as InsurancePayment
+InsurancePayment : entry / To complete insurance-based payment
+InsurancePayment : do / Process and validate insurance
+InsurancePayment : exit / Complete Payment Successfully
+
+state "Feedback Collection" as FeedbackCollection
+FeedbackCollection : entry / After service completion
+FeedbackCollection : do / Collect user feedback
+FeedbackCollection : exit / Logged out Successfully
+
+state "Logout" as Logout
+Logout : entry / To Logout
+Logout : do / Logout
+Logout : exit / Logged out Successfully
+
+Login --> HomePage : [Successful Login]
+HomePage --> NewsContent : [Read News and Expert Content]
+HomePage --> HealthInfo : [Check Symptoms or Use Fitness Checking Options]
+PaymentSelection --> CashPaymentDetails : [Cash Payment Method Selected]
+PaymentSelection --> InsurancePayment : [Insurance Payment Method Selected]
+HomePage --> FeedbackCollection : [Service Completed]
+Logout --> [*] : COMPLETION_EVENT
+
+@enduml

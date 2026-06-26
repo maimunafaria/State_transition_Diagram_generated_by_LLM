@@ -1,0 +1,133 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.
+
+Candidate PlantUML:
+@startuml
+title Weather Monitoring System State Diagram
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Create account / Login
+
+state "Create account" as CreateAccount
+CreateAccount : entry/Create account
+CreateAccount : do/Create account
+CreateAccount : exit/Login / Invalid registration
+
+state "Invalid registration" as InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login / To home page
+
+state "Invalid login" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state "Check weather" as CheckWeather
+CheckWeather : entry/To home page
+CheckWeather : entry/Check weather for current or new location
+CheckWeather : exit/Invalid location / Select weather parameter
+
+state "Select weather parameter" as SelectWeatherParameter
+SelectWeatherParameter : entry/Select weather parameter
+SelectWeatherParameter : do/Select temperature, humidity, rainfall, pressure, or dew point
+SelectWeatherParameter : exit/Update weather information
+
+state "Update weather information" as UpdateWeatherInformation
+UpdateWeatherInformation : entry/Update weather information
+UpdateWeatherInformation : do/Update and show selected weather information
+UpdateWeatherInformation : exit/View additional weather details
+
+state "View additional weather details" as ViewAdditionalWeatherDetails
+ViewAdditionalWeatherDetails : entry/View additional weather details
+ViewAdditionalWeatherDetails : do/View alerts, weekly analysis, future prediction, or graph
+ViewAdditionalWeatherDetails : exit/Logout
+
+state "Logout" as Logout
+Logout : entry/Logout
+Logout : do/End session
+Logout : exit/End
+
+state J1 <<choice>>
+state J2 <<choice>>
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+state J7 <<choice>>
+[*] --> Idle
+
+Idle --> J1
+J1 --> CreateAccount
+J1 --> Login
+
+CreateAccount --> J2
+J2 --> Login
+J2 --> InvalidRegistration
+InvalidRegistration --> [*]
+
+Login --> J3
+J3 --> InvalidLogin
+J3 --> CheckWeather
+J3 --> Logout
+InvalidLogin --> [*]
+
+CheckWeather --> J4
+J4 --> SelectWeatherParameter
+J4 --> Invalid location
+
+SelectWeatherParameter --> J5
+J5 --> UpdateWeatherInformation
+J5 --> Invalid parameter
+
+UpdateWeatherInformation --> J6
+J6 --> ViewAdditionalWeatherDetails
+J6 --> Logout
+
+ViewAdditionalWeatherDetails --> J7
+J7 --> Logout
+
+Logout --> [*]
+
+@enduml
+
+
+Validation issues to fix:
+- choice_node_without_guarded_outgoing_transitions (J1)
+- choice_node_without_guarded_outgoing_transitions (J2)
+- choice_node_without_guarded_outgoing_transitions (J3)
+- choice_node_without_guarded_outgoing_transitions (J4)
+- choice_node_without_guarded_outgoing_transitions (J5)
+- choice_node_without_guarded_outgoing_transitions (J6)
+- choice_node_without_guarded_outgoing_transitions (J7)
+
+Repair guidance for these issues:
+- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].

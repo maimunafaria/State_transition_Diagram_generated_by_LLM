@@ -1,0 +1,88 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Plane — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall place a newly acquired plane in an 'Order' state until it is delivered.
+2. The system shall transition a plane from 'Arrival' to 'Preparation' upon its arrival.
+3. The system shall assign a prepared plane to either 'Operations' or 'Maintenance' based on its condition and schedule.
+4. The system shall keep a plane in the 'Operations' state if it still has scheduled flights.
+5. The system shall send a plane to 'Maintenance' when there are no more scheduled flights or maintenance is required.
+6. The system shall transition a plane from 'Maintenance' to 'Preparation' after checking and servicing it until it is ready for operations.
+7. The system shall take a plane out of service if it is no longer available for use.
+8. The system shall remove a plane from its operations when it is permanently withdrawn from service.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram (Plane Management)
+
+[*] --> Order
+
+state Order
+Order : entry / Plane is placed in order
+Order : do / Wait for delivery
+Order : exit / Plane is delivered
+
+Order --> Arrival
+
+state Arrival
+Arrival : entry / Plane arrives
+Arrival : do / Transition to preparation
+Arrival : exit / Plane is prepared
+
+Arrival --> Preparation
+
+state Preparation
+Preparation : entry / Plane is prepared
+Preparation : do / Assign to operations or maintenance
+Preparation : exit / Plane is assigned
+
+Preparation --> Operations
+Preparation --> Maintenance
+
+state Operations
+Operations : entry / Plane is in operations
+Operations : do / Check for scheduled flights
+Operations : exit / Plane is still in operations
+
+Operations --> Operations : Scheduled flights available
+
+Operations --> Maintenance : No scheduled flights or maintenance required
+
+state Maintenance
+Maintenance : entry / Plane is in maintenance
+Maintenance : do / Check and service plane
+Maintenance : exit / Plane is ready for operations
+
+Maintenance --> Preparation : Plane is ready for operations
+
+state "Plane is no longer available" as NoLongerAvailable
+NoLongerAvailable : entry / Plane is no longer available
+NoLongerAvailable : do / Take plane out of service
+NoLongerAvailable : exit / Plane is removed from operations
+
+NoLongerAvailable --> End
+
+state End <<choice>>
+End --> [*]
+
+@enduml
+
+
+Validation issues to fix:
+- unreachable_states_detected
+- unreachable: End, Plane is no longer available
+- choice_node_without_outgoing_transitions (End)
+
+Repair guidance for these issues:
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+- Give each choice node at least two outgoing alternatives when possible.

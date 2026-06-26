@@ -1,0 +1,45 @@
+@startuml
+title Weather Station System State Machine
+
+[*] --> RunningFromShutdown
+state RunningFromShutDown
+RunningFromShutDown --> INITIAL_STATE
+INITIAL_STATE --> Configuration : changes or power-saving settings required
+INITIAL_STATE --> DataCollection : triggered by clock
+INITIAL_STATE --> StatusChecking : request
+INITIAL_STATE --> WeatherSummaryRequested
+INITIAL_STATE --> ShuttingDown
+INITIAL_STATE --> ControlledModeOn
+
+state RunningFromShutdown
+RunningFromShutdown --> Configuration : changes or power-saving settings required
+RunningFromShutdown --> DataCollection : triggered by clock
+RunningFromShutdown --> StatusChecking : request
+RunningFromShutdown --> WeatherSummaryRequested : summary prepared
+RunningFromShutdown --> ShuttingDown : shutdown command given while running
+RunningFromShutdown --> ControlledModeOn : remote control on
+
+RunningFromShutdown --> Running : activity completed
+
+state Configuration
+Configuration --> Running : configuration completed
+
+state DataCollecting
+state DataCollection
+DataCollecting --> Running : activity completed
+
+state StatusCheckingMode
+state StatusChecking
+StatusCheckingMode --> Running : activity completed
+StatusChecking --> Running : activity completed
+
+state WeatherSummaryRequested
+WeatherSummaryRequested --> Running : summary prepared
+
+state ShuttingDown
+ShuttingDown --> [*] : shutdown command given while running
+
+state ControlledModeOn
+state ControlledMode
+ControlledModeOn --> Running : remote control off
+@enduml

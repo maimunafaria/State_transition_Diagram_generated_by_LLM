@@ -1,0 +1,61 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Process Sale — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a new sale.
+2. The system shall enter items one by one as they are selected by the customer.
+3. The system shall move to payment after all items have been added.
+4. The system shall complete the sale immediately if the customer pays with cash.
+5. The system shall verify the payment if the customer chooses to pay by card or check.
+6. The system shall complete the sale once the payment is approved.
+7. The system shall return to waiting for the next customer after the payment has been finished.
+
+Candidate PlantUML:
+@startuml
+title State diagram of the system operations of "Process Sale"
+
+[*] --> WaitingCustomer
+
+state "Waiting for customer" as WaitingCustomer
+state "Record items" as RecordItems
+state "Waiting for payment" as WaitingPayment
+state "Payment verified" as PaymentVerified
+state "Payment completed" as PaymentComplete
+
+WaitingCustomer --> RecordItems : enter item
+RecordItems --> RecordItems : enter item
+RecordItems --> WaitingPayment : end of sale
+WaitingPayment --> PaymentVerified : payment by card or check
+PaymentVerified --> PaymentComplete : payment approved
+PaymentComplete --> WaitingCustomer : enter next customer
+
+@enduml
+
+
+Validation issues:
+- missing_final_state_transition (state --> [*])
+- unreachable: Payment completed, Payment verified, Record items, Waiting for customer, Waiting for payment
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: WaitingCustomer
+- Unreachable states: Payment completed, Payment verified, Record items, Waiting for customer, Waiting for payment
+- State count: 6
+- Transition count: 6
+
+Valid PlantUML repair patterns:
+Pattern 1: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 2: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT

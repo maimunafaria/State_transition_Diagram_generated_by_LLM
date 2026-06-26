@@ -1,0 +1,114 @@
+{
+  "run_id": "open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair",
+  "case_id": "case_60_atm_2",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nAlert Notifier — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall initialize a component to detect updates upon initial loading.\n2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.\n3. The system shall process detected updates by storing them and evaluating their significance.\n4. The system shall notify appropriate operators of changes based on evaluation results if certain conditions are met.\n5. The system shall return to a waiting state after processing an update.\n6. The system shall enter an unloading phase if initialization fails or if the system is shut down while the component is running.\n7. The system shall perform necessary cleanup operations and inform the component manager of successful removal during unloading.\n8. The system shall terminate the component's operation after unloading is complete.\n\nExample 1 PlantUML:\n@startuml\ntitle Alert Notifier Component States\n\n[*] --> InitializeComponent : Load Component\n\nstate \"Initialize\\nComponent\" as InitializeComponent\nstate \"Waiting for Update\" as WaitingForUpdate\nstate \"Processing Update\" as ProcessingUpdate\nstate \"Unloading Component\" as UnloadingComponent\n\nWaitingForUpdate : do / checkForUpdate\n\nProcessingUpdate : entry / storeUpdate\nProcessingUpdate : do / evaluateUpdate\nProcessingUpdate : exit / [update > delta] Operator.Notify(update)\n\nUnloadingComponent : exit / compMgr.compUnloaded()\n\nInitializeComponent --> WaitingForUpdate : [ init. success ]\nInitializeComponent --> UnloadingComponent : [ init. failure ]\n\nWaitingForUpdate --> ProcessingUpdate : stock update\nProcessingUpdate --> WaitingForUpdate\n\nWaitingForUpdate --> UnloadingComponent : shutdown\n\nUnloadingComponent --> [*]\n\n@enduml\n\nExample 2 Requirement:\nE Province — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall register a new user.\n2. The system shall end the process if registration details are not accepted.\n3. The system shall allow a user to log in after successful registration.\n4. The system shall provide multiple login attempts if the details are incorrect.\n5. The system shall allow the user to cancel a certificate after logging in.\n6. The system shall allow the user to apply for certificates after logging in.\n7. The system shall allow the user to view their profile after logging in.\n8. The system shall allow the user to update their profile after logging in.\n9. The system shall require the user to fill in the form and upload required details when applying for certificates.\n10. The system shall allow users to apply for more certificates as needed.\n11. The system shall allow the user to continue applying or finish once a certificate request is processed.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Machine Diagram (Certificate Management)\n\n\n[*] --> Registration\n\nstate Registration\nRegistration : entry / Get the Registration Details\nRegistration : do / Validate the Details\nRegistration : exit / Valid or Invalid Registration\n\n\nRegistration --> [*] : [Invalid Registration]\n\n\nRegistration --> Login : [Valid Registration]\n\n\nstate Login\nLogin : entry / Get the Login Details\nLogin : do / Validate the Login Details\nLogin : exit / Valid or Invalid Login\n\n\nLogin --> Login : [Invalid Login]\n\n\nLogin --> Choice1 : [Valid Login]\n\n\nstate Choice1 <<choice>>\n\nChoice1 --> CancelCert : [Cancel the Certificate]\nChoice1 --> RequestCert : [Applying for Certificates]\nChoice1 --> ViewProfile : [Profile Viewing]\nChoice1 --> UpdateProfile : [Profile Updation]\n\n\nstate \"Cancellation of Certificates\" as CancelCert\nCancelCert : entry / Certificate is asked for Cancellation\nCancelCert : do / Certificate is Canceled\nCancelCert : exit / Move to End\n\nCancelCert --> EndMerge\n\nstate \"Request for Certificates\" as RequestCert\nRequestCert : entry / Fill the Form and Upload the Details\nRequestCert : do / Request for Certificates\nRequestCert : exit / Apply for another Certificate or Move to End\n\nRequestCert --> RequestCert : [Apply for another Certificate if needed]\n\nRequestCert --> IssueCert : [Certificates requested]\n\nstate \"Issuing the Certificates\" as IssueCert\nIssueCert : entry / Validating Details\nIssueCert : do / Issuing the Certificates\nIssueCert : exit / Updating the Database\n\nIssueCert --> RequestCert : [Certificate is issued]\nRequestCert --> EndMerge : [End]\n\nstate \"View Profile\" as ViewProfile\nViewProfile : entry / View the Profile\nViewProfile : do / Display the Profile\nViewProfile : exit / Exit from Profile Viewing\n\nViewProfile --> EndMerge : [End]\n\n\nstate \"Update the Profile\" as UpdateProfile\nUpdateProfile : entry / Update the User's Profile\nUpdateProfile : do / Citizen Profile is updated\nUpdateProfile : exit / Move to End\n\nUpdateProfile --> EndMerge : [End]\n\n\nstate EndMerge <<choice>>\n\nEndMerge --> [*]\n\n@enduml\n\nExample 3 Requirement:\nStudent Counselling Management System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a student to log in.\n2. The system shall prompt the student to try again if login details are incorrect.\n3. The system shall proceed with registration and payment upon a successful login.\n4. The system shall end there if the registration payment is not completed.\n5. The system shall register the student and declare ranks if the registration payment is completed.\n6. The system shall allow the student to pay enrollment fees after rank declaration.\n7. The system shall end there if the payment for enrollment fees is not successful.\n8. The system shall allow the student to fill in their choices if the payment for enrollment fees is successful.\n9. The system shall lock the choices and allocate seats based on rank if they are correct.\n10. The system shall generate an admit letter once a seat is allotted.\n11. The system shall allow the student to accept or decline the admit letter.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\n[*] --> StartMerge\n\nstate StartMerge <<choice>>\nstate Login\nstate LoginDecision <<choice>>\nstate \"Invalid Login\" as InvalidLogin\nstate \"Valid Login\" as ValidLogin\nstate RegistrationDecision <<choice>>\nstate \"Failed Registration\" as FailedRegistration\nstate \"Rank Declaration\" as RankDeclaration\nstate \"Enrollment Fees\" as EnrollmentFees\nstate PaymentDecision <<choice>>\nstate \"Invalid Payment\" as InvalidPayment\nstate \"Valid Payment\" as ValidPayment\nstate \"Choice Filing\" as ChoiceFiling\nstate ChoiceDecision <<choice>>\nstate \"Failed choice filing\" as FailedChoiceFiling\nstate \"Seat Allotment\" as SeatAllotment\nstate \"Admit Letter Generation\" as AdmitLetterGeneration\nstate \"Accept/Decline\" as AcceptDecline\n\nLogin : entry / To Action\nLogin : do / Log in to the system\nLogin : exit / Username and password entered\n\nInvalidLogin : entry / Trying to log in\nInvalidLogin : do / Invalid username and password\nInvalidLogin : exit / Back to login page\n\nValidLogin : entry / Student logged in\nValidLogin : do / Registration form submission with payment\nValidLogin : exit / Student Registered\n\nFailedRegistration : entry / Payment not made\nFailedRegistration : do / Throw an error\nFailedRegistration : exit / Abnormal termination\n\nRankDeclaration : entry / Student registered\nRankDeclaration : do / Declare ranks for all the students\nRankDeclaration : exit / Rank published\n\nEnrollmentFees : entry / Rank declared\nEnrollmentFees : do / Pay enrollment fees\nEnrollmentFees : exit / Payment done\n\nInvalidPayment : entry / Payment not made\nInvalidPayment : do / Show the errors\nInvalidPayment : exit / Abnormal Termination\n\nValidPayment : entry / Payment made\nValidPayment : do / Allow to fill choices\nValidPayment : exit / log out from payment portal\n\nChoiceFiling : entry / Valid payment\nChoiceFiling : do / Fill choices\nChoiceFiling : exit / Lock choices\n\nFailedChoiceFiling : entry / Invalid choices\nFailedChoiceFiling : do / Show the errors\nFailedChoiceFiling : exit / Abnormal Termination\n\nSeatAllotment : entry / Choices must be locked\nSeatAllotment : do / Allot seats based on rank\nSeatAllotment : exit / Publish alloted results\n\nAdmitLetterGeneration : entry / Seat alotted\nAdmitLetterGeneration : do / Generate admit letter\nAdmitLetterGeneration : exit / Publish admit letters to students and colleges\n\nAcceptDecline : entry / Received admit letter\nAcceptDecline : do / Accept/Decline\nAcceptDecline : exit / After decision is made\n\nStartMerge --> Login\nLogin --> LoginDecision\nLoginDecision --> InvalidLogin\nLoginDecision --> ValidLogin\nInvalidLogin --> StartMerge\n\nValidLogin --> RegistrationDecision\nRegistrationDecision --> FailedRegistration\nRegistrationDecision --> RankDeclaration\n\nRankDeclaration --> EnrollmentFees\nEnrollmentFees --> PaymentDecision\nPaymentDecision --> InvalidPayment\nPaymentDecision --> ValidPayment\n\nValidPayment --> ChoiceFiling\nChoiceFiling --> ChoiceDecision\nChoiceDecision --> FailedChoiceFiling\nChoiceDecision --> SeatAllotment\n\nSeatAllotment --> AdmitLetterGeneration\nAdmitLetterGeneration --> AcceptDecline\nAcceptDecline --> [*]\n\nFailedRegistration --> [*]\nInvalidPayment --> [*]\nFailedChoiceFiling --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nAtm Scenario 2 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to select an amount to withdraw from a list of options.\n2. The system shall permit the user to enter a custom value if they want a different amount.\n3. The system shall verify the transaction after the user enters an amount.\n4. The system shall allow the user to re-enter the amount if the transaction is rejected.\n",
+  "requirement_used": "Atm Scenario 2 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to select an amount to withdraw from a list of options.\n2. The system shall permit the user to enter a custom value if they want a different amount.\n3. The system shall verify the transaction after the user enters an amount.\n4. The system shall allow the user to re-enter the amount if the transaction is rejected.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_60_atm_2\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "SelectAmount",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 3,
+    "transition_count": 3
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__llama31_8b_instruct__few_shot",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 0,
+      "strict_state_diagram_valid": true,
+      "remaining_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "SelectAmount",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 3,
+        "transition_count": 3
+      },
+      "strict_state_diagram_valid": true,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_60_atm_2\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 3,
+    "state_fn": 5,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 3,
+    "transition_fn": 3,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 3,
+    "state_fn_relaxed": 5,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 3,
+    "transition_fn_relaxed": 3,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 3,
+    "transition_fn_semantic": 3,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  },
+  "reused_base_run": {
+    "run_id": "open_source__llama31_8b_instruct__few_shot",
+    "strategy": "few_shot",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot\\case_60_atm_2\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot\\case_60_atm_2\\run_01.prompt.txt"
+  }
+}

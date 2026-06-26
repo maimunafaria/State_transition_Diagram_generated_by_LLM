@@ -18,6 +18,7 @@ from .prompting import (
     build_sequential_baseline_repair_prompt,
     build_sequential_example_guided_repair_prompt,
     build_sequential_syntax_grounded_pattern_rules_repair_prompt,
+    build_syntax_grounded_no_rules_repair_prompt,
     build_syntax_grounded_repair_prompt,
     build_syntax_grounded_pattern_rules_repair_prompt,
     build_targeted_repair_prompt,
@@ -295,6 +296,13 @@ def run_single_generation(
                 )
             elif repair_mode_clean == "syntax_grounded":
                 repair_prompt = build_syntax_grounded_repair_prompt(
+                    requirement,
+                    final_puml,
+                    final_validation,
+                    critic_feedback,
+                )
+            elif repair_mode_clean == "syntax_grounded_no_rules":
+                repair_prompt = build_syntax_grounded_no_rules_repair_prompt(
                     requirement,
                     final_puml,
                     final_validation,

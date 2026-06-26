@@ -1,0 +1,47 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+E Ticketing For Bus — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create a new account.
+2. The system shall validate the registration of a new user.
+3. The system shall allow the user to log in upon successful registration.
+4. The system shall provide options for logged-in users to check their ticket status.
+5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.
+6. The system shall enable users to manage their account details such as editing or deleting them.
+7. The system shall log out the user after they complete any action.
+
+Candidate PlantUML:
+@startuml
+[*] --> LoggedIn
+
+state LoggedIn {
+  [*] --> Dashboard
+  Dashboard --> Settings : open settings
+  Settings --> Dashboard : back
+  Dashboard --> BookTicket : book ticket
+  BookTicket --> PaymentConfirmation : payment confirmed
+  PaymentConfirmation --> OrderCompleted : order completed
+  OrderCompleted --> LoggedIn : logout
+}
+
+LoggedIn --> [*] : logout
+@enduml
+
+
+Validation issues to fix:
+- multiple_initial_state_transitions (LoggedIn, Dashboard)
+
+Repair guidance for these issues:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.

@@ -1,0 +1,110 @@
+@startuml
+title Healthcare Portal - User Login State Machine Diagram
+
+state PortalChoice1 <<choice>>
+state PortalChoice2 <<choice>>
+state PortalChoice3 <<choice>>
+state ServiceCenterRegistration <<choice>>
+state OwnerJoin <<choice>>
+state ServiceCenterVerification
+state ServiceCenterLogin
+state ServiceCenterHome
+state Logout
+state NewsContent
+state HealthInfo
+state PaymentSelection
+state InsuranceCheck
+state DoctorConsultationPayment
+state DrugPurchasePayment
+state FeedbackCollection
+state ResultView
+
+[*] --> PortalChoice1
+
+PortalChoice1 --> PortalChoice2 : [Healthcare Portal]
+PortalChoice1 --> PortalChoice3 : [Patient Portal]
+
+PortalChoice2 --> ServiceCenterRegistration : [New User Registration]
+PortalChoice2 --> ServiceJoin : [Registered User]
+PortalChoice3 --> CarOwnerRegistration : [New Patient]
+PortalChoice3 --> OwnerJoin : [Registered Patient]
+
+state "Service Center Registration" as ServiceCenterRegistration
+ServiceCenterRegistration : entry / Unregistered user
+ServiceCenterRegistration : do / Enter Valid Credentials
+ServiceCenterRegistration : exit / Account registered
+
+state "Service Center Verification" as ServiceCenterVerification
+ServiceCenterVerification : entry / User account registered
+ServiceCenterVerification : do / Verify User
+ServiceCenterVerification : exit / Login Successful
+
+state "Service Center Login" as ServiceCenterLogin
+ServiceCenterLogin : entry / Verified User
+ServiceCenterLogin : entry / User not logged in
+ServiceCenterLogin : do / Authenticate User
+ServiceCenterLogin : exit / Logged In Successfully
+
+state "Service center Home" as ServiceCenterHome
+ServiceCenterHome : entry / Logged in User
+ServiceCenterHome : do / Display home page
+ServiceCenterHome : exit / Read News and Expert Content
+ServiceCenterHome : exit / Check Symptoms or Use Fitness Checking Options
+ServiceCenterHome : exit / View Result
+
+state "Logout" as Logout
+Logout : entry / To Logout
+Logout : do / Logout
+Logout : exit / Logged out Successfully
+
+state "NewsContent" as NewsContent
+NewsContent : entry / To Read News and Expert Content
+NewsContent : do / Display news and expert content
+NewsContent : exit / Return to Service center home page
+
+state "HealthInfo" as HealthInfo
+HealthInfo : entry / To Check Symptoms or Use Fitness Checking Options
+HealthInfo : do / Provide health-related information
+HealthInfo : exit / Return to Service center home page
+
+state "PaymentSelection" as PaymentSelection
+PaymentSelection : entry / To Select Payment Method
+PaymentSelection : do / Display payment methods (cash or insurance)
+PaymentSelection : exit / Proceed with selected payment method
+
+state "InsuranceCheck" as InsuranceCheck
+InsuranceCheck : entry / For Insurance-based Services
+InsuranceCheck : do / Process and validate insurance
+InsuranceCheck : exit / Check Payment with Insurance
+
+state "DoctorConsultationPayment" as DoctorConsultationPayment
+DoctorConsultationPayment : entry / For Doctor Consultations
+DoctorConsultationPayment : do / Complete the payment process for insurance-based payments
+DoctorConsultationPayment : exit / Consultation Completed
+
+state "DrugPurchasePayment" as DrugPurchasePayment
+DrugPurchasePayment : entry / For Drug and Supplement Purchases
+DrugPurchasePayment : do / Complete the payment process for cash payments
+DrugPurchasePayment : exit / Purchase Completed
+
+state "FeedbackCollection" as FeedbackCollection
+FeedbackCollection : entry / After Service Completion
+FeedbackCollection : do / Collect user feedback
+FeedbackCollection : exit / Feedback Collected
+
+state "ResultView" as ResultView
+ResultView : entry / After Viewing a Result
+ResultView : do / Allow users to continue using the system or finish the session
+ResultView : exit / Return to Service center home page
+
+state DecisionNode1 <<choice>>
+DecisionNode1 : [Is it a service center?]
+ServiceCenterJoin --> DecisionNode1
+OwnerJoin --> DecisionNode1
+
+state DecisionNode2 <<choice>>
+DecisionNode2 : [Is it an insurance-based payment?]
+DrugPurchasePayment --> DecisionNode2
+DoctorConsultationPayment --> DecisionNode2
+
+@enduml

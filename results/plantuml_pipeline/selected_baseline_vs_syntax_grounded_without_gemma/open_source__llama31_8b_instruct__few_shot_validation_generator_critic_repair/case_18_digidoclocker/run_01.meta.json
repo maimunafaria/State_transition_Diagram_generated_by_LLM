@@ -1,0 +1,157 @@
+{
+  "run_id": "open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair",
+  "case_id": "case_18_digidoclocker",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nAlert Notifier — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall initialize a component to detect updates upon initial loading.\n2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.\n3. The system shall process detected updates by storing them and evaluating their significance.\n4. The system shall notify appropriate operators of changes based on evaluation results if certain conditions are met.\n5. The system shall return to a waiting state after processing an update.\n6. The system shall enter an unloading phase if initialization fails or if the system is shut down while the component is running.\n7. The system shall perform necessary cleanup operations and inform the component manager of successful removal during unloading.\n8. The system shall terminate the component's operation after unloading is complete.\n\nExample 1 PlantUML:\n@startuml\ntitle Alert Notifier Component States\n\n[*] --> InitializeComponent : Load Component\n\nstate \"Initialize\\nComponent\" as InitializeComponent\nstate \"Waiting for Update\" as WaitingForUpdate\nstate \"Processing Update\" as ProcessingUpdate\nstate \"Unloading Component\" as UnloadingComponent\n\nWaitingForUpdate : do / checkForUpdate\n\nProcessingUpdate : entry / storeUpdate\nProcessingUpdate : do / evaluateUpdate\nProcessingUpdate : exit / [update > delta] Operator.Notify(update)\n\nUnloadingComponent : exit / compMgr.compUnloaded()\n\nInitializeComponent --> WaitingForUpdate : [ init. success ]\nInitializeComponent --> UnloadingComponent : [ init. failure ]\n\nWaitingForUpdate --> ProcessingUpdate : stock update\nProcessingUpdate --> WaitingForUpdate\n\nWaitingForUpdate --> UnloadingComponent : shutdown\n\nUnloadingComponent --> [*]\n\n@enduml\n\nExample 2 Requirement:\nE Ration Shop — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to raise a complaint directly.\n2. The system shall end the process after a user raises a complaint.\n3. The system shall allow users to authenticate their identity using an OTP.\n4. The system shall allow multiple attempts for OTP authentication if the initial attempt fails.\n5. The system shall enable users to view items based on different categories once they are successfully authenticated.\n6. The system shall allow users to select items for purchase after viewing them.\n7. The system shall provide users with the option to pay either through an online method or by cash on delivery.\n8. The system shall deliver the product after the payment is completed.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Machine Diagram\n\n\n[*] --> C1\n\nstate C1 <<choice>>\nC1 --> Auth : [possibilities to start]\nC1 --> Complaints\n\n\nstate \"Authentication of aadhar card by OTP\" as Auth\nAuth : entry / card holder\nAuth : do / Generates OTP\nAuth : do / OTP should match\nAuth : exit / authentication completed\n\nstate Complaints\nComplaints : entry / fill\nComplaints : do / raise a complaint\nComplaints : exit / complaint send\n\nComplaints --> [*]\n\nAuth --> Auth \nAuth --> ViewItems\n\nstate \"View items\" as ViewItems\nViewItems : entry / from Authentication\nViewItems : do / items shown based on category\nViewItems : do / select items required\nViewItems : exit / after selecting\n\nViewItems --> Purchase\n\nstate \"make purchase\" as Purchase\nPurchase : entry / from view items\nPurchase : do / payment\nPurchase : exit / chose the mode of payment\n\n\nstate C2 <<choice>>\nPurchase --> C2 : [possibilities for payment]\n\nstate PAYTM\nPAYTM : entry / make purchase\nPAYTM : do / making payment\nPAYTM : exit / payment done\n\nstate COD\nCOD : entry / make purchase\nCOD : do / making payment\nCOD : exit / payment done\n\nC2 --> PAYTM\nC2 --> COD\n\n\nstate C3 <<choice>>\nPAYTM --> C3\nCOD --> C3\n\nC3 --> Delivery : [payment completed]\n\n\nstate Delivery\nDelivery : entry / COD\nDelivery : entry / PAYTM\nDelivery : do / product delivered\n\nDelivery --> [*]\n\n@enduml\n\nExample 3 Requirement:\nBusiness Process Outsourcing Bpo Management System Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to upload a new request.\n2. The system shall enable a BPO organization to save the details of a project.\n3. The system shall allow a client to search for a suitable project category.\n4. The system shall enable an BPO organization to accept or decline a request from a client.\n5. The system shall allow a client to decide whether to proceed with an accepted project or reject it.\n6. The system shall update the project status after acceptance by both parties.\n7. The system shall allow a client to track the progress of a project.\n8. The system shall enable an BPO organization to update the progress of a project.\n9. The system shall upload a final project once work is completed.\n10. The system shall perform a quality check on the final project.\n11. The system shall restart the process if a client is unsatisfied with the final project.\n12. The system shall make payment if the client is satisfied with the final project.\n13. The system shall deliver the project after payment.\n14. The system shall allow a client to provide a rating for the completed project.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Machine Diagram (Upload or Accept Request)\n\nstate \"Upload or Accept request\" as UAR {\n\n    [*] --> ChoiceUser\n\n\n    UAR : entry / Regarding request details\n    UAR : do / Project dealings\n    UAR : exit / After finishing rating\n\n\n    state ChoiceUser <<choice>>\n\n    ChoiceUser --> EnterDetails : [user = BPO organization]\n    ChoiceUser --> SearchCategory : [user = client]\n\n\n    state \"Enter project details\" as EnterDetails\n    state \"Update database\" as UpdateDB\n\n    EnterDetails --> UpdateDB\n    UpdateDB --> [*]\n\n\n    state \"Search project category\" as SearchCategory\n    state ChoiceBPO <<choice>>\n    state ChoiceClient <<choice>>\n\n    SearchCategory --> ChoiceBPO\n\n    ChoiceBPO --> EndDecline : [BPO org declines]\n    ChoiceBPO --> ChoiceClient : [BPO org accepts]\n\n    ChoiceClient --> EndReject : [client rejects]\n    ChoiceClient --> UpdateStatus : [client accepts]\n\n    state EndDecline <<choice>>\n    EndDecline --> [*]\n\n    state EndReject <<choice>>\n    EndReject --> [*]\n\n    state \"Update status of project\" as UpdateStatus\n\n    state ChoiceTracking <<choice>>\n\n    UpdateStatus --> ChoiceTracking\n\n    ChoiceTracking --> DisplayProgress : [client wishes to track]\n    ChoiceTracking --> UpdateProgress : [user = BPO org]\n\n    state \"Display progress\" as DisplayProgress\n    DisplayProgress --> [*]\n\n    state \"Update progress\" as UpdateProgress\n\n\n    UpdateProgress --> UploadFinal : [End of project]\n\n    state \"Upload final project\" as UploadFinal\n\n    state QualityCheck <<choice>>\n\n    UploadFinal --> QualityCheck : [Quality check]\n\n    QualityCheck --> Payment : [satisfied]\n    QualityCheck --> ChoiceTracking : [Not satisfied]\n\n    state Payment\n    state Shipment\n    state Rating\n\n    Payment --> Shipment\n    Shipment --> Rating\n\n    Rating --> [*]\n}\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nDigidoclocker — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall identify the type of user based on their entered details.\n2. The system shall require citizens to register before logging in.\n3. The system shall allow citizens to log in if their login details are correct.\n4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.\n5. The system shall allow citizens to continue uploading documents if needed after initial uploads.\n6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.\n7. The system shall allow registrars to request certificates for verification.\n8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.\n9. The system shall end the session once the user is done with their actions.\n",
+  "requirement_used": "Digidoclocker — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall identify the type of user based on their entered details.\n2. The system shall require citizens to register before logging in.\n3. The system shall allow citizens to log in if their login details are correct.\n4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.\n5. The system shall allow citizens to continue uploading documents if needed after initial uploads.\n6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.\n7. The system shall allow registrars to request certificates for verification.\n8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.\n9. The system shall end the session once the user is done with their actions.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "Registration",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 8,
+    "transition_count": 10
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__llama31_8b_instruct__few_shot",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: Request Certificate"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: Request Certificate"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": true,
+      "previous_score": 2,
+      "repair_score": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 1,
+      "strict_state_diagram_valid": true,
+      "remaining_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: Request Certificate"
+        ],
+        "initial_state": "Registration",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Request Certificate"
+        ],
+        "state_count": 8,
+        "transition_count": 9
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "Registration",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 10
+      },
+      "strict_state_diagram_valid": true,
+      "accepted": true,
+      "previous_score": 2,
+      "repair_score": 0,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.repair_01.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.25,
+    "state_recall": 0.16666666666666666,
+    "state_f1": 0.2,
+    "state_tp": 2,
+    "state_fp": 6,
+    "state_fn": 10,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 10,
+    "transition_fn": 19,
+    "state_precision_relaxed": 0.25,
+    "state_recall_relaxed": 0.16666666666666666,
+    "state_f1_relaxed": 0.2,
+    "state_tp_relaxed": 2,
+    "state_fp_relaxed": 6,
+    "state_fn_relaxed": 10,
+    "transition_precision_relaxed": 0.1,
+    "transition_recall_relaxed": 0.05263157894736842,
+    "transition_f1_relaxed": 0.06896551724137931,
+    "transition_tp_relaxed": 1,
+    "transition_fp_relaxed": 9,
+    "transition_fn_relaxed": 18,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 10,
+    "transition_fn_semantic": 19,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 0.75,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.75,
+    "hallucination_transition_rate_relaxed": 0.9,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 0.9473684210526315,
+    "overall_f1": 0.1,
+    "overall_f1_relaxed": 0.13448275862068965,
+    "weighted_f1_relaxed_70_30": 0.1606896551724138,
+    "overall_f1_semantic": 0.1,
+    "weighted_f1_semantic_70_30": 0.13999999999999999,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  },
+  "reused_base_run": {
+    "run_id": "open_source__llama31_8b_instruct__few_shot",
+    "strategy": "few_shot",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot\\case_18_digidoclocker\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__llama31_8b_instruct__few_shot\\case_18_digidoclocker\\run_01.prompt.txt"
+  }
+}

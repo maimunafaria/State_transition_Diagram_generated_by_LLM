@@ -1,0 +1,68 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.
+
+Candidate PlantUML:
+@startuml
+[*] --> Idle
+
+state Idle {
+  [*] --> ReadyToUse
+  ReadyToUse --> [*]
+}
+
+state ReadyToUse {
+  ReadyToUse --> Reset : reset
+  ReadyToUse --> Activate : activate
+  ReadyToUse --> TurnOff : turnOff
+  ReadyToUse --> Monitoring : monitor
+}
+
+state Monitoring {
+  Monitoring --> Alarm : sensorTriggered
+  Monitoring --> Monitoring : falseAlarm
+  Monitoring --> Monitoring : timeEnds
+  Monitoring --> [*] : passwordEntry
+}
+
+state Alarm {
+  Alarm --> [*] : passwordEntry
+}
+
+@enduml
+
+
+Validation issues:
+- multiple_initial_state_transitions (Idle, ReadyToUse)
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 7
+- Transition count: 7
+
+Valid PlantUML repair patterns:
+Pattern 1: exactly one top-level initial transition
+[*] --> INITIAL_STATE
+
+' Replace every additional [*] --> OTHER_STATE with a normal supported transition
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
