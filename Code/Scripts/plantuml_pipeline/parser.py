@@ -317,7 +317,13 @@ def validate_graph(graph: DiagramGraph) -> ValidationResult:
 
 def check_plantuml_syntax(puml_text: str, timeout: int = 8) -> tuple[list[str], list[str]]:
     plantuml = shutil.which("plantuml")
-    if not plantuml:
+    plantuml_jar = os.getenv("PLANTUML_JAR", "").strip()
+    java = shutil.which("java")
+    if plantuml:
+        command = [plantuml]
+    elif plantuml_jar and Path(plantuml_jar).is_file() and java:
+        command = [java, "-jar", plantuml_jar]
+    else:
         return [], ["plantuml_command_not_found_for_official_syntax_check"]
 
     text = normalize_puml_text(puml_text)
@@ -325,7 +331,7 @@ def check_plantuml_syntax(puml_text: str, timeout: int = 8) -> tuple[list[str], 
         path = Path(temp_dir) / "diagram.puml"
         path.write_text(text, encoding="utf-8")
         result = subprocess.run(
-            [plantuml, "-checkonly", str(path)],
+            [*command, "-checkonly", str(path)],
             text=True,
             capture_output=True,
             timeout=timeout,
@@ -335,7 +341,7 @@ def check_plantuml_syntax(puml_text: str, timeout: int = 8) -> tuple[list[str], 
         if result.returncode != 0:
             try:
                 diagnostic = subprocess.run(
-                    [plantuml, "-verbose", str(path)],
+                    [*command, "-verbose", str(path)],
                     text=True,
                     capture_output=True,
                     timeout=timeout,

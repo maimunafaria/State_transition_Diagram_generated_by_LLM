@@ -1,6 +1,7 @@
 param(
   [int]$Runs = 1,
   [int]$RepairAttempts = 10,
+  [string]$PlantUmlJar = "tools\plantuml.jar",
   [switch]$SkipExisting
 )
 
@@ -10,7 +11,14 @@ Push-Location $PSScriptRoot
 try {
   $env:PYTHONPATH = "Code\Scripts"
   if (-not (Get-Command plantuml -ErrorAction SilentlyContinue)) {
-    throw "PlantUML CLI is required. Install it and ensure 'plantuml' is available in PATH."
+    if (-not (Test-Path $PlantUmlJar)) {
+      throw "PlantUML was not found. Download plantuml.jar to '$PlantUmlJar'."
+    }
+    if (-not (Get-Command java -ErrorAction SilentlyContinue)) {
+      throw "Java is required to run $PlantUmlJar. Install Java and ensure 'java' is available in PATH."
+    }
+    $env:PLANTUML_JAR = (Resolve-Path $PlantUmlJar).Path
+    Write-Host "Using PlantUML JAR: $env:PLANTUML_JAR"
   }
 
   $sourceRunsRoot = "Code\untitled folder\results\plantuml_pipeline\runs"

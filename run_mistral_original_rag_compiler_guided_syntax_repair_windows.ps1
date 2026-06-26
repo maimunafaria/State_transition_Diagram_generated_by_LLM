@@ -1,11 +1,13 @@
-param([int]$Runs = 1, [int]$RepairAttempts = 5, [switch]$SkipExisting)
+param([int]$Runs = 1, [int]$RepairAttempts = 5, [string]$PlantUmlJar = "tools\plantuml.jar", [switch]$SkipExisting)
 
 $ErrorActionPreference = "Stop"
 Push-Location $PSScriptRoot
 try {
   $env:PYTHONPATH = "Code\Scripts"
   if (-not (Get-Command plantuml -ErrorAction SilentlyContinue)) {
-    throw "PlantUML CLI is required. Install it and ensure 'plantuml' is available in PATH."
+    if (-not (Test-Path $PlantUmlJar)) { throw "Download plantuml.jar to '$PlantUmlJar'." }
+    if (-not (Get-Command java -ErrorAction SilentlyContinue)) { throw "Java is required and must be available in PATH." }
+    $env:PLANTUML_JAR = (Resolve-Path $PlantUmlJar).Path
   }
   $sourceRunsRoot = "Code\untitled folder\results\plantuml_pipeline\runs"
   $outputRunId = "open_source__mistral__rag_validation_generator_critic_repair__compiler_guided_syntax_original_rag"
