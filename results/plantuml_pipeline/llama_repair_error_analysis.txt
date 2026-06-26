@@ -1,0 +1,112 @@
+Llama Repair Error Analysis
+===========================
+
+Evaluation scope
+----------------
+Model: Llama 3.1 8B Instruct
+Raw generation method: Few-shot
+Cases: 27
+Validity definition: Official PlantUML syntax passes and no structural
+validation errors or warnings remain.
+
+Overall strict-validity results
+-------------------------------
+
++--------------------------+----------------+--------------+
+| Repair method            | Strict-valid   | Failed cases |
++--------------------------+----------------+--------------+
+| Baseline Repair          | 15/27 (55.56%) | 12           |
+| Syntax-Grounded Repair   | 17/27 (62.96%) | 10           |
++--------------------------+----------------+--------------+
+
+Error-resolution results
+------------------------
+
++----------------------------------------------+---------+-----------------+------------------------+
+| Error type                                   | Initial | Baseline solved | Syntax-Grounded solved |
++----------------------------------------------+---------+-----------------+------------------------+
+| Missing final state transition               | 12      | 12              | 10                     |
+| Missing initial state transition             | 2       | 1               | 1                      |
+| PlantUML syntax error                        | 2       | 1               | 0                      |
+| Unreachable states                           | 10      | 6               | 7                      |
+| Orphan states                                | 3       | 2               | 3                      |
+| Choice node without outgoing transitions     | 5       | 2               | 1                      |
+| Choice node without guarded transitions      | 1       | 0               | 1                      |
+| Multiple initial state transitions           | 2       | 1               | 1                      |
+| Duplicate transitions                        | 1       | 0               | 0                      |
++----------------------------------------------+---------+-----------------+------------------------+
+
+Failed cases after Baseline Repair
+----------------------------------
+
++------+---------------------------------------------------------------+
+| Case | Final unresolved or newly introduced error                    |
++------+---------------------------------------------------------------+
+| 15   | Unreachable states                                            |
+| 16   | PlantUML syntax error; unguarded choice nodes                 |
+| 28   | Unreachable state                                             |
+| 32   | Multiple initial states; duplicate transitions                |
+| 33   | Multiple initial states                                       |
+| 37   | Multiple initial states; choice without outgoing transition   |
+| 46   | Multiple initial states                                       |
+| 52   | Unreachable states; choice without outgoing transition        |
+| 65   | Multiple initial states; unguarded choice                     |
+| 70   | Missing initial state transition                              |
+| 78   | Unreachable and orphan states; empty choice                   |
+| 80   | Duplicate transitions; unreachable states                    |
++------+---------------------------------------------------------------+
+
+Failed cases after Syntax-Grounded Repair
+-----------------------------------------
+
++------+--------------------------------------------------------------------------+
+| Case | Final unresolved or newly introduced error                               |
++------+--------------------------------------------------------------------------+
+| 15   | Unreachable states                                                       |
+| 16   | Syntax error; multiple initial states; missing final transition          |
+| 32   | Syntax error; missing final; unreachable states; empty choice            |
+| 37   | Multiple initial states; empty choice                                    |
+| 46   | Multiple initial states                                                  |
+| 52   | Unreachable states; empty choice                                         |
+| 65   | Empty choice                                                             |
+| 70   | Missing initial state transition                                         |
+| 78   | Syntax error; unreachable states                                         |
+| 80   | Syntax error; multiple initial states; missing final; duplicate transition|
++------+--------------------------------------------------------------------------+
+
+Plain-language interpretation
+-----------------------------
+
+Syntax-Grounded Repair improved Llama's overall strict validity by two cases,
+increasing the result from 15 of 27 to 17 of 27. It was somewhat better at
+repairing unreachable states, orphan states, and choice nodes that lacked
+guarded outgoing transitions.
+
+Baseline Repair was better at repairing missing final transitions and
+PlantUML syntax errors. Baseline solved all 12 initial missing-final errors,
+whereas Syntax-Grounded Repair solved 10. Baseline solved one of the two
+initial PlantUML syntax errors, whereas Syntax-Grounded Repair solved neither.
+
+Syntax-Grounded Repair also introduced new PlantUML syntax errors in cases 32
+and 80. Consequently, four Syntax-Grounded outputs remained syntactically
+invalid: cases 16, 32, 78, and 80.
+
+The unreachable-state problem remained difficult. Baseline solved 6 of 10
+initial unreachable-state cases, while Syntax-Grounded Repair solved 7 of 10.
+However, each method also introduced an unreachable-state problem in another
+case.
+
+Conclusion
+----------
+
+The most persistent Llama repair problems were:
+
+1. Choice nodes without outgoing transitions.
+2. Unreachable states.
+3. Multiple initial-state transitions.
+4. PlantUML syntax errors.
+5. The missing initial transition in case 70.
+
+Syntax-Grounded Repair achieved the higher overall validity percentage, but
+it was not consistently better for every violation type. In particular, its
+PlantUML syntax repair performance was worse than Baseline Repair.
