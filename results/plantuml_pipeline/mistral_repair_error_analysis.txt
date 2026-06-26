@@ -1,0 +1,136 @@
+Mistral Repair Error Analysis
+=============================
+
+Evaluation scope
+----------------
+Model: Mistral
+Raw generation method: RAG
+Cases: 27
+Validity definition: Official PlantUML syntax passes and no structural
+validation errors or warnings remain.
+
+Both repair methods used the same 27 frozen original RAG diagrams.
+
+Overall strict-validity results
+-------------------------------
+
++--------------------------+----------------+--------------+
+| Repair method            | Strict-valid   | Failed cases |
++--------------------------+----------------+--------------+
+| Baseline Repair          | 8/27 (29.63%)  | 19           |
+| Syntax-Grounded Repair   | 10/27 (37.04%) | 17           |
++--------------------------+----------------+--------------+
+
+Error-resolution results
+------------------------
+
++--------------------------------------------+---------+-----------------+------------------------+
+| Error type                                 | Initial | Baseline solved | Syntax-Grounded solved |
++--------------------------------------------+---------+-----------------+------------------------+
+| PlantUML syntax error                      | 7       | 0               | 2                      |
+| Missing final state transition             | 11      | 3               | 5                      |
+| Missing initial state transition           | 4       | 1               | 2                      |
+| Multiple initial state transitions         | 10      | 2               | 3                      |
+| Unreachable states                         | 3       | 0               | 1                      |
+| Orphan states                              | 8       | 2               | 8                      |
+| Duplicate transitions                      | 2       | 2               | 2                      |
+| Choice node without outgoing transitions   | 4       | 3               | 1                      |
+| Choice node without guarded transitions    | 3       | 1               | 2                      |
++--------------------------------------------+---------+-----------------+------------------------+
+
+New errors introduced during repair
+-----------------------------------
+
+- Baseline Repair introduced a multiple-initial-state violation in case 34.
+- Syntax-Grounded Repair introduced an official PlantUML syntax error in
+  case 33.
+- Syntax-Grounded Repair introduced a multiple-initial-state violation in
+  case 46.
+
+Failed cases after Baseline Repair
+----------------------------------
+
++------+------------------------------------------------------------------------+
+| Case | Final unresolved or newly introduced error                             |
++------+------------------------------------------------------------------------+
+| 1    | Unreachable states; orphan states                                      |
+| 2    | PlantUML syntax error                                                  |
+| 12   | Multiple initial states; orphan state                                  |
+| 15   | Multiple initial states                                                |
+| 16   | Syntax error; unreachable and orphan states; unguarded choice          |
+| 18   | Multiple initial states; orphan state                                  |
+| 28   | Syntax error; empty and unguarded choices                             |
+| 34   | Syntax error; multiple initial states; missing final                   |
+| 37   | Multiple initial states                                                |
+| 39   | Missing initial and final transitions                                  |
+| 45   | Multiple initial states; missing final                                 |
+| 46   | Syntax error; missing initial and final transitions                    |
+| 47   | Unreachable states                                                     |
+| 52   | Multiple initial states; missing final                                 |
+| 54   | Multiple initial states; orphan states                                 |
+| 59   | Syntax error; missing initial and final transitions                    |
+| 67   | Missing final transition                                               |
+| 70   | Missing final transition                                               |
+| 78   | Syntax error; multiple initial states; orphan states                   |
++------+------------------------------------------------------------------------+
+
+Failed cases after Syntax-Grounded Repair
+-----------------------------------------
+
++------+------------------------------------------------------------------------+
+| Case | Final unresolved or newly introduced error                             |
++------+------------------------------------------------------------------------+
+| 1    | Unreachable states; empty choices                                      |
+| 2    | PlantUML syntax error                                                  |
+| 12   | Multiple initial states                                                |
+| 15   | Multiple initial states                                                |
+| 18   | Multiple initial states                                                |
+| 28   | Syntax error; empty and unguarded choices                             |
+| 33   | Newly introduced PlantUML syntax error                                 |
+| 34   | Syntax error; missing initial and final transitions                    |
+| 37   | Multiple initial states; empty choice                                  |
+| 45   | Multiple initial states; missing final                                 |
+| 46   | Syntax error; newly introduced multiple initial states                 |
+| 47   | Unreachable states                                                     |
+| 52   | Multiple initial states; missing final                                 |
+| 54   | Multiple initial states                                                |
+| 59   | Syntax error; missing initial and final transitions                    |
+| 67   | Missing final transition                                               |
+| 70   | Missing final transition                                               |
++------+------------------------------------------------------------------------+
+
+Plain-language interpretation
+-----------------------------
+
+Syntax-Grounded Repair improved Mistral's strict validity by two cases,
+increasing the result from 8 of 27 to 10 of 27.
+
+Its strongest improvement was orphan-state repair. Baseline repaired only
+2 of 8 orphan-state cases, whereas Syntax-Grounded Repair repaired all 8.
+Syntax-Grounded Repair also improved PlantUML syntax repair from 0 of 7 to
+2 of 7, missing-final repair from 3 of 11 to 5 of 11, and unreachable-state
+repair from 0 of 3 to 1 of 3.
+
+However, five of the seven original PlantUML syntax-error cases remained
+syntactically invalid after Syntax-Grounded Repair, and a new syntax error
+was introduced in case 33.
+
+Choice nodes without outgoing transitions remained difficult.
+Baseline repaired 3 of 4 such cases, while Syntax-Grounded Repair repaired
+only 1 of 4. Multiple initial-state transitions also remained common:
+Baseline repaired 2 of 10, and Syntax-Grounded Repair repaired 3 of 10.
+
+Conclusion
+----------
+
+The most persistent Mistral repair problems were:
+
+1. PlantUML syntax errors.
+2. Missing final-state transitions.
+3. Multiple initial-state transitions.
+4. Choice nodes without outgoing transitions.
+5. Unreachable states.
+
+Syntax-Grounded Repair was better overall, especially for orphan states.
+Nevertheless, neither repair method was consistently effective across all
+violation types.
