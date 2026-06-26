@@ -1,0 +1,243 @@
+Four-LLM Repair Error Summary
+=============================
+
+Scope
+-----
+
+Models and frozen generation methods:
+
+- Qwen 2.5 7B Instruct: Original RAG
+- Mistral: Original RAG
+- DeepSeek R1 14B: Original Few-shot
+- Llama 3.1 8B Instruct: Original Few-shot
+
+Cases per model: 27
+Total model-case combinations: 108
+
+Repair methods:
+
+1. Baseline Repair
+2. Syntax-Grounded Repair
+
+All comparisons in this report use the same frozen initial diagrams for both
+repair methods. A violation is counted once per case, even if several states
+or transitions in that case exhibit the same violation.
+
+Overall strict-validity comparison
+----------------------------------
+
++--------------------------+-----------------+------------------------+------------+
+| Model                    | Baseline Repair | Syntax-Grounded Repair | Difference |
++--------------------------+-----------------+------------------------+------------+
+| Qwen 2.5 7B Instruct    | 11/27 (40.74%)  | 14/27 (51.85%)         | +11.11 pp  |
+| Mistral                  | 8/27 (29.63%)   | 10/27 (37.04%)         | +7.41 pp   |
+| DeepSeek R1 14B          | 24/27 (88.89%)  | 22/27 (81.48%)         | -7.41 pp   |
+| Llama 3.1 8B Instruct   | 15/27 (55.56%)  | 17/27 (62.96%)         | +7.41 pp   |
++--------------------------+-----------------+------------------------+------------+
+| Overall                  | 58/108 (53.70%) | 63/108 (58.33%)        | +4.63 pp   |
++--------------------------+-----------------+------------------------+------------+
+
+Combined violation-resolution results
+-------------------------------------
+
++--------------------------------------------+---------------+----------------------+---------------------------+----------------+
+| Violation type                             | Initial cases | Baseline solved       | Syntax-Grounded solved    | Better method  |
++--------------------------------------------+---------------+----------------------+---------------------------+----------------+
+| Missing final state transition             | 49            | 40/49 (81.63%)       | 38/49 (77.55%)            | Baseline       |
+| Missing initial state transition           | 14            | 10/14 (71.43%)       | 11/14 (78.57%)            | Syntax-Grounded|
+| Multiple initial state transitions         | 25            | 5/25 (20.00%)        | 10/25 (40.00%)            | Syntax-Grounded|
+| Unreachable states                         | 19            | 8/19 (42.11%)        | 11/19 (57.89%)            | Syntax-Grounded|
+| Orphan states                              | 14            | 6/14 (42.86%)        | 14/14 (100.00%)           | Syntax-Grounded|
+| PlantUML syntax error                      | 12            | 2/12 (16.67%)        | 3/12 (25.00%)             | Syntax-Grounded|
+| Duplicate transitions                     | 10            | 7/10 (70.00%)        | 6/10 (60.00%)             | Baseline       |
+| Choice without outgoing transitions       | 10            | 5/10 (50.00%)        | 3/10 (30.00%)             | Baseline       |
+| Choice without guarded transitions        | 6             | 2/6 (33.33%)         | 5/6 (83.33%)              | Syntax-Grounded|
+| Invalid [*] to [*] transition             | 2             | 1/2 (50.00%)         | 2/2 (100.00%)             | Syntax-Grounded|
++--------------------------------------------+---------------+----------------------+---------------------------+----------------+
+| Total violation-case occurrences          | 161           | 86/161 (53.42%)      | 103/161 (63.98%)          | Syntax-Grounded|
++--------------------------------------------+---------------+----------------------+---------------------------+----------------+
+
+New violation-case occurrences introduced
+------------------------------------------
+
++--------------------------------------------+---------------------+--------------------------+
+| Newly introduced violation                 | Baseline Repair     | Syntax-Grounded Repair   |
++--------------------------------------------+---------------------+--------------------------+
+| PlantUML syntax error                      | 2                   | 6                        |
+| Multiple initial state transitions         | 6                   | 4                        |
+| Missing final state transition             | 0                   | 2                        |
+| Unreachable states                         | 1                   | 1                        |
+| Duplicate transitions                     | 1                   | 1                        |
+| Choice without guarded transitions        | 1                   | 0                        |
++--------------------------------------------+---------------------+--------------------------+
+| Total newly introduced occurrences         | 11                  | 14                       |
++--------------------------------------------+---------------------+--------------------------+
+
+Results by violation type and model
+-----------------------------------
+
+Missing final state transition
+
++------------+---------+-----------------+------------------------+
+| Model      | Initial | Baseline solved | Syntax-Grounded solved |
++------------+---------+-----------------+------------------------+
+| Qwen       | 10      | 9               | 9                      |
+| Mistral    | 11      | 3               | 5                      |
+| DeepSeek   | 16      | 16              | 14                     |
+| Llama      | 12      | 12              | 10                     |
++------------+---------+-----------------+------------------------+
+
+Missing initial state transition
+
++------------+---------+-----------------+------------------------+
+| Model      | Initial | Baseline solved | Syntax-Grounded solved |
++------------+---------+-----------------+------------------------+
+| Qwen       | 0       | 0               | 0                      |
+| Mistral    | 4       | 1               | 2                      |
+| DeepSeek   | 8       | 8               | 8                      |
+| Llama      | 2       | 1               | 1                      |
++------------+---------+-----------------+------------------------+
+
+Multiple initial state transitions
+
++------------+---------+-----------------+------------------------+
+| Model      | Initial | Baseline solved | Syntax-Grounded solved |
++------------+---------+-----------------+------------------------+
+| Qwen       | 13      | 2               | 6                      |
+| Mistral    | 10      | 2               | 3                      |
+| DeepSeek   | 0       | 0               | 0                      |
+| Llama      | 2       | 1               | 1                      |
++------------+---------+-----------------+------------------------+
+
+Unreachable states
+
++------------+---------+-----------------+------------------------+
+| Model      | Initial | Baseline solved | Syntax-Grounded solved |
++------------+---------+-----------------+------------------------+
+| Qwen       | 5       | 2               | 3                      |
+| Mistral    | 3       | 0               | 1                      |
+| DeepSeek   | 1       | 0               | 0                      |
+| Llama      | 10      | 6               | 7                      |
++------------+---------+-----------------+------------------------+
+
+Orphan states
+
++------------+---------+-----------------+------------------------+
+| Model      | Initial | Baseline solved | Syntax-Grounded solved |
++------------+---------+-----------------+------------------------+
+| Qwen       | 2       | 1               | 2                      |
+| Mistral    | 8       | 2               | 8                      |
+| DeepSeek   | 1       | 1               | 1                      |
+| Llama      | 3       | 2               | 3                      |
++------------+---------+-----------------+------------------------+
+
+PlantUML syntax error
+
++------------+---------+-----------------+------------------------+
+| Model      | Initial | Baseline solved | Syntax-Grounded solved |
++------------+---------+-----------------+------------------------+
+| Qwen       | 0       | 0               | 0                      |
+| Mistral    | 7       | 0               | 2                      |
+| DeepSeek   | 3       | 1               | 1                      |
+| Llama      | 2       | 1               | 0                      |
++------------+---------+-----------------+------------------------+
+
+Duplicate transitions
+
++------------+---------+-----------------+------------------------+
+| Model      | Initial | Baseline solved | Syntax-Grounded solved |
++------------+---------+-----------------+------------------------+
+| Qwen       | 5       | 3               | 2                      |
+| Mistral    | 2       | 2               | 2                      |
+| DeepSeek   | 2       | 2               | 2                      |
+| Llama      | 1       | 0               | 0                      |
++------------+---------+-----------------+------------------------+
+
+Choice node without outgoing transitions
+
++------------+---------+-----------------+------------------------+
+| Model      | Initial | Baseline solved | Syntax-Grounded solved |
++------------+---------+-----------------+------------------------+
+| Qwen       | 1       | 0               | 1                      |
+| Mistral    | 4       | 3               | 1                      |
+| DeepSeek   | 0       | 0               | 0                      |
+| Llama      | 5       | 2               | 1                      |
++------------+---------+-----------------+------------------------+
+
+Choice node without guarded transitions
+
++------------+---------+-----------------+------------------------+
+| Model      | Initial | Baseline solved | Syntax-Grounded solved |
++------------+---------+-----------------+------------------------+
+| Qwen       | 1       | 0               | 1                      |
+| Mistral    | 3       | 1               | 2                      |
+| DeepSeek   | 1       | 1               | 1                      |
+| Llama      | 1       | 0               | 1                      |
++------------+---------+-----------------+------------------------+
+
+Invalid [*] to [*] transition
+
++------------+---------+-----------------+------------------------+
+| Model      | Initial | Baseline solved | Syntax-Grounded solved |
++------------+---------+-----------------+------------------------+
+| Qwen       | 2       | 1               | 2                      |
+| Mistral    | 0       | 0               | 0                      |
+| DeepSeek   | 0       | 0               | 0                      |
+| Llama      | 0       | 0               | 0                      |
++------------+---------+-----------------+------------------------+
+
+Plain-language interpretation
+-----------------------------
+
+Across all four models, Syntax-Grounded Repair achieved the higher overall
+strict-validity result: 63 of 108 diagrams (58.33%), compared with 58 of 108
+(53.70%) for Baseline Repair.
+
+Syntax-Grounded Repair also solved more total violation-case occurrences:
+103 of 161 (63.98%), compared with 86 of 161 (53.42%) for Baseline Repair.
+
+Syntax-Grounded Repair was particularly effective for:
+
+- Orphan states: 14 of 14 solved.
+- Invalid [*] to [*] transitions: 2 of 2 solved.
+- Choice nodes without guarded transitions: 5 of 6 solved.
+- Missing initial transitions: 11 of 14 solved.
+- Unreachable states: 11 of 19 solved.
+- Multiple initial transitions: 10 of 25 solved, compared with 5 for baseline.
+
+Baseline Repair was more effective for:
+
+- Missing final transitions: 40 of 49 solved.
+- Duplicate transitions: 7 of 10 solved.
+- Choice nodes without outgoing transitions: 5 of 10 solved.
+
+PlantUML syntax errors were difficult for both methods. Baseline solved only
+2 of 12 initial syntax-error cases, while Syntax-Grounded Repair solved 3 of
+12. Syntax-Grounded Repair also introduced six new syntax-error occurrences,
+compared with two introduced by Baseline Repair.
+
+Model dependence
+----------------
+
+Syntax-Grounded Repair improved Qwen, Mistral, and Llama, but reduced
+DeepSeek's strict validity from 88.89% to 81.48%. Therefore, the experiment
+does not support claiming that Syntax-Grounded Repair is universally better
+for every model.
+
+Final conclusion
+----------------
+
+Syntax-Grounded Repair is the stronger method overall, but its effectiveness
+depends on the violation type and model.
+
+The best practical strategy suggested by these results is a hybrid repair
+policy:
+
+- Prefer Syntax-Grounded Repair for orphan states, missing initial states,
+  multiple initial states, unreachable states, guarded-choice problems, and
+  invalid [*] to [*] transitions.
+- Prefer Baseline Repair for missing final transitions, duplicate
+  transitions, and choice nodes without outgoing transitions.
+- Add a dedicated deterministic or compiler-guided stage for PlantUML syntax
+  errors, because both LLM-based repair methods perform poorly on syntax and
+  can introduce new syntax errors.
