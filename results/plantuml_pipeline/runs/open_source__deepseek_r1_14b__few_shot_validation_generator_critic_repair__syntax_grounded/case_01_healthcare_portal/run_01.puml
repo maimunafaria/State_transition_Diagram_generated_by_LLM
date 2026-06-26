@@ -1,87 +1,44 @@
 @startuml
-title UML State Transition Diagram - Healthcare Portal
+[*] --> INITIAL_STATE
 
-[*] --> Idle : Start
+INITIAL_STATE -> UserAuthentication : start registration
+UserAuthentication {
+    [*] --> RegistrationRequested
+}
 
-state "Idle" as Idle
-Idle : entry/Welcome
-Idle : do/Waiting for user action
-Idle : exit/Register/Login
+RegistrationRequested -> REGISTRATION_IN_PROGRESS
+REGISTRATION_IN_PROGRESS -> RegistrationSuccess : valid registration
+REGISTRATION_IN_PROGRESS -> RegistrationFailure : invalid registration
 
-Idle --> Register : Register
-Idle --> Login : Login
+UserAuthentication -> SignInRequested
+SignInRequested -> SignInInProgress
+SignInInProgress -> SignedIn_Successfully : valid credentials
+SignInInProgress -> Invalid_Credentials_TryAgain : invalid credentials
 
-state "Register" as Register
-Register : entry/Register
-Register : do/Register after validating
-Register : exit/MainMenu/InvalidRegister
+SignedIn_Successfully -> SystemAccessEntryPoint
+SystemAccessEntryPoint -> Access_Facilities_Info
+SystemAccessEntryPoint -> Read_News_Content
+SystemAccessEntryPoint -> Health_Info_Options
 
-Register --> MainMenu : Valid registration
-Register --> InvalidRegister : Invalid registration
+Health_Info_Options -> Symptom_Checker
+Symptom_Checker -> Fitness_Checking_Options
 
-state "InvalidRegister" as InvalidRegister
-InvalidRegister : entry/Invalid registration
-InvalidRegister : do/Cannot register
-InvalidRegister : exit/Abnormal termination
+PaymentProcessing {
+    [*] --> InsuranceValidationRequested
+}
 
-InvalidRegister --> [*] : Abnormal termination
+InsuranceValidationRequested -> InsuranceApproved : valid insurance
+InsuranceValidationRequested -> InsuranceRejected : invalid insurance
 
-state "Login" as Login
-Login : entry/Login
-Login : do/Login using valid credentials
-Login : exit/MainMenu/InvalidLogin
+PaymentMethodSelection -> Payment_Cash : cash payment
+PaymentMethodSelection -> Payment_Insurance : insurance payment
 
-Login --> MainMenu : Valid login
-Login --> InvalidLogin : Invalid login
+CashPaymentRequested -> CashPayment_DetailsProvided
+InsuranceBasedPayment -> Process_Insurance_Payment
 
-state "InvalidLogin" as InvalidLogin
-InvalidLogin : entry/Invalid login
-InvalidLogin : do/Cannot login
-InvalidLogin : exit/Abnormal termination
+FeedbackCollection {
+    [*] --> FeedbackSubmitted
+}
 
-InvalidLogin --> [*] : Abnormal termination
-
-state "MainMenu" as MainMenu
-MainMenu : entry/MainMenu
-MainMenu : do/Access facilities
-MainMenu : exit/Waiting for user choice
-
-MainMenu --> ReadContent : Read content
-MainMenu --> HealthInfo : Check health info
-MainMenu --> ProcessInsurance : Process insurance
-MainMenu --> PaymentSelection : Make payment
-MainMenu --> ViewResult : View result
-MainMenu --> Logout : Logout
-
-state "ReadContent" as ReadContent
-ReadContent : entry/ReadContent
-ReadContent : do/View news/expert content
-ReadContent : exit/MainMenu
-
-ReadContent --> MainMenu : Back to main menu
-
-state "HealthInfo" as HealthInfo
-HealthInfo : entry/HealthInfo
-HealthInfo : do/Check symptoms or fitness
-HealthInfo : exit/MainMenu
-
-HealthInfo --> MainMenu : Back to main menu
-
-state "ViewResult" as ViewResult
-ViewResult : entry/ViewResult
-ViewResult : do/View results
-ViewResult : exit/Continue/Logout
-
-ViewResult --> Continue : Continue using system
-ViewResult --> Logout : Finish session
-
-state "ProcessInsurance" as ProcessInsurance
-ProcessInsurance : entry/ProcessInsurance
-ProcessInsurance : do/Validate insurance
-ProcessInsurance : exit/InsuranceApproved/InsuranceRejected
-
-ProcessInsurance --> InsurancePayment : Insurance approved
-ProcessInsurance --> CashPayment : Insurance rejected
-
-state
+LOGGED_OUT --> [*] : logout event
 @enduml
