@@ -1509,6 +1509,63 @@ def _validation_issue_details(validation: ValidationResult) -> list[str]:
     return details
 
 
+def _diagnostic_validation_issue_lines(
+    candidate_puml: str,
+    validation: ValidationResult,
+) -> list[str]:
+    graph = parse_plantuml(candidate_puml)
+    issues = _prioritized_repair_issues(validation)
+    lines: list[str] = []
+
+    duplicate_counts: dict[tuple[str, str, str], int] = {}
+    for transition in graph.transitions:
+        duplicate_counts[transition] = duplicate_counts.get(transition, 0) + 1
+    duplicate_details = [
+        f"{src} --> {dst}" + (f" : {event}" if event else "")
+        for (src, event, dst), count in sorted(duplicate_counts.items())
+        if count > 1
+    ]
+
+    for issue in issues:
+        low = issue.lower()
+        detail = ""
+        if "multiple_initial_state_transitions" in low:
+            if graph.initial_targets:
+                detail = "Problematic initial targets: " + ", ".join(graph.initial_targets)
+        elif "missing_initial_state_transition" in low:
+            detail = "No [*] --> first lifecycle state transition was detected."
+        elif "missing_final_state_transition" in low:
+            detail = "No terminal state --> [*] transition was detected."
+        elif "duplicate_transitions" in low:
+            if duplicate_details:
+                detail = "Duplicate transitions: " + "; ".join(duplicate_details)
+            else:
+                detail = f"Duplicate transition count: {validation.duplicate_transition_count}"
+        elif "unreachable" in low:
+            if validation.unreachable_states:
+                detail = "Unreachable states: " + ", ".join(validation.unreachable_states)
+            elif issue.startswith("unreachable:"):
+                detail = issue
+        elif "orphan" in low:
+            orphan_issues = [
+                item
+                for item in list(validation.errors) + list(validation.warnings)
+                if item.startswith("orphan:")
+            ]
+            if orphan_issues:
+                detail = "; ".join(orphan_issues)
+        elif "choice_node_without_outgoing" in low or "choice_node_without_guarded" in low:
+            detail = issue
+        elif "invalid [*]" in low:
+            detail = issue
+        elif "plantuml_syntax_error" in low:
+            detail = "Official PlantUML syntax check failed."
+
+        lines.append(f"- {issue}" + (f" ({detail})" if detail else ""))
+
+    return lines or ["- none"]
+
+
 def build_targeted_repair_prompt(
     requirement: str,
     candidate_puml: str,
@@ -1623,6 +1680,35 @@ def build_syntax_grounded_no_rules_repair_prompt(
         + ("\n".join(f"- {issue}" for issue in validation_issues) if validation_issues else "- none")
         + "\n\nValidator details:\n"
         + "\n".join(f"- {detail}" for detail in issue_details)
+        + "\n\nValid PlantUML repair patterns:\n"
+        + syntax_patterns
+    )
+
+
+def build_diagnostic_syntax_grounded_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+) -> str:
+    validation_issues = _prioritized_repair_issues(validation)
+    diagnostic_issues = _diagnostic_validation_issue_lines(candidate_puml, validation)
+    repair_guidance = _repair_guidance_for_issues(validation_issues)
+    syntax_patterns = format_syntax_patterns(validation_issues)
+    return (
+        "General instruction:\n"
+        "You are a PlantUML repair assistant. Repair only the listed validation issues. "
+        "Preserve all unaffected states, transitions, labels, and requirement-supported behavior. "
+        "Do not add unsupported behavior. Output only one corrected PlantUML diagram, "
+        "with no markdown fences or explanation.\n\n"
+        "Requirement:\n"
+        f"{requirement}\n\n"
+        "Candidate PlantUML:\n"
+        f"{candidate_puml}\n\n"
+        "Validation issues:\n"
+        + "\n".join(diagnostic_issues)
+        + "\n\nRepair guidance for these issues:\n"
+        + "\n".join(f"- {hint}" for hint in repair_guidance)
         + "\n\nValid PlantUML repair patterns:\n"
         + syntax_patterns
     )
