@@ -1,0 +1,139 @@
+Qwen Repair Error Analysis
+==========================
+
+Evaluation scope
+----------------
+Model: Qwen 2.5 7B Instruct
+Raw generation method: RAG
+Cases: 27
+Validity definition: Official PlantUML syntax passes and no structural
+validation errors or warnings remain.
+
+Important comparison note
+-------------------------
+
+The Baseline and Syntax-Grounded run folders do not contain identical initial
+outputs for every case. Therefore, each repair method is evaluated against
+the initial diagram stored in its own run folder. The overall final validity
+percentages remain directly reportable, but per-error initial counts differ
+slightly between the two runs.
+
+Overall strict-validity results
+-------------------------------
+
++--------------------------+----------------+--------------+
+| Repair method            | Strict-valid   | Failed cases |
++--------------------------+----------------+--------------+
+| Baseline Repair          | 11/27 (40.74%) | 16           |
+| Syntax-Grounded Repair   | 14/27 (51.85%) | 13           |
++--------------------------+----------------+--------------+
+
+Error-resolution results
+------------------------
+
++--------------------------------------------+------------------+-----------------+------------------------+-------------------------+
+| Error type                                 | Baseline initial | Baseline solved | Syntax-Grounded initial| Syntax-Grounded solved  |
++--------------------------------------------+------------------+-----------------+------------------------+-------------------------+
+| Multiple initial state transitions         | 13               | 2               | 14                     | 6                       |
+| Missing final state transition             | 10               | 9               | 12                     | 10                      |
+| Unreachable states                         | 5                | 2               | 4                      | 0                       |
+| Duplicate transitions                      | 5                | 3               | 4                      | 1                       |
+| Orphan states                              | 2                | 1               | 3                      | 1                       |
+| Invalid [*] to [*] transition              | 2                | 1               | 3                      | 2                       |
+| Choice node without outgoing transitions   | 1                | 0               | 1                      | 0                       |
+| Choice node without guarded transitions    | 1                | 0               | 1                      | 1                       |
+| Official PlantUML syntax error             | 0                | 0               | 0                      | 0                       |
++--------------------------------------------+------------------+-----------------+------------------------+-------------------------+
+
+New errors introduced during repair
+-----------------------------------
+
+- Baseline Repair introduced official PlantUML syntax errors in cases 15 and
+  39.
+- Baseline Repair introduced an additional multiple-initial-state problem in
+  case 28.
+- Syntax-Grounded Repair did not introduce an official PlantUML syntax error
+  in this run.
+
+Failed cases after Baseline Repair
+----------------------------------
+
++------+--------------------------------------------------------------------------+
+| Case | Final unresolved or newly introduced error                               |
++------+--------------------------------------------------------------------------+
+| 2    | Unreachable states                                                       |
+| 12   | Multiple initial state transitions                                       |
+| 15   | PlantUML syntax error; multiple initial state transitions                |
+| 18   | Invalid [*] to [*] transition; multiple initial state transitions        |
+| 28   | Multiple initial states; choice without outgoing transition              |
+| 32   | Multiple initial states; duplicate transitions                          |
+| 33   | Multiple initial state transitions                                       |
+| 34   | Choice node without guarded outgoing transitions                        |
+| 39   | PlantUML syntax error; multiple initial states; orphan state             |
+| 45   | Multiple initial state transitions                                       |
+| 47   | Multiple initial state transitions                                       |
+| 51   | Unreachable states                                                       |
+| 52   | Multiple initial states; missing final; duplicate transitions           |
+| 54   | Multiple initial state transitions                                       |
+| 60   | Unreachable state                                                        |
+| 80   | Multiple initial state transitions                                       |
++------+--------------------------------------------------------------------------+
+
+Failed cases after Syntax-Grounded Repair
+-----------------------------------------
+
++------+--------------------------------------------------------------------------+
+| Case | Final unresolved error                                                   |
++------+--------------------------------------------------------------------------+
+| 2    | Unreachable states                                                       |
+| 12   | Multiple initial state transitions                                       |
+| 15   | Invalid [*] to [*] transition; multiple initial state transitions        |
+| 18   | Multiple initial states; orphan state; choices without outgoing paths    |
+| 32   | Multiple initial states; duplicate transitions                          |
+| 37   | Multiple initial states; missing final; orphan state                     |
+| 45   | Duplicate transitions                                                    |
+| 46   | Unreachable state                                                        |
+| 51   | Unreachable states                                                       |
+| 52   | Multiple initial states; missing final; duplicate transitions           |
+| 54   | Multiple initial state transitions                                       |
+| 60   | Unreachable state                                                        |
+| 80   | Multiple initial state transitions                                       |
++------+--------------------------------------------------------------------------+
+
+Plain-language interpretation
+-----------------------------
+
+Syntax-Grounded Repair improved Qwen's strict validity by three cases,
+increasing the result from 11 of 27 to 14 of 27.
+
+The largest Qwen problem was multiple top-level initial-state transitions.
+Baseline repaired only 2 of its 13 observed cases. Syntax-Grounded Repair
+performed better, repairing 6 of its 14 observed cases, but 8 cases still
+retained this violation.
+
+Unreachable states were also difficult. Baseline repaired 2 of 5 observed
+unreachable-state cases. Syntax-Grounded Repair repaired none of its 4
+observed unreachable-state cases.
+
+Both methods repaired most missing-final-state violations. Baseline solved
+9 of 10, while Syntax-Grounded Repair solved 10 of 12. Neither method solved
+its observed choice-node-without-outgoing-transition problem.
+
+Baseline Repair introduced official PlantUML syntax errors in two outputs,
+cases 15 and 39. Syntax-Grounded Repair did not introduce official PlantUML
+syntax errors in this Qwen run.
+
+Conclusion
+----------
+
+The most persistent Qwen repair problems were:
+
+1. Multiple initial-state transitions.
+2. Unreachable states.
+3. Duplicate transitions.
+4. Choice nodes without outgoing transitions.
+5. Invalid [*] to [*] transitions.
+
+Syntax-Grounded Repair was more effective overall for Qwen, particularly for
+multiple initial-state transitions and guarded-choice problems. However, it
+did not improve the observed unreachable-state errors.

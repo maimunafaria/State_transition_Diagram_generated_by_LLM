@@ -1,0 +1,81 @@
+DeepSeek Repair Error Analysis
+==============================
+
+Evaluation scope
+----------------
+Model: DeepSeek R1 14B
+Raw generation method: Few-shot
+Cases: 27
+Validity definition: Official PlantUML syntax passes and no structural
+validation errors or warnings remain.
+
+Overall strict-validity results
+-------------------------------
+
++--------------------------+---------------+--------------+
+| Repair method            | Strict-valid  | Failed cases |
++--------------------------+---------------+--------------+
+| Baseline Repair          | 24/27 (88.89%)| 3            |
+| Syntax-Grounded Repair   | 22/27 (81.48%)| 5            |
++--------------------------+---------------+--------------+
+
+Error-resolution results
+------------------------
+
++---------------------------------------------------+---------+-----------------+------------------------+
+| Error type                                        | Initial | Baseline solved | Syntax-Grounded solved |
++---------------------------------------------------+---------+-----------------+------------------------+
+| Missing final state transition                    | 16      | 16              | 14                     |
+| Missing initial state transition                  | 8       | 8               | 8                      |
+| PlantUML syntax error                             | 3       | 1               | 1                      |
+| Duplicate transitions                            | 2       | 2               | 2                      |
+| Choice node without guarded outgoing transitions | 1       | 1               | 1                      |
+| Orphan states                                     | 1       | 1               | 1                      |
+| Unreachable states                                | 1       | 0               | 0                      |
++---------------------------------------------------+---------+-----------------+------------------------+
+
+Failed cases after repair
+-------------------------
+
++------------------------+---------+------------------------------------------------+
+| Repair method          | Case    | Final unresolved or newly introduced error     |
++------------------------+---------+------------------------------------------------+
+| Baseline Repair        | 41      | Unreachable states                             |
+| Baseline Repair        | 65      | PlantUML syntax error                          |
+| Baseline Repair        | 67      | PlantUML syntax error                          |
+| Syntax-Grounded Repair | 1       | New duplicate transitions introduced           |
+| Syntax-Grounded Repair | 41      | Unreachable states                             |
+| Syntax-Grounded Repair | 45      | Missing final state transition                 |
+| Syntax-Grounded Repair | 65      | PlantUML syntax error                          |
+| Syntax-Grounded Repair | 67      | PlantUML syntax error and missing final state   |
++------------------------+---------+------------------------------------------------+
+
+Plain-language interpretation
+-----------------------------
+
+DeepSeek repaired most missing initial transitions, missing final transitions,
+duplicate transitions, choice-node guard problems, and orphan-state problems.
+
+PlantUML syntax errors remained difficult. Three initial cases contained an
+official PlantUML syntax error. Both repair methods corrected one of those
+cases (case 32), but neither method corrected the syntax errors in cases 65
+and 67. Therefore, PlantUML syntax repair was only partially successful:
+1 of 3 syntax-error cases was solved, while 2 of 3 remained invalid.
+
+The unreachable-state problem was not solved. Case 41 contained unreachable
+states before repair, and the same states remained unreachable after both
+Baseline Repair and Syntax-Grounded Repair. Thus, the success rate for the
+observed unreachable-state error was 0 of 1.
+
+Conclusion
+----------
+
+For DeepSeek, the two most persistent repair problems were:
+
+1. PlantUML syntax errors: only 1 of 3 cases was solved.
+2. Unreachable states: 0 of 1 cases was solved.
+
+It is accurate to state that DeepSeek was unable to solve the remaining
+PlantUML syntax errors and the observed unreachable-state error. However, it
+should not be stated that DeepSeek solved no PlantUML syntax errors, because
+case 32 was repaired successfully.
