@@ -1,39 +1,52 @@
 @startuml
-[*] --> LoggedIn
+title UML State Machine Diagram
 
-state LoggedIn {
-  LoggedIn --> JourneyDetails : view journey details
-}
+state Initial
+state LoggedIn
+state JourneyDetails
+state DrivingMode
+state Hungry
+state RestaurantSelection
+state Ordering
+state AccidentReport
+state Notifications
+state Feedback
+state Logout
 
-state JourneyDetails {
-  JourneyDetails --> DrivingMode : activate driving mode or choose other options
-  JourneyDetails --> EatPlace : select place to eat, view menu, and order
-  JourneyDetails --> AccidentNotification : accident occurs
-}
+[*] --> Initial
 
-state DrivingMode {
-  DrivingMode --> JourneyDetails : back to journey details
-}
+Initial --> LoggedIn : Login
 
-state EatPlace {
-  EatPlace --> JourneyDetails : finish eating and go back
-}
+LoggedIn --> JourneyDetails : Select destination
 
-state AccidentNotification {
-  AccidentNotification --> Notifications : inform relevant authorities
-  AccidentNotification --> Feedback : provide feedback after accident notification
-}
+JourneyDetails : entry / Display journey details
+JourneyDetails : do / Show options
+JourneyDetails --> DrivingMode : Activate driving mode
+JourneyDetails --> JourneyDetails : Choose other options
+JourneyDetails --> Hungry : Select eat
 
-state Notifications {
-  Notifications --> Feedback : provide feedback after sending notifications
-}
+DrivingMode : entry / Activate
+DrivingMode : do / Monitor
+DrivingMode --> JourneyDetails : Deactivate
+DrivingMode --> AccidentReport : Accident detected
 
-state Feedback {
-  Feedback --> JourneyComplete : complete journey
-}
+Hungry --> RestaurantSelection : Select place
 
-state JourneyComplete {
-  JourneyComplete --> [*] : completion event
-}
+RestaurantSelection : entry / Display menu
+RestaurantSelection --> Ordering : Order
 
+Ordering : entry / Place order
+Ordering --> JourneyDetails : Continue journey
+Ordering --> Notifications : Order confirmed
+
+AccidentReport --> Notifications : Report accident
+
+Notifications : entry / Send notifications
+Notifications --> JourneyDetails : Continue
+Notifications --> DrivingMode : Continue driving
+Notifications --> Feedback : Provide feedback
+
+Feedback --> Logout : Submit
+
+Logout --> [*] : Logout complete
 @enduml

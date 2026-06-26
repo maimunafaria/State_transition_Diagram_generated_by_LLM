@@ -1,27 +1,26 @@
 @startuml
-[*] --> Idle
+title Safehome Security Function State Machine
 
-state Idle {
-  Idle --> ReadyToUse
-  ReadyToUse --> [*]
-}
+state "PowerOnCheck" as POC
+state "StartupProblem" as SP
+state "ReadyToUse" as RTU
+state "Monitoring" as M
+state "Normal" as N
 
-state ReadyToUse {
-  ReadyToUse --> Reset : reset
-  ReadyToUse --> Activate : activate
-  ReadyToUse --> TurnOff : turnOff
-  ReadyToUse --> Monitoring : monitor
-}
+[*] --> POC : system startup
 
-state Monitoring {
-  Monitoring --> Alarm : sensorTriggered
-  Monitoring --> Monitoring : falseAlarm
-  Monitoring --> Monitoring : timeEnds
-  Monitoring --> [*] : passwordEntry
-}
+POC --> RTU : everything working
+POC --> SP : problem detected
 
-state Alarm {
-  Alarm --> [*] : passwordEntry
-}
+SP --> POC : problem resolved
+SP --> [*] : system stops
 
+RTU --> POC : user resets
+RTU --> M : user activates
+RTU --> N : user turns off
+
+M --> M : false alarm or time ends
+M --> N : user enters password
+
+N --> [*] : system termination
 @enduml
