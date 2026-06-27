@@ -7,7 +7,7 @@ from typing import Any
 
 from .model_client import call_model
 from .models import Case, ExperimentConfig, ValidationResult
-from .parser import normalize_puml_text, parse_and_validate_puml_text
+from .parser import normalize_puml_text, parse_and_validate_puml_text, parse_plantuml
 from .constants import TRANSITION_RE
 from .prompting import (
     _prioritized_repair_issues,
@@ -25,6 +25,7 @@ from .prompting import (
     build_sequential_baseline_repair_prompt,
     build_sequential_example_guided_repair_prompt,
     build_sequential_syntax_grounded_pattern_rules_repair_prompt,
+    build_syntax_preserving_repair_prompt,
     build_syntax_grounded_no_rules_repair_prompt,
     build_syntax_grounded_repair_prompt,
     build_syntax_grounded_pattern_rules_repair_prompt,
@@ -302,6 +303,278 @@ def repair_preserves_graph_shape(current_puml: str, repaired_puml: str) -> tuple
     return repaired_states >= min_states and repaired_transitions >= min_transitions, meta
 
 
+_CAMEL_BOUNDARY_RE = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
+_ACTIVITY_LINE_RE = re.compile(
+    r"^(.+?)\s*:\s*(entry|do|exit)\s*/\s*(.*)$",
+    re.IGNORECASE,
+)
+_BARE_ACTIVITY_LINE_RE = re.compile(
+    r"^(entry|do|exit)\s*/\s*(.*)$",
+    re.IGNORECASE,
+)
+_STATE_DECLARATION_RE = re.compile(
+    r'^state\s+(?:"([^"]+)"(?:\s+as\s+([A-Za-z_][A-Za-z0-9_]*))?'
+    r"|(.+?))\s*(\{)?\s*$",
+    re.IGNORECASE,
+)
+
+
+def _semantic_tokens(value: str) -> frozenset[str]:
+    clean = value.replace("\\n", " ")
+    clean = _CAMEL_BOUNDARY_RE.sub(" ", clean)
+    tokens = {
+        token.lower()
+        for token in re.findall(r"[A-Za-z0-9]+", clean)
+        if token.lower() not in {"and"}
+    }
+    return frozenset(tokens)
+
+
+def _semantic_name_matches(left: str, right: str) -> bool:
+    left_tokens = _semantic_tokens(left)
+    right_tokens = _semantic_tokens(right)
+    if not left_tokens or not right_tokens:
+        return left.strip().lower() == right.strip().lower()
+    return left_tokens == right_tokens or left_tokens < right_tokens or right_tokens < left_tokens
+
+
+def _state_aliases_and_declarations(puml_text: str) -> tuple[dict[str, str], set[str]]:
+    aliases: dict[str, str] = {}
+    declarations: set[str] = set()
+    for raw_line in normalize_puml_text(puml_text).splitlines():
+        declaration = _STATE_DECLARATION_RE.match(raw_line.strip())
+        if not declaration:
+            continue
+        display_name, alias, bare_name, _ = declaration.groups()
+        state_name = (display_name or bare_name or "").strip()
+        state_name = re.sub(r"\s+<<.*$", "", state_name).strip()
+        if not state_name:
+            continue
+        declarations.add(state_name)
+        aliases[state_name] = state_name
+        if alias:
+            aliases[alias] = state_name
+    return aliases, declarations
+
+
+def _extract_preserved_transitions(
+    puml_text: str,
+) -> list[tuple[str, str, str]]:
+    aliases, _ = _state_aliases_and_declarations(puml_text)
+    transitions: list[tuple[str, str, str]] = []
+    for raw_line in normalize_puml_text(puml_text).splitlines():
+        match = _TRANSITION_LINE_RE.match(raw_line.strip())
+        if not match:
+            continue
+        source, target, event = match.groups()
+        clean_source = source.strip().strip('"')
+        clean_target = target.strip().strip('"')
+        transitions.append(
+            (
+                aliases.get(clean_source, clean_source),
+                event.strip() if event else "",
+                aliases.get(clean_target, clean_target),
+            )
+        )
+    return transitions
+
+
+def _extract_state_activities(puml_text: str) -> list[tuple[str, str, frozenset[str]]]:
+    aliases, _ = _state_aliases_and_declarations(puml_text)
+    composite_stack: list[str] = []
+    activities: list[tuple[str, str, frozenset[str]]] = []
+    lines = normalize_puml_text(puml_text).splitlines()
+
+    for raw_line in lines:
+        stripped = raw_line.strip()
+        declaration = _STATE_DECLARATION_RE.match(stripped)
+        if declaration:
+            display_name, alias, bare_name, opens_composite = declaration.groups()
+            state_name = (display_name or bare_name or "").strip()
+            state_name = re.sub(r"\s+<<.*$", "", state_name).strip()
+            if opens_composite:
+                composite_stack.append(state_name)
+            continue
+        if stripped == "}":
+            if composite_stack:
+                composite_stack.pop()
+            continue
+
+        activity = _ACTIVITY_LINE_RE.match(stripped)
+        if activity:
+            state_name, action_type, action_text = activity.groups()
+            resolved_state = aliases.get(state_name.strip(), state_name.strip())
+            activities.append(
+                (
+                    resolved_state,
+                    action_type.lower(),
+                    _semantic_tokens(action_text),
+                )
+            )
+            continue
+
+        bare_activity = _BARE_ACTIVITY_LINE_RE.match(stripped)
+        if bare_activity and composite_stack:
+            action_type, action_text = bare_activity.groups()
+            activities.append(
+                (
+                    composite_stack[-1],
+                    action_type.lower(),
+                    _semantic_tokens(action_text),
+                )
+            )
+
+    return activities
+
+
+def _match_items_once(
+    required: list[Any],
+    candidates: list[Any],
+    matches: Any,
+) -> tuple[list[Any], list[Any]]:
+    remaining = list(candidates)
+    missing: list[Any] = []
+    for item in required:
+        match_index = next(
+            (index for index, candidate in enumerate(remaining) if matches(item, candidate)),
+            None,
+        )
+        if match_index is None:
+            missing.append(item)
+        else:
+            remaining.pop(match_index)
+    return missing, remaining
+
+
+def syntax_repair_preserves_content(
+    current_puml: str,
+    repaired_puml: str,
+) -> tuple[bool, dict[str, Any]]:
+    current_graph = parse_plantuml(current_puml)
+    repaired_graph = parse_plantuml(repaired_puml)
+    _, current_declarations = _state_aliases_and_declarations(current_puml)
+    _, repaired_declarations = _state_aliases_and_declarations(repaired_puml)
+    current_transitions = _extract_preserved_transitions(current_puml)
+    repaired_transitions = _extract_preserved_transitions(repaired_puml)
+    current_transition_states = {
+        endpoint
+        for source, _, target in current_transitions
+        for endpoint in (source, target)
+        if endpoint != "[*]"
+    }
+    repaired_transition_states = {
+        endpoint
+        for source, _, target in repaired_transitions
+        for endpoint in (source, target)
+        if endpoint != "[*]"
+    }
+    current_states = (
+        set(current_graph.states)
+        | current_declarations
+        | current_transition_states
+    )
+    repaired_states = (
+        set(repaired_graph.states)
+        | repaired_declarations
+        | repaired_transition_states
+    )
+
+    missing_states, remaining_repaired_states = _match_items_once(
+        sorted(current_states),
+        sorted(repaired_states),
+        _semantic_name_matches,
+    )
+    unexpected_states = [
+        state
+        for state in remaining_repaired_states
+        if not _semantic_tokens(state).issubset(_semantic_tokens(current_puml))
+    ]
+
+    def transition_matches(
+        current: tuple[str, str, str],
+        repaired: tuple[str, str, str],
+    ) -> bool:
+        current_source, current_event, current_target = current
+        repaired_source, repaired_event, repaired_target = repaired
+        return (
+            _semantic_name_matches(current_source, repaired_source)
+            and _semantic_name_matches(current_target, repaired_target)
+            and _semantic_tokens(current_event) == _semantic_tokens(repaired_event)
+        )
+
+    missing_transitions, added_transitions = _match_items_once(
+        current_transitions,
+        repaired_transitions,
+        transition_matches,
+    )
+
+    current_activities = _extract_state_activities(current_puml)
+    repaired_activities = _extract_state_activities(repaired_puml)
+
+    def activity_matches(
+        current: tuple[str, str, frozenset[str]],
+        repaired: tuple[str, str, frozenset[str]],
+    ) -> bool:
+        current_state, current_type, current_tokens = current
+        repaired_state, repaired_type, repaired_tokens = repaired
+        return (
+            _semantic_name_matches(current_state, repaired_state)
+            and current_type == repaired_type
+            and current_tokens == repaired_tokens
+        )
+
+    missing_activities, added_activities = _match_items_once(
+        current_activities,
+        repaired_activities,
+        activity_matches,
+    )
+
+    preserved = not any(
+        (
+            missing_states,
+            unexpected_states,
+            missing_transitions,
+            added_transitions,
+            missing_activities,
+            added_activities,
+        )
+    )
+    meta = {
+        "preserved": preserved,
+        "current_state_count": len(current_states),
+        "repaired_state_count": len(repaired_states),
+        "missing_states": missing_states,
+        "unexpected_states": unexpected_states,
+        "current_transition_count": len(current_transitions),
+        "repaired_transition_count": len(repaired_transitions),
+        "missing_transitions": [list(item) for item in missing_transitions],
+        "added_transitions": [list(item) for item in added_transitions],
+        "current_activity_count": len(current_activities),
+        "repaired_activity_count": len(repaired_activities),
+        "missing_activities": [
+            [state, action_type, sorted(tokens)]
+            for state, action_type, tokens in missing_activities
+        ],
+        "added_activities": [
+            [state, action_type, sorted(tokens)]
+            for state, action_type, tokens in added_activities
+        ],
+    }
+    return preserved, meta
+
+
+def _plantuml_syntax_error_line(validation: ValidationResult) -> int:
+    for issue in validation.errors:
+        match = re.search(
+            r"plantuml_syntax_error:\s*line\s+(\d+)",
+            issue,
+            re.IGNORECASE,
+        )
+        if match:
+            return int(match.group(1))
+    return 0
+
+
 def run_single_generation(
     case: Case,
     cfg: ExperimentConfig,
@@ -506,9 +779,15 @@ def run_single_generation(
     ]
 
     if cfg.use_structural_validation:
+        syntax_candidate_history = {final_puml}
         for attempt in range(1, max(0, repair_attempts) + 1):
             current_issues = strict_state_diagram_issues(final_validation)
             if not current_issues:
+                break
+            if (
+                repair_mode.strip().lower() == "syntax_preserving"
+                and not _has_plantuml_syntax_error(final_validation)
+            ):
                 break
 
             critic_prompt = ""
@@ -645,6 +924,13 @@ def run_single_generation(
                     final_validation,
                     critic_feedback,
                 )
+            elif repair_mode_clean == "syntax_preserving":
+                repair_prompt = build_syntax_preserving_repair_prompt(
+                    requirement,
+                    final_puml,
+                    final_validation,
+                    critic_feedback,
+                )
             elif repair_mode_clean == "compiler_guided_issue_routed":
                 prioritized_issues = _prioritized_repair_issues(final_validation)
                 target_issue = prioritized_issues[0] if prioritized_issues else ""
@@ -753,11 +1039,30 @@ def run_single_generation(
             current_score = validation_repair_score(final_validation)
             repaired_score = validation_repair_score(repaired_validation)
             preserves_shape, preservation_meta = repair_preserves_graph_shape(final_puml, repaired_puml)
+            syntax_content_preserved = True
+            syntax_preservation_meta: dict[str, Any] = {}
+            if repair_mode_clean == "syntax_preserving":
+                syntax_content_preserved, syntax_preservation_meta = (
+                    syntax_repair_preserves_content(final_puml, repaired_puml)
+                )
             syntax_was_invalid = _has_plantuml_syntax_error(final_validation)
+            syntax_still_invalid = _has_plantuml_syntax_error(repaired_validation)
+            current_syntax_line = _plantuml_syntax_error_line(final_validation)
+            repaired_syntax_line = _plantuml_syntax_error_line(repaired_validation)
+            syntax_diagnostic_progress = (
+                syntax_was_invalid
+                and syntax_still_invalid
+                and current_syntax_line > 0
+                and repaired_syntax_line >= current_syntax_line
+                and repaired_puml != final_puml
+                and repaired_puml not in syntax_candidate_history
+                and repaired_validation.errors != final_validation.errors
+            )
             compiler_acceptance = not (
                 repair_mode_clean in {
                     "compiler_guided_syntax",
                     "compiler_guided_issue_routed",
+                    "syntax_preserving",
                 }
                 and syntax_was_invalid
                 and _has_plantuml_syntax_error(repaired_validation)
@@ -769,9 +1074,30 @@ def run_single_generation(
                 target_solved = bool(target_issue_key) and target_issue_key not in repaired_keys
                 introduced_keys = repaired_keys - current_keys
                 routed_acceptance = target_solved and not introduced_keys
-            accepted = compiler_acceptance and routed_acceptance and repaired_score < current_score and (
-                repair_mode_clean != "targeted" or preserves_shape or repaired_score == 0
-            )
+            if repair_mode_clean == "syntax_preserving":
+                accepted = (
+                    syntax_was_invalid
+                    and syntax_content_preserved
+                    and (
+                        (
+                            compiler_acceptance
+                            and repaired_score < current_score
+                        )
+                        or syntax_diagnostic_progress
+                    )
+                )
+            else:
+                accepted = compiler_acceptance and routed_acceptance and repaired_score < current_score and (
+                    repair_mode_clean != "targeted" or preserves_shape or repaired_score == 0
+                )
+            rejection_reason = ""
+            if not accepted:
+                if repair_mode_clean == "syntax_preserving" and not syntax_content_preserved:
+                    rejection_reason = "syntax_repair_changed_preserved_content"
+                elif repair_mode_clean == "syntax_preserving":
+                    rejection_reason = "compiler_error_not_resolved_or_advanced"
+                else:
+                    rejection_reason = "repair_did_not_improve_validation_score"
             attempt_artifacts.append(
                 {
                     "stage": "repair",
@@ -790,11 +1116,18 @@ def run_single_generation(
                     "previous_score": current_score,
                     "repair_score": repaired_score,
                     "preservation": preservation_meta,
+                    "syntax_content_preserved": syntax_content_preserved,
+                    "syntax_preservation": syntax_preservation_meta,
+                    "syntax_diagnostic_progress": syntax_diagnostic_progress,
+                    "current_syntax_error_line": current_syntax_line,
+                    "repaired_syntax_error_line": repaired_syntax_line,
+                    "rejection_reason": rejection_reason,
                 }
             )
             if accepted:
                 final_puml = repaired_puml
                 final_validation = repaired_validation
+                syntax_candidate_history.add(repaired_puml)
                 current_issues_after_attempt = repaired_issues
             else:
                 current_issues_after_attempt = current_issues
@@ -812,6 +1145,11 @@ def run_single_generation(
                     "repair_score": repaired_score,
                     "preserves_graph_shape": preserves_shape,
                     "preservation": preservation_meta,
+                    "syntax_content_preserved": syntax_content_preserved,
+                    "syntax_preservation": syntax_preservation_meta,
+                    "syntax_diagnostic_progress": syntax_diagnostic_progress,
+                    "current_syntax_error_line": current_syntax_line,
+                    "repaired_syntax_error_line": repaired_syntax_line,
                     "plantuml_valid": repaired_validation.valid,
                     "strict_state_diagram_valid": not repaired_issues,
                     "errors": list(repaired_validation.errors),
@@ -827,7 +1165,7 @@ def run_single_generation(
                     {
                         "stage": "repair_rejected",
                         "attempt": attempt,
-                        "reason": "repair_did_not_improve_validation_score",
+                        "reason": rejection_reason,
                         "kept_previous_issues": current_issues,
                         "action": "kept_best_diagram_and_continued",
                     }

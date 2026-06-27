@@ -320,10 +320,14 @@ def check_plantuml_syntax(puml_text: str, timeout: int = 8) -> tuple[list[str], 
     plantuml = shutil.which("plantuml")
     plantuml_jar = os.getenv("PLANTUML_JAR", "").strip()
     java = shutil.which("java")
-    if plantuml:
-        command = [plantuml]
-    elif plantuml_jar and Path(plantuml_jar).is_file() and java:
+    if plantuml_jar:
+        if not Path(plantuml_jar).is_file():
+            return [], [f"plantuml_jar_not_found: {plantuml_jar}"]
+        if not java:
+            return [], ["java_command_not_found_for_plantuml_jar"]
         command = [java, "-jar", plantuml_jar]
+    elif plantuml:
+        command = [plantuml]
     else:
         return [], ["plantuml_command_not_found_for_official_syntax_check"]
 

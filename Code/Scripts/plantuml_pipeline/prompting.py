@@ -1826,6 +1826,58 @@ def build_compiler_guided_syntax_repair_prompt(
     )
 
 
+def build_syntax_preserving_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+) -> str:
+    syntax_issues = [
+        issue
+        for issue in _prioritized_repair_issues(validation)
+        if "plantuml_syntax_error" in issue.lower()
+    ]
+    diagnostic = (
+        "\n".join(f"- {issue}" for issue in syntax_issues)
+        if syntax_issues
+        else "- No official compiler diagnostic was captured."
+    )
+    return (
+        "You are a syntax-preserving PlantUML repair assistant.\n"
+        "Repair all official PlantUML syntax errors. The compiler diagnostic shows "
+        "the first failing line; inspect the full diagram for repeated occurrences "
+        "of the same malformed pattern. Do not perform structural, "
+        "behavioral, or semantic redesign.\n\n"
+        "Non-negotiable preservation constraints:\n"
+        "- Preserve every existing state concept. You may add an alias, but do not delete a state.\n"
+        "- Preserve every complete transition, including its source, target, event, and guard.\n"
+        "- Preserve every state entry, do, and exit action and its label text.\n"
+        "- Do not shorten, summarize, rename, merge, or remove requirement-supported behavior.\n"
+        "- Do not add new behavior. Make only the smallest edits required for compilation.\n"
+        "- A dangling fragment such as `State -->` is not a complete transition and may be removed.\n"
+        "- Return the complete corrected PlantUML only, without markdown fences or explanation.\n\n"
+        "Useful valid syntax patterns:\n"
+        "title Diagram Title\n"
+        'state "Display Name" as StateAlias\n'
+        "StateAlias : entry / action text\n"
+        "StateAlias : do / action text\n"
+        "StateAlias : exit / action text\n"
+        "SourceAlias --> TargetAlias : event [guard]\n"
+        "CompositeState.ChildState --> TargetState : event\n"
+        "[*] --> InitialState\n"
+        "FinalState --> [*]\n"
+        "Use aliases, not quoted display names, as transition endpoints.\n"
+        "Remove explanatory prose accidentally placed between @startuml and @enduml.\n"
+        "Replace semicolon-separated label fragments with valid `/` or `\\n` label text.\n\n"
+        "Official PlantUML compiler diagnostic:\n"
+        f"{diagnostic}\n\n"
+        "Requirement (for preservation checking only; do not add missing behavior):\n"
+        f"{requirement}\n\n"
+        "Candidate PlantUML:\n"
+        f"{candidate_puml}\n"
+    )
+
+
 def build_issue_routed_sequential_repair_prompt(
     requirement: str,
     candidate_puml: str,
