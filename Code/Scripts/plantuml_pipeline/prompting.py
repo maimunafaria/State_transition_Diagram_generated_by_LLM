@@ -1878,6 +1878,60 @@ def build_syntax_preserving_repair_prompt(
     )
 
 
+def build_compiler_constrained_patch_repair_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+) -> str:
+    del requirement
+    syntax_issues = [
+        issue
+        for issue in _prioritized_repair_issues(validation)
+        if "plantuml_syntax_error" in issue.lower()
+    ]
+    diagnostic = (
+        "\n".join(f"- {issue}" for issue in syntax_issues)
+        if syntax_issues
+        else "- No official compiler diagnostic was captured."
+    )
+    numbered_candidate = "\n".join(
+        f"{line_number:04d}|{line}"
+        for line_number, line in enumerate(candidate_puml.splitlines(), start=1)
+    )
+    previous_rejection = ""
+    if critic_feedback.strip():
+        previous_rejection = (
+            "\nPrevious patch rejection:\n"
+            f"{critic_feedback.strip()}\n"
+            "Return a different patch that avoids this rejection.\n"
+        )
+    return (
+        "You are a compiler-guided PlantUML syntax patch assistant.\n"
+        "Fix only the official PlantUML compiler error. Do not return a complete "
+        "diagram. Return exactly one JSON object containing line edits.\n\n"
+        "Non-negotiable constraints:\n"
+        "- Preserve every existing state, complete transition, event, guard, label, "
+        "and entry/do/exit action.\n"
+        "- Do not rename, merge, delete, summarize, or add behavior.\n"
+        "- Make the fewest and smallest edits needed for PlantUML compilation.\n"
+        "- Line numbers are 1-based and refer to the numbered candidate below.\n"
+        "- `old` must exactly match the current unnumbered line, including indentation.\n"
+        "- Supported operations are replace, delete, insert_before, and insert_after.\n"
+        "- For replace and insert operations, `new` is required and may contain `\\n`.\n"
+        "- For delete, omit `new` or set it to an empty string.\n"
+        "- Use at most 20 edits. Do not include markdown or explanation.\n\n"
+        "Required JSON shape:\n"
+        '{"edits":[{"operation":"replace","line":3,'
+        '"old":"Choice <<choice>>","new":"state Choice <<choice>>"}]}\n\n'
+        "Official PlantUML compiler diagnostic:\n"
+        f"{diagnostic}\n"
+        f"{previous_rejection}\n"
+        "Numbered candidate PlantUML (the `0001|` prefixes are not part of the file):\n"
+        f"{numbered_candidate}\n"
+    )
+
+
 def build_issue_routed_sequential_repair_prompt(
     requirement: str,
     candidate_puml: str,
