@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import random
 import re
 from pathlib import Path
@@ -13,6 +14,7 @@ from .prompting import (
     _prioritized_repair_issues,
     build_chain_of_thought_analysis_prompt,
     build_chain_of_thought_generation_prompt,
+    build_compiler_constrained_patch_repair_prompt,
     build_compiler_guided_syntax_repair_prompt,
     build_issue_routed_sequential_repair_prompt,
     build_constrained_validator_repair_prompt,
@@ -35,6 +37,11 @@ from .prompting import (
 )
 
 DEFAULT_REPAIR_ATTEMPTS = 3
+MAX_COMPILER_PATCH_EDITS = 20
+SYNTAX_ONLY_REPAIR_MODES = {
+    "syntax_preserving",
+    "compiler_constrained_patch",
+}
 
 
 def strict_state_diagram_issues(validation: ValidationResult) -> list[str]:
@@ -575,6 +582,150 @@ def _plantuml_syntax_error_line(validation: ValidationResult) -> int:
     return 0
 
 
+def _parse_compiler_constrained_patch(
+    response: str,
+) -> tuple[list[dict[str, Any]], str]:
+    clean = response.strip()
+    clean = re.sub(r"<think>.*?</think>", "", clean, flags=re.DOTALL | re.IGNORECASE).strip()
+    if clean.startswith("```") and clean.endswith("```"):
+        lines = clean.splitlines()
+        if len(lines) >= 3:
+            clean = "\n".join(lines[1:-1]).strip()
+    try:
+        payload = json.loads(clean)
+    except json.JSONDecodeError as exc:
+        return [], f"invalid_json: {exc.msg} at line {exc.lineno} column {exc.colno}"
+
+    if not isinstance(payload, dict) or set(payload) != {"edits"}:
+        return [], "root_must_be_an_object_with_only_an_edits_field"
+    edits = payload["edits"]
+    if not isinstance(edits, list):
+        return [], "edits_must_be_a_list"
+    if not edits:
+        return [], "edits_must_not_be_empty"
+    if len(edits) > MAX_COMPILER_PATCH_EDITS:
+        return [], f"too_many_edits: maximum is {MAX_COMPILER_PATCH_EDITS}"
+
+    supported_operations = {"replace", "delete", "insert_before", "insert_after"}
+    normalized: list[dict[str, Any]] = []
+    mutating_lines: set[int] = set()
+    for index, edit in enumerate(edits, start=1):
+        if not isinstance(edit, dict):
+            return [], f"edit_{index}_must_be_an_object"
+        if set(edit) - {"operation", "line", "old", "new"}:
+            return [], f"edit_{index}_contains_unsupported_fields"
+
+        operation = edit.get("operation")
+        line_number = edit.get("line")
+        old = edit.get("old")
+        new = edit.get("new", "")
+        if not isinstance(operation, str) or operation not in supported_operations:
+            return [], f"edit_{index}_has_unsupported_operation"
+        if isinstance(line_number, bool) or not isinstance(line_number, int):
+            return [], f"edit_{index}_line_must_be_an_integer"
+        if line_number < 1:
+            return [], f"edit_{index}_line_must_be_positive"
+        if not isinstance(old, str) or "\n" in old or "\r" in old:
+            return [], f"edit_{index}_old_must_be_one_exact_line"
+        if not isinstance(new, str):
+            return [], f"edit_{index}_new_must_be_a_string"
+        if operation in {"replace", "insert_before", "insert_after"} and not new:
+            return [], f"edit_{index}_new_must_not_be_empty"
+        if operation == "replace" and old == new:
+            return [], f"edit_{index}_replace_is_a_no_op"
+        if operation == "delete" and new:
+            return [], f"edit_{index}_delete_new_must_be_empty"
+        if operation in {"replace", "delete"}:
+            if line_number in mutating_lines:
+                return [], f"edit_{index}_conflicts_with_another_edit_on_line_{line_number}"
+            mutating_lines.add(line_number)
+        normalized.append(
+            {
+                "operation": operation,
+                "line": line_number,
+                "old": old,
+                "new": new,
+            }
+        )
+    return normalized, ""
+
+
+def _apply_compiler_constrained_patch(
+    candidate_puml: str,
+    edits: list[dict[str, Any]],
+) -> tuple[str, str]:
+    lines = candidate_puml.splitlines()
+    before: dict[int, list[str]] = {}
+    after: dict[int, list[str]] = {}
+    mutation: dict[int, dict[str, Any]] = {}
+
+    for index, edit in enumerate(edits, start=1):
+        line_number = int(edit["line"])
+        if line_number > len(lines):
+            return candidate_puml, (
+                f"edit_{index}_line_out_of_range: {line_number} > {len(lines)}"
+            )
+        current_line = lines[line_number - 1]
+        if edit["old"] != current_line:
+            return candidate_puml, (
+                f"edit_{index}_old_mismatch_on_line_{line_number}: "
+                f"expected {current_line!r}"
+            )
+
+        operation = str(edit["operation"])
+        if operation == "insert_before":
+            before.setdefault(line_number, []).extend(str(edit["new"]).splitlines())
+        elif operation == "insert_after":
+            after.setdefault(line_number, []).extend(str(edit["new"]).splitlines())
+        else:
+            mutation[line_number] = edit
+
+    output: list[str] = []
+    for line_number, current_line in enumerate(lines, start=1):
+        output.extend(before.get(line_number, []))
+        edit = mutation.get(line_number)
+        if edit is None:
+            output.append(current_line)
+        elif edit["operation"] == "replace":
+            output.extend(str(edit["new"]).splitlines())
+        output.extend(after.get(line_number, []))
+
+    patched = normalize_puml_text("\n".join(output))
+    if patched == normalize_puml_text(candidate_puml):
+        return candidate_puml, "patch_did_not_change_candidate"
+    return patched, ""
+
+
+def _compiler_patch_rejection_feedback(
+    reason: str,
+    patch_error: str,
+    preservation_meta: dict[str, Any],
+    current_line: int,
+    repaired_line: int,
+) -> str:
+    if patch_error:
+        return f"Patch rejected before compilation: {patch_error}."
+    if reason == "syntax_repair_changed_preserved_content":
+        counts = {
+            "missing_states": len(preservation_meta.get("missing_states", [])),
+            "unexpected_states": len(preservation_meta.get("unexpected_states", [])),
+            "missing_transitions": len(preservation_meta.get("missing_transitions", [])),
+            "added_transitions": len(preservation_meta.get("added_transitions", [])),
+            "missing_activities": len(preservation_meta.get("missing_activities", [])),
+            "added_activities": len(preservation_meta.get("added_activities", [])),
+        }
+        changed = ", ".join(f"{key}={value}" for key, value in counts.items() if value)
+        return (
+            "Patch changed preserved diagram content"
+            + (f" ({changed})" if changed else "")
+            + ". Make syntax-only edits."
+        )
+    return (
+        "Patch did not resolve or advance the compiler diagnostic "
+        f"(before line={current_line}, after line={repaired_line})."
+    )
+
+
 def run_single_generation(
     case: Case,
     cfg: ExperimentConfig,
@@ -780,23 +931,28 @@ def run_single_generation(
 
     if cfg.use_structural_validation:
         syntax_candidate_history = {final_puml}
+        compiler_patch_feedback = ""
         for attempt in range(1, max(0, repair_attempts) + 1):
             current_issues = strict_state_diagram_issues(final_validation)
             if not current_issues:
                 break
+            repair_mode_clean = repair_mode.strip().lower()
             if (
-                repair_mode.strip().lower() == "syntax_preserving"
+                repair_mode_clean in SYNTAX_ONLY_REPAIR_MODES
                 and not _has_plantuml_syntax_error(final_validation)
             ):
                 break
 
             critic_prompt = ""
-            critic_feedback = ""
+            critic_feedback = (
+                compiler_patch_feedback
+                if repair_mode_clean == "compiler_constrained_patch"
+                else ""
+            )
             target_issue = ""
             target_issue_key = ""
             repair_route = ""
 
-            repair_mode_clean = repair_mode.strip().lower()
             if (
                 repair_mode_clean in {
                     "compiler_guided_syntax",
@@ -931,6 +1087,13 @@ def run_single_generation(
                     final_validation,
                     critic_feedback,
                 )
+            elif repair_mode_clean == "compiler_constrained_patch":
+                repair_prompt = build_compiler_constrained_patch_repair_prompt(
+                    requirement,
+                    final_puml,
+                    final_validation,
+                    critic_feedback,
+                )
             elif repair_mode_clean == "compiler_guided_issue_routed":
                 prioritized_issues = _prioritized_repair_issues(final_validation)
                 target_issue = prioritized_issues[0] if prioritized_issues else ""
@@ -1029,9 +1192,24 @@ def run_single_generation(
                 timeout=timeout,
             )
             patch_lines: list[str] = []
+            compiler_patch_edits: list[dict[str, Any]] = []
+            compiler_patch_error = ""
             if repair_mode_clean == "transition_patch":
                 patch_lines = _extract_transition_patch_lines(repaired)
                 repaired_puml = _apply_transition_patch(final_puml, patch_lines)
+            elif repair_mode_clean == "compiler_constrained_patch":
+                compiler_patch_edits, compiler_patch_error = (
+                    _parse_compiler_constrained_patch(repaired)
+                )
+                if compiler_patch_error:
+                    repaired_puml = final_puml
+                else:
+                    repaired_puml, compiler_patch_error = (
+                        _apply_compiler_constrained_patch(
+                            final_puml,
+                            compiler_patch_edits,
+                        )
+                    )
             else:
                 repaired_puml = normalize_puml_text(repaired)
             _, repaired_validation = parse_and_validate_puml_text(repaired_puml)
@@ -1041,7 +1219,7 @@ def run_single_generation(
             preserves_shape, preservation_meta = repair_preserves_graph_shape(final_puml, repaired_puml)
             syntax_content_preserved = True
             syntax_preservation_meta: dict[str, Any] = {}
-            if repair_mode_clean == "syntax_preserving":
+            if repair_mode_clean in SYNTAX_ONLY_REPAIR_MODES:
                 syntax_content_preserved, syntax_preservation_meta = (
                     syntax_repair_preserves_content(final_puml, repaired_puml)
                 )
@@ -1063,6 +1241,7 @@ def run_single_generation(
                     "compiler_guided_syntax",
                     "compiler_guided_issue_routed",
                     "syntax_preserving",
+                    "compiler_constrained_patch",
                 }
                 and syntax_was_invalid
                 and _has_plantuml_syntax_error(repaired_validation)
@@ -1074,9 +1253,10 @@ def run_single_generation(
                 target_solved = bool(target_issue_key) and target_issue_key not in repaired_keys
                 introduced_keys = repaired_keys - current_keys
                 routed_acceptance = target_solved and not introduced_keys
-            if repair_mode_clean == "syntax_preserving":
+            if repair_mode_clean in SYNTAX_ONLY_REPAIR_MODES:
                 accepted = (
-                    syntax_was_invalid
+                    not compiler_patch_error
+                    and syntax_was_invalid
                     and syntax_content_preserved
                     and (
                         (
@@ -1092,9 +1272,11 @@ def run_single_generation(
                 )
             rejection_reason = ""
             if not accepted:
-                if repair_mode_clean == "syntax_preserving" and not syntax_content_preserved:
+                if compiler_patch_error:
+                    rejection_reason = "compiler_patch_invalid"
+                elif repair_mode_clean in SYNTAX_ONLY_REPAIR_MODES and not syntax_content_preserved:
                     rejection_reason = "syntax_repair_changed_preserved_content"
-                elif repair_mode_clean == "syntax_preserving":
+                elif repair_mode_clean in SYNTAX_ONLY_REPAIR_MODES:
                     rejection_reason = "compiler_error_not_resolved_or_advanced"
                 else:
                     rejection_reason = "repair_did_not_improve_validation_score"
@@ -1109,6 +1291,9 @@ def run_single_generation(
                     "repair_route": repair_route,
                     "repair_prompt": repair_prompt,
                     "transition_patch_lines": patch_lines,
+                    "raw_model_response": repaired,
+                    "compiler_patch_edits": compiler_patch_edits,
+                    "compiler_patch_error": compiler_patch_error,
                     "puml": repaired_puml,
                     "validation": repaired_validation.to_dict(),
                     "strict_state_diagram_valid": not repaired_issues,
@@ -1128,8 +1313,17 @@ def run_single_generation(
                 final_puml = repaired_puml
                 final_validation = repaired_validation
                 syntax_candidate_history.add(repaired_puml)
+                compiler_patch_feedback = ""
                 current_issues_after_attempt = repaired_issues
             else:
+                if repair_mode_clean == "compiler_constrained_patch":
+                    compiler_patch_feedback = _compiler_patch_rejection_feedback(
+                        rejection_reason,
+                        compiler_patch_error,
+                        syntax_preservation_meta,
+                        current_syntax_line,
+                        repaired_syntax_line,
+                    )
                 current_issues_after_attempt = current_issues
             steps.append(
                 {
@@ -1141,6 +1335,8 @@ def run_single_generation(
                     "target_issue": target_issue,
                     "target_issue_key": target_issue_key,
                     "repair_route": repair_route,
+                    "compiler_patch_edits": compiler_patch_edits,
+                    "compiler_patch_error": compiler_patch_error,
                     "previous_score": current_score,
                     "repair_score": repaired_score,
                     "preserves_graph_shape": preserves_shape,
@@ -1166,6 +1362,7 @@ def run_single_generation(
                         "stage": "repair_rejected",
                         "attempt": attempt,
                         "reason": rejection_reason,
+                        "feedback_for_next_attempt": compiler_patch_feedback,
                         "kept_previous_issues": current_issues,
                         "action": "kept_best_diagram_and_continued",
                     }
