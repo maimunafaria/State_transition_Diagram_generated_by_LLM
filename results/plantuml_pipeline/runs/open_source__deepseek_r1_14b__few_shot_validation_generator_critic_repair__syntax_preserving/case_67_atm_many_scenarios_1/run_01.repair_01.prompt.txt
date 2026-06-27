@@ -1,0 +1,99 @@
+You are a syntax-preserving PlantUML repair assistant.
+Repair all official PlantUML syntax errors. The compiler diagnostic shows the first failing line; inspect the full diagram for repeated occurrences of the same malformed pattern. Do not perform structural, behavioral, or semantic redesign.
+
+Non-negotiable preservation constraints:
+- Preserve every existing state concept. You may add an alias, but do not delete a state.
+- Preserve every complete transition, including its source, target, event, and guard.
+- Preserve every state entry, do, and exit action and its label text.
+- Do not shorten, summarize, rename, merge, or remove requirement-supported behavior.
+- Do not add new behavior. Make only the smallest edits required for compilation.
+- A dangling fragment such as `State -->` is not a complete transition and may be removed.
+- Return the complete corrected PlantUML only, without markdown fences or explanation.
+
+Useful valid syntax patterns:
+title Diagram Title
+state "Display Name" as StateAlias
+StateAlias : entry / action text
+StateAlias : do / action text
+StateAlias : exit / action text
+SourceAlias --> TargetAlias : event [guard]
+CompositeState.ChildState --> TargetState : event
+[*] --> InitialState
+FinalState --> [*]
+Use aliases, not quoted display names, as transition endpoints.
+Remove explanatory prose accidentally placed between @startuml and @enduml.
+Replace semicolon-separated label fragments with valid `/` or `\n` label text.
+
+Official PlantUML compiler diagnostic:
+- plantuml_syntax_error: line 9: entry / Display "Please Insert PIN"; context: 7:  | 8: state CardInserted { | 9: entry / Display "Please Insert PIN" | 10: } | 11: 
+
+Requirement (for preservation checking only; do not add missing behavior):
+Atm Many Scenarios Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall prompt the user to enter their PIN after the card is inserted.
+2. The system shall verify the entered PIN against the stored information.
+3. The system shall ensure that if the PIN is verified successfully, the system shall provide options to the user.
+4. The system shall support upon user approval, the system shall process the withdrawal request.
+5. The system shall support after dispensing cash, the system shall print a receipt for the transaction.
+6. The system shall support after completing the transaction, the system shall return the user's card.
+7. The system shall support after a brief moment, the system shall reset itself and become ready for the next user.
+
+Candidate PlantUML:
+@startuml
+title ATM State Transition Diagram
+
+state InitialState {
+  [*] --> CardInserted
+}
+
+state CardInserted {
+  entry / Display "Please Insert PIN"
+}
+
+state EnterPIN {
+  entry / Waiting for PIN input
+}
+
+state PINVerified {
+  entry / PIN verified successfully
+}
+
+state ProcessTransaction {
+  entry / Processing transaction
+}
+
+state DispenseCash {
+  entry / Dispensing cash
+}
+
+state PrintReceipt {
+  entry / Printing receipt
+}
+
+state ReturnCard {
+  entry / Returning card
+}
+
+state Reset {
+  entry / Resetting system
+}
+
+CardInserted --> EnterPIN : Insert PIN
+
+EnterPIN --> PINVerified : PIN entered correctly
+
+PINVerified --> ProcessTransaction : Process transaction
+
+ProcessTransaction --> DispenseCash : Cash withdrawal approved
+
+DispenseCash --> PrintReceipt : Dispense cash
+
+PrintReceipt --> ReturnCard : Print receipt
+
+ReturnCard --> Reset : Return card
+
+ReturnCard --> InitialState : System reset
+
+@enduml
+

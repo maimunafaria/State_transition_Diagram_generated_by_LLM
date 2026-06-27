@@ -1,0 +1,68 @@
+You are a syntax-preserving PlantUML repair assistant.
+Repair all official PlantUML syntax errors. The compiler diagnostic shows the first failing line; inspect the full diagram for repeated occurrences of the same malformed pattern. Do not perform structural, behavioral, or semantic redesign.
+
+Non-negotiable preservation constraints:
+- Preserve every existing state concept. You may add an alias, but do not delete a state.
+- Preserve every complete transition, including its source, target, event, and guard.
+- Preserve every state entry, do, and exit action and its label text.
+- Do not shorten, summarize, rename, merge, or remove requirement-supported behavior.
+- Do not add new behavior. Make only the smallest edits required for compilation.
+- A dangling fragment such as `State -->` is not a complete transition and may be removed.
+- Return the complete corrected PlantUML only, without markdown fences or explanation.
+
+Useful valid syntax patterns:
+title Diagram Title
+state "Display Name" as StateAlias
+StateAlias : entry / action text
+StateAlias : do / action text
+StateAlias : exit / action text
+SourceAlias --> TargetAlias : event [guard]
+CompositeState.ChildState --> TargetState : event
+[*] --> InitialState
+FinalState --> [*]
+Use aliases, not quoted display names, as transition endpoints.
+Remove explanatory prose accidentally placed between @startuml and @enduml.
+Replace semicolon-separated label fragments with valid `/` or `\n` label text.
+
+Official PlantUML compiler diagnostic:
+- plantuml_syntax_error: line 3: Inventory; context: 1: @startuml | 2:  | 3: Inventory | 4:  | 5: [*] --> AddGoods
+
+Requirement (for preservation checking only; do not add missing behavior):
+Inventory — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to add new goods to the inventory.
+2. The system shall allow the user to update the price of existing items in the inventory.
+3. The system shall allow the user to remove goods from the inventory that are no longer required.
+4. The system shall identify expired goods and notify the user about their removal from the inventory.
+5. The system shall allow the user to place an order to a supplier for additional goods when required.
+6. The system shall generate an invoice for the order once it is placed.
+7. The system shall allow the user to search for items available in the inventory and select them for purchase.
+8. The system shall calculate the applicable discount and tax based on the selected items.
+9. The system shall generate a receipt for the customer after the purchase.
+10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.
+11. The system shall record customer requests for items that may not be currently available.
+12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.
+
+Candidate PlantUML:
+@startuml
+
+Inventory
+
+[*] --> AddGoods
+AddGoods --> UpdatePrice
+UpdatePrice --> RemoveGoods
+RemoveGoods --> ExpiredGoodsNotification
+ExpiredGoodsNotification --> RemoveExpiredGoods
+RemoveExpiredGoods --> OrderSupplier
+OrderSupplier --> GenerateInvoice
+GenerateInvoice --> PurchaseSelection
+PurchaseSelection --> CalculateDiscountAndTax
+CalculateDiscountAndTax --> GenerateReceipt
+GenerateReceipt --> ReplaceOrCancel
+ReplaceOrCancel --> RecordRequest
+RecordRequest --> ViewTransactionsReport
+ViewTransactionsReport --> [*]
+
+@enduml
+

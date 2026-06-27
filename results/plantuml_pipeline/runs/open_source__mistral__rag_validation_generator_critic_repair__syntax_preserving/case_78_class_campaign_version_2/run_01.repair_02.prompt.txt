@@ -1,0 +1,101 @@
+You are a syntax-preserving PlantUML repair assistant.
+Repair all official PlantUML syntax errors. The compiler diagnostic shows the first failing line; inspect the full diagram for repeated occurrences of the same malformed pattern. Do not perform structural, behavioral, or semantic redesign.
+
+Non-negotiable preservation constraints:
+- Preserve every existing state concept. You may add an alias, but do not delete a state.
+- Preserve every complete transition, including its source, target, event, and guard.
+- Preserve every state entry, do, and exit action and its label text.
+- Do not shorten, summarize, rename, merge, or remove requirement-supported behavior.
+- Do not add new behavior. Make only the smallest edits required for compilation.
+- A dangling fragment such as `State -->` is not a complete transition and may be removed.
+- Return the complete corrected PlantUML only, without markdown fences or explanation.
+
+Useful valid syntax patterns:
+title Diagram Title
+state "Display Name" as StateAlias
+StateAlias : entry / action text
+StateAlias : do / action text
+StateAlias : exit / action text
+SourceAlias --> TargetAlias : event [guard]
+CompositeState.ChildState --> TargetState : event
+[*] --> InitialState
+FinalState --> [*]
+Use aliases, not quoted display names, as transition endpoints.
+Remove explanatory prose accidentally placed between @startuml and @enduml.
+Replace semicolon-separated label fragments with valid `/` or `\n` label text.
+
+Official PlantUML compiler diagnostic:
+- plantuml_syntax_error: line 4: [*] --> Commissioned : assignManager; assignStaff; context: 2: title Campaign State Machine (Final Version) | 3:  | 4: [*] --> Commissioned : assignManager; assignStaff | 5:  | 6: state Commissioned
+
+Requirement (for preservation checking only; do not add missing behavior):
+Class Campaign Version 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start a campaign after a manager and staff are assigned.
+2. The system shall activate the campaign once everything is approved and the contract is signed.
+3. The system shall prepare adverts during the campaign.
+4. The system shall approve and schedule the adverts.
+5. The system shall run the adverts.
+6. The system shall allow extension or adjustment of the campaign while it is running.
+7. The system shall complete the campaign and prepare a final statement after all adverts have finished.
+8. The system shall handle payment after the campaign completion and generate a refund if the amount paid is less than required.
+9. The system shall wait for the correct balance to be settled if the amount paid exceeds the required amount.
+10. The system shall mark the campaign as paid once the full amount is properly paid.
+11. The system shall archive the campaign and release all assigned staff and managers.
+
+Candidate PlantUML:
+@startuml
+title Campaign State Machine (Final Version)
+
+[*] --> Commissioned : assignManager; assignStaff
+
+state Commissioned
+state Suspended
+state Completed
+state Paid
+
+Commissioned --> Active : authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+Commissioned --> Completed : campaignCancelled;\ncalculateCosts;\nprepareFinalStatement
+state Active {
+
+  state Monitoring {
+    [*] --> Survey
+
+    state Survey
+    state Evaluation
+    state H1 <<history>>
+
+    Survey --> Evaluation : surveyComplete
+    Evaluation --> Survey : runSurvey
+  }
+
+  --
+
+  state Running {
+    [*] --> AdvertPreparation
+
+    state AdvertPreparation
+    state Scheduling
+    state "Running Adverts" as RunningAdverts
+    state H2 <<history>>
+
+    AdvertPreparation --> Scheduling : advertsApproved\n/authorize
+    Scheduling --> RunningAdverts : confirmSchedule
+    RunningAdverts --> AdvertPreparation : extendCampaign\n/modifyBudget
+  }
+
+}
+
+Active --> Suspended : suspendCampaign\n/stopAdverts
+Suspended --> Active : resumeCampaign
+
+Active --> Completed : campaignCancelled\n/cancelSchedule;\ncalculateCosts;\nprepareFinalStatement
+AdvertPreparation --> Completed : campaignCompleted\n/prepareFinalStatement
+
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = 0]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > 0]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < 0]\n/generateRefund
+
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+@enduml
+

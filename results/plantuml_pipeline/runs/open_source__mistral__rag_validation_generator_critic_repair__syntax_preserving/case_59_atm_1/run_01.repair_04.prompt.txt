@@ -1,0 +1,66 @@
+You are a syntax-preserving PlantUML repair assistant.
+Repair all official PlantUML syntax errors. The compiler diagnostic shows the first failing line; inspect the full diagram for repeated occurrences of the same malformed pattern. Do not perform structural, behavioral, or semantic redesign.
+
+Non-negotiable preservation constraints:
+- Preserve every existing state concept. You may add an alias, but do not delete a state.
+- Preserve every complete transition, including its source, target, event, and guard.
+- Preserve every state entry, do, and exit action and its label text.
+- Do not shorten, summarize, rename, merge, or remove requirement-supported behavior.
+- Do not add new behavior. Make only the smallest edits required for compilation.
+- A dangling fragment such as `State -->` is not a complete transition and may be removed.
+- Return the complete corrected PlantUML only, without markdown fences or explanation.
+
+Useful valid syntax patterns:
+title Diagram Title
+state "Display Name" as StateAlias
+StateAlias : entry / action text
+StateAlias : do / action text
+StateAlias : exit / action text
+SourceAlias --> TargetAlias : event [guard]
+CompositeState.ChildState --> TargetState : event
+[*] --> InitialState
+FinalState --> [*]
+Use aliases, not quoted display names, as transition endpoints.
+Remove explanatory prose accidentally placed between @startuml and @enduml.
+Replace semicolon-separated label fragments with valid `/` or `\n` label text.
+
+Official PlantUML compiler diagnostic:
+- plantuml_syntax_error: line 24: EjectingCard --> "Waiting for Input" : Card ejected; context: 22: DispensingCash --> PrintingReceipt : Cash dispensed | 23: PrintingReceipt --> EjectingCard : Receipt printed | 24: EjectingCard --> "Waiting for Input" : Card ejected | 25: @enduml
+
+Requirement (for preservation checking only; do not add missing behavior):
+Atm Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose or enter a withdrawal amount.
+2. The system shall support predefined amounts for selection by the user.
+3. The system shall allow users to input their own custom withdrawal amount.
+4. The system shall provide an option for the user to cancel the transaction at any point.
+5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.
+
+Candidate PlantUML:
+@startuml
+title ATM Control - Withdrawal Scenario
+
+state "Waiting for Input" as WaitingForInput
+state "Choosing Amount" as ChoosingAmount
+state "Selecting Predefined Amount" as SelectingPredefinedAmount
+state "Entering Custom Amount" as EnteringCustomAmount
+state "Cancelling Transaction" as CancellingTransaction
+state "Processing Withdrawal" as ProcessingWithdrawal
+state "Dispensing Cash" as DispensingCash
+state "Printing Receipt" as PrintingReceipt
+state "Ejecting Card" as EjectingCard
+
+WaitingForInput --> ChoosingAmount : User chooses option
+ChoosingAmount --> SelectingPredefinedAmount : Predefined amount selected
+ChoosingAmount --> EnteringCustomAmount : Custom amount entered
+SelectingPredefinedAmount --> DispensingCash : Amount dispensed
+EnteringCustomAmount --> ProcessingWithdrawal : Valid amount entered
+ProcessingWithdrawal --> DispensingCash : Withdrawal approved
+ProcessingWithdrawal --> EjectingCard : Rejected / Eject, Display Apology
+CancellingTransaction --> EjectingCard : Cancel / Eject
+DispensingCash --> PrintingReceipt : Cash dispensed
+PrintingReceipt --> EjectingCard : Receipt printed
+EjectingCard --> "Waiting for Input" : Card ejected
+@enduml
+

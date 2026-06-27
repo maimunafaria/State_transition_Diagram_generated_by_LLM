@@ -1,0 +1,139 @@
+You are a syntax-preserving PlantUML repair assistant.
+Repair all official PlantUML syntax errors. The compiler diagnostic shows the first failing line; inspect the full diagram for repeated occurrences of the same malformed pattern. Do not perform structural, behavioral, or semantic redesign.
+
+Non-negotiable preservation constraints:
+- Preserve every existing state concept. You may add an alias, but do not delete a state.
+- Preserve every complete transition, including its source, target, event, and guard.
+- Preserve every state entry, do, and exit action and its label text.
+- Do not shorten, summarize, rename, merge, or remove requirement-supported behavior.
+- Do not add new behavior. Make only the smallest edits required for compilation.
+- A dangling fragment such as `State -->` is not a complete transition and may be removed.
+- Return the complete corrected PlantUML only, without markdown fences or explanation.
+
+Useful valid syntax patterns:
+title Diagram Title
+state "Display Name" as StateAlias
+StateAlias : entry / action text
+StateAlias : do / action text
+StateAlias : exit / action text
+SourceAlias --> TargetAlias : event [guard]
+CompositeState.ChildState --> TargetState : event
+[*] --> InitialState
+FinalState --> [*]
+Use aliases, not quoted display names, as transition endpoints.
+Remove explanatory prose accidentally placed between @startuml and @enduml.
+Replace semicolon-separated label fragments with valid `/` or `\n` label text.
+
+Official PlantUML compiler diagnostic:
+- plantuml_syntax_error: line 2: Here is the final PlantUML for the Online College Magazine System:; context: 1: @startuml | 2: Here is the final PlantUML for the Online College Magazine System: | 3:  | 4: title UML State Machine Diagram
+
+Requirement (for preservation checking only; do not add missing behavior):
+Ott Based System Mini Reel — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall enable a user to watch videos after they have created an account.
+3. The system shall permit a user to upload videos.
+4. The system shall allow a user to save videos in their likes list during video viewing.
+5. The system shall enable a user to view their saved videos from the likes list.
+6. The system shall allow a user to enter the discussion option.
+
+Candidate PlantUML:
+@startuml
+Here is the final PlantUML for the Online College Magazine System:
+
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>>
+state EditorChoice <<choice>>
+state ReadFeedbackChoice <<choice>>
+state EndJoin <<choice>>
+
+[*] --> StartChoice
+
+state Register
+Register : do / Fill details
+Register : exit / Registration successful
+
+state Login
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+state "Manage profiles" as ManageProfiles
+ManageProfiles : entry / Admin logged in
+ManageProfiles : do / Manage profile in database
+ManageProfiles : do / Add, delete or edit profiles if necessary
+ManageProfiles : exit / Action completed
+
+state "Invalid user" as InvalidUser
+InvalidUser : entry / Invalid login or invalid registration
+InvalidUser : do / Block entry to system
+InvalidUser : exit / Abnormal termination
+
+state Writing
+Writing : entry / Writer logged in
+Writing : do / Write article
+Writing : exit / Send to editor
+
+state Editing
+Editing : entry / Editor logged in and article to be edited
+Editing : do / Edit article
+Editing : exit / Send to moderator/admin
+
+state Publishing
+Publishing : entry / Admin logged in and article to be approved
+Publishing : do / Choose to approve and publish or reject article
+Publishing : do / Add article to database if approved
+Publishing : exit / Publish article
+
+state Search
+Search : entry / Choose to search for articles
+Search : do / Read searched articles
+Search : exit / Completed reading
+
+state Reading
+Reading : entry / Published article
+Reading : do / Read article
+Reading : exit / Completed reading
+
+state Feedback
+Feedback : entry / Reader chosen to give feedback
+Feedback : do / Get feedback
+Feedback : exit / Feedback entry successful
+
+StartChoice --> Register
+StartChoice --> Login
+
+Register --> AdminChoice
+Login --> EditorChoice
+
+AdminChoice --> ManageProfiles
+AdminChoice --> InvalidUser
+
+EditorChoice --> Writing
+EditorChoice --> Editing
+EditorChoice --> InvalidUser
+
+Writing --> Editing
+Editing --> Publishing
+ManageProfiles --> Publishing
+
+InvalidUser --> [*]
+
+Publishing --> Reading
+Reading --> Reading
+
+Search --> Search
+Reading --> ReadFeedbackChoice
+
+ReadFeedbackChoice --> Search
+ReadFeedbackChoice --> Feedback
+
+Feedback --> EndJoin
+Search --> EndJoin
+
+EndJoin --> [*]
+@enduml
+
