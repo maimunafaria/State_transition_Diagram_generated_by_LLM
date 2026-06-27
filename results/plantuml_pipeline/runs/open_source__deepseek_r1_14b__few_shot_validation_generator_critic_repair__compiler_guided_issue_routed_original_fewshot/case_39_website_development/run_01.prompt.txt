@@ -1,0 +1,287 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Account — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start an account as empty when it is first opened.
+2. The system shall activate an account and make it ready to use after setting it up and making an initial deposit.
+3. The system shall allow a user to deposit money while the account is active.
+4. The system shall allow a user to withdraw money while the account is active.
+5. The system shall allow a user to check account details like balance while the account is active.
+6. The system shall make an account inactive if all the money is withdrawn.
+7. The system shall allow closing an account after it has become inactive.
+8. The system shall render an account unusable once it is closed.
+
+Example 1 PlantUML:
+@startuml
+title State diagram for the Account class
+
+[*] --> EmptyAcct : Open
+
+state "Empty\nacct" as EmptyAcct
+state "Set up\nacct" as SetupAcct
+state "Working\nacct" as WorkingAcct
+state "Nonworking\nacct" as NonworkingAcct
+state "Dead\nacct" as DeadAcct
+
+EmptyAcct --> SetupAcct : Setup Acct
+SetupAcct --> WorkingAcct : Deposit (initial)
+
+WorkingAcct --> WorkingAcct : Deposit
+WorkingAcct --> WorkingAcct : Withdraw
+WorkingAcct --> WorkingAcct : Balance\ncredit\nacctInfo
+
+WorkingAcct --> NonworkingAcct : Withdrawal (final)
+NonworkingAcct --> DeadAcct : Close
+DeadAcct --> [*]
+
+@enduml
+
+Example 2 Requirement:
+E Ration Shop — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to raise a complaint directly.
+2. The system shall end the process after a user raises a complaint.
+3. The system shall allow users to authenticate their identity using an OTP.
+4. The system shall allow multiple attempts for OTP authentication if the initial attempt fails.
+5. The system shall enable users to view items based on different categories once they are successfully authenticated.
+6. The system shall allow users to select items for purchase after viewing them.
+7. The system shall provide users with the option to pay either through an online method or by cash on delivery.
+8. The system shall deliver the product after the payment is completed.
+
+Example 2 PlantUML:
+@startuml
+title UML State Machine Diagram
+
+
+[*] --> C1
+
+state C1 <<choice>>
+C1 --> Auth : [possibilities to start]
+C1 --> Complaints
+
+
+state "Authentication of aadhar card by OTP" as Auth
+Auth : entry / card holder
+Auth : do / Generates OTP
+Auth : do / OTP should match
+Auth : exit / authentication completed
+
+state Complaints
+Complaints : entry / fill
+Complaints : do / raise a complaint
+Complaints : exit / complaint send
+
+Complaints --> [*]
+
+Auth --> Auth 
+Auth --> ViewItems
+
+state "View items" as ViewItems
+ViewItems : entry / from Authentication
+ViewItems : do / items shown based on category
+ViewItems : do / select items required
+ViewItems : exit / after selecting
+
+ViewItems --> Purchase
+
+state "make purchase" as Purchase
+Purchase : entry / from view items
+Purchase : do / payment
+Purchase : exit / chose the mode of payment
+
+
+state C2 <<choice>>
+Purchase --> C2 : [possibilities for payment]
+
+state PAYTM
+PAYTM : entry / make purchase
+PAYTM : do / making payment
+PAYTM : exit / payment done
+
+state COD
+COD : entry / make purchase
+COD : do / making payment
+COD : exit / payment done
+
+C2 --> PAYTM
+C2 --> COD
+
+
+state C3 <<choice>>
+PAYTM --> C3
+COD --> C3
+
+C3 --> Delivery : [payment completed]
+
+
+state Delivery
+Delivery : entry / COD
+Delivery : entry / PAYTM
+Delivery : do / product delivered
+
+Delivery --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Book Bank Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to register by entering their details.
+2. The system shall issue a member ID and complete the registration upon correct entry of details.
+3. The system shall require the user to re-enter their details upon incorrect entry of details.
+4. The system shall allow a user to log in after successful registration using their member ID and password.
+5. The system shall allow the user to continue upon correct entry of member ID and password during login. Otherwise, they cannot log in.
+6. The system shall allow a user to search for a book by entering its details.
+7. The system shall show suggestions if a book is found during a search; otherwise, it shall allow the user to choose another option.
+8. The system shall allow a user to get a book by entering its ID and their member ID.
+9. The system shall allow the user to get the book if their membership is active; otherwise, it shall require them to pay the fine amount first.
+10. The system shall allow a user to buy a book by entering its ID and seeing the price.
+11. The system shall provide the book if the user pays; otherwise, it shall end the process there.
+
+Example 3 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+state "Registration" as Registration {
+  [*] --> RegEnterDetails
+
+  state "Enter Details" as RegEnterDetails
+  state "Get Member_ID" as GetMemberID
+  state "Successful Registration" as SuccessfulRegistration
+  state "Re-enter Details" as ReEnterDetails
+
+  RegEnterDetails --> GetMemberID : [Valid]
+  RegEnterDetails --> ReEnterDetails : [Invalid]
+  ReEnterDetails --> RegEnterDetails
+  GetMemberID --> SuccessfulRegistration
+}
+
+state "Authentication" as Authentication {
+  [*] --> AuthEnterMemberID
+
+  state "Enter Member_ID" as AuthEnterMemberID
+  state "Enter Password" as EnterPassword
+  state "successful Login" as SuccessfulLogin
+  state "Invalid Member_ID or Password" as InvalidCreds
+
+  AuthEnterMemberID --> EnterPassword
+  EnterPassword --> SuccessfulLogin : [Valid]
+  EnterPassword --> InvalidCreds : [Invalid]
+}
+
+state "Search Books" as SearchBooks {
+  [*] --> EnterBookDetails
+
+  state "Enter Book Details" as EnterBookDetails
+  state "Display Suggestion" as DisplaySuggestion
+  state "choose Alternate option" as ChooseAlternate
+
+  EnterBookDetails --> DisplaySuggestion : [Found]
+  EnterBookDetails --> ChooseAlternate : [Not Found]
+}
+
+state "Get Books" as GetBooksState {
+  [*] --> GetEnterBookID
+
+  state "Enter Book_ID" as GetEnterBookID
+  state "Enter Member_ID" as GetEnterMemberID
+  state "Obtain Books" as ObtainBooks
+  state "Pay Fine Amount" as PayFineAmount
+
+  GetEnterBookID --> GetEnterMemberID
+  GetEnterMemberID --> ObtainBooks : [Active Member]
+  GetEnterMemberID --> PayFineAmount : [Inactive Member]
+}
+
+state "Buy Books" as BuyBooks {
+  [*] --> BuyEnterBookID
+
+  state "Enter Book_ID" as BuyEnterBookID
+  state "Display Book Amount" as DisplayBookAmount
+  state "Get Books" as BuyGetBooks
+  state BuyNotPaidEnd <<choice>>
+
+  BuyEnterBookID --> DisplayBookAmount
+  DisplayBookAmount --> BuyGetBooks : [Paid]
+  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]
+  BuyNotPaidEnd --> [*]
+}
+
+state StartJoin <<choice>>
+
+[*] --> StartJoin
+StartJoin --> Registration
+StartJoin --> Authentication
+StartJoin --> SearchBooks
+StartJoin --> GetBooksState
+StartJoin --> BuyBooks
+
+SuccessfulRegistration --> AuthEnterMemberID
+
+SuccessfulLogin --> EnterBookDetails
+SuccessfulLogin --> GetEnterBookID
+SuccessfulLogin --> BuyEnterBookID
+
+
+ObtainBooks --> [*]
+BuyGetBooks --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Website Development — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to navigate from the homepage using a navigation bar.
+2. The system shall display information about projects when selected by the user.
+3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.
+4. The system shall display information about career opportunities when selected by the user.
+5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.
+6. The system shall check submitted job applications after they are submitted.

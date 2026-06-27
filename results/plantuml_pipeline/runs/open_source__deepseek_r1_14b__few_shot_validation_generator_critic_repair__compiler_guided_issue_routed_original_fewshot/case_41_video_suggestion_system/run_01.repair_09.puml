@@ -1,0 +1,37 @@
+@startuml
+title UML State Transition Diagram - Video Suggestion System
+
+[*] --> UserSuggestionRequest
+
+state "User suggestion request" as UserSuggestionRequest
+state "User identification" as UserIdentification
+state "Gather suggested videos" as GatherSuggestedVideos
+state "Add video details" as AddVideoDetails
+state "Send suggestions" as SendSuggestions
+state "No Videos Found" as NoVideosFound
+state "Unauthorized" as Unauthorized
+
+UserSuggestionRequest : entry / Receive suggestion request
+UserSuggestionRequest --> UserIdentification
+
+UserIdentification : entry / Identify user
+UserIdentification --> GatherSuggestedVideos
+UserIdentification --> Unauthorized : User not recognized
+Unauthorized : entry / Handle unauthorized case
+Unauthorized --> [*] : Exit system
+
+GatherSuggestedVideos : entry / Gather based on profile
+GatherSuggestedVideos --> AddVideoDetails
+GatherSuggestedVideos --> NoVideosFound : No videos found
+
+AddVideoDetails : entry / Add thumbnails and view counts
+AddVideoDetails --> SendSuggestions
+
+SendSuggestions : entry / Send to user
+SendSuggestions --> [*] : Process complete
+SendSuggestions --> GatherSuggestedVideos : Resend suggestions
+
+NoVideosFound : entry / Handle no videos case
+NoVideosFound --> [*] : Exit system
+
+@enduml
