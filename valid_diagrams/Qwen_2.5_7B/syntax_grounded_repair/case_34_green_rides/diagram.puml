@@ -1,39 +1,44 @@
 @startuml
-[*] --> LoggedIn
+[*] --> J0
 
-state LoggedIn {
-  LoggedIn --> JourneyDetails : view journey details
-}
+state J0 <<choice>>
 
-state JourneyDetails {
-  JourneyDetails --> DrivingMode : activate driving mode or choose other options
-  JourneyDetails --> EatPlace : select place to eat, view menu, and order
-  JourneyDetails --> AccidentNotification : accident occurs
-}
+state "Journey Details" as JourneyDetails
+JourneyDetails : entry/upon user login and destination selection
+JourneyDetails : do/display journey details
+JourneyDetails : exit/after viewing journey details
 
-state DrivingMode {
-  DrivingMode --> JourneyDetails : back to journey details
-}
+state "Driving Mode" as DrivingMode
+DrivingMode : entry/after viewing journey details
+DrivingMode : do/activate driving mode or choose other options
+DrivingMode : exit/after selection
 
-state EatPlace {
-  EatPlace --> JourneyDetails : finish eating and go back
-}
+state "Place to Eat" as PlaceToEat
+PlaceToEat : entry/after viewing journey details
+PlaceToEat : do/select place to eat, view menu, and place order
+PlaceToEat : exit/after order placed
 
-state AccidentNotification {
-  AccidentNotification --> Notifications : inform relevant authorities
-  AccidentNotification --> Feedback : provide feedback after accident notification
-}
+state "Accident Notification" as AccidentNotification
+AccidentNotification : entry/after viewing journey details
+AccidentNotification : do/inform relevant authorities in case of an accident
+AccidentNotification : exit/after notification sent
 
-state Notifications {
-  Notifications --> Feedback : provide feedback after sending notifications
-}
+state "Driving Notifications" as DrivingNotifications
+DrivingNotifications : entry/after viewing journey details
+DrivingNotifications : do/send notifications during driving
+DrivingNotifications : exit/after notifications sent
 
-state Feedback {
-  Feedback --> JourneyComplete : complete journey
-}
+state "Order Confirmation" as OrderConfirmation
+OrderConfirmation : entry/after viewing journey details
+OrderConfirmation : do/confirm order placement
+OrderConfirmation : exit/after order confirmed
 
-state JourneyComplete {
-  JourneyComplete --> [*] : completion event
-}
+J0 --> JourneyDetails : [view_journey_details]
+JourneyDetails --> DrivingMode : [activate_driving_mode_or_choose_other_options]
+DrivingMode --> PlaceToEat : [select_place_to_eat]
+PlaceToEat --> AccidentNotification : [place_order_and_inform_authorities]
+AccidentNotification --> DrivingNotifications : [inform_authorities_in_case_of_accident]
+DrivingNotifications --> OrderConfirmation : [send_notifications_during_driving]
+OrderConfirmation --> [*] : [order_confirmed]
 
 @enduml
