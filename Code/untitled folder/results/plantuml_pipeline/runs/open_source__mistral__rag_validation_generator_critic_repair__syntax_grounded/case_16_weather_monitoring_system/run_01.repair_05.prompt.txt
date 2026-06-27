@@ -1,0 +1,175 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.
+
+Candidate PlantUML:
+@startuml
+Here is the final PlantUML:
+
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Login / Register
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state ReadBlog
+ReadBlog : entry/To home page
+ReadBlog : entry/Read blogs of recovered patients
+ReadBlog : exit/Idle
+
+state UpdateCurrentNoOfInfectedPeople
+UpdateCurrentNoOfInfectedPeople : entry/To home page
+UpdateCurrentNoOfInfectedPeople : do/Update current no. of infected people in the locality
+UpdateCurrentNoOfInfectedPeople : exit/View
+
+state ViewNumberOfInfectedPeopleInTheLocality
+ViewNumberOfInfectedPeopleInTheLocality : entry/View
+ViewNumberOfInfectedPeopleInTheLocality : do/View number of infected people in the locality
+ViewNumberOfInfectedPeopleInTheLocality : exit/Idle
+
+state NoOfDeathsInTheLocality
+NoOfDeathsInTheLocality : entry/View
+NoOfDeathsInTheLocality : do/View no. of deaths in the locality
+NoOfDeathsInTheLocality : exit/Idle
+
+state ViewMaskDemand
+ViewMaskDemand : entry/View
+ViewMaskDemand : do/View mask demand in the locality
+ViewMaskDemand : exit/Stock
+
+state StockUp
+StockUp : entry/Stock
+StockUp : do/Stock up masks and gloves by the shops
+StockUp : exit/End
+
+state SendPatientInfo
+SendPatientInfo : entry/To home page
+SendPatientInfo : do/Update data by home quarantined patients
+SendPatientInfo : exit/View patient info
+
+state ViewPatientInfo
+ViewPatientInfo : entry/View patient info
+ViewPatientInfo : do/View patient info by the medical professional
+ViewPatientInfo : exit/Prescribe
+
+state PrescribeMedicinesIfNeeded
+PrescribeMedicinesIfNeeded : entry/Prescribe
+PrescribeMedicinesIfNeeded : do/Prescribe medicines if needed
+PrescribeMedicinesIfNeeded : exit/View data from doc
+
+state ViewDataSharedByDoctor
+ViewDataSharedByDoctor : entry/View data from doc
+ViewDataSharedByDoctor : do/View data shared by doctor
+ViewDataSharedByDoctor : exit/Buy medicines
+
+state ListAllMedicalShops
+ListAllMedicalShops : entry/To home page
+ListAllMedicalShops : do/List all medical shops in the locality
+ListAllMedicalShops : exit/Buy medicines
+
+state AssignCorporationWorker
+AssignCorporationWorker : entry/To home page
+AssignCorporationWorker : do/Assign workers to disinfect in an area
+AssignCorporationWorker : exit/Update status
+
+state UpdateStatusOfCleanliness
+UpdateStatusOfCleanliness : entry/Update status
+UpdateStatusOfCleanliness : do/Update status of cleanliness in the locality
+UpdateStatusOfCleanliness : exit/End
+
+state BuyMedicines
+BuyMedicines : entry/Buy medicines
+BuyMedicines : do/Buy medicines if needed
+BuyMedicines : exit/End
+
+state J1 <<choice>>
+state J2 <<choice>>
+[*] --> Idle
+
+Idle --> J1
+J1 --> Register
+J1 --> Login
+
+Register --> J2
+J2 --> Login
+J2 --> InvalidRegistration
+InvalidRegistration --> [*]
+
+Login --> J3
+J3 --> InvalidLogin
+J3 --> ReadBlog
+J3 --> UpdateCurrentNoOfInfectedPeople
+J3 --> SendPatientInfo
+J3 --> ListAllMedicalShops
+J3 --> AssignCorporationWorker
+@enduml
+
+
+Validation issues:
+- orphan: BuyMedicines, NoOfDeathsInTheLocality, PrescribeMedicinesIfNeeded, StockUp, UpdateStatusOfCleanliness, ViewDataSharedByDoctor, ViewMaskDemand, ViewNumberOfInfectedPeopleInTheLocality, ViewPatientInfo
+- orphan_states_detected
+- unreachable: BuyMedicines, NoOfDeathsInTheLocality, PrescribeMedicinesIfNeeded, StockUp, UpdateStatusOfCleanliness, ViewDataSharedByDoctor, ViewMaskDemand, ViewNumberOfInfectedPeopleInTheLocality, ViewPatientInfo
+- unreachable_states_detected
+- choice_node_without_guarded_outgoing_transitions (J1)
+- choice_node_without_guarded_outgoing_transitions (J2)
+
+Validator details:
+- Current initial state: Idle
+- Unreachable states: BuyMedicines, NoOfDeathsInTheLocality, PrescribeMedicinesIfNeeded, StockUp, UpdateStatusOfCleanliness, ViewDataSharedByDoctor, ViewMaskDemand, ViewNumberOfInfectedPeopleInTheLocality, ViewPatientInfo
+- State count: 22
+- Transition count: 13
+
+Valid PlantUML repair patterns:
+Pattern 1: connect a requirement-supported orphan state
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Pattern 2: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Pattern 3: valid guarded choice node
+state DECISION_NODE <<choice>>
+SOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]

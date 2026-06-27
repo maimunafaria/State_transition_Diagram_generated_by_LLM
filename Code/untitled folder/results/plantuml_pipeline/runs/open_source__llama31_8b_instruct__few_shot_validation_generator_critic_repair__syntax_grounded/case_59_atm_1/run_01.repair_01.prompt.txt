@@ -1,0 +1,66 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Atm Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to choose or enter a withdrawal amount.
+2. The system shall support predefined amounts for selection by the user.
+3. The system shall allow users to input their own custom withdrawal amount.
+4. The system shall provide an option for the user to cancel the transaction at any point.
+5. The system shall support if the user cancels the transaction, the system shall stop the transaction and return the card.
+
+Candidate PlantUML:
+@startuml
+title ATM State Machine
+
+state "Idle" as Idle
+state "Select Amount" as SelectAmount
+state "Custom Amount" as CustomAmount
+state "Cancel Transaction" as CancelTransaction
+state "Transaction Completed" as TransactionCompleted
+
+[*] --> Idle : entry/To action
+
+Idle --> SelectAmount : selectAmountButtonClicked()
+
+SelectAmount --> SelectAmount : predefinedAmountSelected()
+SelectAmount --> CustomAmount : customAmountSelected()
+
+CustomAmount --> SelectAmount : cancelButtonClicked()
+CustomAmount --> TransactionCompleted : confirmButtonClicked()
+
+SelectAmount --> TransactionCompleted : confirmButtonClicked()
+
+CancelTransaction --> Idle : cancelButtonClicked()
+
+TransactionCompleted --> Idle : exit/To action
+
+@enduml
+
+
+Validation issues:
+- missing_final_state_transition (state --> [*])
+- unreachable: Cancel Transaction
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: Idle
+- Unreachable states: Cancel Transaction
+- State count: 5
+- Transition count: 8
+
+Valid PlantUML repair patterns:
+Pattern 1: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 2: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT

@@ -1,0 +1,95 @@
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>>
+state EditorChoice <<choice>>
+state ReadFeedbackChoice <<choice>>
+state EndJoin <<choice>>
+
+[*] --> StartChoice
+
+state Register
+Register : do / Fill details
+Register : exit / Registration successful
+
+state Login
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+state "Manage profiles" as ManageProfiles
+ManageProfiles : entry / Admin logged in
+ManageProfiles : do / Manage profile in database
+ManageProfiles : do / Add, delete or edit profiles if necessary
+ManageProfiles : exit / Action completed
+
+state "Invalid user" as InvalidUser
+InvalidUser : entry / Invalid login or invalid registration
+InvalidUser : do / Block entry to system
+InvalidUser : exit / Abnormal termination
+
+state Writing
+Writing : entry / Writer logged in
+Writing : do / Write article
+Writing : exit / Send to editor
+
+state Editing
+Editing : entry / Editor logged in and article to be edited
+Editing : do / Edit article
+Editing : exit / Send to moderator/admin
+
+state Publishing
+Publishing : entry / Admin logged in and article to be approved
+Publishing : do / Choose to approve and publish or reject article
+Publishing : do / Add article to database if approved
+Publishing : exit / Publish article
+
+state Search
+Search : entry / Choose to search for articles
+Search : do / Read searched articles
+Search : exit / Completed reading
+
+state Reading
+Reading : entry / Published article
+Reading : do / Read article
+Reading : exit / Completed reading
+
+state Feedback
+Feedback : entry / Reader chosen to give feedback
+Feedback : do / Get feedback
+Feedback : exit / Feedback entry successful
+
+StartChoice --> Register [user]
+StartChoice --> Login [user]
+
+Register --> AdminChoice [admin]
+Login --> EditorChoice [editor]
+
+AdminChoice --> ManageProfiles [manage profile]
+AdminChoice --> InvalidUser [invalid user]
+
+EditorChoice --> Writing [write article]
+EditorChoice --> Editing [edit article]
+EditorChoice --> InvalidUser [invalid user]
+
+Writing --> Editing [article edited]
+Editing --> Publishing [approve or reject article]
+ManageProfiles --> Publishing [approve article]
+
+InvalidUser --> [*] [block entry]
+
+Publishing --> Reading [published article]
+Reading --> Reading [continue reading]
+
+Search --> Search [search articles]
+Reading --> ReadFeedbackChoice [view saved videos or enter discussion]
+
+ReadFeedbackChoice --> Search [view saved videos]
+ReadFeedbackChoice --> Feedback [enter discussion]
+
+Feedback --> EndJoin [end feedback]
+Search --> EndJoin [end search]
+
+EndJoin --> [*] [return to start]
+@enduml
