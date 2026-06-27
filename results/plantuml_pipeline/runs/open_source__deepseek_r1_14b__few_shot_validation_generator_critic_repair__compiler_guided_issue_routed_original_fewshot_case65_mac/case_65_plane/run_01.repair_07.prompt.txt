@@ -1,0 +1,58 @@
+You are an issue-routed sequential PlantUML repair assistant.
+Fix exactly one validation issue in this attempt.
+Selected repair strategy: baseline.
+Use direct natural-language repair guidance for this target issue.
+Make the smallest possible edit that removes the target issue.
+Preserve every unaffected state, transition, name, label, and requirement-supported behavior.
+Do not attempt unrelated repairs. Do not introduce any new validation issue.
+Return only the complete corrected PlantUML code with no markdown fences or explanation.
+
+Requirement:
+Plane — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall place a newly acquired plane in an 'Order' state until it is delivered.
+2. The system shall transition a plane from 'Arrival' to 'Preparation' upon its arrival.
+3. The system shall assign a prepared plane to either 'Operations' or 'Maintenance' based on its condition and schedule.
+4. The system shall keep a plane in the 'Operations' state if it still has scheduled flights.
+5. The system shall send a plane to 'Maintenance' when there are no more scheduled flights or maintenance is required.
+6. The system shall transition a plane from 'Maintenance' to 'Preparation' after checking and servicing it until it is ready for operations.
+7. The system shall take a plane out of service if it is no longer available for use.
+8. The system shall remove a plane from its operations when it is permanently withdrawn from service.
+
+Candidate PlantUML:
+@startuml
+title Plane State Transition Diagram
+
+state Order
+state Arrival
+state Preparation
+state Operations
+state Maintenance
+state "Out of Service" as OutOfService
+state "Removed from Service" as RemovedFromService
+
+[*] --> Order
+
+Order --> Arrival : Plane acquired
+
+Arrival --> Preparation : Arrival at base
+
+Preparation --> Operations : Ready for operations
+Preparation --> Maintenance : Needs maintenance
+
+Operations --> Maintenance : No more flights or maintenance required
+
+Maintenance --> Preparation : Maintenance completed
+
+Operations --> OutOfService : Plane unavailable
+
+OutOfService --> RemovedFromService : Permanently withdrawn
+@enduml
+
+
+Target validation issue for this attempt:
+- missing_final_state_transition (state --> [*])
+
+Repair guidance:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].

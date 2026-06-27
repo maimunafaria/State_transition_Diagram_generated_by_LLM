@@ -1,0 +1,48 @@
+You are a compiler-guided PlantUML syntax repair assistant.
+Fix only the official PlantUML compiler error shown below.
+Make the smallest possible syntax edit. Preserve all supported states, transitions, labels, and behavior. Do not redesign the diagram.
+Return only the complete corrected PlantUML code with no markdown fences and no explanation.
+
+Official compiler diagnostic:
+- plantuml_syntax_error: line 25: Operations --> "Out of Service" : Plane unavailable; context: 23: Maintenance --> Preparation : Maintenance completed | 24:  | 25: Operations --> "Out of Service" : Plane unavailable | 26:  | 27: "Out of Service" --> "Removed from Service" : Permanently withdrawn
+
+Common valid syntax patterns:
+state ChoiceNode <<choice>>
+state ForkNode <<fork>>
+state JoinNode <<join>>
+state "Display Name" as StateAlias
+[*] --> FirstState
+StateA --> StateB : event [guard]
+FinalState --> [*]
+
+Candidate PlantUML:
+@startuml
+title Plane State Transition Diagram
+
+state Order
+state Arrival
+state Preparation
+state Operations
+state Maintenance
+state "Out of Service"
+state "Removed from Service"
+
+[*] --> Order
+
+Order --> Arrival : Plane acquired
+
+Arrival --> Preparation : Arrival at base
+
+Preparation --> Operations : Ready for operations
+Preparation --> Maintenance : Needs maintenance
+
+Operations --> Maintenance : No more flights or maintenance required
+
+Maintenance --> Preparation : Maintenance completed
+
+Operations --> "Out of Service" : Plane unavailable
+
+"Out of Service" --> "Removed from Service" : Permanently withdrawn
+
+@enduml
+
