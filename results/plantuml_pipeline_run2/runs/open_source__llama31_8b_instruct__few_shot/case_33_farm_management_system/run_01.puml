@@ -1,43 +1,33 @@
 @startuml
 title UML State Machine Diagram - Farm Management System
 
+[*] --> Login
+
 state "Login" as Login
 state "Main Area" as MainArea
 state "Market Conditions" as MarketConditions
 state "Market Report" as MarketReport
 state "Pest Control Help" as PestControlHelp
 state "Pest Control Techniques" as PestControlTechniques
-state "Soil Suggestions" as SoilSuggestions
+state "Soil Information" as SoilInformation
 state "Weather Insights" as WeatherInsights
 state "Labour Availability" as LabourAvailability
-state "Logout" as Logout
 
 Login --> MainArea : successfulLogin()
 
-MainArea --> MarketConditions : marketSelected()
-MarketConditions --> MarketReport : reportSelected()
-MarketReport --> MainArea : backToMain()
+MainArea --> MarketConditions : selectMarketConditions()
+MarketConditions --> MarketReport : selectMarketReport()
 
-MainArea --> PestControlHelp : pestControlSelected()
-PestControlHelp --> PestControlTechniques : techniquesSelected()
-PestControlTechniques --> MainArea : backToMain()
+PestControlHelp --> PestControlTechniques : providePhoto()
+PestControlTechniques --> MainArea : selectPestControlHelp()
 
-MainArea --> SoilSuggestions : soilInformationProvided()
-SoilSuggestions --> MainArea : backToMain()
+SoilInformation --> WeatherInsights : receiveSoilInfo()
+WeatherInsights --> LabourAvailability : receiveLocation()
 
-MainArea --> WeatherInsights : locationProvided()
-WeatherInsights --> MainArea : backToMain()
+LabourAvailability --> MainArea : viewResults()
 
-MainArea --> LabourAvailability : locationProvided()
-LabourAvailability --> MainArea : backToMain()
+MainArea --> Logout : logout()
 
-MainArea --> Logout : logoutSelected()
-
-[*] --> Login
-
-Login --> Login : invalidCredentials()
-Login --> MainArea : validCredentials()
-
-Logout --> [*]
+Logout --> [*] : sessionEnded()
 
 @enduml

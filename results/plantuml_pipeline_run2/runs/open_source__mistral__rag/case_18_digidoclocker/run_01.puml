@@ -1,32 +1,30 @@
 @startuml
 title UML State Machine Diagram (Digidoclocker)
 
-[*] --> Login
+[*] --> UserType
 
-state Login
-Login : entry / Get User Details
-Login : check Citizen Registration / CheckCitizenRegistration()
-Login : validate Login Details / ValidateLoginDetails()
-Login : [correct details] --> Profile / Successful Login
-Login : [incorrect details] --> MultipleAttempts / Multiple Login Attempts
-
-state Profile
-Profile : entry / Show User Profile
-Profile : update Profile / UpdateUserProfile()
-Profile : view Documents / ViewDocuments()
-Profile : apply Certificate / ApplyCertificate()
-Profile : cancel Certificate / CancelCertificate()
-Profile : continue Uploading / ContinueUploading()
-Profile : logout / Logout()
-
-state MultipleAttempts
-MultipleAttempts : [incorrect details] --> Login / Multiple Login Attempts
-MultipleAttempts : [exceeded attempts] --> EndSession / End Session
+state UserType <<choice>>
+UserType --> Registration : [Citizen]
+UserType --> Login : [Registered Citizen]
 
 state Registration
-Registration : entry / Get Registration Details
-Registration : validate Registration Details / ValidateRegistrationDetails()
-Registration : [accepted details] --> SaveUserInfo / Save User Information
-Registration : [invalid details] --> EndProcess / End Registration Process
+Registration : entry / Get the Registration Details
+Registration : if invalid -> end
+Registration : save user details after success
+Registration : allow login
+
+state Login
+Login : entry / Get username and password
+Login : continue if successful
+Login : provide multiple attempts if incorrect
+
+state Citizen
+Citizen : login allowed
+Citizen : upload documents
+Citizen : view profile
+Citizen : apply for certificate
+Citizen : reapply after sending request to issuer
+Citizen : continue uploading documents if needed
+Citizen : logout after actions done
 
 @enduml

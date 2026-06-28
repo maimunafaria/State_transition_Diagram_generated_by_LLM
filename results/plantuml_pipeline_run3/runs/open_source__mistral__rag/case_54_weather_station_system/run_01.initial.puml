@@ -3,26 +3,24 @@ title Weather Station System States
 
 [*] --> Running : Shutdown
 state "Running" as Running
-state "Configuration" as Configuration
+state "Configuration Mode" as ConfigurationMode
 state "Collecting Data" as CollectingData
 state "Preparing Summary" as PreparingSummary
 state "Checking Status" as CheckingStatus
 state "Controlled Mode" as ControlledMode
-state "Shutdown" as Shutdown
+state "Shutdown Condition" as ShutdownCondition
 
-Running --> Configuration : Changes or Power-saving Settings
-Running --> CollectingData : Clock Triggered
-Running --> PreparingSummary : Summary Request
-Running --> CheckingStatus : Status Request
-Running --> ControlledMode : Remote Control
-Running --> Shutdown : Shutdown Command
+Running --> ConfigurationMode : Changes/Power-saving settings
+Running --> CollectingData : Clock trigger
+Running --> PreparingSummary : Summary request
+Running --> CheckingStatus : Status check request
+Running --> ControlledMode : Remote control
+Running --> ShutdownCondition : Shutdown command
 
-Configuration --> Running : Configuration Completed
-CollectingData --> Running : Activity Completed
-PreparingSummary --> Running : Activity Completed
-CheckingStatus --> Running : Activity Completed
-ControlledMode --> Running : Normal Operation
-Shutdown --> Shutdown : Successful Shutdown
+ConfigurationMode --> Running : Configuration completed
+ControlledMode --> Running : Activity completion
+ShutdownCondition --> ShutdownCondition : Successful shutdown
+
 
 title Alert Notifier Component States
 
@@ -32,52 +30,43 @@ state "Waiting for Update" as WaitingForUpdate
 state "Processing Update" as ProcessingUpdate
 state "Unloading" as Unloading
 
-InitializeComponent --> WaitingForUpdate : Successful Initialization
-WaitingForUpdate --> WaitingForUpdate : No Updates Detected
-WaitingForUpdate --> ProcessingUpdate : Update Detected
-ProcessingUpdate --> WaitingForUpdate : Update Processed
-Unloading --> [*] : System Shutdown or Failure
+InitializeComponent --> WaitingForUpdate : Successful initialization
+WaitingForUpdate --> WaitingForUpdate : No update detected
+WaitingForUpdate --> ProcessingUpdate : Update detected
+ProcessingUpdate --> WaitingForUpdate : Update processed
+Unloading --> [*] : System shutdown or failure
+
 
 title Equihealth States
 
 [*] --> J1 : [check user]
 state J1 <<choice>>
-state J2 : PatientDashboard
-state J3 : HealthWorkerDashboard
-state J4 : GovernmentOfficialDashboard
-state J5 : Logout
+state PatientDashboard : Patient
+state HealthWorkerDashboard : Health Worker
+state GovernmentOfficialDashboard : Government Official
+state Logout : Logout
 
-J1 --> J2 : Patient
-J1 --> J3 : Health Worker
-J1 --> J4 : Government Official
-J2 --> J5 : Task Completed
-J3 --> J5 : Task Completed
-J4 --> J5 : Task Completed
+J1 --> PatientDashboard : Patient
+J1 --> HealthWorkerDashboard : Health Worker
+J1 --> GovernmentOfficialDashboard : Government Official
+Logout --> [*] : User completes tasks
+
+PatientDashboard --> [*] : Provide medical information
+HealthWorkerDashboard --> [*] : Check and analyze medical information
+GovernmentOfficialDashboard --> [*] : View health planning results
+
 
 title National Health Id States
 
-[*] --> Choice1 : Check Citizenship
+[*] --> Choice1
 state Choice1 <<choice>>
-state Choice2 : Verify Details
-state Choice3 : Generate ID
-state Choice4 : Activate Account
-state Choice5 : Set Permissions
-state Choice6 : Add Old Files
-state Choice7 : Store Files
-state Choice8 : Provide Access
-state Choice9 : Add New Files
-state Choice10 : Government Access
+state Choice2
+state Choice3
+Choice1 --> Verification : Indian
+Choice1 --> [*] : not Indian
 
-Choice1 --> Choice2 : Indian
-Choice1 --> [*] : Not Indian
-Choice2 --> Choice3 : Verified
-Choice3 --> Choice4 : Account Activated
-Choice4 --> Choice5 : After Activation
-Choice5 --> Choice6 : Add Old Files
-Choice6 --> Choice7 : Stored Files
-Choice7 --> Choice8 : Provide Access
-Choice8 --> [*] : Task Completed
-Choice5 --> Choice9 : Set Permissions
-Choice9 --> [*] : Permission Granted
-Choice9 --> Choice10 : Government Access
+Verification : entry / Citizenship status
+Verification : do / Verify details
+Verification : exit / Verified status
+
 @enduml

@@ -1,44 +1,46 @@
 @startuml
 title ATM State Machine Diagram
 
-state "Card Inserted" as CI
+state "Card Inserted" as CI {
+  [*] --> PINEntry
+}
 
 state "PIN Entry" as PE {
-  [*] --> InvalidPIN
+  [*] --> PINVerification
+}
 
-  state "Valid PIN" as ValidPIN
+state "PIN Verification" as PV {
+  [*] --> Successful
+  state "Failed" as Failed
 
-  InvalidPIN --> ValidPIN : correctPinEntered()
-  ValidPIN --> WithdrawalOptions : validPinVerified()
+  Successful --> Options : pinVerified()
+  Failed --> Retry : invalidPinEntered()
 
-  state "Withdrawal Options" as WithdrawalOptions
-  WithdrawalOptions --> ProcessWithdrawal : withdrawalApproved()
-  WithdrawalOptions --> CancelTransaction : cancellationRequested()
+  state "Options" as Opt {
+    [*] --> Withdrawal
+    state "Withdrawal" as WD
 
-  state "Process Withdrawal" as ProcessWithdrawal {
-    [*] --> CashDispensed
-
-    state "Cash Dispensing" as CashDispensing
-    CashDispensing --> ReceiptPrinting : cashDispensed()
-    ReceiptPrinting --> CardReturn : cardReturned()
-
-    CashDispensing --> CancelTransaction : cancellationRequested()
+    WD --> DispenseCash : withdrawalApproved()
+    WD --> PrintReceipt : cashDispensed()
   }
 
-  state "Cancel Transaction" as CancelTransaction {
-    [*] --> CardReturn
-
-    CardReturn --> CI : newCardInserted()
+  state "Retry" as RT {
+    [*] --> PINEntry
   }
 }
 
-state "Receipt Printing" as RP
-RP --> CardReturn : receiptPrinted()
+state "Successful" as Suc {
+  [*] --> ReturnCard
+}
 
-state "Card Return" as CR
-CR --> CI : cardReturned()
+state "Return Card" as RC {
+  [*] --> ResetATM
+}
 
-state "Reset" as R
-R --> CI : resetComplete()
+state "Reset ATM" as RA {
+  [*] --> ReadyForNextUser
+}
+
+ReadyForNextUser --> CI : newCardInserted()
 
 @enduml

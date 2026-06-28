@@ -1,44 +1,41 @@
 @startuml
-title UML State Chart Diagram
-
 [*] --> ReceiveRequest : [user sends video suggestion request]
 
 state "Receive Request" as ReceiveRequest
 ReceiveRequest : entry / receive video suggestion request from user
 ReceiveRequest : do / identify user who made the request
-ReceiveRequest : exit / identify user successfully
+ReceiveRequest : exit / identified user
 
+ReceiveRequest --> IdentifyUser : user is identified
 state "Identify User" as IdentifyUser
-IdentifyUser : entry / user's profile or preferences
-IdentifyUser : do / gather information about user
-IdentifyUser : exit / user identified successfully
+IdentifyUser : entry / identify user based on profile or preferences
+IdentifyUser : do / gather user's information
+IdentifyUser : exit / user identified
 
+IdentifyUser --> GatherVideos : videos are gathered
 state "Gather Videos" as GatherVideos
-GatherVideos : entry / user's profile or preferences
-GatherVideos : do / gather different types of videos simultaneously
-GatherVideos : exit / videos gathered successfully
+GatherVideos : entry / gather different types of videos simultaneously
+GatherVideos : do / gather trending videos from user’s area
+GatherVideos : do / gather videos with similar tags
+GatherVideos : do / gather videos from similar genres
+GatherVideos : do / gather promoted videos
+GatherVideos : exit / gathered videos
 
+GatherVideos --> AddDetails : add additional details to suggested videos
 state "Add Details" as AddDetails
-AddDetails : entry / suggested videos
-AddDetails : do / add additional details such as thumbnails and view counts
-AddDetails : exit / details added successfully
+AddDetails : entry / add thumbnails and view counts to suggested videos
+AddDetails : do / add more information to the suggested videos
+AddDetails : exit / added details
 
+AddDetails --> SendVideos : send suggested videos to user
 state "Send Videos" as SendVideos
-SendVideos : entry / suggested videos with details
-SendVideos : do / send the suggested videos to user
-SendVideos : exit / videos sent successfully
+SendVideos : entry / send suggested videos to user
+SendVideos : do / deliver the suggested videos to the user
+SendVideos : exit / sent videos
 
-ReceiveRequest --> IdentifyUser
-IdentifyUser --> GatherVideos
-GatherVideos --> AddDetails
-AddDetails --> SendVideos
-
-state "Video Suggestion" as VideoSuggestion
-VideoSuggestion : entry / video suggestion request received
-VideoSuggestion : do / suggest videos to user
-VideoSuggestion : exit / video suggestion process completed
-
-SendVideos --> VideoSuggestion
-VideoSuggestion --> [*]
+[*] --> LJ
+state LJ <<choice>>
+LJ --> ReceiveRequest
+ReceiveRequest --> LJ
 
 @enduml

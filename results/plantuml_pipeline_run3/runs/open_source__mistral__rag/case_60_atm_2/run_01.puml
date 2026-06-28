@@ -3,50 +3,113 @@ title ATM Control - Validate PIN and Withdraw Funds
 
 [*] --> Idle
 
-state Idle
+state Idle {
+  Idle --> VerifyPIN : enter_pin
+}
+
+state VerifyPIN {
+  VerifyPIN --> CorrectPIN : correct_pin
+  VerifyPIN --> IncorrectPIN : incorrect_pin
+}
+
+state CorrectPIN {
+  CorrectPIN --> DisplayOptions : display_options
+  CorrectPIN --> RequestRejected : request_rejected
+  CorrectPIN --> ProcessWithdrawal : process_withdrawal
+}
+
+state IncorrectPIN {
+  IncorrectPIN --> AskForPINAgain : ask_for_pin_again
+  IncorrentPIN --> CardRetained : card_retained
+  IncorrectPIN --> CancelProcess : cancel_process
+}
+
+state DisplayOptions {
+  DisplayOptions --> RequestWithdrawal : request_withdrawal
+  DisplayOptions --> CancelProcess : cancel_process
+}
+
+state RequestRejected {
+  RequestRejected --> AskForPINAgain : ask_for_pin_again
+}
+
+state ProcessWithdrawal {
+  ProcessWithdrawal --> Approved : approved
+  ProcessWithdrawal --> Rejected : rejected
+  ProcessWithdrawal --> OutOfCash : out_of_cash
+}
+
+state Approved {
+  Approved --> DispenseCash : dispense_cash
+  Approved --> PrintReceipt : print_receipt
+  Approved --> ReturnCard : return_card
+  Approved --> Reset : reset
+}
+
+state Rejected {
+  Rejected --> AskForPINAgain : ask_for_pin_again
+}
+
+state OutOfCash {
+  OutOfCash --> NotifyUser : notify_user
+  OutOfCash --> Reset : reset
+}
+
+state Reset {
+  Reset --> Idle : back_to_idle
+}
+
+title BPO Management System Scenario 3
+
+[*] --> Idle
+
+state Idle {
+  Idle --> UploadRequest : upload_request
+}
 
 state UploadRequest {
-  [*] --> NewRequest
-  state NewRequest
-  NewRequest --> SaveProjectDetails : uploadNewRequest
+  UploadRequest --> SaveProjectDetails : save_project_details
+}
+
+state SaveProjectDetails {
+  SaveProjectDetails --> SearchProjectCategory : search_project_category
 }
 
 state SearchProjectCategory {
-  state SearchCategory
-  SearchCategory --> AcceptOrDeclineRequest
+  SearchProjectCategory --> AcceptRequest : accept_request
+  SearchProjectCategory --> DeclineRequest : decline_request
 }
 
-state AcceptOrDeclineRequest {
-  state AcceptRequest
-  state DeclineRequest
-  AcceptRequest --> ProceedWithProject / proceed
-  DeclineRequest --> RejectProject / reject
+state AcceptRequest {
+  AcceptRequest --> ProceedWithProject : proceed_with_project
+  AcceptRequest --> RejectProject : reject_project
 }
 
-state UpdateProjectStatus {
-  state UpdateStatus
-  UpdateStatus --> TrackProgress
+state ProceedWithProject {
+  ProceedWithProject --> UpdateProjectStatus : update_project_status
+  ProceedWithProject --> TrackProgress : track_progress
 }
 
-state TrackProgress {
-  state ClientTracking
-  state BPOUpdating
-  ClientTracking --> FinalProjectUpload : trackProgress
-  BPOUpdating --> QualityCheck : updateProgress
+state RejectProject {
+  RejectProject --> UploadFinalProject : upload_final_project
+}
+
+state UploadFinalProject {
+  UploadFinalProject --> QualityCheck : quality_check
 }
 
 state QualityCheck {
-  state PassQualityCheck
-  state RestartProcess
-  PassQualityCheck --> MakePayment : passQualityCheck
-  RestartProcess --> UploadRequest : restartProcess
+  QualityCheck --> Satisfied : satisfied
+  QualityCheck --> Unsatisfied : unsatisfied
 }
 
-Idle --> UploadRequest
-UploadRequest --> SearchProjectCategory
-SearchProjectCategory --> AcceptOrDeclineRequest
-AcceptOrDeclineRequest --> UpdateProjectStatus
-UpdateProjectStatus --> TrackProgress
-TrackProgress --> QualityCheck
-QualityCheck --> Idle
+state Satisfied {
+  Satisfied --> MakePayment : make_payment
+  Satisfied --> Reset : reset
+}
+
+state Unsatisfied {
+  Unsatisfied --> RestartProcess : restart_process
+  Unsatisfied --> Reset : reset
+}
 @enduml

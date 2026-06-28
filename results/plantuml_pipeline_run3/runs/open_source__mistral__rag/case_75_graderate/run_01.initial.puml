@@ -4,71 +4,79 @@ title Rate Management System State Diagram
 [*] --> StartDateArrived
 StartDateArrived --> Active
 Active --> Expired
-Expired --> ArchivedOrRemoved
+Expired --> ArchivedAfterOneYear
 
 
 title Traffic Management System State Diagram
 
-state VehicleOnRoad
-state PedestrianWaiting
-state StreetLightsControlled
-state TrafficSignalsManaged
-state ViolationDetected
+state OnRoadOrWaiting
+state ControllingStreetLights
+state ManagingTrafficSignals
+state CapturingVehicleNumbersAndDetails
+state VerifyingTrafficRules
+state NoViolation
+state Violation
 state FineIssued
-state FinePaid
+state PaidFine
 state WarningSent
 
-[*] --> VehicleOnRoad
-VehicleOnRoad --> PedestrianWaiting
-PedestrianWaiting --> StreetLightsControlled
-StreetLightsControlled --> TrafficSignalsManaged
-TrafficSignalsManaged --> ViolationDetected
-ViolationDetected --> FineIssued
-FineIssued --> FinePaid
+OnRoadOrWaiting --> ControllingStreetLights
+ControllingStreetLights --> ManagingTrafficSignals
+ManagingTrafficSignals --> CapturingVehicleNumbersAndDetails
+CapturingVehicleNumbersAndDetails --> VerifyingTrafficRules
+VerifyingTrafficRules --> NoViolation
+NoViolation --> EndProcess
+VerifyingTrafficRules --> Violation
+Violation --> FineIssued
+FineIssued --> PaidFine
+PaidFine --> EndProcess
 FineIssued --> WarningSent
-FinePaid --> Completed
-WarningSent --> Completed
+WarningSent --> EndProcess
 
 
-title Training Request System State Diagram
+title Training Request State Diagram
 
 [*] --> Creation
 Creation --> AwaitingApproval
 AwaitingApproval --> Rejected
-Rejected --> End
 AwaitingApproval --> SearchForSession
 SearchForSession --> WaitingForEnrolment
 WaitingForEnrolment --> Satisfied
-Satisfied --> Completed
-Completed --> End
 WaitingForEnrolment --> Cancelled
-Cancelled --> End
+Cancelled --> EndProcess
+Satisfied --> Completed
+Completed --> EndProcess
 
 
 title Book Bank Management System State Diagram
 
 state Registration
+state DetailsCorrect
 state DetailsIncorrect
 state Login
-state ActiveMembership
-state SearchBook
-state GetBook
+state MemberIDAndPasswordCorrect
+state MemberIDAndPasswordIncorrect
+state SearchingForBook
+state SuggestionsFound
+state SuggestionsNotFound
+state GettingBook
+state MembershipActive
 state FineAmountRequired
+state BookReceived
 
-[*] --> Registration
-Registration --> MemberIDIssued
-MemberIDIssued --> DetailsCorrect
-DetailsCorrect --> Login
-DetailsCorrect --> DetailsIncorrect
-DetailsIncorrect --> Registration
+Registration --> DetailsCorrect
+DetailsCorrect --> MemberIDIssued
+MemberIDIssued --> Login
 Login --> MemberIDAndPasswordCorrect
-MemberIDAndPasswordCorrect --> Continue
-MemberIDAndPasswordCorrect --> IncorrectEntry
-IncorrectEntry --> Registration
-SearchBook --> Suggestions
-Suggestions --> GetBook
-GetBook --> ActiveMembership
-ActiveMembership --> FineAmountRequired
-FineAmountRequired --> GetBook
+MemberIDAndPasswordCorrect --> SearchingForBook
+SearchingForBook --> SuggestionsFound
+SuggestionsFound --> GettingBook
+GettingBook --> MembershipActive
+MembershipActive --> BookReceived
+MembershipActive --> FineAmountRequired
+FineAmountRequired --> BookReceived
+DetailsIncorrect --> Registration
+MemberIDAndPasswordIncorrect --> Login
+SuggestionsNotFound --> ChooseAnotherOption
 
 @enduml

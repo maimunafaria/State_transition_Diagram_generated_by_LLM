@@ -16,83 +16,73 @@ DoorShut --> DoorOpen : User Opens Door
 DoorOpen --> DoorOpenItem : User Places Food
 DoorOpenItem --> DoorShutItem : User Closes Door
 DoorShutItem --> ReadyToCook : User Enters Cook Time
-
-ReadyToCook --> Checking
-Checking --> Cooking : No Issues Detected
-Checking --> Alarm : Turntable Fault
-Checking --> Alarm : Emitter Fault
-
-Cooking --> Done : Timeout or Door Opened
-Cooking --> Cooking : Time
-Done --> Waiting : Operation Stopped or Cancelled
-
-DoorOpen --> Disabled : Operation in Progress
-Disabled --> Waiting : Door Closed or User Cancels
-Alarm --> Disabled
+ReadyToCook --> Cooking : User Starts Microwave
+Cooking --> Done : Timeout or Cancel
+Done --> Waiting : Completion or Cancellation
+Waiting --> Checking : Next Use
+Checking --> Alarm : Turntable Fault or Emitter Fault
+Alarm --> Disabled : Issue Detected
+Disabled --> Waiting : Door Closed
 
 Case ID: case_73_oven
 Complexity: medium
 
-title Microwave Oven Control - State Diagram for Oven
+Requirement:
+Oven — Polished Requirement Specification
 
-state "Door Shut" as DoorShutOven
-state "Door Open" as DoorOpenOven
-state "Door Open With Item" as DoorOpenItemOven
-state "Door Shut With Item" as DoorShutItemOven
-state "Ready To Cook" as ReadyToCookOven
-state CookingOven
-state "Checking"
-state AlarmOven
-state DoneOven
-state "Waiting"
+Functional Requirements
+1. The system shall allow the user to open the door whenever it is closed.
+2. The system shall allow the user to place food inside or remove it from the microwave when the door is open.
+3. The system shall require the user to close the door after placing food inside.
+4. The system shall require the user to enter cooking time after the door is closed.
+5. The system shall start cooking the food when the user initiates the microwave and continue until the set time is completed.
+6. The system shall stop immediately if the door is opened during cooking for safety reasons.
+7. The system shall stop when the cooking time ends and allow the user to open the door to remove the food.
 
-DoorShutOven --> DoorOpenOven : User Opens Door
-DoorOpenOven --> DoorOpenItemOven : User Places Food
-DoorOpenItemOven --> DoorShutItemOven : User Closes Door
-DoorShutItemOven --> ReadyToCookOven : User Enters Cook Time
+Reference PlantUML:
+title Microwave Oven Control - State Diagram (continued)
 
-ReadyToCookOven --> Checking
-Checking --> CookingOven : No Issues Detected
-Checking --> AlarmOven : Turntable Fault
-Checking --> AlarmOven : Emitter Fault
-
-CookingOven --> DoneOven : Timeout or Door Opened
-CookingOven --> CookingOven : Time
-DoneOven --> Waiting : Operation Stopped or Cancelled
-
-DoorOpenOven --> DisabledOven : Operation in Progress
-DisabledOven --> Waiting : Door Closed or User Cancels
-AlarmOven --> DisabledOven
+DoorShutItem --> Cooking : User Starts Microwave
+Cooking --> DoorOpen : Door Opened During Cooking
+Disabled --> Waiting : Door Closed
+Done --> OpenDoor : Cooking Completed
+OpenDoor --> DoorOpen : User Opens Door to Remove Food
 
 Case ID: case_69_atm_many_scenarios_6
 Complexity: medium
 
-title ATM Control - Validate PIN and Withdraw Funds
+Requirement:
+Atm Many Scenarios Scenario 6 — Polished Requirement Specification
 
-state Idle
-state "Entering PIN" as EnteringPIN
-state "Incorrect PIN" as IncorrectPIN
-state "Invalid Card" as InvalidCard
-state "Security Hold" as SecurityHold
-state "Cancelled" as Cancelled
-state "Options" as Options
-state "Processing Transaction" as ProcessingTransaction
-state "Rejected" as Rejected
-state "Dispensing Cash" as DispensingCash
-state "Printing Receipt" as PrintingReceipt
-state "Out of Cash" as OutOfCash
-state "Resetting" as Resetting
+Functional Requirements
+1. The system shall check if the entered PIN is correct.
+2. The system shall ask for the PIN again if it is incorrect.
+3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.
+4. The system shall return the card if the user cancels the process at any moment during this stage.
+5. The system shall display options for the user to choose from if the PIN is correct.
+6. The system shall process the withdrawal request and check if it can approve the transaction.
+7. The system shall cancel everything and return the card if the withdrawal request is rejected.
+8. The system shall dispense cash, print a receipt, and return the card if the withdrawal request is approved.
+9. The system shall stop the operation if it runs out of cash during the process.
+10. The system shall reset itself to be ready for the next user after completing or ending the session.
 
-Idle --> EnteringPIN
-EnteringPIN --> IncorrectPIN : Incorrect PIN Entered
-EnteringPIN --> Options : Correct PIN Entered
-IncorrectPIN --> InvalidCard : Card is Invalid
-IncorrectPIN --> SecurityHold : User Keeps Entering Incorrect PIN
-Options --> ProcessingTransaction : User Chooses Option
-ProcessingTransaction --> Rejected : Transaction Rejected
-ProcessingTransaction --> DispensingCash : Cash Dispensed
-ProcessingTransaction --> PrintingReceipt : Receipt Printed
-ProcessingTransaction --> OutOfCash : ATM Runs out of Cash
-ProcessingTransaction --> Resetting : Transaction Completed or Cancelled
-Resetting --> Idle : Ready for Next User
+Reference PlantUML:
+title ATM Control - Validate PIN and Withdraw Funds (continued)
+
+Idle --> CheckPIN : User Enters PIN
+CheckPIN --> CorrectPIN : Correct PIN
+CorrectPIN --> Options : Display Options
+Options --> RequestWithdrawal : User Chooses Withdrawal Option
+RequestWithdrawal --> Approve : Transaction Approved
+Approve --> DispenseCash : Dispense Cash
+Approve --> PrintReceipt : Print Receipt
+Approve --> ReturnCard : Return Card
+Approve --> OutOfCash : No More Cash Available
+OutOfCash --> Error : Display Error and Reset ATM
+
+IncorrectPIN --> CheckPINAgain : Incorrect PIN, Ask Again
+CheckPINAgain --> InvalidCard : User Enters Invalid Card
+InvalidCard --> KeepCard : Keep Card for Security Reasons
+KeepCard --> Cancel : User Chooses to Cancel
+Cancel --> ReturnCard : Return Card and
 @enduml

@@ -1,39 +1,45 @@
 @startuml
 title UML State Machine Diagram - Digidoclocker
 
-state "Unregistered Citizen" as UnregisteredCitizen
-state "Registered Citizen" as RegisteredCitizen
-state "Logged In Citizen" as LoggedInCitizen
-state "Registrars Requesting Certificate" as RegistrarsRequestingCertificate
-state "Multiple Certificates Applied" as MultipleCertificatesApplied
-state "Session Ended" as SessionEnded
+state "Initial" as Initial
+state "Citizen Registration" as CitizenRegistration
+state "Citizen Login" as CitizenLogin
+state "Citizen Profile" as CitizenProfile
+state "Document Upload" as DocumentUpload
+state "Certificate Application" as CertificateApplication
+state "Reapply for Certificate" as ReapplyForCertificate
+state "Registrar Request" as RegistrarRequest
+state "Multiple Certificate Request" as MultipleCertificateRequest
 
-UnregisteredCitizen : entry / Unregistered User
-UnregisteredCitizen : do / Register Citizen
-UnregisteredCitizen : exit / Registered Citizen
+Initial --> CitizenRegistration : [New Citizen]
 
-RegisteredCitizen --> LoggedInCitizen : [Login]
-LoggedInCitizen : entry / Correct Login Details
-LoggedInCitizen : do / Upload Documents, View Profile or Apply for Certificate
-LoggedInCitizen : exit / Continue Uploading Documents or Apply for Multiple Certificates
+CitizenRegistration --> CitizenLogin : [Registered Citizen]
+CitizenLogin --> CitizenProfile : [Logged In Citizen]
+CitizenLogin --> DocumentUpload : [Incorrect Login Details]
 
-RegistrarsRequestingCertificate : entry / Request Certificate for Verification
-RegistrarsRequestingCertificate : do / Request Multiple Certificates and Continue Requesting More
-RegistrarsRequestingCertificate : exit / End Session
+DocumentUpload --> CitizenProfile : [Continue Uploading Documents]
+DocumentUpload --> CertificateApplication : [Finish Uploading Documents]
 
-MultipleCertificatesApplied : entry / Applied for Multiple Certificates
-MultipleCertificatesApplied : do / Reapply after Sending Request to Issuer
-MultipleCertificatesApplied : exit / End Session
+CertificateApplication --> ReapplyForCertificate : [Apply for Multiple Certificates]
+ReapplyForCertificate --> CitizenProfile : [Reapply for Certificate]
 
-SessionEnded : entry / User Done with Actions
-SessionEnded : do / End Session
-SessionEnded : exit / [*]
+CitizenLogin --> RegistrarRequest : [Registered Registrar]
+RegistrarRequest --> MultipleCertificateRequest : [Request Multiple Certificates]
+MultipleCertificateRequest --> CitizenProfile : [Continue Requesting Certificates]
 
-[*] --> UnregisteredCitizen
-UnregisteredCitizen --> RegisteredCitizen : [Register]
-RegisteredCitizen --> LoggedInCitizen : [Login]
-LoggedInCitizen --> MultipleCertificatesApplied : [Apply for Certificate]
-MultipleCertificatesApplied --> RegistrarsRequestingCertificate : [Reapply]
-RegistrarsRequestingCertificate --> SessionEnded : [End Session]
+CitizenProfile --> DocumentUpload : [View Profile and Upload Documents]
+DocumentUpload --> CertificateApplication : [Apply for Certificate from Viewed Profile]
 
+ReapplyForCertificate --> CertificateApplication : [Reapply for Certificate after Sending Request]
+CertificateApplication --> CitizenProfile : [Finish Applying for Certificate]
+
+MultipleCertificateRequest --> RegistrarRequest : [Continue Requesting Certificates]
+
+CitizenLogin --> EndSession : [End Session]
+
+endstate
+
+[*] --> Initial
+Initial --> CitizenRegistration
+EndSession --> [*]
 @enduml

@@ -2,51 +2,52 @@
 title Campaign State Diagram
 
 state "Idle" as Idle
-Idle : entry / No campaign started
+Idle : entry / Assign manager and staff
+Idle : do / Wait for approval
 
-state "Campaign Started" as CampaignStarted
-CampaignStarted : entry / Manager and staff assigned
-CampaignStarted : do / Start campaign preparation
+state "Awaiting Approval" as AwaitingApproval
+AwaitingApproval : entry / Manager and staff assigned
+AwaitingApproval : do / Wait for contract signing
 
-state "Preparation Complete" as PreparationComplete
-PreparationComplete : entry / Everything approved and contract signed
-PreparationComplete : do / Activate campaign
+state "Activated" as Activated
+Activated : entry / Contract signed
+Activated : do / Prepare adverts
 
-state "Adverts Prepared" as AdvertsPrepared
-AdvertsPrepared : entry / Preparing adverts during the campaign
-AdvertsPrepared : do / Approve and schedule adverts
+state "Preparing Adverts" as PreparingAdverts
+PreparingAdverts : entry / Activate campaign
+PreparingAdverts : do / Approve and schedule adverts
 
-state "Adverts Running" as AdvertsRunning
-AdvertsRunning : entry / Run adverts
-AdvertsRunning : do / Allow extension or adjustment of the campaign
+state "Running Campaign" as RunningCampaign
+RunningCampaign : entry / Adverts approved and scheduled
+RunningCampaign : do / Run adverts
 
-state "Campaign Complete" as CampaignComplete
-CampaignComplete : entry / All adverts finished
-CampaignComplete : do / Prepare final statement
+state "Extending or Adjusting Campaign" as ExtendingOrAdjustingCampaign
+ExtendingOrAdjustingCampaign : entry / Campaign running
+ExtendingOrAdjustingCampaign : do / Extend or adjust campaign
 
-state "Payment Pending" as PaymentPending
-PaymentPending : entry / Handle payment after campaign completion
-PaymentPending : do / Generate refund if amount paid is less than required
+state "Completed" as Completed
+Completed : entry / All adverts finished
+Completed : do / Prepare final statement
 
-state "Balance Settled" as BalanceSettled
-BalanceSettled : entry / Wait for correct balance to be settled
-BalanceSettled : do / Mark campaign as paid once full amount is properly paid
+state "Paid" as Paid
+Paid : entry / Full amount paid
+Paid : do / Mark campaign as paid
 
-state "Campaign Paid" as CampaignPaid
-CampaignPaid : entry / Campaign marked as paid
-CampaignPaid : do / Archive the campaign and release staff and managers
+state "Archived" as Archived
+Archived : entry / Campaign completed
+Archived : do / Release assigned staff and managers
 
-[*] --> Idle
+Idle --> AwaitingApproval : Manager and staff assigned
+AwaitingApproval --> Activated : Contract signed
+Activated --> PreparingAdverts : Activate campaign
+PreparingAdverts --> RunningCampaign : Adverts approved and scheduled
+RunningCampaign --> ExtendingOrAdjustingCampaign : Campaign running
+ExtendingOrAdjustingCampaign --> RunningCampaign : Extend or adjust campaign
+RunningCampaign --> Completed : All adverts finished
+Completed --> Paid : Full amount paid
+Paid --> Archived : Mark campaign as paid
+Completed --> Archived : Prepare final statement
 
-Idle --> CampaignStarted : Manager and staff assigned
-CampaignStarted --> PreparationComplete : Everything approved and contract signed
-PreparationComplete --> AdvertsPrepared : Activate campaign
-AdvertsPrepared --> AdvertsRunning : Preparing adverts during the campaign
-AdvertsRunning --> CampaignComplete : All adverts finished
-CampaignComplete --> PaymentPending : Handle payment after campaign completion
-
-PaymentPending --> BalanceSettled : Wait for correct balance to be settled
-BalanceSettled --> CampaignPaid : Mark campaign as paid once full amount is properly paid
-CampaignPaid --> Idle : Archive the campaign and release staff and managers
+Archived --> [*]
 
 @enduml

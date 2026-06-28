@@ -5,61 +5,43 @@ title UML State Machine Diagram - Safehome Security Function
 
 state "Startup" as Startup {
   state "Problem during startup" as ProblemDuringStartup
-  ProblemDuringStartup : entry/when there is a problem during startup
-  ProblemDuringStartup : do/system stops
-  ProblemDuringStartup : exit/ system stopped
-
   state "Ready to use" as ReadyToUse
-  ReadyToUse : entry/when everything is fine during startup
-  ReadyToUse : do/system becomes ready to use
-  ReadyToUse : exit/ system ready to use
-}
 
-Startup --> [*] : power-on / problem during startup
-ProblemDuringStartup --> Startup : reset / restart
+  Startup --> ProblemDuringStartup : [problem during startup]
+  ProblemDuringStartup --> [*] : [stop]
+
+  Startup --> ReadyToUse : [everything is fine during startup]
+}
 
 state "Ready to use" as ReadyToUse {
   state "Reset" as Reset
-  Reset : entry/when user resets it
-  Reset : do/system resets
-  Reset : exit/ system reset
-
   state "Activate" as Activate
-  Activate : entry/when user activates it
-  Activate : do/system starts monitoring
-  Activate : exit/ system activated
-
   state "Turn off" as TurnOff
-  TurnOff : entry/when user turns it off
-  TurnOff : do/system stops monitoring
-  TurnOff : exit/ system turned off
-}
 
-ReadyToUse --> [*] : reset / activate / turn off
-Reset --> ReadyToUse : reset
-Activate --> Monitoring : activate
-TurnOff --> ReadyToUse : turn off
+  ReadyToUse --> Reset : [reset]
+  ReadyToUse --> Activate : [activate]
+  ReadyToUse --> TurnOff : [turn off]
+
+  Reset --> Startup : [reset to startup]
+  Activate --> Monitoring : [start monitoring]
+  TurnOff --> Startup : [stop and return to normal]
+}
 
 state "Monitoring" as Monitoring {
   state "Alarm triggered" as AlarmTriggered
-  AlarmTriggered : entry/when a sensor is triggered during monitoring
-  AlarmTriggered : do/system starts alarm and sends alerts
-  AlarmTriggered : exit/ system continues monitoring
-
   state "False alarm or time ends" as FalseAlarmOrTimeEnds
-  FalseAlarmOrTimeEnds : entry/when it turns out to be a false alarm or the time ends
-  FalseAlarmOrTimeEnds : do/system continues monitoring
-  FalseAlarmOrTimeEnds : exit/ system continues monitoring
+
+  Monitoring --> AlarmTriggered : [sensor is triggered during monitoring]
+  AlarmTriggered --> [*] : [start alarm and send alerts]
+
+  Monitoring --> FalseAlarmOrTimeEnds : [turn out to be a false alarm or the time ends]
 }
 
-Monitoring --> [*] : password entered / false alarm or time ends
-AlarmTriggered --> ReadyToUse : stop and return to normal
-
-state "Ready to use" as ReadyToUse {
+state "Normal" as Normal {
   state "Enter password" as EnterPassword
-  EnterPassword : entry/when user enters the password at any time
-  EnterPassword : do/system stops and returns to normal
-  EnterPassword : exit/ system stopped and returned to normal
+
+  Normal --> EnterPassword : [enter password at any time]
+  EnterPassword --> Startup : [stop and return to normal]
 }
 
 @enduml

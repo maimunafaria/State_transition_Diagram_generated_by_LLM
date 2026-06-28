@@ -5,11 +5,13 @@ state Unemployed
 state Assigned
 state Working
 
-[*] --> Assigned : assignToClientOrCampaign
+[*] --> Assigned : assignToClient\norassignToCampaign
 
 Assigned --> Working : switchAssignment
 
 Working --> Unemployed : leaveJob
+
+Assigned --> Unemployed : removeAssignment
 
 
 title Campaign State Machine
@@ -19,14 +21,34 @@ state Active
 state Completed
 state Paid
 
-[*] --> Inactive : assignManager\nassignStaff\napprove\nsignContract
-
-Inactive --> Active : Authorized(authorizationCode)\n/setCampaignActive
+[*] --> Active : startCampaign
 
 Active --> Completed : finishWork
 
 Completed --> Paid : prepareFinalStatement
 
-Paid --> Completed : handlePayment
+Paid --> Paid : correctPaymentReceived
 
+Paid --> Paid : paymentAdjusted
+
+Inactive --> Active : assignManager\nassignStaff\napproveContract\n[contract signed]
+
+title Advocate Diary State Machine
+
+state Unregistered
+state Registered
+state LoggedIn
+state AddingCase
+state ReminderSet
+state CaseClosed
+
+[*] --> Registered : createAccount
+
+Registered --> LoggedIn : verifyDetails\ncheckPassword
+
+LoggedIn --> AddingCase : addNewCase
+
+AddingCase --> ReminderSet : setReminders
+
+ReminderSet --> CaseClosed : closeCase
 @enduml

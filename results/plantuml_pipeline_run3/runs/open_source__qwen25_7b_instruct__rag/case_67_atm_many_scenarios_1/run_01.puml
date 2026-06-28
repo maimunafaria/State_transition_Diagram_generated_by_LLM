@@ -18,26 +18,28 @@ state "Printing Receipt" as PrintingReceipt
 
 state "Returning Card" as ReturningCard
 
-state Idle : entry / Display Welcome
+state "Resetting System" as ResettingSystem
+
+Idle --> CheckingPIN : Insert Card
 
 CheckingPIN --> CorrectPIN : Verify PIN
+
 CorrectPIN --> ProcessingTransaction : Provide Options
-ProcessingTransaction --> DispensingCash : Process Withdrawal Request
-DispensingCash --> PrintingReceipt : Print Receipt
-PrintingReceipt --> ReturningCard : Return Card
-ReturningCard --> Idle : Reset System
 
-state "Incorrect PIN" : entry / Keep Card for Security
-IncorrectPIN --> Idle : User Cancels or Card Invalid
+ProcessingTransaction --> DispensingCash : User Approves Withdrawal
 
-state "Transaction Rejected" as TransactionRejected {
-  state "Cancel Operation" as CancelOperation
-}
+DispensingCash --> PrintingReceipt : Dispense Cash
 
-ProcessingTransaction --> TransactionRejected : Request Rejected
-TransactionRejected --> ReturningCard : Return Card with Message
+PrintingReceipt --> ReturningCard : Print Receipt
 
-state "Out of Cash" as OutOfCash
-OutOfCash --> Idle : Stop Operation
+ReturningCard --> ResettingSystem : Return Card
+
+ResettingSystem --> Idle : System Resets
+
+CheckingPIN --> IncorrectPIN : PIN Incorrect
+
+IncorrectPIN --> CheckingPIN : Ask for PIN Again
+
+IncorrectPIN --> ReturningCard : Keep Card Secure, User Cancels
 
 @enduml

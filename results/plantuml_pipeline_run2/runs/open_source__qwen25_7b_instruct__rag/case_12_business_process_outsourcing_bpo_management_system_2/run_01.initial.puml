@@ -3,27 +3,33 @@ title UML State Machine Diagram (Search by Filter)
 
 [*] --> SearchByFilter
 
-state "Search By Filter" as SearchByFilter {
+state "Search by Filter" as SearchByFilter {
+
     SearchByFilter : entry / Start search
-    SearchByFilter : do / Apply filters
-    SearchByFilter : exit / Display results
+    SearchByFilter : do / Select filter category
+    SearchByFilter : exit / Filters selected
+
+    state Choice1 <<choice>>
+
+    Choice1 --> PriceRange : [Select price range]
+    Choice1 --> Category : [Select filter category]
+
+    state "Price Range" as PriceRange {
+        PriceRange : entry / Start price range selection
+        PriceRange : do / Set price range
+        PriceRange : exit / Price range set
+    }
+
+    state "Category" as Category {
+        Category : entry / Start category selection
+        Category : do / Select filter category
+        Category : exit / Filter category selected
+    }
 }
 
-state "Apply Filters" as ApplyFilters <<choice>>
-
-ApplyFilters --> CategoryFilter : [Select category]
-ApplyFilters --> PriceRangeFilter : [Select price range]
-
-state "Category Filter" as CategoryFilter {
-    CategoryFilter : entry / Select category
-    CategoryFilter : do / Apply filter
-    CategoryFilter : exit / Display results
+state "Display Matching Users" as DisplayMatchingUsers {
+    DisplayMatchingUsers : entry / Display results
 }
 
-state "Price Range Filter" as PriceRangeFilter {
-    PriceRangeFilter : entry / Select price range
-    PriceRangeFilter : do / Apply filter
-    PriceRangeFilter : exit / Display results
-}
-
+SearchByFilter --> DisplayMatchingUsers : [Submit]
 @enduml

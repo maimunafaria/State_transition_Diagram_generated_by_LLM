@@ -2,66 +2,62 @@
 [*] --> AssignManagerStaff : [assign manager and staff]
 state "Assign Manager Staff" as AMS
 AMS : entry / assign manager and staff
-AMS : do / approve assignment
-AMS : exit / wait for approval
+AMS : do / verify assignment
+AMS : exit / campaign pending approval
 
-AMS --> ApproveAssignment : [approval received]
-state "Approve Assignment" as AA
-AA : entry / approval received
-AA : do / activate campaign
-AA : exit / wait for contract signing
+AMS --> ApproveContract : contract approved
+state "Approve Contract" as AC
+AC : entry / contract approved
+AC : do / prepare adverts
+AC : exit / adverts prepared
 
-AA --> SignContract : [contract signed]
-state "Sign Contract" as SC
-SC : entry / contract signed
-SC : do / prepare adverts
-SC : exit / wait for advert approval
+AC --> PrepareAdverts : adverts prepared
+state "Prepare Adverts" as PA
+PA : entry / adverts prepared
+PA : do / approve and schedule adverts
+PA : exit / adverts scheduled
 
-SC --> ApproveAdverts : [advert approval received]
-state "Approve Adverts" as AAV
-AAV : entry / advert approval received
-AAV : do / schedule adverts
-AAV : exit / run adverts
-
-AAV --> RunAdverts : [adverts running]
+PA --> RunAdverts : adverts running
 state "Run Adverts" as RA
 RA : entry / adverts running
-RA : do / allow campaign extension or adjustment
-RA : exit / wait for adverts completion
+RA : do / run adverts
+RA : exit / adverts finished
 
-RA --> CompleteCampaign : [adverts completed]
+RA --> ExtendAdjustCampaign : campaign extended or adjusted
+state "Extend/Adjust Campaign" as EAC
+EAC : entry / campaign extended or adjusted
+EAC : do / update campaign status
+EAC : exit / campaign updated
+
+EAC --> CompleteCampaign : campaign completed
 state "Complete Campaign" as CC
-CC : entry / adverts completed
+CC : entry / campaign completed
 CC : do / prepare final statement
-CC : exit / handle payment
+CC : exit / final statement prepared
 
-CC --> HandlePayment : [payment handled]
+CC --> HandlePayment : payment handled
 state "Handle Payment" as HP
 HP : entry / payment handled
 HP : do / generate refund if amount paid is less than required
 HP : do / wait for correct balance to be settled if amount paid exceeds required amount
-HP : exit / mark campaign as paid
+HP : exit / campaign marked as paid
 
-HP --> MarkCampaignPaid : [campaign marked as paid]
-state "Mark Campaign Paid" as MCP
-MCP : entry / campaign marked as paid
-MCP : do / archive campaign
-MCP : do / release assigned staff and managers
-
-MCP --> ArchiveReleaseStaff : [archive and release completed]
+HP --> ArchiveCampaign : campaign archived
+state "Archive Campaign" as AC2
+AC2 : entry / campaign archived
+AC2 : do / release assigned staff and managers
+AC2 : exit / campaign archived
 
 [*] --> LJ
 state LJ <<choice>>
+LJ --> AMS
+AMS --> AC
+AC --> PA
+PA --> RA
+RA --> EAC
+EAC --> CC
+CC --> HP
+HP --> AC2
 
-LJ --> AssignManagerStaff
-AssignManagerStaff --> ApproveAssignment
-ApproveAssignment --> SignContract
-SignContract --> ApproveAdverts
-ApproveAdverts --> RunAdverts
-RunAdverts --> CompleteCampaign
-CompleteCampaign --> HandlePayment
-HandlePayment --> MarkCampaignPaid
-MarkCampaignPaid --> ArchiveReleaseStaff
-
-ArchiveReleaseStaff --> [*]
+AC2 --> [*]
 @enduml

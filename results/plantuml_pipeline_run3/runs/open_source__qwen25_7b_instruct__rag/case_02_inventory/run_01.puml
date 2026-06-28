@@ -3,33 +3,52 @@
 [*] --> UserRegistration
 
 state UserRegistration
-UserRegistration : entry / start
-UserRegistration : exit / complete
+UserRegistration : entry / getUserDetails
+UserRegistration : exit / registered
 
 state UserLogin
 UserLogin : entry / verifyCredentials
-UserLogin : do / checkCredentials
-UserLoginDecision <<choice>>
-UserLogin --> UserLoginDecision
+UserLogin : do / loginSuccess
+UserLogin : do / loginFailure
+UserLogin : exit / loggedIN
 
 state InventoryManagement
-InventoryManagement : entry / initialize
-InventoryManagement : addGoods / addNewGoods
-InventoryManagement : updatePrice / updateExistingItems
-InventoryManagement : removeGoods / removeUnnecessaryItems
-InventoryManagement : identifyExpired / detectExpiredItems
-InventoryManagement : placeOrder / requestSuppliersForMoreStock
-InventoryManagement : generateInvoice / createInvoiceForOrder
+InventoryManagement : entry / manageInventory
+InventoryManagement : exit / inventoryUpdated
 
 state OrderPlacement
-OrderPlacement : entry / startOrderProcess
-OrderPlacement : searchItems / findAvailableItems
-OrderPlacement : selectItems / chooseItemsForPurchase
-OrderPlacement : calculateDiscountAndTax / applyDiscountsAndTaxes
-OrderPlacement : generateReceipt / issueCustomerReceipt
+OrderPlacement : entry / placeOrder
+OrderPlacement : exit / orderPlaced
 
-state TransactionSummary
-TransactionSummary : entry / displayTransactions
-TransactionSummary : exit / showSummaryReport
+state InvoiceGeneration
+InvoiceGeneration : entry / generateInvoice
+InvoiceGeneration : exit / invoiceGenerated
+
+state ReceiptGeneration
+ReceiptGeneration : entry / generateReceipt
+ReceiptGeneration : exit / receiptGenerated
+
+state SearchAndPurchase
+SearchAndPurchase : entry / searchItems
+SearchAndPurchase : do / selectItemForPurchase
+SearchAndurchase : exit / purchaseCompleted
+
+state DiscountCalculation
+DiscountCalculation : entry / calculateDiscount
+DiscountCalculation : exit / discountCalculated
+
+state ReportGeneration
+ReportGeneration : entry / generateSummaryReport
+ReportGeneration : exit / reportGenerated
+
+[*] --> UserLogin
+
+UserLogin --> InventoryManagement : "manage inventory"
+UserLogin --> OrderPlacement : "place order"
+
+InventoryManagement --> SearchAndPurchase : "search items for purchase"
+SearchAndPurchase --> DiscountCalculation : "calculate discount and tax"
+DiscountCalculation --> ReceiptGeneration : "generate receipt after purchase"
+ReceiptGeneration --> ReportGeneration : "generate summary report"
 
 @enduml

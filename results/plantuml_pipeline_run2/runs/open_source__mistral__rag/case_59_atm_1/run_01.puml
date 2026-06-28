@@ -9,31 +9,26 @@ state "Validating PIN" as ValidatingPIN
 state "Withdrawal Options" as WithdrawalOptions
 state Confiscating
 state Ejecting
-state "Inputting Amount" as InputtingAmount
-state "Cancelling Transaction" as CancellingTransaction
-state DispensingCash
-state PrintingReceipt
-state ReturningCard
-state RunningOutOfCash
-state Resetting
+state "Waiting for Amount" as WaitingForAmount
+state "Processing Transaction" as ProcessingTransaction
+state "Dispensing Cash" as DispensingCash
+state "Printing Receipt" as PrintingReceipt
+state "Returning Card" as ReturningCard
+state "Out of Cash" as OutOfCash
+state "Resetting" as Resetting
 
 Idle --> WaitingForPIN : Card Inserted / Get PIN
 
 WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
 ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
 ValidatingPIN --> WithdrawalOptions : Correct PIN / Show Options
-
-WithdrawalOptions --> InputtingAmount : User Chooses Amount / Get Amount
-InputtingAmount --> Confiscating : Too Many Incorrect Entries / Card Confiscated
-InputtingAmount --> CancellingTransaction : User Cancels / Return Card
-InputtingAmount --> DispensingCash : Approved Transaction / Dispense Cash
-InputtingAmount --> PrintingReceipt : Approved Transaction / Print Receipt
-InputtingAmount --> RunningOutOfCash : No More Cash / Running Out of Cash
-InputtingAmount --> Resetting : Completed Session / Reset ATM
-
-CancellingTransaction --> ReturningCard : User Cancels / Return Card
-
-DispensingCash --> ReturningCard : Transaction Completed / Return Card
+WithdrawalOptions --> WaitingForAmount : User Chooses Amount / Get Amount
+WaitingForAmount --> ProcessingTransaction : Valid Amount / Check Balance & Approve
+ProcessingTransaction --> DispensingCash : Approved / Dispense Cash
+ProcessingTransaction --> ReturningCard : Rejected / Cancel Transaction & Return Card
+ProcessingTransaction --> OutOfCash : No Cash / Stop Operation & Return Card
+DispensingCash --> PrintingReceipt : Cash Dispensed / Print Receipt
 PrintingReceipt --> ReturningCard : Receipt Printed / Return Card
-RunningOutOfCash --> Resetting : No More Cash / Reset ATM
+Resetting --> Idle : Completed Session / Reset ATM
 @enduml

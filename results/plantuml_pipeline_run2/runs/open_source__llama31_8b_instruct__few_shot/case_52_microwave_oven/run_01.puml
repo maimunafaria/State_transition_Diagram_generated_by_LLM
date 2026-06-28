@@ -3,28 +3,22 @@ title Microwave Oven State Machine
 
 state "Idle" as Idle
 state "Cooking" as Cooking
-state "Error" as Error
+state "Stopped" as Stopped
 
 [*] --> Idle
 
-' idle loop
-Idle --> Idle : nextEvent = timerTick() / advance
+Idle --> Cooking : startButtonPressed()
+Cooking --> Cooking : cookingTimeEntered()
+Cooking --> Stopped : doorOpened()
 
-' user selects power level
-Idle --> Cooking : powerLevelSelected()
-Cooking --> Cooking : powerLevelSelected()
+Idle --> Cooking : powerLevelSelected(full)
+Idle --> Cooking : powerLevelSelected(half)
 
-' cooking process
-Cooking --> Cooking : cookingTimeSet()
-Cooking --> Error : doorOpenedDuringCooking()
+Cooking --> Stopped : cancelPressed()
 
-' error handling
-Error --> Idle : cancelPressed()
-Error --> Idle : doorClosedAfterError()
+Stopped --> Idle : resetPressed()
+Stopped --> Idle : timerExpired()
 
-' user cancels cooking process
-Cooking --> Idle : cancelPressed()
-
-Idle --> Idle : timerTick() / advance
+Idle --> Idle : timeUpdated()
 
 @enduml

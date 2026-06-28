@@ -6,44 +6,47 @@ title ATM Control - Combined Scenarios
 state Idle
 Idle : entry / Display Welcome
 
-state "Entering PIN"
-"Entering PIN" : enterPin(pin)
-"Entering PIN" : verifyPin(pin, storedPIN)
-"Entering PIN" : checkCardValidity()
-"Entering PIN" : checkIncorrectPins()
+state "Enter PIN"
+"Enter PIN" : enterPin(pin)
+"Enter PIN" : verifyPin(pin, storedPIN)
+"Enter PIN" : checkPinLimit(incorrectEntries)
+"Enter PIN" : checkCardValidity(cardStatus)
 
 state "Processing Transaction" as ProcessingTransaction {
-  state "Processing Withdrawal" {
-    state "Checking Validity" as CheckingValidity
-    "Checking Validity" : checkWithdrawalRequest(withdrawalAmount)
-    "Checking Validity" : checkSufficientCash()
-    "Checking Validity" : checkCardSecurity()
-    "Processing Withdrawal" : dispenseCash(withdrawalAmount)
-    "Processing Withdrawal" : printReceipt()
-    "Processing Withdrawal" : returnCard()
-  }
+  state "Processing Transfer" as ProcessingTransfer
+  state "Processing Query" as ProcessingQuery
+  state "Withdrawal"
 
-  state "Processing Transfer" {
-    state "Checking Validity" as CheckingValidity
-    "Checking Validity" : checkTransferRequest(transferAmount)
-    "Checking Validity" : checkSufficientCash()
-    "Processing Transfer" : transferFunds(transferAmount)
-    "Processing Transfer" : printReceipt()
-  }
-
-  state "Processing Query" {
-    state "Checking Validity" as CheckingValidity
-    "Checking Validity" : checkQueryRequest()
-    "Processing Query" : processQuery()
-    "Processing Query" : printReceipt()
-  }
+  "Processing Transaction" : chooseOption()
+  "Processing Transaction" : processRequest(request)
+  "Processing Transaction" : checkApproval(approved)
+  "Processing Transaction" : printReceipt(receipt)
+  "Processing Transaction" : dispenseCash(cash)
+  "Processing Transaction" : returnCard()
+  "Processing Transaction" : cancelOperation(message)
+  "Processing Transaction" : shutdown()
 }
 
-state "Returning Card and Ending Session" {
-  state "Returning Card" as ReturningCard
-  "Returning Card" : returnCard()
-  state "Ending Session" as EndingSession
-  "Ending Session" : shortEndingPhase()
-  "Ending Session" : resetATM()
+state "Invalid Card or PIN Limit Reached" {
+  state "Retaining Card" as RetainingCard
+  "Invalid Card or PIN Limit Reached" : retainCard()
+  "Invalid Card or PIN Limit Reached" : returnMessage(message)
 }
+
+state "Transfer" {
+  "Transfer" : transferMoney(amount)
+}
+
+state "Query" {
+  "Query" : processQuery(query)
+}
+
+Idle --> "Enter PIN"
+"Enter PIN" --> "Processing Transaction"
+"Processing Transaction" -->|approved| "Print Receipt"
+"Processing Transaction" -->|rejected| "Cancel Operation"
+"Invalid Card or PIN Limit Reached" --> "Retaining Card"
+"Retaining Card" --> "Return Message"
+"Transfer" --> "Dispense Cash"
+"Query" --> "Print Receipt"
 @enduml

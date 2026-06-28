@@ -7,33 +7,59 @@ state Idle
 Idle : entry / Initial state
 
 state AdjustingTime <<choice>>
-AdjustingTime : entry / User presses button to adjust time
-AdjustingTime : do / Increase values while adjusting time settings
-AdjustingTime : exit / Time adjusted successfully
+Idle --> AdjustingTime : press button
 
-state AlarmSetting <<choice>>
-AlarmSetting : entry / User turns on or off alarm feature
-AlarmSetting : do / Set alarm hour and minutes
-AlarmSetting : exit / Alarm set successfully
+state "Adjust Hour" as AdjustHour
+AdjustHour : entry / Press hour button
+AdjustHour : do / increase hour value
+AdjustHour : exit / Exit adjusting time mode
 
-state AlarmTriggered
-AlarmTriggered : entry / Set alarm time matches current time
-AlarmTriggered : do / Trigger alarm to ring
-AlarmTriggered : exit / Alarm stopped by user
+state "Adjust Minute" as AdjustMinute
+AdjustMinute : entry / Press minute button
+AdjustMinute : do / increase minute value
+AdjustMinute : exit / Exit adjusting time mode
 
-state LightOn <<choice>>
-LightOn : entry / User presses button to turn on light
-LightOn : do / Turn on light feature
-LightOn : exit / Light turned off when button released
+state "Alarm Hour" as AlarmHour
+AlarmHour : entry / Press alarm hour button
+AlarmHour : do / set alarm hour value
+AlarmHour : exit / Exit adjusting time mode
 
-Idle --> AdjustingTime : press button to adjust time
-AdjustingTime --> Idle : time adjusted successfully
-AdjustingTime --> AlarmSetting : press button to switch to alarm setting
-AlarmSetting --> Idle : alarm set successfully
-AlarmSetting --> AlarmTriggered : alarm triggered
-AlarmTriggered --> LightOn : light on when alarm triggered
-LightOn --> AlarmTriggered : stop alarm by pressing specific button
-AlarmTriggered --> Idle : alarm stopped
+state "Alarm Minute" as AlarmMinute
+AlarmMinute : entry / Press alarm minute button
+AlarmMinute : do / set alarm minute value
+AlarmMinute : exit / Exit adjusting time mode
 
-Idle --> [*] : power off
+AdjustingTime --> AdjustHour : press hour button
+AdjustingTime --> AdjustMinute : press minute button
+AdjustingTime --> AlarmHour : press alarm hour button
+AdjustingTime --> AlarmMinute : press alarm minute button
+
+state "Alarm On" as AlarmOn
+AlarmOn : entry / Turn on alarm feature
+AlarmOn : do / Set alarm time
+AlarmOn : exit / Exit alarm mode
+
+state "Alarm Off" as AlarmOff
+AlarmOff : entry / Turn off alarm feature
+AlarmOff : do / Reset alarm time
+AlarmOff : exit / Exit alarm mode
+
+state "Light On" as LightOn
+LightOn : entry / Press light button
+LightOn : do / Turn on light
+LightOn : exit / Exit light mode
+
+state "Light Off" as LightOff
+LightOff : entry / Release light button
+LightOff : do / Turn off light
+LightOff : exit / Exit light mode
+
+AlarmHour --> AlarmOn : set alarm hour value
+AlarmMinute --> AlarmOn : set alarm minute value
+AlarmOn --> Idle : alarm triggered
+Idle --> AlarmOff : turn off alarm feature
+AlarmOff --> LightOn : press light button
+LightOn --> LightOff : release light button
+LightOff --> Idle : exit light mode
+
 @enduml

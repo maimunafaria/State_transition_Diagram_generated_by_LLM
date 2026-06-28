@@ -3,33 +3,29 @@ title State machine for Campaign
 
 state Commissioned
 state Active
+state Paused
+state Adjusting
 state Completed
 state Paid
-state Cancelled
+state Archived
 
 [*] --> Commissioned : /assignManager;\nassignStaff\n/approveContract
 
 Commissioned --> Active : Authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
 
-Active --> Active : CarryOutSurvey()\nEvaluateSurveyResults()
+Active --> Paused : /pauseCampaign
+Active --> Adjusting : /extendDuration\n/changeBudget
 
-Active --> Active : PrepareAdvert()\nApproveAdvert()\nScheduleAdvert()
+Adjusting --> Active : /resumeCampaign
 
-Active --> Paid : RunAdverts()
+Active --> Completed : /finishWork
 
-Paid --> Completed : FinishWork()
+Completed --> Paid : /calculateCosts\n/prepareFinalStatement\n/handlePayment\n[payment matches due]\n/markAsPaid
 
-Completed --> Cancelled : /cancelCampaign(reason)
+Paid --> Archived : /archiveCampaign\n/releaseStaffAndManager
 
-Completed --> Paid : CalculateCosts()\nPrepareFinalStatement()
+Active --> Completed : /runAdverts
 
-Paid --> Archived : HandlePayment()\n[payment matches due amount]\n/markAsPaid
+Completed --> Paid : /calculateCosts\n/prepareFinalStatement\n/handlePayment\n[payment does not match due]\n/makeAdjustments\n/markAsPaid
 
-Paid --> WaitingForPayment : HandlePayment()\n[payment exceeds due amount]
-
-WaitingForPayment --> Paid : SettleCorrectAmount()
-
-Archived --> Released : ArchiveCampaign()\nReleaseStaffAndManager()
-
-Cancelled --> Completed : CalculateCosts()\nPrepareFinalStatement()
 @enduml

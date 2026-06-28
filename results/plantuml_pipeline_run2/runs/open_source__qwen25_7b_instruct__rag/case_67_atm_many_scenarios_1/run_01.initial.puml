@@ -8,36 +8,32 @@ state Idle
 state Idle : entry / Display Welcome
 
 state "Checking PIN" as CheckingPIN {
-  state "Correct PIN" as CorrectPIN {
-    CorrectPIN : entry / Verify PIN, Provide Options
-    CorrectPIN --> ProcessWithdrawalRequest : User Approves
-    ProcessWithdrawalRequest : entry / Process Withdrawal Request
-    ProcessWithdrawalRequest --> DispenseCashAndPrintReceipt : Approved
-    DispenseCashAndPrintReceipt : entry / Dispense Cash, Print Receipt, Return Card
-    DispenseCashAndPrintReceipt --> ResetSystem : Transaction Completed
-  }
-  state "Incorrect PIN" as IncorrectPIN {
-    IncorrectPIN : entry / Display Error, Ask for PIN Again
-    IncorrectPIN --> Idle : User Cancels or System Resets
-  }
+  state "Correct PIN" as CorrectPIN
+  state "Incorrect PIN" as IncorrectPIN
 }
 
-state Idle : entry / Check Card Validity
+state CorrectPIN : entry / Verify PIN, Provide Options
 
-state Idle : entry / Keep Card if Invalid
+state CorrectPIN --> ProcessingTransaction
 
-state Idle : entry / Return Card if Cancelled
+state IncorrectPIN : entry / Prompt for PIN Again
 
-state Idle : entry / Display Options if PIN Correct
+state IncorrectPIN --> Idle : entry / Display Welcome
 
-state Idle : entry / Process Withdrawal Request and Check Approval
+state "Card Held" as CardHeld {
+  state "User Cancels" as UserCancels
+}
 
-state Idle : entry / Cancel Operation, Return Card if Rejected
+state CardHeld : entry / Keep Card, Display Message
 
-state Idle : entry / Dispense Cash, Print Receipt if Approved
+state CardHeld --> Idle : entry / Display Welcome
 
-state Idle : entry / Handle Cash Shortage
+state ProcessingTransaction : entry / Process Withdrawal Request
 
-state Idle : entry / Reset System for Next User
+state ProcessingTransaction : exit / Dispense Cash, Print Receipt, Return Card
+
+state ProcessingTransaction --> Idle : entry / Display Welcome
+
+state Idle : exit / Reset System
 
 @enduml

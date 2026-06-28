@@ -1,25 +1,26 @@
 @startuml
 title Weather Station System States
 
-[*] --> Restart : Shutdown condition
+[*] --> Restart : [restart]
 
 state "Restart" as Restart
 state "Running" as Running
-state "Configuration Mode" as ConfigurationMode
-state "Data Collection" as DataCollection
-state "Summary Preparation" as SummaryPreparation
-state "Status Checking" as StatusChecking
-state "Controlled Mode" as ControlledMode
+state "Configuring" as Configuring
+state "SummaryPreparation" as SummaryPreparation
+state "StatusChecking" as StatusChecking
+state "ControlledMode" as ControlledMode
 state "Shutdown" as Shutdown
 
-Restart --> Running : Begin running from shutdown condition
-Running --> ConfigurationMode : Changes or power-saving settings required
-ConfigurationMode --> Running : Configuration completed
-Running --> DataCollection : Triggered by clock
-DataCollection --> Running : After data collection
-SummaryPreparation --> Running : After summary preparation
-StatusChecking --> Running : After status checking
-Running --> ControlledMode : Through remote control
-ControlledMode --> Shutdown : Shutdown command given
+Restart --> Running : [start running]
+Running --> Configuring : [configuration required]
+Configuring --> Running : [configuration completed]
+Running --> SummaryPreparation : [request summary]
+SummaryPreparation --> Running : [summary prepared]
+Running --> StatusChecking : [request status]
+StatusChecking --> Running : [status checked]
+Running --> ControlledMode : [remote control]
+ControlledMode --> Shutdown : [shutdown command]
+
+Shutdown --> [*] : [power off]
 
 @enduml

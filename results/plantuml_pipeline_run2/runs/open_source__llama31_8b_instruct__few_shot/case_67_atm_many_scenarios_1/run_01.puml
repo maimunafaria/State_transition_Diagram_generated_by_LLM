@@ -1,45 +1,46 @@
 @startuml
-title ATM State Machine
+title ATM State Machine Diagram
 
-state "Card Inserted" as CardInserted {
-  [*] --> PromptPIN
+state InsertCard as InsertCard {
+  [*] --> EnterPIN : card inserted
+}
 
-  state "Prompt PIN" as PromptPIN
+state EnterPIN as EnterPIN {
+  state "Enter PIN" as EnterPIN
   state "Verify PIN" as VerifyPIN
   state "Successful Login" as SuccessfulLogin
   state "Invalid PIN" as InvalidPIN
 
-  PromptPIN --> VerifyPIN : [Valid]
-  PromptPIN --> InvalidPIN : [Invalid]
-  VerifyPIN --> SuccessfulLogin : [Correct]
-  VerifyPIN --> InvalidPIN : [Incorrect]
+  EnterPIN --> VerifyPIN : [Valid]
+  EnterPIN --> InvalidPIN : [Invalid]
 }
 
-state "Transaction" as Transaction {
-  [*] --> WithdrawCash
-
-  state "Withdraw Cash" as WithdrawCash
-  state "Dispense Cash" as DispenseCash
-  state "Print Receipt" as PrintReceipt
-  state "Return Card" as ReturnCard
-
-  WithdrawCash --> DispenseCash : [Approved]
-  DispenseCash --> PrintReceipt
-  PrintReceipt --> ReturnCard
+state WithdrawalRequest as WithdrawalRequest {
+  [*] --> ApproveWithdrawal : ok
 }
 
-state "Reset" as Reset {
-  [*] --> ReadyForNextUser
-
-  state "Ready for Next User" as ReadyForNextUser
+state DispenseCash as DispenseCash {
+  [*] --> PrintReceipt : cash dispensed
 }
 
-CardInserted --> Transaction : [Successful Login]
-Transaction --> Reset : [Completed Transaction]
+state ReturnCard as ReturnCard {
+  [*] --> ResetATM : card returned
+}
 
-InvalidPIN --> PromptPIN : [Retry PIN]
-SuccessfulLogin --> WithdrawCash : [Start Transaction]
+state ResetATM as ResetATM {
+  state "Reset" as Reset
+  state "Ready for Next User" as Ready
 
-Reset --> CardInserted : [New User]
+  Reset --> Ready
+}
+
+InsertCard --> EnterPIN
+EnterPIN --> SuccessfulLogin : [Valid]
+SuccessfulLogin --> ApproveWithdrawal
+ApproveWithdrawal --> DispenseCash
+DispenseCash --> PrintReceipt
+PrintReceipt --> ReturnCard
+ReturnCard --> ResetATM
+ResetATM --> [*]
 
 @enduml

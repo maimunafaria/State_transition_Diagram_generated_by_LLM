@@ -7,39 +7,39 @@ title UML State Chart Diagram
 state Login
 Login : entry / display journey details
 Login : do / view journey details
-Login : exit / user decides next action
-
-state "User Decision" as UserDecision <<choice>>
-Login --> UserDecision
+Login : exit / user decides to activate driving mode or choose other options
 
 state "Activate Driving Mode" as ActivateDrivingMode
-UserDecision --> ActivateDrivingMode
-ActivateDrivingMode : entry / activate driving mode or choose other options
-ActivateDrivingMode : do / user selects option
-ActivateDrivingMode : exit / proceed with selected action
+ActivateDrivingMode : entry / activate driving mode
+ActivateDrivingMode : do / activate
+ActivateDrivingMode : exit / transition complete
 
-state "Select Place to Eat" as SelectPlaceToEat
-UserDecision --> SelectPlaceToEat
-SelectPlaceToEat : entry / select place to eat
-SelectPlaceToEat : do / view menu and order
-SelectPlaceToEat : exit / order placed or continue journey
+state "Choose Other Options" as ChooseOtherOptions
+ChooseOtherOptions : entry / choose other options
+ChooseOtherOptions : do / select option
+ChooseOtherOptions : exit / transition complete
 
-state AccidentNotification
-UserDecision --> AccidentNotification
-AccidentNotification : entry / notify relevant authorities in case of accident
-AccidentNotification : do / send notification
-AccidentNotification : exit / notification sent
+state EatPlace as EatPlace
+EatPlace : entry / select place to eat
+EatPlace : do / view menu and order if hungry
+EatPlace : exit / transition complete
 
-state "Send Notifications" as SendNotifications
-UserDecision --> SendNotifications
-SendNotifications : entry / send notifications during driving or in case of an accident
-SendNotifications : do / send notifications
-SendNotifications : exit / notifications sent
+state AccidentNotification as AccidentNotification
+AccidentNotification : entry / notify authorities in case of accident
+AccidentNotification : do / send notification during driving or in case of an accident
+AccidentNotification : exit / transition complete
 
-state FeedbackCollection
-UserDecision --> FeedbackCollection
-FeedbackCollection : entry / provide feedback upon journey completion
-FeedbackCollection : do / collect user feedback
-FeedbackCollection : exit / feedback submitted
+state Feedback as Feedback
+Feedback : entry / provide feedback upon journey completion
+Feedback : do / give feedback
+Feedback : exit / transition complete
+
+state LoginDecision <<choice>>
+Login --> LoginDecision
+
+LoginDecision --> ActivateDrivingMode
+LoginDecision --> EatPlace
+LoginDecision --> AccidentNotification
+LoginDecision --> Feedback
 
 @enduml

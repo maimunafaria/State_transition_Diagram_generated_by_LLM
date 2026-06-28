@@ -1,73 +1,124 @@
 @startuml
 title Weather Station System States
 
-[*] --> Running : Shutdown
-
+[*] --> Running : Start
 state "Running" as Running
-state "Configuration" as Configuration
-state "Collect Data" as CollectData
-state "Prepare Summary" as PrepareSummary
-state "Check Status" as CheckStatus
-state "Controlled Mode" as ControlledMode
 state "Shutdown" as Shutdown
+state "Configuration" as Configuration
+state "Controlled Mode" as ControlledMode
 
-Running --> Configuration : Changes or Power-saving Settings
-Running --> CollectData : Triggered by Clock
-Running --> PrepareSummary : Request
-Running --> CheckStatus : Request
-Running --> ControlledMode : Remote Control
-Running --> Shutdown : Shutdown Command
+Running --> Shutdown : ShutdownCommand
+Running --> Configuration : ChangesRequired
+Running --> ControlledMode : RemoteControl
 
-Configuration --> Running : Completed
-ControlledMode --> Running : Activity Completed
-Shutdown --> Shutdown : Successful
+Configuration --> Running : ConfigurationCompleted
+Configuration --> Shutdown : CancelConfiguration
+
+ControlledMode --> Running : ActivityCompleted
+ControlledMode --> Shutdown : RemoteShutdownCommand
+
+Running --> CollectData : ClockTriggered
+Running --> PrepareSummary : RequestSummary
+Running --> CheckStatus : RequestStatus
+
+PrepareSummary --> Running : SummaryPrepared
+CheckStatus --> Running : StatusChecked
+
 
 title Alert Notifier Component States
 
 [*] --> InitializeComponent : Load Component
-
 state "Initialize\nComponent" as InitializeComponent
 state "Waiting for Update" as WaitingForUpdate
 state "Processing Update" as ProcessingUpdate
 state "Unloading" as Unloading
 
-InitializeComponent --> WaitingForUpdate : Successful Initialization
-WaitingForUpdate --> ProcessingUpdate : Detected Update
-ProcessingUpdate --> WaitingForUpdate : Update Processed
-Unloading --> [*] : Failure or Shutdown
+InitializeComponent --> WaitingForUpdate : SuccessfulInitialization
+InitializeComponent --> Unloading : InitializationFailure
+
+WaitingForUpdate --> ProcessingUpdate : UpdateDetected
+WaitingForUpdate --> Unloading : ShutdownCommand
+
+ProcessingUpdate --> WaitingForUpdate : UpdateProcessed
+Unloading --> Terminate : ComponentRemoved
 
 title Equihealth States
 
 [*] --> J1 : [check user]
 state J1 <<choice>>
 state J2 <<choice>>
-state PatientDashboard : Patient
-state HealthWorkerDashboard : Health Worker
-state GovernmentOfficialDashboard : Government Official
-state Logout : Logged Out
+state J3 <<choice>>
+state J4 <<choice>>
+state J5 <<choice>>
+state J6 <<choice>>
+state J7 <<choice>>
+state J8 <<choice>>
+state J9 <<choice>>
 
-J1 --> J2 : Registered User
-J1 --> [*] : Not Registered User
+J1 --> J2 : Patient
+J1 --> J3 : NotPatient
 
-J2 --> PatientDashboard : Patient
-J2 --> HealthWorkerDashboard : Health Worker
-J2 --> GovernmentOfficialDashboard : Government Official
+J2 --> J4 : NewUser
+J2 --> J5 : ExistingUser
 
-PatientDashboard --> Logout : Completed Tasks
-HealthWorkerDashboard --> Logout : Completed Tasks
-GovernmentOfficialDashboard --> Logout : Completed Tasks
+J4 --> J6 : RegistrationCompleted
+J4 --> J7 : RegistrationFailed
+
+J5 --> J8 : CorrectCredentials
+J5 --> J9 : IncorrectCredentials
+
+J6 --> DashboardPatient : PatientDashboard
+J6 --> HealthWorkerDashboard : HealthWorkerDashboard
+J6 --> GovernmentOfficialDashboard : GovernmentOfficialDashboard
+
+J7 --> LoginFailed : LoginFailed
+
+J8 --> MedicalInformation : ProvideMedicalInfo
+J8 --> PlannedActivities : ShowPlannedActivities
+J8 --> Alerts : PrepareAlerts
+J8 --> HealthPlanningResults : DisplayHealthPlanningResults
+J8 --> Logout : LogOut
+
+J9 --> LoginFailed : LoginFailed
 
 title National Health Id States
 
-[*] --> Choice1
+[*] --> Choice1 : Check Citizenship
 state Choice1 <<choice>>
-state Choice2 <<choice>>
-state Choice3 <<choice>>
-Choice1 --> Verification : Indian
-Choice1 --> [*] : not Indian
+state Choice2 : VerifyDetails
+state Choice3 : GenerateId
+state Choice4 : ActivateAccount
+state Choice5 : SetPermissions
+state Choice6 : AddOldFiles
+state Choice7 : StoreFiles
+state Choice8 : AccessData
+state Choice9 : AddNewFiles
+state Choice10 : ViewDetails
+state Choice11 : PrepareReports
 
-Verification : entry / Citizenship status
-Verification : do / Verify details
-Verification : exit / Verified status
+Choice1 --> Choice2 : Indian
+Choice1 --> [*] : NotIndian
 
+Choice2 --> Choice3 : Verified
+Choice2 --> [*] : VerificationFailed
+
+Choice3 --> Choice4 : AccountActivated
+Choice3 --> [*] : ActivationFailed
+
+Choice4 --> Choice5 : SetPermissions
+Choice4 --> Choice6 : AddOldFiles
+
+Choice5 --> Choice7 : PermissionsSet
+Choice5 --> Choice8 : AccessData
+
+Choice6 --> Choice7 : OldFilesAdded
+Choice6 --> Choice9 : PermissionNotGranted
+
+Choice7 --> Choice8 : DataStored
+Choice7 --> [*] : Error
+
+Choice8 --> Choice10 : ViewDetails
+Choice8 --> Choice11 : PrepareReports
+
+Choice9 --> Choice6 : AddNewFiles
 @enduml

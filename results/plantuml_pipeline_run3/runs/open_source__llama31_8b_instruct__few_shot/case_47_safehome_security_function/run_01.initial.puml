@@ -1,70 +1,53 @@
 @startuml
-title UML State Machine Diagram (Safehome Security Function)
+title UML State Chart Diagram
 
-state "Power-on" as PowerOn {
-    [*] --> CheckStartup
+[*] --> Startup
+
+state "Startup" as Startup {
+  [*] --> CheckEverythingWorking
 }
 
-state "Ready to use" as ReadyToUse {
-    state "Reset" as Reset
-    state "Activate" as Activate
-    state "Turn off" as TurnOff
-}
+state "Check everything working" as CheckEverythingWorking
+state "Problem during startup" as ProblemDuringStartup
+state "Ready to use" as ReadyToUse
 
-state "Monitoring" as Monitoring {
-    state "Alarm triggered" as AlarmTriggered
+CheckEverythingWorking --> ReadyToUse : Everything is fine
+CheckEverythingWorking --> ProblemDuringStartup : Problem found
+
+ProblemDuringStartup --> [*] : Abnormal termination
+
+ReadyToUse {
+  state "Reset" as Reset
+  state "Activate" as Activate
+  state "Turn off" as TurnOff
+
+  ReadyToUse --> Reset : User initiated reset
+  ReadyToUse --> Activate : User initiated activation
+  ReadyToUse --> TurnOff : User initiated turn off
+
+  state "Monitoring" as Monitoring {
+    state "Sensor triggered" as SensorTriggered
     state "False alarm or time ends" as FalseAlarmOrTimeEnds
+
+    Monitoring --> SensorTriggered : Sensor triggered during monitoring
+    Monitoring --> FalseAlarmOrTimeEnds : False alarm or time ends
+
+    state "Alarm and alerts sent" as AlarmAndAlertsSent {
+      SensorTriggered --> AlarmAndAlertsSent : Send alarm and alerts
+    }
+
+    state "Continue monitoring" as ContinueMonitoring {
+      FalseAlarmOrTimeEnds --> ContinueMonitoring : Continue monitoring
+    }
+  }
+
+  ReadyToUse --> Monitoring : User initiated activation
+
+  state "Password entered" as PasswordEntered {
+    ReadyToUse --> PasswordEntered : User enters password at any time
+  }
+
+  PasswordEntered --> [*] : Abnormal termination
 }
-
-ReadyToUse : entry / To Action
-ReadyToUse : do / Allow user to reset, activate, turn off
-ReadyToUse : exit / User interaction
-
-Monitoring : entry / Start monitoring
-Monitoring : do / Monitor sensors and send alerts if triggered
-Monitoring : exit / Continue or stop monitoring
-
-AlarmTriggered : entry / Sensor triggered during monitoring
-AlarmTriggered : do / Send alarm and alert
-AlarmTriggered : exit / Continue monitoring or stop
-
-FalseAlarmOrTimeEnds : entry / False alarm or time ends
-FalseAlarmOrTimeEnds : do / Stop monitoring
-FalseAlarmOrTimeEnds : exit / Return to normal
-
-Reset : entry / User reset
-Reset : do / Reset system
-Reset : exit / System reset
-
-Activate : entry / User activate
-Activate : do / Activate system
-Activate : exit / System activated
-
-TurnOff : entry / User turn off
-TurnOff : do / Turn off system
-TurnOff : exit / System turned off
-
-PowerOn --> CheckStartup
-CheckStartup --> ReadyToUse : no problem during startup
-CheckStartup --> Stop : problem during startup
-
-ReadyToUse --> Reset : user reset
-ReadyToUse --> Activate : user activate
-ReadyToUse --> TurnOff : user turn off
-
-Monitoring --> AlarmTriggered : sensor triggered
-Monitoring --> FalseAlarmOrTimeEnds : false alarm or time ends
-
-AlarmTriggered --> ContinueMonitoring : continue monitoring
-AlarmTriggered --> Stop : stop monitoring
-
-FalseAlarmOrTimeEnds --> ContinueMonitoring : continue monitoring
-FalseAlarmOrTimeEnds --> Stop : stop monitoring
-
-Reset --> ReadyToUse : system reset
-Activate --> Monitoring : start monitoring
-TurnOff --> ReadyToUse : return to normal
-
-Stop --> [*]
 
 @enduml

@@ -5,46 +5,42 @@ title UML State Machine Diagram (Weather Monitoring System)
 
 state RegistrationOrLogin <<choice>>
 RegistrationOrLogin --> CreateAccount : [New user]
-RegistrationOrLogin --> ExistingUser : [Registered user]
+RegistrationOrLogin --> LoginExisting : [Registered user]
 
 state CreateAccount
-CreateAccount --> AccountCreated : [successful registration]
-CreateAccount --> RegistrationFailed : [invalid details]
+CreateAccount --> Success : [registration successful]
+CreateAccount --> EndProcess : [registration not successful]
 
-state AccountCreated
-AccountCreated --> Login : [log in]
+state LoginExisting
+LoginExisting --> LoggedIn : [login successful]
+LoginExisting --> EndProcess : [login failed]
 
-state ExistingUser
-ExistingUser --> LoginSuccess : [valid login]
-ExistingUser --> LoginFailed : [invalid login]
+state LoggedIn
+LoggedIn --> CheckWeatherCurrent : [check current location]
+LoggedIn --> CheckWeatherAnother : [check another location]
 
-state LoginSuccess
-LoginSuccess --> CheckWeather : [check weather]
+state CheckWeatherCurrent
+CheckWeatherCurrent --> ValidLocation : [location valid]
+CheckWeatherCurrent --> InvalidLocation : [location invalid]
 
-state CheckWeather
-CheckWeather --> LocationValid : [valid location]
-CheckWeather --> LocationInvalid : [invalid location]
+state CheckWeatherAnother
+CheckWeatherAnother --> ValidLocation : [location valid]
+CheckWeatherAnother --> InvalidLocation : [location invalid]
 
-state LocationValid
-LocationValid --> WeatherChoice : [choose what to check]
+state ValidLocation
+ValidLocation --> ChooseInfoType : [choose info type]
 
-state WeatherChoice
-WeatherChoice --> WeatherInfo : [selected info]
-WeatherChoice --> AdditionalDetails : [view details]
+state ChooseInfoType
+ChooseInfoType --> ShowInfo : [show selected info]
+ChooseInfoType --> EndSession : [end session]
 
-state WeatherInfo
-WeatherInfo --> ShowInfo : [update and show selected weather information]
-
-state AdditionalDetails
-AdditionalDetails --> Alerts : [alerts]
-AdditionalDetails --> WeeklyAnalysis : [weekly analysis]
-AdditionalDetails --> FuturePrediction : [future prediction]
-AdditionalDetails --> Graph : [graph]
+state InvalidLocation
+InvalidLocation --> EndProcess : [process ended]
 
 state ShowInfo
-ShowInfo --> Logout : [log out]
+ShowInfo --> ViewDetails : [view details]
 
-state LocationInvalid
-LocationInvalid --> RegistrationOrLogin
+state ViewDetails
+ViewDetails --> EndSession : [end session]
 
 @enduml

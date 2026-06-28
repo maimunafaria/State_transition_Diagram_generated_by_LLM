@@ -1,65 +1,56 @@
 @startuml
-title State machine for Staff Member
+title Staff Member State Machine
 
-state Unassigned
+state Unemployed
 state AssignedToClient
 state AssignedToCampaign
-state Unemployed
-state Archived
+state SwitchingAssignments
 
-[*] --> Unassigned : /newAssignmentRequest/
+[*] --> Unemployed : /leaveJob/
 
-Unassigned --> AssignedToClient : assignToClient
-Unassigned --> AssignedToCampaign : assignToCampaign
+Unemployed --> AssignedToClient : Hired(hiringDetails)
+Unemployed --> AssignedToCampaign : CampaignActivated(campaignId)
 
-AssignedToClient --> Unassigned : removeAssignment
-AssignedToCampaign --> Unassigned : removeAssignment
+AssignedToClient --> AssignedToCampaign : SwitchAssignment(assignmentId)
+AssignedToCampaign --> SwitchingAssignments : SwitchAssignment(assignmentId)
+SwitchingAssignments --> AssignedToClient : SwitchAssignment(assignmentId)
+SwitchingAssignments --> AssignedToCampaign : SwitchAssignment(assignmentId)
 
-AssignedToClient --> Unemployed : leaveJob
-AssignedToCampaign --> Unemployed : leaveJob
-
-Unemployed --> Archived : afterTimePasses
+AssignedToClient --> Unemployed : /leaveJob/
+AssignedToCampaign --> Unemployed : /leaveJob/
 
 
-title State machine for Campaign
+title Campaign State Machine
 
 state Inactive
 state Active
-state Paused
 state Completed
 state Paid
-state Archived
 
-[*] --> Inactive : /assignManager;\nassignStaff\n/contractSigned/
+[*] --> Inactive : /assignManager;\nassignStaff\n/approveContract
 
-Inactive --> Active : approved
-Active --> Paused : pauseCampaign
-Paused --> Active : resumeCampaign
-Active --> Completed : workFinished
-Completed --> Paid : paymentReceived
-Paused --> Inactive : cancelCampaign
-Completed --> Archived : afterCompletion
+Inactive --> Active : ContractSigned(contractId)
+Active --> Completed : FinishedWork(workDetails)
+Completed --> Paid : PaymentReceived(paymentDetails)
+Paid --> Archived : TimePassed(timePeriod)
 
+title Advocate Diary State Machine
 
-title State machine for Advocate Diary
-
-state Unregistered
-state Registering
+state NotRegistered
+state Registered
 state LoggedIn
 state AddingCase
+state CaseCreated
 state ReminderSet
 state DocumentUploaded
-state CaseClosed
-state Archived
 
-[*] --> Unregistered : /browseBlogsAndNews/
+[*] --> NotRegistered : /exploreBlogsAndNews/
 
-Unregistered --> Registering : createAccountRequest
-Registering --> LoggedIn : accountDetailsValidated
-LoggedIn --> AddingCase : newCaseRequest
-AddingCase --> ReminderSet : setReminder
-ReminderSet --> DocumentUploaded : uploadDocument
-DocumentUploaded --> CaseClosed : caseCompleted
-CaseClosed --> Archived : afterTimePasses
-
+NotRegistered --> Registered : CreateAccount(accountDetails)
+Registered --> LoggedIn : SignIn(signInDetails)
+LoggedIn --> AddingCase : NewCaseSelected
+AddingCase --> CaseCreated : CategorySelected(category)
+CaseCreated --> ReminderSet : SetReminder(reminderDetails)
+ReminderSet --> DocumentUploaded : UploadDocument(document)
+DocumentUploaded --> LoggedIn : /logout/
 @enduml

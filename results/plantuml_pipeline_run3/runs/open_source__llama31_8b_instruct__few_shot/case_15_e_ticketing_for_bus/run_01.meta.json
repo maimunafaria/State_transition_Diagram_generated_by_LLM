@@ -2,91 +2,149 @@
   "run_id": "open_source__llama31_8b_instruct__few_shot",
   "case_id": "case_15_e_ticketing_for_bus",
   "run_index": 1,
-  "status": "error",
-  "error_message": "timed out",
-  "prompt": "",
-  "requirement_used": "",
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nAtm Many Scenarios Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the entered PIN is correct.\n2. The system shall ask the user to try again if the entered PIN is incorrect.\n3. The system shall keep the card for security reasons if the PIN is entered incorrectly too many times or if the card is invalid.\n4. The system shall show available options and wait for the user's choice if the entered PIN is correct.\n5. The system shall allow the user to cancel the operation at any point during this process.\n6. The system shall return the card when the user cancels the operation.\n\nExample 1 PlantUML:\n@startuml\ntitle Same Event and Action on Different Transitions\n\n[*] --> Idle\n\nstate Idle\nstate \"Waiting for PIN\" as WaitingForPIN\nstate \"Validating PIN\" as ValidatingPIN\nstate \"Waiting for Customer Choice\" as WaitingForChoice\nstate Confiscating\nstate Ejecting\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu\nValidatingPIN --> Confiscating : Third Invalid PIN,\\nCard Stolen, Card Expired /\\nConfiscate\n\nWaitingForPIN --> Ejecting : Cancel / Eject\nValidatingPIN --> Ejecting : Cancel / Eject\nWaitingForChoice --> Ejecting : Cancel / Eject\n\n@enduml\n\nExample 2 Requirement:\nAtm Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the inserted card is valid.\n2. The system shall prompt the user to select an amount to withdraw if the card is valid.\n3. The system shall verify the transaction after the user selects an amount.\n4. The system shall return the card to the user once the transaction is completed.\n5. The system shall go out of service and not allow any operation if the machine is not working.\n\nExample 2 PlantUML:\n@startuml\ntitle ATM State Machine\n\n[*] --> VerifyCard\n\nstate \"VerifyCard <<final>>\" as VerifyCard\n\nstate ReadAmount {\n  [*] --> SelectAmount\n  state SelectAmount\n  SelectAmount --> [*] : amount\n}\n\nstate OutOfService\nstate \"VerifyTransaction <<final>>\" as VerifyTransaction\nstate ReleaseCard\n\nVerifyCard --> ReadAmount : acceptCard\nReadAmount --> OutOfService : outOfService\nReadAmount --> VerifyTransaction\nVerifyTransaction --> ReleaseCard : releaseCard / <<final>>\n\n@enduml\n\nExample 3 Requirement:\nStudent Counselling Management System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a student to log in.\n2. The system shall prompt the student to try again if login details are incorrect.\n3. The system shall proceed with registration and payment upon a successful login.\n4. The system shall end there if the registration payment is not completed.\n5. The system shall register the student and declare ranks if the registration payment is completed.\n6. The system shall allow the student to pay enrollment fees after rank declaration.\n7. The system shall end there if the payment for enrollment fees is not successful.\n8. The system shall allow the student to fill in their choices if the payment for enrollment fees is successful.\n9. The system shall lock the choices and allocate seats based on rank if they are correct.\n10. The system shall generate an admit letter once a seat is allotted.\n11. The system shall allow the student to accept or decline the admit letter.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\n[*] --> StartMerge\n\nstate StartMerge <<choice>>\nstate Login\nstate LoginDecision <<choice>>\nstate \"Invalid Login\" as InvalidLogin\nstate \"Valid Login\" as ValidLogin\nstate RegistrationDecision <<choice>>\nstate \"Failed Registration\" as FailedRegistration\nstate \"Rank Declaration\" as RankDeclaration\nstate \"Enrollment Fees\" as EnrollmentFees\nstate PaymentDecision <<choice>>\nstate \"Invalid Payment\" as InvalidPayment\nstate \"Valid Payment\" as ValidPayment\nstate \"Choice Filing\" as ChoiceFiling\nstate ChoiceDecision <<choice>>\nstate \"Failed choice filing\" as FailedChoiceFiling\nstate \"Seat Allotment\" as SeatAllotment\nstate \"Admit Letter Generation\" as AdmitLetterGeneration\nstate \"Accept/Decline\" as AcceptDecline\n\nLogin : entry / To Action\nLogin : do / Log in to the system\nLogin : exit / Username and password entered\n\nInvalidLogin : entry / Trying to log in\nInvalidLogin : do / Invalid username and password\nInvalidLogin : exit / Back to login page\n\nValidLogin : entry / Student logged in\nValidLogin : do / Registration form submission with payment\nValidLogin : exit / Student Registered\n\nFailedRegistration : entry / Payment not made\nFailedRegistration : do / Throw an error\nFailedRegistration : exit / Abnormal termination\n\nRankDeclaration : entry / Student registered\nRankDeclaration : do / Declare ranks for all the students\nRankDeclaration : exit / Rank published\n\nEnrollmentFees : entry / Rank declared\nEnrollmentFees : do / Pay enrollment fees\nEnrollmentFees : exit / Payment done\n\nInvalidPayment : entry / Payment not made\nInvalidPayment : do / Show the errors\nInvalidPayment : exit / Abnormal Termination\n\nValidPayment : entry / Payment made\nValidPayment : do / Allow to fill choices\nValidPayment : exit / log out from payment portal\n\nChoiceFiling : entry / Valid payment\nChoiceFiling : do / Fill choices\nChoiceFiling : exit / Lock choices\n\nFailedChoiceFiling : entry / Invalid choices\nFailedChoiceFiling : do / Show the errors\nFailedChoiceFiling : exit / Abnormal Termination\n\nSeatAllotment : entry / Choices must be locked\nSeatAllotment : do / Allot seats based on rank\nSeatAllotment : exit / Publish alloted results\n\nAdmitLetterGeneration : entry / Seat alotted\nAdmitLetterGeneration : do / Generate admit letter\nAdmitLetterGeneration : exit / Publish admit letters to students and colleges\n\nAcceptDecline : entry / Received admit letter\nAcceptDecline : do / Accept/Decline\nAcceptDecline : exit / After decision is made\n\nStartMerge --> Login\nLogin --> LoginDecision\nLoginDecision --> InvalidLogin\nLoginDecision --> ValidLogin\nInvalidLogin --> StartMerge\n\nValidLogin --> RegistrationDecision\nRegistrationDecision --> FailedRegistration\nRegistrationDecision --> RankDeclaration\n\nRankDeclaration --> EnrollmentFees\nEnrollmentFees --> PaymentDecision\nPaymentDecision --> InvalidPayment\nPaymentDecision --> ValidPayment\n\nValidPayment --> ChoiceFiling\nChoiceFiling --> ChoiceDecision\nChoiceDecision --> FailedChoiceFiling\nChoiceDecision --> SeatAllotment\n\nSeatAllotment --> AdmitLetterGeneration\nAdmitLetterGeneration --> AcceptDecline\nAcceptDecline --> [*]\n\nFailedRegistration --> [*]\nInvalidPayment --> [*]\nFailedChoiceFiling --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nE Ticketing For Bus — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create a new account.\n2. The system shall validate the registration of a new user.\n3. The system shall allow the user to log in upon successful registration.\n4. The system shall provide options for logged-in users to check their ticket status.\n5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.\n6. The system shall enable users to manage their account details such as editing or deleting them.\n7. The system shall log out the user after they complete any action.\n",
+  "requirement_used": "E Ticketing For Bus — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create a new account.\n2. The system shall validate the registration of a new user.\n3. The system shall allow the user to log in upon successful registration.\n4. The system shall provide options for logged-in users to check their ticket status.\n5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.\n6. The system shall enable users to manage their account details such as editing or deleting them.\n7. The system shall log out the user after they complete any action.",
   "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot\\case_15_e_ticketing_for_bus\\run_01.puml",
   "validation": {
     "valid": true,
     "errors": [],
     "warnings": [
-      "missing_initial_state_transition ([*] --> state)",
-      "missing_final_state_transition (state --> [*])"
+      "unreachable_states_detected",
+      "unreachable: Book Ticket, Check Ticket Status, Create Account, Login, Logout, Manage Account, Payment, Validate Registration"
     ],
-    "initial_state": null,
+    "initial_state": "CreateAccount",
     "duplicate_transition_count": 0,
-    "unreachable_states": [],
-    "state_count": 0,
-    "transition_count": 0
+    "unreachable_states": [
+      "Book Ticket",
+      "Check Ticket Status",
+      "Create Account",
+      "Login",
+      "Logout",
+      "Manage Account",
+      "Payment",
+      "Validate Registration"
+    ],
+    "state_count": 9,
+    "transition_count": 8
   },
   "strict_validation": {
     "valid": false,
     "issues": [
-      "missing_initial_state_transition ([*] --> state)",
-      "missing_final_state_transition (state --> [*])"
+      "unreachable_states_detected",
+      "unreachable: Book Ticket, Check Ticket Status, Create Account, Login, Logout, Manage Account, Payment, Validate Registration"
     ]
   },
   "processing_steps": [
     {
-      "stage": "error",
-      "message": "timed out"
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_68_atm_many_scenarios_3",
+        "case_61_atm_3",
+        "case_31_student_counselling_management_system"
+      ],
+      "seed": 44,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: Book Ticket, Check Ticket Status, Create Account, Login, Logout, Manage Account, Payment, Validate Registration"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: Book Ticket, Check Ticket Status, Create Account, Login, Logout, Manage Account, Payment, Validate Registration"
+      ]
     }
   ],
-  "attempt_artifacts": [],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: Book Ticket, Check Ticket Status, Create Account, Login, Logout, Manage Account, Payment, Validate Registration"
+        ],
+        "initial_state": "CreateAccount",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Book Ticket",
+          "Check Ticket Status",
+          "Create Account",
+          "Login",
+          "Logout",
+          "Manage Account",
+          "Payment",
+          "Validate Registration"
+        ],
+        "state_count": 9,
+        "transition_count": 8
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot\\case_15_e_ticketing_for_bus\\run_01.initial.puml"
+    }
+  ],
   "metrics": {
-    "state_precision": 0.0,
-    "state_recall": 0.0,
-    "state_f1": 0.0,
-    "state_tp": 0,
-    "state_fp": 0,
-    "state_fn": 12,
+    "state_precision": 0.3333333333333333,
+    "state_recall": 0.25,
+    "state_f1": 0.28571428571428575,
+    "state_tp": 3,
+    "state_fp": 6,
+    "state_fn": 9,
     "transition_precision": 0.0,
     "transition_recall": 0.0,
     "transition_f1": 0.0,
     "transition_tp": 0,
-    "transition_fp": 0,
+    "transition_fp": 8,
     "transition_fn": 10,
-    "state_precision_relaxed": 0.0,
-    "state_recall_relaxed": 0.0,
-    "state_f1_relaxed": 0.0,
-    "state_tp_relaxed": 0,
-    "state_fp_relaxed": 0,
-    "state_fn_relaxed": 12,
+    "state_precision_relaxed": 0.5,
+    "state_recall_relaxed": 0.3333333333333333,
+    "state_f1_relaxed": 0.4,
+    "state_tp_relaxed": 4,
+    "state_fp_relaxed": 4,
+    "state_fn_relaxed": 8,
     "transition_precision_relaxed": 0.0,
     "transition_recall_relaxed": 0.0,
     "transition_f1_relaxed": 0.0,
     "transition_tp_relaxed": 0,
-    "transition_fp_relaxed": 0,
+    "transition_fp_relaxed": 8,
     "transition_fn_relaxed": 10,
     "transition_precision_semantic": 0.0,
     "transition_recall_semantic": 0.0,
     "transition_f1_semantic": 0.0,
     "transition_tp_semantic": 0,
-    "transition_fp_semantic": 0,
+    "transition_fp_semantic": 8,
     "transition_fn_semantic": 10,
     "transition_event_similarity_mean": 0.0,
     "structural_valid": true,
     "structural_errors": [],
     "structural_warnings": [
-      "missing_initial_state_transition ([*] --> state)",
-      "missing_final_state_transition (state --> [*])"
+      "unreachable_states_detected",
+      "unreachable: Book Ticket, Check Ticket Status, Create Account, Login, Logout, Manage Account, Payment, Validate Registration"
     ],
-    "hallucination_state_rate": 0.0,
-    "hallucination_transition_rate": 0.0,
-    "hallucination_state_rate_relaxed": 0.0,
-    "hallucination_transition_rate_relaxed": 0.0,
+    "hallucination_state_rate": 0.6666666666666666,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.5,
+    "hallucination_transition_rate_relaxed": 1.0,
     "missing_transition_rate": 1.0,
     "missing_transition_rate_relaxed": 1.0,
-    "overall_f1": 0.0,
-    "overall_f1_relaxed": 0.0,
-    "weighted_f1_relaxed_70_30": 0.0,
-    "overall_f1_semantic": 0.0,
-    "weighted_f1_semantic_70_30": 0.0,
+    "overall_f1": 0.14285714285714288,
+    "overall_f1_relaxed": 0.2,
+    "weighted_f1_relaxed_70_30": 0.27999999999999997,
+    "overall_f1_semantic": 0.2,
+    "weighted_f1_semantic_70_30": 0.27999999999999997,
     "strict_state_diagram_valid": false,
     "strict_state_diagram_issues": [
-      "missing_initial_state_transition ([*] --> state)",
-      "missing_final_state_transition (state --> [*])"
+      "unreachable_states_detected",
+      "unreachable: Book Ticket, Check Ticket Status, Create Account, Login, Logout, Manage Account, Payment, Validate Registration"
     ]
   }
 }

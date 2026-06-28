@@ -1,57 +1,76 @@
 @startuml
-title E Visa Processing And Follow Up System State Diagram
+title E-Visa Processing and Follow-up System State Diagram
 
 [*] --> CreateAccount : User creates account
 
-state "Create Account" as CreateAccount {
-  state "Login" as Login
+state CreateAccount as CreateAccount {
+  state Login as Login
 }
 
-state "Login" as Login {
-  state "Apply for Visa" as ApplyForVisa
-  state "View Status" as ViewStatus
-  state "Cancel Application" as CancelApplication
-  state "Modify Details" as ModifyDetails
-  state "View Details" as ViewDetails
-  state "Check Status" as CheckStatus
-  state "Give Feedback" as GiveFeedback
+state Login as Login {
+  state ApplyForVisa as ApplyForVisa
+  state ViewStatus as ViewStatus
+  state CancelApplication as CancelApplication
+  state ModifyDetails as ModifyDetails
+  state ViewDetails as ViewDetails
+  state ViewPurpose as ViewPurpose
+  state GiveFeedback as GiveFeedback
 }
 
-state "Apply for Visa" as ApplyForVisa {
-  state "Payment Made" as PaymentMade
-  state "Application Accepted" as ApplicationAccepted
+state ApplyForVisa as ApplyForVisa {
+  state PaymentMade as PaymentMade
+  state ApplicationAccepted as ApplicationAccepted
 }
 
-state "Payment Made" as PaymentMade : Payment made
-
-state "Application Accepted" as ApplicationAccepted : Application accepted
-
-state "View Status" as ViewStatus {
-  state "Check Status" as CheckStatus
+state ViewStatus as ViewStatus {
+  state CheckStatus as CheckStatus
 }
 
-state "Cancel Application" as CancelApplication : Cancel application
+state CancelApplication as CancelApplication {
+  state ApplicationCancelled as ApplicationCancelled
+}
 
-state "Modify Details" as ModifyDetails : Modify details
+state ModifyDetails as ModifyDetails {
+  state DetailsModified as DetailsModified
+}
 
-state "View Details" as ViewDetails : View details
+state ViewDetails as ViewDetails {
+  state DetailsViewed as DetailsViewed
+}
 
-state "Check Status" as CheckStatus : Check status
+state ViewPurpose as ViewPurpose {
+  state PurposeViewed as PurposeViewed
+}
 
-state "Give Feedback" as GiveFeedback : Give feedback
+state GiveFeedback as GiveFeedback {
+  state FeedbackGiven as FeedbackGiven
+}
 
-CreateAccount --> Login : Account created
-Login --> ApplyForVisa : User logged in
-ApplyForVisa --> PaymentMade : Application submitted for payment
-PaymentMade --> ApplicationAccepted : Payment made and application accepted
-ApplicationAccepted --> ViewStatus : Application status updated
-ViewStatus --> CheckStatus : Status checked
-CheckStatus --> GiveFeedback : Feedback given
-GiveFeedback --> Login : Logout after feedback
-Login --> CancelApplication : User logged in to cancel application
-CancelApplication --> Login : Cancelled application
-Login --> ModifyDetails : User logged in to modify details
-ModifyDetails --> ViewDetails : Details modified and viewed
-ViewDetails --> Login : Logout after viewing details
+CreateAccount --> Login : User logs in
+
+Login --> ApplyForVisa : User applies for visa
+ApplyForVisa --> PaymentMade : Payment made
+PaymentMade --> ApplicationAccepted : Application accepted
+ApplicationAccepted --> ViewStatus : Status updated
+
+ViewStatus --> CheckStatus : User checks status
+CheckStatus --> GiveFeedback : User gives feedback
+GiveFeedback --> Login : User logs out after giving feedback
+
+Login --> CancelApplication : User cancels application
+CancelApplication --> ApplicationCancelled : Application cancelled
+ApplicationCancelled --> Login : User logs out after cancelling application
+
+Login --> ModifyDetails : User modifies details
+ModifyDetails --> DetailsModified : Details modified
+DetailsModified --> ViewDetails : User views details
+ViewDetails --> DetailsViewed : Details viewed
+DetailsViewed --> Login : User logs out after viewing details
+
+Login --> ViewPurpose : User views purpose of application
+ViewPurpose --> PurposeViewed : Purpose viewed
+PurposeViewed --> Login : User logs out after viewing purpose
+
+[*] --> End
 
 @enduml

@@ -1,22 +1,22 @@
 @startuml
-title State machine for Atm Scenario 2
+title State Machine for ATM Scenario 2
 
-state Idle
+state Initial
 state SelectAmount
 state EnterCustomValue
 state VerifyTransaction
 state ReEnterAmount
+state Final
 
 [*] --> SelectAmount : /selectAmountOption
 
-SelectAmount --> Idle : amountSelected
-SelectAmount --> EnterCustomValue : customValueEntered
+SelectAmount --> EnterCustomValue : [customValue]
+EnterCustomValue --> VerifyTransaction : [verifyTransaction]
 
-EnterCustomValue --> VerifyTransaction : verifyTransaction
+VerifyTransaction --> SelectAmount : [transactionRejected]
+VerifyTransaction --> Final : [transactionApproved]
 
-VerifyTransaction --> Idle : transactionSuccessful
-VerifyTransaction --> ReEnterAmount : transactionRejected
+ReEnterAmount --> SelectAmount : [reEnterAmount]
 
-ReEnterAmount --> SelectAmount : reEnterAmount
-
+Final --> [*] : /endSession
 @enduml

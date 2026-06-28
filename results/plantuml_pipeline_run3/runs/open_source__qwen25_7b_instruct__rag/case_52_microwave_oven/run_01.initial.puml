@@ -10,19 +10,24 @@ DoorShut --> DoorOpen : Door Opened
 DoorOpen --> DoorShut : Door Closed
 
 state Waiting {
-  state DisplayTime
-  state PowerSelection
-  state TimeEntry
-  state Cooking
+  [*] --> TimeSet
+  TimeSet : do / Set Cooking Time
+  TimeSet --> PowerSelect : Select Power Level
+  PowerSelect : do / Choose Power Level
+  PowerSelect --> Cook : Full Power
+  PowerSelect --> Cook : Half Power
 }
 
-Waiting --> DisplayTime : Initial State
-DisplayTime --> PowerSelection : User Input
-PowerSelection --> TimeEntry : Set Power
-TimeEntry --> Cooking : Set Time
+Cook {
+  state "Cooking" as Cooking
+  state "Stopped" as Stopped
 
-Cooking --> Cooking : Run for Set Time
-Cooking --> Stop : Door Opened
-Stop --> Waiting : Operation Stopped
+  DoorOpen --> Stopped : Door Opened
+  Stopped : do / Stop Operation
+  Stopped --> Waiting : Cancel
+  Stopped --> TimeSet : Resume
+}
+
+DoorShut --> TimeSet : Door Closed
 
 @enduml

@@ -24,7 +24,6 @@ state "Login" as Login {
 
 Login : entry / User login
 Login : do / Login process
-Login : exit / After successful login
 
 UpdateDB --> MainArea : [verified]
 
@@ -33,34 +32,37 @@ state "Main Area" as MainArea {
 
 
     state ChoiceUser <<choice>>
-    ChoiceUser --> MarketConditions : [user selects market conditions]
-    ChoiceUser --> PestControlHelp : [user selects pest control help]
-    ChoiceUser --> SoilSuggestions : [user provides soil information]
-    ChoiceUser --> WeatherInsights : [user provides location]
-    ChoiceUser --> LabourAvailability : [user provides location]
+    ChoiceUser --> MarketConditions : [Market conditions]
+    ChoiceUser --> PestControlHelp : [Pest control help]
+    ChoiceUser --> SoilSuggestions : [Soil suggestions]
+    ChoiceUser --> WeatherInsights : [Weather insights]
+    ChoiceUser --> LabourAvailability : [Labour availability]
 
-    state "Market Conditions" as MarketConditions
+    state "Show market conditions" as MarketConditions
     MarketConditions --> [*]
 
-    state "Pest Control Techniques" as PestControlHelp
+    state "Show pest control techniques" as PestControlHelp
     PestControlHelp --> [*]
 
-    state "Soil Suggestions" as SoilSuggestions
+    state "Provide soil-related suggestions" as SoilSuggestions
     SoilSuggestions --> [*]
 
-    state "Weather Insights" as WeatherInsights
+    state "Offer weather insights" as WeatherInsights
     WeatherInsights --> [*]
 
-    state "Labour Availability" as LabourAvailability
+    state "Display labour availability details" as LabourAvailability
     LabourAvailability --> [*]
 }
 
-MainArea : entry / User selects main area
-MainArea : do / Display results
-MainArea : exit / After viewing results
+MainArea : entry / Main area
+MainArea : do / View results
 
-[*] --> Logout
+    ChoiceUser --> Logout : [Logout]
 
-state Logout
-Logout : do / End session
+state Logout {
+    [*] --> EndSession
+
+    EndSession --> [*]
+}
+
 @enduml

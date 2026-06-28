@@ -1,33 +1,39 @@
 @startuml
 title UML State Machine Diagram - Graderate
 
-state "Waiting" as Waiting
-state "Active" as Active
-state "Expired" as Expired
-state "Archived" as Archived
+[*] --> WaitingState
 
-[*] --> Waiting
+state "Waiting state" as WaitingState
+state "Active state" as ActiveState
+state "Expired state" as ExpiredState
+state "Archived state" as ArchivedState
 
-Waiting : entry/waiting state
-Waiting : do/wait for start date
-Waiting : exit/start date arrived
+WaitingState --> ActivateRate : start date arrives
+ActivateRate : entry / current date equals or surpasses start date
+ActivateRate : do / activate rate
+ActivateRate : exit / rate activated
 
-Waiting --> Active
+ActivateRate --> ActiveState
 
-Active : entry/active state
-Active : do/maintain active state
-Active : exit/end of validity period
+ActiveState --> MaintainActiveState : end of validity period not reached
+MaintainActiveState : entry / end of validity period not reached
+MaintainActiveState : do / maintain active state
+MaintainActiveState : exit / finish date reached
 
-Active --> Expired
+MaintainActiveState --> ExpireRate : finish date reached
 
-Expired : entry/expired state
-Expired : do/mark rate as expired
-Expired : exit/one year from expiration date
+ExpireRate : entry / finish date reached
+ExpireRate : do / mark rate as expired
+ExpireRate : exit / one year from expiration date not yet passed
 
-Expired --> Archived
+ExpireRate --> WaitingState : one year from expiration date not yet passed
 
-Archived : entry/archived state
-Archived : do/remove or archive rate
-Archived --> [*]
+WaitingState --> RemoveRate : one year from expiration date passed
+
+RemoveRate : entry / one year from expiration date passed
+RemoveRate : do / remove or archive rate
+RemoveRate : exit / rate removed or archived
+
+[*] --> ArchivedState : rate removed or archived
 
 @enduml

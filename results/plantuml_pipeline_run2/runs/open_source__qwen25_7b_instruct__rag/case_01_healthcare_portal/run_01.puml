@@ -7,45 +7,39 @@ state Registration
 Registration : entry / startRegistration
 Registration : exit / registrationComplete
 
-state RegistrationFailure <<choice>>
-Registration --> RegistrationFailure : registrationFailed
+state RegistrationDecision <<choice>>
+Registration --> RegistrationDecision
 
-state Login
-Login : entry / verifyCredentials
-Login : exit / loginSuccess
+state SignIn
+SignIn : entry / verifyUser
+SignIn : exit / accessGranted
 
-state MainMenu <<choice>>
-Login --> MainMenu
+state AccessAvailableFacilities
+AccessAvailableFacilities : entry / grantAccess
+AccessAvailableFacilities : exit / sessionEnd
 
-state FacilityAccess
-MainMenu --> FacilityAccess : accessFacilities
+state ReadContent
+ReadContent : entry / readNewsOrExpertContent
+ReadContent : exit / continueSession
 
-state NewsAndContent
-MainMenu --> NewsAndContent : readNewsOrContent
+state CheckSymptoms
+CheckSymptoms : entry / checkSymptomsOrFitnessOptions
+CheckSymptoms : exit / finishSession
 
-state SymptomChecker
-NewsAndContent --> SymptomChecker : checkSymptoms
+state ProcessInsurance
+ProcessInsurance : entry / processAndValidateInsurance
+ProcessInsurance : exit / paymentComplete
 
-state SessionContinuation <<choice>>
-SymptomChecker --> SessionContinuation : continueSession
-SymptomChecker --> EndSession : finishSession
-
-state InsuranceProcessing
-FacilityAccess --> InsuranceProcessing : processInsurance
-
-state PaymentSelection
-InsuranceProcessing --> PaymentSelection : selectPaymentMethod
-
-state CashDetails
-PaymentSelection --> CashDetails : showCashDetails
-
-state InsurancePayment
-PaymentSelection --> InsurancePayment : completeInsurancePayment
+state PaymentMethods
+PaymentMethods : entry / selectPaymentMethod
+PaymentMethods : exit / completePayment
 
 state FeedbackCollection
-SessionContinuation --> FeedbackCollection : provideFeedback
+FeedbackCollection : entry / collectUserFeedback
+FeedbackCollection : exit / sessionEnd
 
 state Logout
-FeedbackCollection --> Logout : logoutUser
+Logout : entry / logOutUser
+Logout : exit / sessionEnd
 
 @enduml

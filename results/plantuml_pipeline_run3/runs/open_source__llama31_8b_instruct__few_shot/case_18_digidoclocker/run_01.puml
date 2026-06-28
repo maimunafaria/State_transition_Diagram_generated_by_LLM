@@ -34,10 +34,10 @@ ApplyForCertificate : entry / To Apply for Certificate
 ApplyForCertificate : do / Request Certificate
 ApplyForCertificate : exit / Reapply or Finish
 
-state "Reapply for Certificate" as ReapplyForCertificate
-ReapplyForCertificate : entry / To Reapply for Certificate
-ReapplyForCertificate : do / Send Request to Issuer
-ReapplyForCertificate : exit / Continue Applying or Finish
+state "Reapply" as Reapply
+Reapply : entry / To Reapply
+Reapply : do / Send New Request to Issuer
+Reapply : exit / Continue Applying or Finish
 
 state "Registrar Home" as RegistrarHome
 RegistrarHome : entry / Logged In Registrar
@@ -47,34 +47,36 @@ RegistrarHome : exit / Logout
 
 state "Request Certificate" as RequestCertificate
 RequestCertificate : entry / To Request Certificate
-RequestCertificate : do / Request Certificate for Verification
+RequestCertificate : do / Send Request to Issuer
 RequestCertificate : exit / Continue Requesting or Finish
 
 state "End Session" as EndSession
 EndSession : entry / User Done with Actions
-EndSession : do / End Session
-EndSession : exit / [*]
+EndSession : do / Log Out User
+EndSession : exit / Session Ended
 
 [*] --> Registration
 Registration --> Login : [Valid Registration]
-Login --> CitizenHome : [Valid Login]
 
+Login --> CitizenHome : [Valid Login]
 CitizenHome --> UploadDocuments : [Upload Documents]
 UploadDocuments --> CitizenHome : [Continue Uploading or Finish]
+UploadDocuments --> ViewProfile : [View Profile]
+UploadDocuments --> ApplyForCertificate : [Apply for Certificate]
 
-CitizenHome --> ViewProfile : [View Profile]
-ViewProfile --> CitizenHome : [Return to Home]
+ApplyForCertificate --> Reapply : [Reapply]
+Reapply --> ApplyForCertificate : [Continue Applying or Finish]
+ApplyForCertificate --> EndSession : [Finish]
 
 CitizenHome --> ApplyForCertificate : [Apply for Certificate]
-ApplyForCertificate --> ReapplyForCertificate : [Reapply for Certificate]
+ApplyForCertificate --> Reapply : [Reapply]
+ApplyForCertificate --> EndSession : [Finish]
 
-ReapplyForCertificate --> CitizenHome : [Continue Applying or Finish]
-
-RegistrarLogin --> RegistrarHome
+Login --> RegistrarHome : [Valid Login as Registrar]
 RegistrarHome --> RequestCertificate : [Request Certificate]
 RequestCertificate --> RegistrarHome : [Continue Requesting or Finish]
+RequestCertificate --> EndSession : [Finish]
 
-CitizenHome --> EndSession : [Logout]
-EndSession --> [*]
+EndSession --> [*] : [Session Ended]
 
 @enduml

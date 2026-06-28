@@ -1,74 +1,66 @@
 @startuml
 title E Visa Processing and Follow-up System State Diagram
 
-state CreateAccount <<choice>>
-state Login <<choice>>
-state ApplyVisa <<choice>>
-state ViewStatus <<choice>>
-state CheckStatus <<choice>>
-state CancelApplication <<choice>>
-state ModifyDetails <<choice>>
-state ViewDetails <<choice>>
-state ViewPurpose <<choice>>
-state GiveFeedback <<choice>>
-state Logout <<choice>>
-
 [*] --> CreateAccount
 
-state Registered
-Registered : entry / User created account
-Registered : do / Login successful
+state CreateAccount
+CreateAccount : entry / User creates account
+CreateAccount : exit / Account created successfully
 
-state LoggedIn
-LoggedIn : entry / User logged in
-LoggedIn : do / Application submitted
+state Login
+Login : entry / Registered user logs in
+Login : do / Enter login credentials
+Login : exit / Valid username and password
 
-state Applied
-Applied : entry / User applied for visa
-Applied : do / Payment made and application accepted
+state ApplyVisa
+ApplyVisa : entry / User applies for visa after logging in
+ApplyVisa : do / Make payment and submit application
+ApplyVisa : exit / Application accepted
 
-state ViewedStatus
-ViewedStatus : entry / User viewed status
-ViewedStatus : do / Status checked
+state ViewStatus
+ViewStatus : entry / User views status after applying for visa
+ViewStatus : do / Check application status
+ViewStatus : exit / Status viewed successfully
 
-state Cancelled
-Cancelled : entry / User cancelled application
-Cancelled : do / Application cancelled
+state CancelApplication
+CancelApplication : entry / User cancels application after logging in
+CancelApplication : do / Cancel application
+CancelApplication : exit / Application cancelled successfully
 
-state Modified
-Modified : entry / User modified details
-Modified : do / Details updated
+state ModifyDetails
+ModifyDetails : entry / User modifies details after logging in
+ModifyDetails : do / Update user details
+ModifyDetails : exit / Details modified successfully
 
-state ViewedDetails
-ViewedDetails : entry / User viewed details
-ViewedDetails : do / Details viewed
+state ViewDetails
+ViewDetails : entry / User views details after logging in
+ViewDetails : do / Retrieve user details
+ViewDetails : exit / Details viewed successfully
 
-state Purposed
-Purposed : entry / User viewed purpose of application
-Purposed : do / Visa approved or rejected
+state CheckStatus
+CheckStatus : entry / User checks status after viewing it
+CheckStatus : do / Check application status again
+CheckStatus : exit / Status checked successfully
 
-state FeedbackGiven
-FeedbackGiven : entry / User gave feedback
-FeedbackGiven : do / Feedback submitted
+state GiveFeedback
+GiveFeedback : entry / User gives feedback after checking status
+GiveFeedback : do / Provide feedback on application process
+GiveFeedback : exit / Feedback given successfully
 
-CreateAccount --> Registered
-Registered --> Login
+state Logout
+Logout : entry / User logs out after modifying details, viewing details, giving feedback, or completing status update
+Logout : exit / Logged out successfully
 
-Login --> LoggedIn
-LoggedIn --> ApplyVisa
-
-ApplyVisa --> Applied
-Applied --> ViewStatus
-
+CreateAccount --> Login
+Login --> ApplyVisa
+ApplyVisa --> ViewStatus
 ViewStatus --> CheckStatus
-CheckStatus --> Purposed
-
-Purposed --> Applied
-
-Cancelled --> [*]
-Modified --> Logout
-ViewedDetails --> Logout
-FeedbackGiven --> Logout
-Purposed --> Logout
+CheckStatus --> GiveFeedback
+GiveFeedback --> Logout
+ApplyVisa --> CancelApplication
+Login --> ModifyDetails
+ModifyDetails --> Logout
+Login --> ViewDetails
+ViewDetails --> Logout
 
 @enduml

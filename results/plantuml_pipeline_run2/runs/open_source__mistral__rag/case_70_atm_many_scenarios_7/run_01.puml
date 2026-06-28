@@ -4,26 +4,33 @@ title ATM Control - Combined Scenarios
 [*] --> Idle
 
 state Idle
+state "Waiting for Card Insertion" as WaitingForCardInsertion
 state "Waiting for PIN" as WaitingForPIN
 state "Validating PIN" as ValidatingPIN
 state "Waiting for Customer Choice" as WaitingForChoice
 state Confiscating
 state Ejecting
 state ProcessingTransaction
+state PrintingReceipt
+state DispensingCash
+state CancellingOperation
+state ShortEndingPhase
 state ClosedDown
 
-Idle --> WaitingForPIN : Card Inserted / Get PIN
+Idle --> WaitingForCardInsertion : Card Inserted / Get PIN
+WaitingForCardInsertion --> WaitingForPIN
 
 WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
 ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
 
 ValidatingPIN --> WaitingForChoice : Correct PIN / Display Options
-
-WaitingForChoice --> ProcessingTransaction : User Choice / Process Selected Request
-ProcessingTransaction --> ClosedDown : Transaction Approved / Dispense Cash and Print Receipt
-ProcessingTransaction --> Confiscating : Invalid Card or Too Many Incorrect PINS / Keep Card
-ProcessingTransaction --> Ejecting : User Cancels / Return Card
-ProcessingTransaction --> Idle : No Cash / Stop Operation
-
-ClosedDown --> Idle : Short End Phase / Reset ATM
+WaitingForChoice --> ProcessingTransaction : User Choice / Process Request
+ProcessingTransaction --> PrintingReceipt : Approved Transaction / Print Receipt
+ProcessingTransaction --> DispensingCash : Approved Transaction / Dispense Cash
+ProcessingTransaction --> CancellingOperation : Rejected Request / Cancel Operation
+ProcessingTransaction --> ShortEndingPhase : Completed Transaction / Short Ending Phase
+ShortEndingPhase --> Idle : Normal Condition / Reset to Wait
+ShortEndingPhase --> ClosedDown : System Down / Display System Down
+CancellingOperation --> Ejecting : User Cancelled / Return Card
+CancellingOperation --> ShortEndingPhase : Cancellation Process / Short Ending Phase
 @enduml

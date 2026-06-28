@@ -1,43 +1,46 @@
 @startuml
 
 plane_state_machine
-
-state Order
-Order : entry / acquirePlane
-Order : do / checkAvailability
-Order : exit / deliverPlane
-
-state Arrival
-Arrival : entry / planeArrives
-Arrival : do / checkConditionAndSchedule
-Arrival : exit / transitionToPreparation
-
-state Preparation
-Preparation : entry / preparePlane
-Preparation : do / assignState
-Preparation : exit / exitState
-
-state Operations
-Operations : entry / scheduledFlights
-Operations : do / checkAvailability
-Operations : exit / continueOperations
-
-state Maintenance
-Maintenance : entry / noMoreScheduledFlightsOrMaintenanceRequired
-Maintenance : do / servicePlane
-Maintenance : exit / transitionToPreparation
-
-state OutOfService
-OutOfService : entry / planeUnavailable
-OutOfService : do / removeFromOperations
-OutOfService : exit / endProcess
-
-state RemovedFromService
-RemovedFromService : entry / permanentlyWithdrawn
-RemovedFromService : do / removeFromService
-RemovedFromService : exit / endProcess
+title UML State Machine Diagram for Plane
 
 [*] --> Order
 
-plane_state_machine @enduml
+state Order
+Order : entry / acquirePlane
+
+state Arrival
+Arrival : entry / arrivePlane
+Arrival : do / checkAvailability
+Arrival : exit / isAvailable
+
+state Preparation
+Preparation : entry / preparePlane
+Preparation : choice / conditionAndSchedule(plane)
+Preparation --> Operations[Operations] / scheduleExists
+Preparation --> Maintenance[Maintenance] / noScheduleOrMaintenanceRequired
+
+state Operations
+Operations : entry / assignToOperations
+Operations : do / checkScheduledFlights
+Operations : exit / hasScheduledFlights
+
+state Maintenance
+Maintenance : entry / assignToMaintenance
+Maintenance : choice / maintenanceRequired(plane)
+Maintenance --> Preparation[Preparation] / noMaintenanceRequired
+Maintenance --> OutOfService[OutOfService] / outOfService
+
+state MaintenanceCheck
+MaintenanceCheck : entry / checkAndServicePlane
+MaintenanceCheck : do / serviceUntilReady
+MaintenanceCheck : exit / readyForOperations
+
+state OutOfService
+OutOfService : entry / takeOutOfService
+OutOfService : do / removeFromOperations
+
+state PreparationAfterMaintenance
+PreparationAfterMaintenance : entry / preparePlaneAfterMaintenance
+PreparationAfterMaintenance --> Operations[Operations] / readyForOperations
+
 @enduml

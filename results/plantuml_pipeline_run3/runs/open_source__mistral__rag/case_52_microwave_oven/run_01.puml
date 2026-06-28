@@ -1,43 +1,32 @@
 @startuml
-Microwave Oven Operation and Control
+title Microwave Oven Control - State Diagram
 
-state MicrowaveOven {
-  state Checking
-  Checking : do / Check Status
+state "Door Shut" as DoorShut
+state "Door Open" as DoorOpen
+state "Door Open With Item" as DoorOpenItem
+state "Door Shut With Item" as DoorShutItem
+state "Ready To Cook" as ReadyToCook
+state Cooking
+state "Checking"
+state Alarm
+state Done
+state Disabled
+state Waiting
 
-  state Cook
-  Cook : do / Run Generator
-
-  state Alarm
-  Alarm : do / Display Event
-
-  state Done
-  Done : do / Buzzer On for 5 Secs.
-
-  [*] --> Checking
-
-  Checking --> Cook : OK
-  Checking --> Alarm : Turntable Fault
-  Checking --> Alarm : Emitter Fault
-
-  Cook --> Done : Timeout
-  Cook --> Cook : Time
-
-  state Door {
-    state Shut
-    state Open
-  }
-
-  DoorShut : do / Allow DoorOpen
-  DoorOpen : do / Allow PlaceFood
-  DoorShutItem : do / RequireCloseDoor
-  DoorOpenItem : do / RequireCloseDoorAfterPlace
-
-  DoorShut --> DoorOpen : DoorOpened
-  DoorOpen --> DoorShut : DoorClosed
-  DoorOpen --> DoorOpenItem : FoodPlaced
-  DoorShutItem --> DoorShut : FoodPlacedAndDoorClosed
-}
+DoorShut --> DoorOpen : Door Opened
+DoorOpen --> DoorShut : Door Closed
+DoorOpen --> DoorShutItem : Food Placed
+DoorShut --> DoorShutItem : Food Placed
+DoorShutItem --> ReadyToCook : Door Closed
+ReadyToCook --> Cooking : Start Cooking
+Cooking --> Done : Timeout or Cancel
+Cooking --> Alarm : Door Opened
+Alarm --> Disabled
+Done --> Waiting : Completed
+Disabled --> Waiting : Door Closed or Cancel
+Waiting --> Checking : User Input
+Checking --> Cooking : No Issues
+Checking --> Alarm : Turntable Fault or Emitter Fault
 
 Case ID: case_73_oven
 Complexity: medium
@@ -54,18 +43,33 @@ Functional Requirements
 6. The system shall stop immediately if the door is opened during cooking for safety reasons.
 7. The system shall stop when the cooking time ends and allow the user to open the door to remove the food.
 
-state MicrowaveOven {
-  state DoorShutItem : do / RequireEnterTime
-  DoorShutItem --> Cooking
-  Cooking --> Done : Timeout or DoorOpened
-  Cooking --> Cooking : Time
-}
+Reference PlantUML:
+
+title ATM Control - Validate PIN and Withdraw Funds
+
+state Idle
+
+Idle --> CheckPIN : User Input PIN
+CheckPIN --> CorrectPIN : Valid PIN
+CorrectPIN --> Options : Display Options
+Options --> WithdrawalRequest : User Chooses Withdrawal
+WithdrawalRequest --> Approval : Check Transaction and Approve
+Approval --> DispenseCash : Dispense Cash
+Approval --> Receipt : Print Receipt
+Approval --> ReturnCard : Return Card
+Approval --> Error : Insufficient Funds or Out of Cash
+Error --> Idle
+CheckPIN --> IncorrectPIN : Invalid PIN
+IncorrectPIN --> KeepCard : Keep Card for Security
+KeepCard --> Cancel : User Cancels Process
+Cancel --> ReturnCard : Return Card
+Cancel --> Idle
 
 Case ID: case_69_atm_many_scenarios_6
 Complexity: medium
 
 Requirement:
-ATM Many Scenarios Scenario 6 — Polished Requirement Specification
+Atm Many Scenarios Scenario 6 — Polished Requirement Specification
 
 Functional Requirements
 1. The system shall check if the entered PIN is correct.
@@ -79,31 +83,5 @@ Functional Requirements
 9. The system shall stop the operation if it runs out of cash during the process.
 10. The system shall reset itself to be ready for the next user after completing or ending the session.
 
-state ATM {
-  state Idle
-  state EnterPIN
-  state InvalidCard
-  state IncorrectPin
-  state CardKept
-  state Options
-  state WithdrawalRequest
-  state Rejected
-  state DispenseCash
-  state OutOfCash
-  state Completed
-}
-
-EnterPIN --> Options : Correct PIN
-IncorrectPin --> EnterPIN : Incorrect PIN again
-InvalidCard --> InvalidCard : Card Kept
-Idle --> EnterPIN : Card Inserted
-EnterPIN --> InvalidCard : Invalid Card
-EnterPIN --> CardKept : User Cancels
-
-Options --> WithdrawalRequest : User Chooses Withdrawal Option
-WithdrawalRequest --> Rejected : Insufficient Funds or Other Issues
-WithdrawalRequest --> DispenseCash : Approved Withdrawal Request
-DispenseCash --> OutOfCash : No More Cash Available
-DispenseCash --> Completed : Cash Dispensed and Receipt Printed
-Completed --> Idle
+Reference PlantUML:
 @enduml

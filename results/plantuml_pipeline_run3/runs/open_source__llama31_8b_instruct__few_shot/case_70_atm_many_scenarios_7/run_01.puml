@@ -1,25 +1,46 @@
 @startuml
 title ATM State Machine Diagram
 
-state "Idle" as Idle
-state "Waiting for Card" as WaitingForCard
-state "Validating PIN" as ValidatingPIN
-state "Displaying Options" as DisplayingOptions
-state "Processing Request" as ProcessingRequest
-state "Confiscating" as Confiscating
+[*] --> Greeting
 
-[*] --> Idle
+state Greeting {
+  state "Greet User" as GreetUser
+}
 
-Idle --> WaitingForCard : Card Inserted / Get PIN
+GreetUser --> InsertCard : Card Inserted
 
-WaitingForCard --> ValidatingPIN : PIN Entered / Validate PIN
-ValidatingPIN --> WaitingForCard : Invalid PIN / Invalid PIN Prompt
-ValidatingPIN --> DisplayingOptions : Valid PIN / Display Menu
-ValidatingPIN --> Confiscating : Third Invalid PIN, Card Stolen, Card Expired / Confiscate
+state InsertCard {
+  state "Check PIN" as CheckPIN
+}
 
-DisplayingOptions --> ProcessingRequest : Select Option / Process Request
-ProcessingRequest --> WaitingForCard : Cancel Operation / Return Card
+CheckPIN --> ValidatePIN : PIN Entered / Validate PIN
 
-Confiscating --> [*] : Card Confiscated
+state ValidatePIN {
+  state "Invalid PIN" as InvalidPIN
+  state "Valid PIN" as ValidPIN
+}
+
+InvalidPIN --> Confiscate : Third Invalid PIN, Card Stolen, Card Expired
+Confiscate --> [*] : Card Confiscated
+
+ValidPIN --> DisplayOptions : Correct PIN / Display Options
+
+state DisplayOptions {
+  state "Withdraw Money" as WithdrawMoney
+  state "Check Information" as CheckInformation
+  state "Make Transfer" as MakeTransfer
+}
+
+DisplayOptions --> ProcessRequest : User Selected Option
+
+state ProcessRequest {
+  state "Process Request" as ProcessRequest
+}
+
+ProcessRequest --> [*] : Operation Completed
+
+GreetUser --> Cancel : User Cancels Operation
+
+Cancel --> ReturnCard : Card Returned to User
 
 @enduml

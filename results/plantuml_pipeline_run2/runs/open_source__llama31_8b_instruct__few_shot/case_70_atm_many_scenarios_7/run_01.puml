@@ -6,50 +6,39 @@ Idle : entry / Display Welcome
 Idle : do / remain same
 Idle : exit / card inserted
 
-state "WaitingForPIN" as WaitingForPIN
+state "Waiting for PIN" as WaitingForPIN
 WaitingForPIN : entry / card inserted
-WaitingForPIN : do / get PIN
-WaitingForPIN : exit / correct PIN
-WaitingForPIN : exit / incorrect PIN
+WaitingForPIN : do / validate PIN
+WaitingForPIN : exit / valid PIN / correct PIN
+WaitingForPIN : exit / invalid PIN / incorrect PIN
 
-state "ValidatingPIN" as ValidatingPIN
-ValidatingPIN : entry / correct PIN
-ValidatingPIN : do / validate PIN
-ValidatingPIN : exit / valid PIN
-ValidatingPIN : exit / invalid card or too many attempts
+state "Validating PIN" as ValidatingPIN
+ValidatingPIN : entry / invalid PIN
+ValidatingPIN : do / count attempts
+ValidatingPIN : exit / max attempts exceeded / confiscate card
+ValidatingPIN : exit / valid PIN / correct PIN
 
-state "ProcessingRequest" as ProcessingRequest
-ProcessingRequest : entry / valid PIN
+state "Displaying options" as DisplayingOptions
+DisplayingOptions : entry / correct PIN
+DisplayingOptions : do / display menu
+DisplayingOptions : exit / user selects option
+
+state "Processing request" as ProcessingRequest
+ProcessingRequest : entry / user selects option
 ProcessingRequest : do / process request
 ProcessingRequest : exit / request completed
 
-state "ConfiscatingCard" as ConfiscatingCard
-ConfiscatingCard : entry / invalid card or too many attempts
+state "Confiscating card" as ConfiscatingCard
+ConfiscatingCard : entry / max attempts exceeded
 ConfiscatingCard : do / confiscate card
 ConfiscatingCard : exit / card confiscated
 
-state "ReturningCard" as ReturningCard
-ReturningCard : entry / user cancels operation
-ReturningCard : do / return card
-ReturningCard : exit / card returned
-
 state J0 <<choice>>
-state J1 <<choice>>
-
-[*] --> J0
-
-J0 --> Idle
 Idle --> WaitingForPIN : card inserted
-
-WaitingForPIN --> ValidatingPIN : correct PIN
-ValidatingPIN --> ProcessingRequest : valid PIN
-ValidatingPIN --> ConfiscatingCard : invalid card or too many attempts
-WaitingForPIN --> ReturningCard : cancel operation
-
-ProcessingRequest --> J1 : [request completed]
-J1 --> ReturningCard : [return card]
-
-ConfiscatingCard --> [*] : [card confiscated]
-ReturningCard --> [*] : [card returned]
+WaitingForPIN --> ValidatingPIN : PIN entered
+ValidatingPIN --> DisplayingOptions : valid PIN
+DisplayingOptions --> ProcessingRequest : user selects option
+ProcessingRequest --> ConfiscatingCard : max attempts exceeded
+ConfiscatingCard --> Idle : card confiscated
 
 @enduml

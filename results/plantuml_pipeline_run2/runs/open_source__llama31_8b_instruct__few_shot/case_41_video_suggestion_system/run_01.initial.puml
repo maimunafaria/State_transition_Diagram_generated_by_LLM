@@ -5,69 +5,32 @@ state "Idle" as Idle {
   [*] --> ReceiveRequest
 }
 
-state "Receive Request" as ReceiveRequest {
-  ReceiveRequest : entry / To Process Request
-
-  state "Process Request" as ProcessRequest
+state "Receiving Request" as ReceivingRequest {
+  state "Receive Request" as ReceiveRequest
   state "Identify User" as IdentifyUser
-  state "Gather Videos" as GatherVideos
-  state "Add Details" as AddDetails
+
+  ReceiveRequest --> IdentifyUser : [Valid]
+  IdentifyUser --> GatherVideos : [Valid]
+}
+
+state "Gathering Videos" as GatheringVideos {
+  state "Gather Different Types of Videos" as GatherDifferentTypesOfVideos
+  state "Add Additional Details" as AddAdditionalDetails
+
+  GatherDifferentTypesOfVideos --> AddAdditionalDetails : [Valid]
+  AddAdditionalDetails --> SendSuggestions : [Valid]
+}
+
+state "Sending Suggestions" as SendingSuggestions {
   state "Send Suggested Videos" as SendSuggestedVideos
 
-  ReceiveRequest --> ProcessRequest : [Valid]
-}
-
-state "Process Request" as ProcessRequest {
-  ProcessRequest : do / Get user profile or preferences
-  ProcessRequest : do / Get trending videos from user's area
-  ProcessRequest : do / Get videos with similar tags
-  ProcessRequest : do / Get videos from similar genres
-  ProcessRequest : do / Get promoted videos
-
-  state "Get User Profile" as GetUserProfile
-  state "Get Trending Videos" as GetTrendingVideos
-  state "Get Similar Tags" as GetSimilarTags
-  state "Get Similar Genres" as GetSimilarGenres
-  state "Get Promoted Videos" as GetPromotedVideos
-
-  ProcessRequest --> GatherVideos : [Valid]
-}
-
-state "Gather Videos" as GatherVideos {
-  GatherVideos : do / Combine gathered videos
-  GatherVideos : exit / After gathering videos
-
-  state "Combine Videos" as CombineVideos
-  state "Exit" as Exit
-
-  GatherVideos --> AddDetails : [Valid]
-}
-
-state "Add Details" as AddDetails {
-  AddDetails : add thumbnails and view counts to suggested videos
-  AddDetails : exit / After adding details
-
-  state "Add Thumbnails" as AddThumbnails
-  state "Add View Counts" as AddViewCounts
-  state "Exit" as Exit
-
-  AddDetails --> SendSuggestedVideos : [Valid]
-}
-
-state "Send Suggested Videos" as SendSuggestedVideos {
-  SendSuggestedVideos : send suggested videos to user
-  SendSuggestedVideos : exit / After sending suggested videos
-
-  state "Send Videos" as SendVideos
-  state "Exit" as Exit
-
-  SendSuggestedVideos --> [*]
+  SendSuggestedVideos --> [*] : [Successful]
 }
 
 Idle --> ReceiveRequest
-ReceiveRequest --> ProcessRequest
-ProcessRequest --> GatherVideos
-GatherVideos --> AddDetails
-AddDetails --> SendSuggestedVideos
+ReceiveRequest --> ReceivingRequest
+ReceivingRequest --> GatheringVideos
+GatheringVideos --> SendingSuggestions
+SendingSuggestions --> Idle : [Successful]
 
 @enduml

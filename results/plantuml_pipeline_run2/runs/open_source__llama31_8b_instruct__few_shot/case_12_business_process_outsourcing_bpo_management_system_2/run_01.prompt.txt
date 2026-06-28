@@ -1,0 +1,250 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Flight — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall schedule and assign a flight number when a new flight is created.
+2. The system shall change the flight status to 'on journey' once it takes off.
+3. The system shall mark the flight as inactive and record it as a past record upon landing.
+4. The system shall record cancelled flights in the same manner as landed flights if they are cancelled before starting.
+5. The system shall remove inactive flights over time.
+
+Example 1 PlantUML:
+@startuml
+title Statechart diagram of the class "Flight"
+
+[*] --> Planned : «M» Flight Defined/
+
+state Planned
+state "In Transit" as InTransit
+state Historic
+
+Planned : «M» New Flight Number/
+
+Planned --> InTransit : «M» Flight Started/
+InTransit --> Historic : «M» Flight Landed/
+
+Planned --> Historic : «M» Flight Cancelled/
+Historic --> [*] : «M» Flight Irrelevant/
+Planned --> [*] : «M» Flight Number Irrelevant/
+
+@enduml
+
+Example 2 Requirement:
+My Helper — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users or users who have forgotten their password to create a new password.
+2. The system shall enable the user to continue using the app after setting a correct password.
+3. The system shall allow users to send messages from another mobile phone if they cannot use their own phone.
+4. The system shall read incoming messages to understand the user's needs.
+5. The system shall check the user’s password for correctness and inform the user if it is wrong.
+6. The system shall ensure that if the user's password is correct, the system shall check the user’s request.
+7. The system shall support for valid requests, the system shall complete them and send back required details to the user.
+8. The system shall support for invalid requests, the system shall inform the user that the request cannot be accepted.
+
+Example 2 PlantUML:
+@startuml
+
+[*] --> LoginSignup
+
+LoginSignup : entry / Download app
+LoginSignup : do / Enables the user to use app
+LoginSignup : exit / Verifies details
+
+LoginSignup --> SetPassword : signup / forgot password
+SetPassword : entry / Signup
+SetPassword : do / Set password
+SetPassword : exit / Validate password
+
+SetPassword --> LoginSignup : password set
+
+LoginSignup --> SendSMS : forgot phone
+SendSMS : entry / Forgot phone
+SendSMS : do / Send SMS from any other mobile
+SendSMS : exit / NIL
+
+SendSMS --> ReadsSMS : SMS sent
+ReadsSMS : entry / SMS received
+ReadsSMS : do / Scans SMS
+ReadsSMS : exit / Performs required action
+
+ReadsSMS --> VerifyPassword : verify request
+VerifyPassword : entry / Read SMS
+VerifyPassword : do / Check whether password is correct
+VerifyPassword : exit / Password is correct
+
+VerifyPassword --> ChecksRequirement : password correct
+VerifyPassword --> PasswordError : incorrect password
+
+PasswordError : entry / Incorrect password
+PasswordError : do / Send SMS stating incorrect password
+PasswordError : exit / SMS sent
+PasswordError --> [*]
+
+ChecksRequirement : entry / Password is correct
+ChecksRequirement : do / Check for requirement
+ChecksRequirement : exit / Requirement is valid
+
+ChecksRequirement --> FulfilRequirements : requirement valid
+ChecksRequirement --> RequirementError : invalid requirement
+
+FulfilRequirements : entry / Requirement is valid
+FulfilRequirements : do / Fulfils requirement
+FulfilRequirements : exit / NIL
+
+FulfilRequirements --> SendRequestedDetails : fulfil completed
+SendRequestedDetails : entry / Requirement is fulfilled
+SendRequestedDetails : do / Send requested details back in form of SMS
+SendRequestedDetails : exit / SMS has been sent
+SendRequestedDetails --> [*]
+
+RequirementError : entry / Invalid requirement
+RequirementError : do / Send SMS stating invalid requirement
+RequirementError : exit / SMS sent
+RequirementError --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Startup Meet — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to select their roll (investor, entrepreneur, or mentor).
+2. The system shall enable the user to sign in after choosing a role.
+3. The system shall allow the signed-in user to submit a startup idea.
+4. The system shall review the submitted startup idea.
+5. The system shall provide mentorship based on the review result.
+6. The system shall make an investment decision if the startup idea is presented to an investor.
+7. The system shall provide funding based on the investment decision.
+8. The system shall end the process once all actions are completed.
+
+Example 3 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+[*] --> UserType
+
+state UserType <<choice>>
+
+UserType --> InvestorLogin : [Investor user]
+UserType --> EntrepreneurLogin : [Entrepreneur user]
+UserType --> MentorLogin : [Mentor user]
+
+state "Investor Login" as InvestorLogin
+InvestorLogin : entry / Action needed
+InvestorLogin : do / enter login credentials
+InvestorLogin : exit / Entered into system
+
+state "Entrepreneur Login" as EntrepreneurLogin
+EntrepreneurLogin : entry / Action needed
+EntrepreneurLogin : do / enter login credentials
+EntrepreneurLogin : exit / Entered into system
+
+state "Mentor Login" as MentorLogin
+MentorLogin : entry / Action needed
+MentorLogin : do / enter login credentials
+MentorLogin : exit / Entered into system
+
+state MergeLogin <<choice>>
+
+InvestorLogin --> MergeLogin
+EntrepreneurLogin --> MergeLogin
+MentorLogin --> MergeLogin
+
+state "Startup idea" as StartupIdea
+StartupIdea : entry / Submitted by entrepreneur
+StartupIdea : do / file the idea
+StartupIdea : exit / accept or decline state
+
+MergeLogin --> StartupIdea
+
+state "Decision on Startup idea" as DecisionIdea
+DecisionIdea : entry / startup idea state
+DecisionIdea : do / accept or decline
+DecisionIdea : exit / NIL
+
+StartupIdea --> DecisionIdea
+
+state ChoiceDecision <<choice>>
+DecisionIdea --> ChoiceDecision
+
+state "Accept mentorship" as AcceptMentorship
+AcceptMentorship : entry / decision on mentorship
+AcceptMentorship : do / mentorship
+AcceptMentorship : exit / NIL
+
+state "Present Idea" as PresentIdea
+PresentIdea : entry / Decision on startup
+PresentIdea : do / present idea to investor
+PresentIdea : exit / Decision on investing
+
+state "Investment" as Investment
+Investment : entry / Decision to invest
+Investment : do / give investment
+Investment : exit / share in profit
+
+ChoiceDecision --> AcceptMentorship
+ChoiceDecision --> PresentIdea
+
+state MergeEnd <<choice>>
+
+AcceptMentorship --> MergeEnd
+PresentIdea --> Investment
+Investment --> MergeEnd
+ChoiceDecision --> MergeEnd
+MergeEnd --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Business Process Outsourcing Bpo Management System Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to search by selecting a filter category.
+2. The system shall allow users to search by selecting a price range as a filter.
+3. The system shall display matching users based on the chosen criteria after the user selects a filter.

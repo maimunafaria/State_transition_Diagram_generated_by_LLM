@@ -1,32 +1,31 @@
 @startuml
 title E Visa Processing And Follow Up System - UML State Machine Diagram
 
-state StartChoice <<choice>>
-state LoggedOut
-state LoggedIn
-state Applying
-state Paid
-state Approved
-state Rejected
-state ViewingStatus
-state CheckingStatus
-state Cancelling
-state ModifyingDetails
-state ViewingDetails
-state GivingFeedback
-state LoggingOut
+state AccountCreation <<choice>>
+state Login <<choice>>
+state Application <<choice>>
+state Payment <<choice>>
+state Accepted <<choice>>
+state StatusView <<choice>>
+state StatusCheck <<choice>>
+state Cancellation <<choice>>
+state DetailsModification <<choice>>
+state DetailsView <<choice>>
+state FeedbackGiving <<choice>>
+state Logout <<choice>>
+state PurposeView <<choice>>
 
-StartChoice -->|Create Account| LoggedOut:User
-LoggedOut -->|Login| LoggedIn:User
-LoggedIn -->|Apply for Visa and Pay| Applying
-Applying -->|Accepted| Paid:User
-Paid -->|Approved| Approved:User
-Paid -->|Rejected| Rejected:User
-Rejected -->|View Status| ViewingStatus:User
-ViewingStatus -->|Check Status| CheckingStatus:User
-CheckingStatus -->|Update Status| ViewingStatus:User
-ViewingStatus -->|Cancel Application| Cancelling:User
-Cancelling -->|Modify Details| ModifyingDetails:User
-ModifyingDetails -->|Give Feedback| GivingFeedback:User
-GivingFeedback -->|Log Out| LoggingOut:User
+AccountCreation -[*]> Login
+Login -.-> Application: After login
+Application -.-> Payment: After application submission
+Payment -.-> Accepted: After successful payment
+Accepted -.-> StatusView: After acceptance
+StatusView -.-> StatusCheck: To check status
+StatusCheck -.-> Checked: After checking status
+Checked -.-> FeedbackGiving: If feedback is given
+FeedbackGiving -.-> Logout: After giving feedback
+Logout -.-> AccountCreation: After logout
+PurposeView -.-> ApprovedOrRejected: Based on document check
+ApprovedOrRejected -.-> StatusUpdate: Update status after approval or rejection
+
 @enduml
