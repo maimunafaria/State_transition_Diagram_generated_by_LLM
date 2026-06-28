@@ -1,7 +1,7 @@
 param(
   [string]$EmbeddingModel = "sentence-transformers/all-MiniLM-L6-v2",
   [double]$Threshold = 0.80,
-  [double]$RelaxedThreshold = 0.50,
+  [double]$RelaxedThreshold = 0.48,
   [string]$Device = "cpu",
   [int]$SampleCount = 5,
   [string]$SourceRunsRoot = "Code\untitled folder\results\plantuml_pipeline\runs",
