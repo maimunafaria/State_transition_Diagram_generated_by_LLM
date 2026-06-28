@@ -1,6 +1,7 @@
 param(
   [string]$EmbeddingModel = "sentence-transformers/all-MiniLM-L6-v2",
   [double]$Threshold = 0.80,
+  [double]$RelaxedThreshold = 0.50,
   [string]$Device = "cpu",
   [int]$SampleCount = 5,
   [string]$SourceRunsRoot = "Code\untitled folder\results\plantuml_pipeline\runs",
@@ -22,12 +23,18 @@ try {
     "{0}",
     $Threshold
   )
+  $relaxedThresholdText = [string]::Format(
+    [Globalization.CultureInfo]::InvariantCulture,
+    "{0}",
+    $RelaxedThreshold
+  )
   $commandArgs = @(
     "Code\Scripts\evaluate_semantic_state_matching.py",
     "--dataset-root", "dataset",
     "--output-csv", $OutputCsv,
     "--embedding-model", $EmbeddingModel,
     "--threshold", $thresholdText,
+    "--relaxed-threshold", $relaxedThresholdText,
     "--device", $Device,
     "--batch-size", "32",
     "--seed", "42",
@@ -55,6 +62,7 @@ try {
   Write-Host "Methods: raw selected method, baseline repair, syntax-grounded repair"
   Write-Host "Embedding model: $EmbeddingModel"
   Write-Host "Similarity threshold: $Threshold"
+  Write-Host "Relaxed threshold: $RelaxedThreshold"
   python @commandArgs
   if ($LASTEXITCODE -ne 0) {
     throw "Semantic state matching failed with exit code $LASTEXITCODE."
