@@ -6,15 +6,13 @@ title State diagram of the system operations for "Process Sale"
 state "Waiting for new sale" as WaitingForNewSale
 state "Recording items" as RecordingItems
 state "Waiting for payment" as WaitingForPayment
+state "Completed sale" as CompletedSale
 
 WaitingForNewSale --> RecordingItems : enter item
 RecordingItems --> RecordingItems : enter item
 RecordingItems --> WaitingForPayment : end of sale
-WaitingForNewSale --> WaitingForPayment : direct to payment if cash
-WaitingForPayment --> PaymentVerification : verify payment [card or check]
-PaymentVerification --> PaymentApproved : payment approved
-PaymentApproved --> WaitingForNewSale : complete payment
-
-[*] --> [*] : return to waiting
+WaitingForPayment --> WaitingForNewSale : complete payment
+WaitingForPayment --> CompletedSale : payment approved
+CompletedSale --> [*] : finish and wait for next customer
 
 @enduml

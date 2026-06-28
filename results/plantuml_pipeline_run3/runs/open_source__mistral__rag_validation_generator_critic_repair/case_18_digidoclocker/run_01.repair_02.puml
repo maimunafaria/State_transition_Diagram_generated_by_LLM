@@ -2,35 +2,37 @@
 title UML State Machine Diagram (Digidoclocker)
 
 [*] --> UserType
-UserType : if citizen then Registration else Login
 
 state UserType <<choice>>
-Registration --> Registrar
-Login --> Citizen
+UserType --> Registration : [Citizen]
+UserType --> Login : [Registered Citizen]
 
 state Registration
 Registration : entry / Get the Registration Details
-Registration : if valid then Save User Details and Allow Login else End Process
+Registration : if valid then Save User Details and Proceed to Login else End Process
 
 state Login
 Login : entry / Get the Login Details
 Login : if correct then Proceed else Provide Multiple Attempts
 
-state Citizen
+state Citizen <<choice>>
 Citizen : entry / Logged In
-Citizen : can Upload Documents, View Profile, Apply for Certificate
-Citizen : can Continue Uploading Documents if needed
-Citizen : can Apply for Multiple Certificates and Reapply after sending a request to the issuer
-Citizen --> Logout
+Citizen --> UploadDocuments : [DONE_WITH_UPLOADS] : COMPLETION_EVENT
+Citizen --> ViewProfile : [VIEWING_PROFILE] : COMPLETION_EVENT
+Citizen --> ApplyForCertificate : [APPLIED_FOR_CERTIFICATE] : COMPLETION_EVENT
+Citizen --> ContinueUploadingDocuments : [NEEDS_MORE_UPLOADS] : COMPLETION_EVENT
+Citizen --> Session : [Logout] : Done with Actions
 
-state Registrar
+state Registrar <<choice>>
 Registrar : entry / Logged In
-Registrar : can Request Certificates for Verification
-Registrar : can Request Multiple Certificates and Continue Requesting more after receiving one
-Registrar --> Logout
+Registrar --> RequestCertificates : [REQUESTING_VERIFICATION] : COMPLETION_EVENT
+Registrar --> RequestMultipleCertificates : [REQUESTING_MORE_CERTIFICATES] : COMPLETION_EVENT
+Registrar --> Session : [Logout] : Done with Actions
 
-state Session
+state Session <<choice>>
 Session : entry / User Actions
-Session : end when Done with Actions
-Logout --> [*]
+Session : end when DONE_WITH_ACTIONS : COMPLETION_EVENT
+Session --> Citizen : [Citizen]
+Session --> Registrar : [Registrar]
+
 @enduml

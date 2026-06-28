@@ -1,7 +1,7 @@
 @startuml
 title Weather Station System States
 
-[*] --> Running : Start
+[*] --> Running
 state "Running" as Running
 state "Shutdown" as Shutdown
 
@@ -16,15 +16,15 @@ StatusCheck --> Running : Status checked
 Running --> ControlledMode : Remote control
 Running --> Shutdown : Shutdown command given
 
-[*] --> InitializeComponent : Load Component
-InitializeComponent --> WaitingForUpdate : Detect update
+[*] --> InitialComponent : Load Component (for orphan state)
+InitialComponent --> WaitingForUpdate : Detect update
 WaitingForUpdate --> ProcessUpdate : Update processed
 ProcessUpdate --> UnloadingPhase : Failure/Shutdown
 
 title Equihealth States
 
-[*] --> J1 : [check user]
 state J1 <<choice>>
+[*] --> J1 : [check user]
 state J2 : Patient
 state J3 : Health Worker
 state J4 : Government Official
@@ -42,17 +42,17 @@ PrepareAlerts --> J4 : Alerts sent to appropriate operators
 
 title National Health Id States
 
-[*] --> Choice1
 state Choice1 <<choice>>
+[*] --> Choice1 : (Indian citizen or Not Indian citizen)
 state Choice2 : Verification
 state Choice3 : Activation
-Choice1 --> [Choice2: Indian citizen]
-Choice1 --> Running : Not Indian citizen
-
+Choice1 --> Choice2 : [Indian citizen]
+Choice1 --> Running : [Not Indian citizen]
 Choice2 --> Verification : entry
 Verification --> VerifiedStatus : Details verified
 Verification --> NotVerified : Details not verified
 
+Choice1 --> [*] : Not Initial transition
 Choice3 --> SetPermissions : After activation
 SetPermissions --> AddOldFiles : Allow users to add old files
 AddOldFiles --> StoreOldFiles : Old files stored

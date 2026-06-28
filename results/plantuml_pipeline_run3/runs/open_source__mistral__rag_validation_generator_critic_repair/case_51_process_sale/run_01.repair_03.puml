@@ -13,13 +13,21 @@ state "Approved Payment" as ApprovedPayment
 state "Completed Sale" as CompletedSale
 
 WaitingCustomer --> RecordItems : enter item
+RecordItems --> RecordItems : enter item
 RecordItems --> WaitingPayment : end of sale
-WaitingPayment --> CashPayment : [if: cash payment] cash payment
-WaitingPayment --> CardOrCheckPayment : [else if: card or check payment] card or check payment
+WaitingPayment --> CashPayment : cash payment [valid]
+WaitingPayment --> CardOrCheckPayment : card or check payment [valid]
 CardOrCheckPayment --> PaymentVerification : verify payment
-PaymentVerification --> ApprovedPayment : [if: approved payment] approved payment
+PaymentVerification --> ApprovedPayment : approved payment [valid]
 ApprovedPayment --> CompletedSale : complete sale
 CompletedSale --> WaitingCustomer : finish payment
-WaitingCustomer --> [*] : wait for next customer
+CashPayment --> CompletedSale : cash payment approved
+CardOrCheckPayment --> CompletedSale : card or check payment verified
+PaymentVerification --> CompletedSale : payment verified [valid]
 
+WaitingPayment --> [*] : Sale completed [invalid]
+CompletedSale --> [*] : Next sale [invalid]
+
+WaitingCustomer --> WaitingPayment : all items added
+ApprovedPayment --> WaitingPayment : payment finished
 @enduml

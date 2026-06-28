@@ -19,6 +19,8 @@ GatherVideos : do / gather trending videos from user’s area
 GatherVideos : do / gather videos with similar tags
 GatherVideos : do / gather videos from similar genres
 GatherVideos : do / gather promoted videos
+GatherVideos : exit / gathered videos
+
 GatherVideos --> AddDetails : add additional details to suggested videos
 state "Add Details" as AddDetails
 AddDetails : entry / add thumbnails and view counts to suggested videos
@@ -30,11 +32,23 @@ state "Send Videos" as SendVideos
 SendVideos : entry / send suggested videos to user
 SendVideos : do / deliver the suggested videos to the user
 SendVideos : exit / sent videos
-SendVideos --> [*] : all done
 
-[*] --> LJ
+ReceiveRequest --> LJ : [valid]
 state LJ <<choice>>
-LJ --> [valid] ReceiveRequest
-LJ --> [invalid] SendVideos
+LJ --> ReceiveRequest : [invalid]
+IdentifyUser --> LJ : [valid]
+LJ --> GatherVideos : [videos_gathered]
+
+GatherVideos --> AddDetails : add additional details to suggested videos
+AddDetails --> SendVideos : send suggested videos to user
+
+SendVideos --> [*] : completion_event
+
+ReceiveRequest --> IdentifyUser : identify user who made the request
+IdentifyUser --> GatherVideos : videos are gathered
+GatherVideos --> AddDetails : add additional details to suggested videos
+AddDetails --> SendVideos : send suggested videos to user
+
+[*] --> ReceiveRequest : [user sends video suggestion request]
 
 @enduml

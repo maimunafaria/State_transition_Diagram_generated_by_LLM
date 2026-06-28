@@ -3,34 +3,58 @@ title Microwave Oven Control - State Diagram
 
 state "Door Shut" as DoorShut
 state "Door Open" as DoorOpen
-state "Door Open With Item" as DoorOpenItem
-state "Door Shut With Item" as DoorShutItem
+state "Door Closed" as DoorClosed
+state "Food Placed" as FoodPlaced
 state "Ready To Cook" as ReadyToCook
 state Cooking
 state Checking
 state Alarm
 state Done
+state Idle
+state PINEntered
+state InvalidPIN
+state CardRetained
+state Options
+state WithdrawalRequest
+state RejectedTransaction
+state ApprovedTransaction
+state DispenseCash
+state PrintReceipt
+state ReturnCard
+state OutOfCash
+state Reset
 
+[*] --> DoorShut : Initialization
 DoorShut --> DoorOpen : Door Opened
-DoorOpen --> DoorShut : Door Closed
-DoorOpen --> DoorShutItem : Food Placed
-DoorShutItem --> ReadyToCook : Door Closed
+DoorOpen --> DoorClosed : Door Closed
+DoorOpen --> FoodPlaced : Food Placed
+DoorClosed --> FoodPlaced : Food Placed
+FoodPlaced --> ReadyToCook : Door Closed
 ReadyToCook --> Cooking : Start Cooking
 Cooking --> Done : Timeout or Cancel
-Done --> DoorShut : Completed
+Done --> DoorOpen : Completed
+DoorOpen --> Idle : User Input
+PINEntered --> InvalidPIN : Incorrect PIN
+InvalidPIN --> Idle : Retry or Cancel
+InvalidPIN --> CardRetained : Multiple Incorrect PINs
+CardRetained --> Idle : User Returns Card
+PINEntered --> Options : Correct PIN
+Options --> WithdrawalRequest : User
+WithdrawalRequest --> RejectedTransaction : Rejection
+RejectedTransaction --> Idle : Return Card
+WithdrawalRequest --> ApprovedTransaction : Approval
+ApprovedTransaction --> DispenseCash : Cash Dispensed
+DispenseCash --> PrintReceipt : Receipt Printed
+PrintReceipt --> ReturnCard : Card Returned
+OutOfCash --> Idle : Out of Cash
+Idle --> Reset : Session Completed
+Reset --> [*] : Ready for Next Use
 
-Checking --> Cook : OK
-Checking --> Alarm : Turntable Fault
-Checking --> Alarm : Emitter Fault
-Alarm --> Disabled : Issue Detected
-
-state Disabled
-state Waiting
-
-Operation --> Disabled : Door Open
-Operation --> Waiting : Cancel
-Disabled --> Checking : Reset
-Waiting --> DoorShut : User Input
+' Merge duplicate transitions
+DoorOpen --> DoorShut : Close or Cancel
+FoodPlaced --> ReadyToCook : Close or Start Cooking
+WithdrawalRequest --> RejectedTransaction : Invalid Card or Incorrect PIN
+WithdrawalRequest --> ApprovedTransaction : Valid Card and PIN
 
 Case ID: case_73_oven
 Complexity: medium
@@ -54,12 +78,12 @@ state "Ready To Cook" as ReadyToCook
 state Cooking
 state Done
 
+[*] --> DoorClosed : Initialization
 DoorClosed --> FoodPlaced : Food Placed
 FoodPlaced --> ReadyToCook : Door Closed
 ReadyToCook --> Cooking : Start Cooking
 Cooking --> Done : Timeout or Cancel
 Done --> DoorOpen : Completed
-
 DoorOpen --> DoorClosed : Door Closed
 DoorOpen --> FoodPlaced : Food Placed
 
@@ -74,33 +98,5 @@ Functional Requirements
 2. The system shall ask for the PIN again if it is incorrect.
 3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.
 4. The system shall return the card if the user cancels the process at any moment during this stage.
-5. The system shall display options for the user to choose from if the PIN is correct.
-6. The system shall process the withdrawal request and check if it can approve the transaction.
-7. The system shall cancel everything and return the card if the withdrawal request is rejected.
-8. The system shall dispense cash, print a receipt, and return the card if the withdrawal request is approved.
-9. The system shall stop the operation if it runs out of cash during the process.
-10. The system shall reset itself to be ready for the next user after completing or ending the session.
-
-state Idle
-state PINEntered
-state InvalidPIN
-state CardRetained
-state Options
-state WithdrawalRequest
-state RejectedTransaction
-state ApprovedTransaction
-state DispenseCash
-state PrintReceipt
-state ReturnCard
-state OutOfCash
-state Reset
-
-Idle --> PINEntered : PIN Entered
-PINEntered --> InvalidPIN : Incorrect PIN
-InvalidPIN --> Idle : Retry or Cancel
-InvalidPIN --> CardRetained : Multiple Incorrect PINs
-CardRetained --> Idle : User Returns Card
-
-PINEntered --> Options : Correct PIN
-Options --> WithdrawalRequest : User
+5. The system shall display options for the user
 @enduml

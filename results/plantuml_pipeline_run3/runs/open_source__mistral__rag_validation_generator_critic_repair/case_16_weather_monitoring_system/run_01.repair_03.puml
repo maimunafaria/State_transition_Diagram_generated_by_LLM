@@ -1,5 +1,5 @@
 @startuml
-title Weather Monitoring System - User Authentication and Location Selection
+title Weather Monitoring System - User Authentication, Location Selection, and Weather Information
 
 [*] --> LoginOrRegister : [Prompt user to choose]
 
@@ -20,12 +20,10 @@ UserDashboard --> LocationSelection : [Check weather for current or another loca
 UserDashboard --> ProfileManagement : [Edit details, upload or accept requests, search for other users, or view current deals]
 UserDashboard --> Logout : [Log out after completing tasks]
 
-state LoggedOut <<choice>>
-LoggedOut --> [*] :
-
-state LocationSelection <<choice>>
-LocationSelection --> ValidLocation : [Enter a valid location]
-LocationSelection --> InvalidLocation : [Enter an invalid location]
+state UserDashboard_LocationSelection <<choice>>
+UserDashboard_LocationSelection --> ValidLocation : [Enter a valid location]
+UserDashboard_LocationSelection --> InvalidLocation : [Enter an invalid location]
+UserDashboard_LocationSelection --> LocationSelection : [Proceed to weather information selection]
 
 state WeatherInformationChoice <<choice>>
 WeatherInformationChoice --> Temperature : [Temperature]
@@ -39,4 +37,18 @@ WeatherDetails --> Alerts : [Alerts]
 WeatherDetails --> WeeklyAnalysis : [Weekly analysis]
 WeatherDetails --> FuturePrediction : [Future prediction]
 WeatherDetails --> Graph : [Graph]
+
+UserDashboard_LocationSelection --> UserDashboard : [Return to user dashboard if location is invalid]
+ValidLocation --> WeatherInformationChoice : [Proceed to weather information selection if location is valid]
+
+state End : [*] : COMPLETION_EVENT
+End --> [*] : COMPLETION_EVENT
+
+UserDashboard --> UserDashboard_LocationSelection : [Check weather for current or another location after logging in]
+SuccessfulRegistration --> UserDashboard : [Proceed to user dashboard if registration is successful]
+InvalidRegistration --> End : [End the process if the registration is not successful]
+SuccessfulLogin --> UserDashboard : [Proceed to user dashboard if login is successful]
+InvalidLogin --> End : [End the process if a new location entered is not valid]
+ValidLocation --> WeatherDetails : [Update and show the selected weather information to the user]
+InvalidLocation --> End : [End the process if a new location entered is not valid]
 @enduml

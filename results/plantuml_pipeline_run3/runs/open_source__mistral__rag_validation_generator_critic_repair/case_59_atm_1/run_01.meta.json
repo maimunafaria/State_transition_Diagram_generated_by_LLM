@@ -39,7 +39,7 @@
       "stage": "repair",
       "attempt": 1,
       "accepted": true,
-      "repair_mode": "baseline",
+      "repair_mode": "syntax_grounded",
       "repair_model_name": "mistral:7b-instruct",
       "target_issue": "",
       "target_issue_key": "",
@@ -58,7 +58,7 @@
         "min_allowed_transition_count": 12,
         "dropped_states": [],
         "added_states": [
-          "LoggedOut"
+          "FinalState"
         ]
       },
       "syntax_content_preserved": true,
@@ -101,13 +101,13 @@
     {
       "stage": "repair",
       "attempt": 1,
-      "repair_mode": "baseline",
+      "repair_mode": "syntax_grounded",
       "repair_model_name": "mistral:7b-instruct",
       "target_issue": "",
       "target_issue_key": "",
       "repair_route": "",
       "transition_patch_lines": [],
-      "raw_model_response": "@startuml\ntitle ATM Control - Validate PIN and Withdraw Funds\n\n[*] --> Idle\n\nstate Idle\nstate \"Waiting for PIN\" as WaitingForPIN\nstate \"Validating PIN\" as ValidatingPIN\nstate \"Withdrawal Options\" as WithdrawalOptions\nstate Confiscating\nstate Ejecting\nstate \"Inputting Amount\" as InputtingAmount\nstate \"Checking Amount\" as CheckingAmount\nstate \"Dispensing Cash\" as DispensingCash\nstate \"Printing Receipt\" as PrintingReceipt\nstate \"Returning Card\" as ReturningCard\nstate \"Out of Cash\" as OutOfCash\nstate \"Resetting\" as Resetting\nstate LoggedOut\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> WithdrawalOptions : Correct PIN\nWithdrawalOptions --> InputtingAmount : User Chooses Amount\nInputtingAmount --> CheckingAmount : Valid Amount\nCheckingAmount --> DispensingCash : Approve Transaction\nDispensingCash --> PrintingReceipt : Cash Dispensed\nPrintingReceipt --> ReturningCard : Receipt Printed\nReturningCard --> LoggedOut : Card Returned\n\nInputtingAmount --> CheckingAmount : Invalid Amount\nCheckingAmount --> Confiscating : Reject Transaction / Keep Card\nConfiscating --> Ejecting : Card Ejected\nEjecting --> LoggedOut : Ready for Next User\n\nCheckingAmount --> OutOfCash : No Cash Available\nOutOfCash --> Resetting : System Reset\nResetting --> LoggedOut : Ready for Next User\n\nLoggedOut --> [*] : Idle\n@enduml",
+      "raw_model_response": "@startuml\ntitle ATM Control - Validate PIN and Withdraw Funds\n\n[*] --> Idle\n\nstate Idle\nstate \"Waiting for PIN\" as WaitingForPIN\nstate \"Validating PIN\" as ValidatingPIN\nstate \"Withdrawal Options\" as WithdrawalOptions\nstate Confiscating\nstate Ejecting\nstate \"Inputting Amount\" as InputtingAmount\nstate \"Checking Amount\" as CheckingAmount\nstate \"Dispensing Cash\" as DispensingCash\nstate \"Printing Receipt\" as PrintingReceipt\nstate \"Returning Card\" as ReturningCard\nstate \"Out of Cash\" as OutOfCash\nstate \"Resetting\" as Resetting\nstate FinalState\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> WithdrawalOptions : Correct PIN\nWithdrawalOptions --> InputtingAmount : User Chooses Amount\nInputtingAmount --> CheckingAmount : Valid Amount\nCheckingAmount --> DispensingCash : Approve Transaction\nDispensingCash --> PrintingReceipt : Cash Dispensed\nPrintingReceipt --> ReturningCard : Receipt Printed\nReturningCard --> FinalState : Transaction Completed / Card Returned\n\nInputtingAmount --> CheckingAmount : Invalid Amount\nCheckingAmount --> Confiscating : Reject Transaction / Keep Card\nConfiscating --> Ejecting : Card Ejected\nEjecting --> Idle : Ready for Next User\n\nCheckingAmount --> OutOfCash : No Cash Available\nOutOfCash --> Resetting : System Reset\nResetting --> FinalState : System Reset Completed / Ready for Next User\n\nFinalState --> [*] : COMPLETION_EVENT\n@enduml",
       "compiler_patch_edits": [],
       "compiler_patch_error": "",
       "validation": {
@@ -133,7 +133,7 @@
         "min_allowed_transition_count": 12,
         "dropped_states": [],
         "added_states": [
-          "LoggedOut"
+          "FinalState"
         ]
       },
       "syntax_content_preserved": true,

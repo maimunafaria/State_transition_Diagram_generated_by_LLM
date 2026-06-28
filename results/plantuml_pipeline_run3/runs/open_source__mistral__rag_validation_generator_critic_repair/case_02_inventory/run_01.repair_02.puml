@@ -10,9 +10,8 @@ state CustomerDashboard
 CustomerDashboard : entry / login
 CustomerDashboard : do / checkCredentials
 CustomerDashboard : exit / incorrectCredentials
-CustomerDashboard : exit / successfulLogin --> InventoryManagement
-
-state InventoryManagement
+CustomerDashboard : exit / successfulLogin
+CustomerDashboard --> InventoryManagement : successfulLogin
 InventoryManagement : entry / successfulLogin
 InventoryManagement : do / addGoods
 InventoryManagement : do / updatePrice
@@ -26,14 +25,16 @@ InventoryManagement : do / generateReceipt
 InventoryManagement : do / replaceItemOrCancelReceipt
 InventoryManagement : do / recordCustomerRequests
 InventoryManagement : do / viewTransactionsSummary
-InventoryManagement : exit / anyAction --> CustomerDashboard
+InventoryManagement : exit / anyAction
+InventoryManagement --> MarketplaceManagement : COMPLETION_EVENT
 
 state MarketplaceManagement
 MarketplaceManagement : entry / successfulLogin
 MarketplaceManagement : do / addProducts
 MarketplaceManagement : do / promoteProducts
 MarketplaceManagement : do / communicateWithCustomers
-MarketplaceManagement : do / logout --> CustomerDashboard
+MarketplaceManagement : do / logout
+MarketplaceManagement --> [*] : COMPLETION_EVENT
 
 state TextileProduction
 TextileProduction : entry / placeOrder
@@ -45,7 +46,9 @@ TextileProduction : do / defectCheck
 TextileProduction : do / deliverGarments
 TextileProduction : do / completeBillingAndPayment
 TextileProduction : do / generateReport
-TextileProduction : exit / anyAction --> CustomerDashboard
+TextileProduction : exit / anyAction
+InventoryManagement --> TextileProduction : placeOrderToSupplier
+TextileProduction --> [*] : COMPLETION_EVENT
 
 state ArtGalleryManagement
 ArtGalleryManagement : entry / login
@@ -55,6 +58,7 @@ ArtGalleryManagement : do / selectItemsAndPlaceOrder
 ArtGalleryManagement : do / addSelectedProductsToOrder
 ArtGalleryManagement : do / choosePaymentMethod
 ArtGalleryManagement : do / processOrder
-ArtGalleryManagement : do / endProcessIfPaymentFails --> CustomerDashboard
+ArtGalleryManagement : do / endProcessIfPaymentFails
 ArtGalleryManagement : do / saveUpdatedInfo
+ArtGalleryManagement --> [*] : COMPLETION_EVENT
 @enduml

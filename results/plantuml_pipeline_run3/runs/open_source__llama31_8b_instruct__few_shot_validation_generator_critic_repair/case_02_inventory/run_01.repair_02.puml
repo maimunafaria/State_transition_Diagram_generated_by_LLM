@@ -4,59 +4,58 @@ title Inventory System State Machine
 [*] --> AddGoods
 
 state "Add Goods" as AddGoods {
-  [*] --> UpdatePrice
+  AddGoods --> UpdatePrice : addGoodsSelected()
   state "Update Price" as UpdatePrice
 
   UpdatePrice --> RemoveGoods : removeGoodsSelected()
+
+  RemoveGoods --> IdentifyExpiredGoods : identifyExpiredGoods()
 }
 
 state "Remove Goods" as RemoveGoods {
-  Login --> IdentifyExpiredGoods : identifyExpiredGoods() # inside composite state block, replace with normal arrow
-  state "Identify Expired Goods" as IdentifyExpiredGoods
-
   IdentifyExpiredGoods --> NotifyUser : notifyUserAboutRemoval()
+  state "Identify Expired Goods" as IdentifyExpiredGoods
 }
 
 state "Notify User" as NotifyUser {
-  [*] --> PlaceOrder
+  PlaceOrder --> GenerateInvoice : generateInvoiceForOrder()
   state "Place Order" as PlaceOrder
 
-  PlaceOrder --> GenerateInvoice : generateInvoiceForOrder()
+  NotifyUser --> PlaceOrder : placeOrderSelected()
 }
 
 state "Generate Invoice" as GenerateInvoice {
-  SearchItems --> SelectItemsForPurchase : selectItemsForPurchase() # remove extra initial transition
+  SearchItems --> SelectItemsForPurchase : selectItemsForPurchase()
   state "Search Items" as SearchItems
 
-  SelectItemsForPurchase --> CalculateDiscountAndTax : calculateDiscountAndTax()
+  GenerateInvoice --> SearchItems : searchItemsSelected()
+}
+
+state "Select Items for Purchase" as SelectItemsForPurchase {
   CalculateDiscountAndTax --> GenerateReceipt : generateReceiptForCustomer()
+  state "Calculate Discount and Tax" as CalculateDiscountAndTax
+
+  SelectItemsForPurchase --> CalculateDiscountAndTax : calculateDiscountAndTax()
 }
 
 state "Generate Receipt" as GenerateReceipt {
-  ReplaceItemOrCancelReceipt --> RecordCustomerRequest : recordCustomerRequest() # remove extra initial transition
+  RecordCustomerRequest --> ViewSummaryReport : viewSummaryReport()
   state "Replace Item or Cancel Receipt" as ReplaceItemOrCancelReceipt
+
+  GenerateReceipt --> ReplaceItemOrCancelReceipt : replaceItemOrCancelReceiptSelected()
+}
+
+state "Record Customer Request" as RecordCustomerRequest {
+  ViewSummaryReport --> [*]
+  state "View Summary Report" as ViewSummaryReport
 
   RecordCustomerRequest --> ViewSummaryReport : viewSummaryReport()
 }
 
-state "Record Customer Request" as RecordCustomerRequest {
-  [*] --> ViewSummaryReport
-  state "View Summary Report" as ViewSummaryReport
-
-  ViewSummaryReport --> [*]
-}
-
-AddGoods --> UpdatePrice : addGoodsSelected()
-UpdatePrice --> RemoveGoods : removeGoodsSelected()
-RemoveGoods --> IdentifyExpiredGoods : identifyExpiredGoods()
-IdentifyExpiredGoods --> NotifyUser : notifyUserAboutRemoval()
-NotifyUser --> PlaceOrder : placeOrderSelected()
+RemoveGoods --> NotifyUser : notifyUserAboutRemoval()
 PlaceOrder --> GenerateInvoice : generateInvoiceForOrder()
-GenerateInvoice --> SearchItems : searchItemsSelected()
 SearchItems --> SelectItemsForPurchase : selectItemsForPurchase()
-SelectItemsForPurchase --> CalculateDiscountAndTax : calculateDiscountAndTax()
 CalculateDiscountAndTax --> GenerateReceipt : generateReceiptForCustomer()
-GenerateReceipt --> RecordCustomerRequest : recordCustomerRequest()
-RecordCustomerRequest --> ViewSummaryReport : viewSummaryReport()
+ReplaceItemOrCancelReceipt --> RecordCustomerRequest : recordCustomerRequest()
 
 @enduml

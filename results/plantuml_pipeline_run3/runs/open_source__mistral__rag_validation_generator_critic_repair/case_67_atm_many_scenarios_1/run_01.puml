@@ -12,10 +12,6 @@ state "Enter PIN"
 "Enter PIN" : checkPinLimit(incorrectAttempts)
 "Enter PIN" : keepCard(invalidCard, incorrectPin, incorrectAttempts > 3)
 "Enter PIN" : returnCardWithMessage(cancelledOperation, rejectedRequest)
-"Enter PIN" --> Check Information
-"Enter PIN" --> Transfer Money
-"Enter PIN" --> Withdraw Cash
-"Enter PIN" --> [*]
 "Enter PIN" : displayOptions(correctPin)
 "Enter PIN" : processWithdrawalRequest(requestAmount, availableBalance, approvedTransaction)
 "Enter PIN" : checkCashAvailability(approvedTransaction, cashAvailable)
@@ -24,18 +20,21 @@ state "Enter PIN"
 "Enter PIN" : returnCard(cardReturned, rejectedRequest)
 "Enter PIN" : stopOperation(outOfCash)
 "Enter PIN" : resetATM(finishedSession)
+"Enter PIN" --> TerminatingTransaction : COMPLETION_EVENT
 
 state "Check Information"
 "Check Information" : chooseToCheckInfo(checkInfoOptionSelected)
 "Check Information" : processQueryRequest(queryType, approvedQuery)
 "Check Information" : printReceipt(receiptPrinted, rejectedQuery)
-"Check Information" --> [*]
+"Check Information" --> Idle : COMPLETION_EVENT
+"Check Information" --> "Enter PIN" : CHECK_INFORMATION_EVENT
 
 state "Transfer Money"
 "Transfer Money" : chooseToTransfer(transferOptionSelected)
 "Transfer Money" : processTransferRequest(transferAmount, approvedTransfer)
 "Transfer Money" : printReceipt(receiptPrinted, rejectedTransfer)
-"Transfer Money" --> [*]
+"Transfer Money" --> Idle : COMPLETION_EVENT
+"Transfer Money" --> "Enter PIN" : TRANSFER_MONEY_EVENT
 
 state "Withdraw Cash"
 "Withdraw Cash" : chooseToWithdraw(withdrawOptionSelected)
@@ -46,12 +45,13 @@ state "Withdraw Cash"
 "Withdraw Cash" : cancelOperation(rejectedWithdrawal)
 "Withdraw Cash" : showMessage(insufficientFunds)
 "Withdraw Cash" : stopOperation(outOfCash)
-"Withdraw Cash" --> [*]
+"Withdraw Cash" --> Idle : COMPLETION_EVENT
+"Withdraw Cash" --> "Enter PIN" : WITHDRAW_CASH_EVENT
 
-state "Terminating Transaction"
+state TerminatingTransaction
 "Terminating Transaction" : ejectCard(cardEjected, finishedTransaction)
 "Terminating Transaction" : shortEndingPhase(shortEndingPhaseCompleted)
-"Terminating Transaction" : returnToNormalCondition(normalConditionReached)
+"Termining Transaction" : returnToNormalCondition(normalConditionReached)
 "Terminating Transaction" : shutDown(shutdownOccured)
-[*] --> Terminating Transaction
+TerminatingTransaction --> [*] : COMPLETION_EVENT
 @enduml

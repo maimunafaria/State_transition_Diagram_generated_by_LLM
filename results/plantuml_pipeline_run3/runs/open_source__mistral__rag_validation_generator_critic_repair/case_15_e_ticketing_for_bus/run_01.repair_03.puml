@@ -11,17 +11,38 @@ state ConfirmBooking <<choice>>
 state MakePayment <<choice>>
 state ManageAccountDetails <<choice>>
 state LogoutUser <<choice>>
-state LoggedOut <<choice, terminal>>
+state EndChoice <<choice>>
 
 [*] --> StartChoice : [start]
 StartChoice --> RegisterUser : [create account]
 RegisterUser --> ValidateRegistration : [validate registration]
-ValidateRegistration --> LoginUser : [successful registration] || ValidateRegistration --> LoggedOut : [invalid registration]
+ValidateRegistration --> LoginUser : [successful registration]
 LoginUser --> CheckTicketStatus : [check status]
 CheckTicketStatus --> BookTicket : [book ticket]
 BookTicket --> ConfirmBooking : [confirm booking]
 ConfirmBooking --> MakePayment : [make payment]
 MakePayment --> ManageAccountDetails : [manage account details]
 ManageAccountDetails --> LogoutUser : [log out]
-LogoutUser --> LoggedOut : [logged out]
+LogoutUser --> EndChoice : [logged out]
+EndChoice --> [*] : COMPLETION_EVENT
+
+State RegisterUser as REGISTER_USER
+State ValidateRegistration as VALIDATE_REGISTRATION
+State LoginUser as LOGIN_USER
+State CheckTicketStatus as CHECK_TICKET_STATUS
+State BookTicket as BOOK_TICKET
+State ConfirmBooking as CONFIRM_BOOKING
+State MakePayment as MAKE_PAYMENT
+State ManageAccountDetails as MANAGE_ACCOUNT_DETAILS
+State LogoutUser as LOGOUT_USER
+
+RegisterUser --> VALIDATE_REGISTRATION : [valid]
+VALIDATE_REGISTRATION --> LOGIN_USER : [valid]
+LOGIN_USER --> CHECK_TICKET_STATUS : [logged in]
+CHECK_TICKET_STATUS --> BOOK_TICKET : [available ticket]
+BOOK_TICKET --> CONFIRM_BOOKING : [booked ticket]
+CONFIRM_BOOKING --> MAKE_PAYMENT : [confirmed booking]
+MAKE_PAYMENT --> MANAGE_ACCOUNT_DETAILS : [paid]
+MANAGE_ACCOUNT_DETAILS --> LOGOUT_USER : [logged out]
+LOGOUT_USER --> END_CHOICE : [logged out]
 @enduml

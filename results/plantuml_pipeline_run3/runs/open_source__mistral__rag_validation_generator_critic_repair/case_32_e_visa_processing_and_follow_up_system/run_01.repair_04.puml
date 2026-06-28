@@ -3,33 +3,35 @@ title E Visa Processing And Follow Up System - UML State Machine Diagram
 
 state StartChoice <<choice>>
 state LoggedOut
-state ApplicantChoice <<choice, guard: IsAccountCreated?>>
+state ApplicantChoice <<choice>>
 state ApplicationSubmitted
 state PaymentMade
 state ApplicationAccepted
 state StatusViewed
 state StatusChecked
+state ApplicationCancelled
+state DetailsModified
 state FeedbackGiven
 state LoggedIn
-state CancelledApplication
-state ModifiedDetails
+state InitialState
+state Completion
 
-[*] --> StartChoice: Create Account / Login
-StartChoice --> ApplicantChoice: IsAccountCreated?
-ApplicantChoice --> ApplicationSubmitted: Apply for Visa / Check Status / Cancel Application / Modify Details / Give Feedback / Logout
+[*] --> InitialState : Create Account / Login
+InitialState --> StartChoice
+StartChoice --> LoggedOut: Login [valid: account_created]
+LoggedOut --> ApplicantChoice: Login [valid: logged_out]
+ApplicantChoice --> ApplicationSubmitted: Apply for Visa / Check Status / Cancel Application / Modify Details / Give Feedback / Logout [valid: logged_in]
 ApplicationSubmitted --> PaymentMade: Make Payment
 PaymentMade --> ApplicationAccepted: Accepted
 ApplicationAccepted --> StatusViewed: View Status
-StatusViewed --> StatusChecked: Check Status
+StatusViewed --> StatusChecked: Check Status [valid: status_viewed]
 StatusChecked --> StatusViewed: Back to Status View
 StatusViewed --> FeedbackGiven: Give Feedback
-FeedbackGiven --> LoggedIn: Done
-LoggedOut --> ApplicantChoice: Login
-ApplicationCancelled --> ApplicationSubmitted: Cancel Application
-DetailsModified --> ModifiedDetails: Modified Details
-LoggedIn --> [*]: Logout
-
-ApplicantChoice --> CancelledApplication: IsApplicationSubmitted?
-CancelledApplication --> LoggedOut: Yes
-CancelledApplication --> ApplicationSubmitted: No
+FeedbackGiven --> LoggedIn: Done [valid: feedback_given]
+LoggedOut --> ApplicantChoice: Login [valid: logged_out]
+ApplicationCancelled --> ApplicationSubmitted: Cancel Application [valid: application_cancelled]
+DetailsModified --> DetailsModified: Modified Details [valid: details_modified]
+DetailsModified --> LoggedIn: Modified Details [valid: modified_details]
+LoggedIn --> Completion : Logout / Give Feedback / View Details / Complete Status Update [valid: logged_in]
+Completion --> [*] : COMPLETION_EVENT
 @enduml

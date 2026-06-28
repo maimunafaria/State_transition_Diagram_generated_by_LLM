@@ -1,12 +1,11 @@
-You are a UML repair assistant.
-Fix the candidate PlantUML using only the validation issues and repair guidance below.
-Make the smallest possible edit.
-Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
-Do not remove or rename unaffected states.
-Do not change unaffected transition labels.
-Do not redesign or simplify the diagram.
-Only change the lines needed to fix the listed validation issues.
-Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
 
 Requirement:
 Weather Monitoring System — Polished Requirement Specification
@@ -29,11 +28,11 @@ title UML State Chart Diagram
 [*] --> CreateAccount
 
 state "Create Account" as CreateAccount
-state Login <<[valid]>>
+state Login <<choice>>
 state RegistrationDecision <<choice>>
 state InvalidRegistration as InvalidRegistration
 state ValidLogin as ValidLogin
-state LocationChoice <<[valid]>>
+state LocationChoice <<choice>>
 state InvalidLocation as InvalidLocation
 state ValidLocation as ValidLocation
 state CheckWeather <<choice>>
@@ -46,7 +45,7 @@ CreateAccount : exit / Account created or not
 
 InvalidRegistration : entry / Registration failed
 InvalidRegistration : do / Show error message
-InvalidRegistration --> [*]
+InvalidRegistration : exit / Abnormal termination
 
 ValidLogin : entry / User logged in
 ValidLogin : do / Location selection
@@ -58,44 +57,69 @@ LocationChoice : exit / Location entered or not
 
 InvalidLocation : entry / Invalid location
 InvalidLocation : do / Show error message
-InvalidLocation --> [*]
+InvalidLocation : exit / Abnormal termination
 
 ValidLocation : entry / Valid location
 ValidLocation : do / Check weather
-ValidLocation --> CheckWeather
+ValidLocation : exit / Weather checked
 
 CheckWeather : entry / To Action
 CheckWeather : do / Select what to check (temperature, humidity, rainfall, pressure, or dew point)
-CheckWeather : exit / What to check selected
-CheckWeather --> [valid]WeatherDetails
+CheckWeather --> TemperatureSelected : [temperature]
+CheckWeather --> HumiditySelected : [humidity]
+CheckWeather --> RainfallSelected : [rainfall]
+CheckWeather --> PressureSelected : [pressure]
+CheckWeather --> DewPointSelected : [dew_point]
+
+TemperatureSelected --> WeatherDetails
+HumiditySelected --> WeatherDetails
+RainfallSelected --> WeatherDetails
+PressureSelected --> WeatherDetails
+DewPointSelected --> WeatherDetails
 
 WeatherDetails : entry / To Action
 WeatherDetails : do / View additional weather details (alerts, a weekly analysis, a future prediction, or a graph)
-WeatherDetails : exit / Details viewed
-WeatherDetails --> [invalid]Logout
+WeatherDetails --> AlertsViewed : [alerts]
+WeatherDetails --> WeeklyAnalysisViewed : [weekly_analysis]
+WeatherDetails --> FuturePredictionViewed : [future_prediction]
+WeatherDetails --> GraphViewed : [graph]
+
+AlertsViewed --> Logout
+WeeklyAnalysisViewed --> Logout
+FuturePredictionViewed --> Logout
+GraphViewed --> Logout
 
 Logout : entry / User logged out
 Logout : do / End session
-Logout --> [*]
+Logout : exit / Session ended
 
 CreateAccount --> Login
 Login --> RegistrationDecision
-RegistrationDecision --> InvalidRegistration
-RegistrationDecision --> ValidLogin
+RegistrationDecision --> InvalidRegistration : [invalid_registration]
+RegistrationDecision --> ValidLogin : [valid_login]
 
 ValidLogin --> LocationChoice
-LocationChoice --> [invalid]InvalidLocation
-LocationChoice --> [valid]ValidLocation
+LocationChoice --> LocationChoice : [location_valid]
+LocationChoice --> InvalidLocation : [location_invalid]
+InvalidLocation --> [*] : [abnormal_termination]
+
+ValidLocation --> CheckWeather
+
+InvalidRegistration --> [*] : [abnormal_termination]
 
 @enduml
 
 
-Validation issues to fix:
-- unreachable: CheckWeather, Create Account, InvalidLocation, InvalidRegistration, LocationChoice, Login, Logout, RegistrationDecision, ValidLocation, ValidLogin, WeatherDetails, [invalid]InvalidLocation, [invalid]Logout, [valid]ValidLocation, [valid]WeatherDetails
+Validation issues:
+- unreachable: AlertsViewed, CheckWeather, Create Account, DewPointSelected, FuturePredictionViewed, GraphViewed, HumiditySelected, InvalidLocation, InvalidRegistration, LocationChoice, Login, Logout, PressureSelected, RainfallSelected, RegistrationDecision, TemperatureSelected, ValidLocation, ValidLogin, WeatherDetails, WeeklyAnalysisViewed
 - unreachable_states_detected
-- choice_node_without_guarded_outgoing_transitions (CheckWeather)
-- choice_node_without_guarded_outgoing_transitions (RegistrationDecision)
-- choice_node_without_guarded_outgoing_transitions (WeatherDetails)
+- choice_node_without_guarded_outgoing_transitions (Login)
+
+Validator details:
+- Current initial state: CreateAccount
+- Unreachable states: AlertsViewed, CheckWeather, Create Account, DewPointSelected, FuturePredictionViewed, GraphViewed, HumiditySelected, InvalidLocation, InvalidRegistration, LocationChoice, Login, Logout, PressureSelected, RainfallSelected, RegistrationDecision, TemperatureSelected, ValidLocation, ValidLogin, WeatherDetails, WeeklyAnalysisViewed
+- State count: 21
+- Transition count: 26
 
 --- Structural Validation Rules ---
 - Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
@@ -112,6 +136,13 @@ Validation issues to fix:
 - Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
 - If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
 
-Repair guidance for these issues:
-- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
-- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].
+Valid PlantUML repair patterns:
+Pattern 1: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Pattern 2: valid guarded choice node
+state DECISION_NODE <<choice>>
+SOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]

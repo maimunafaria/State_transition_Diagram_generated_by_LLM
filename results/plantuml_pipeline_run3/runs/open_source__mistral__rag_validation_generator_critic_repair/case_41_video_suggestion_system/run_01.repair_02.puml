@@ -7,19 +7,27 @@ state IdentifyUser
 state GatherVideos
 state AddDetails
 state SendSuggestions
-state EndChoice <<choice>>
+state TrendingVideos
+state SimilarTagVideos
+state SimilarGenreVideos
+state PromotedVideos
 
-[*] --> StartChoice : Initial Request
-StartChoice --> [valid] UserRequestVideo
-StartChoice --> [invalid] EndChoice
+[*] --> StartChoice
 
+StartChoice --> UserRequestVideo : User requests video
 UserRequestVideo --> IdentifyUser
 IdentifyUser --> UserIdentified
 
 state UserIdentified
 UserIdentified --> GatherVideos
-GatherVideos --> AddDetails
+GatherVideos --> TrendingVideos [trending]
+GatherVideos --> SimilarTagVideos [similar_tags]
+GatherVideos --> SimilarGenreVideos [similar_genres]
+GatherVideos --> PromotedVideos [promoted]
+TrendingVideos --> AddDetails
+SimilarTagVideos --> AddDetails
+SimilarGenreVideos --> AddDetails
+PromotedVideos --> AddDetails
 AddDetails --> SendSuggestions
-SendSuggestions --> EndChoice : Suggestions Sent
-EndChoice --> [*]
+SendSuggestions --> [*]
 @enduml

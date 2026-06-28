@@ -1,7 +1,7 @@
 @startuml
 title State machine for Microwave Oven
 
-[*] --> Idle : start_cooking / close_door
+state "Idle" as Idle
 Idle : entry/To action
 Idle : do/Remain in same state
 Idle : exit/Start cooking / Open door
@@ -21,13 +21,24 @@ Error : entry/Error condition
 Error : do/Display error message
 Error : exit/Return to idle
 
+[*] --> Idle : start_cooking / close_door
+
+Idle --> StartCooking : start_cooking / close_door
+
 StartCooking --> CancelCooking : cancel_cooking / open_door
 CancelCooking --> Idle : cooking_stopped / return_to_idle
 
 StartCooking --> Error : door_opened_during_cooking / error_condition
 Error --> Idle : error_handled / return_to_idle
-Idle --> StartCooking : start_cooking / close_door
-Idle --> Error : open_door / error_condition
 
-Error --> [*] : error_handled / return_to_idle
+Idle --> StartCooking : start_cooking / close_door
+
+Idle --> CancelCooking : cancel_cooking / open_door
+
+CancelCooking --> Idle : cooking_stopped / return_to_idle
+
+StartCooking --> [*] : completion_event
+
+Error --> [*] : completion_event
+
 @enduml

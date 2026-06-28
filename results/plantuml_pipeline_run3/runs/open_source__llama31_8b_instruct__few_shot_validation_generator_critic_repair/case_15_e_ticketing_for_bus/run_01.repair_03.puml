@@ -1,7 +1,7 @@
 @startuml
 title E-Ticketing System State Machine
 
-[*] --> CreateAccount : create account option
+[*] --> CreateAccount
 
 state "Create Account" as CreateAccount
 state "Validate Registration" as ValidateRegistration
@@ -18,12 +18,16 @@ Login --> CheckTicketStatus : logged in
 CheckTicketStatus --> Login : back to login page
 Login --> BookTicket : select ticket option
 BookTicket --> Payment : confirm payment / <<final>>
-Payment --> Logout : complete transaction
+Payment --> Login : payment completed
 
 ManageAccount --> Logout : edit or delete account details
 Logout --> [*] : logout from system
 
-ValidateRegistration --> Payment : invalid registration
-Login --> ValidateRegistration : incorrect credentials
+CreateAccount --> Login : create new account and log in
+Login --> ValidateRegistration : validate registration after login
+ValidateRegistration --> BookTicket : successful registration allows booking ticket
+BookTicket --> Payment : confirm payment / <<final>>
+Payment --> CheckTicketStatus : check ticket status after payment
+CheckTicketStatus --> Logout : logout from system
 
 @enduml

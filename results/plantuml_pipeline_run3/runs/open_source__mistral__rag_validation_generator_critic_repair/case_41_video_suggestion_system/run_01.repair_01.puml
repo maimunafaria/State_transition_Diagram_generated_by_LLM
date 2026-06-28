@@ -7,18 +7,27 @@ state IdentifyUser
 state GatherVideos
 state AddDetails
 state SendSuggestions
+state TrendingVideos
+state SimilarTagVideos
+state SimilarGenreVideos
+state PromotedVideos
 
-[*] --> StartChoice : Receive video suggestion request from user
+[*] --> StartChoice
 
-StartChoice --> UserRequestVideo [valid]
-StartChoice --> IdentifyUser [invalid]
-
+StartChoice --> UserRequestVideo : User requests video [User requests video event]
 UserRequestVideo --> IdentifyUser
 IdentifyUser --> UserIdentified
 
 state UserIdentified
 UserIdentified --> GatherVideos
-GatherVideos --> AddDetails
+GatherVideos --> TrendingVideos : Get trending videos from user’s area [Trending guard]
+GatherVideos --> SimilarTagVideos : Gather videos with similar tags [Similar tag guard]
+GatherVideos --> SimilarGenreVideos : Gather videos from similar genres [Similar genre guard]
+GatherVideos --> PromotedVideos : Get promoted videos [Promoted guard]
+TrendingVideos --> AddDetails
+SimilarTagVideos --> AddDetails
+SimilarGenreVideos --> AddDetails
+PromotedVideos --> AddDetails
 AddDetails --> SendSuggestions
 SendSuggestions --> [*]
 @enduml

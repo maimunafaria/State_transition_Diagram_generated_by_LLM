@@ -5,11 +5,20 @@ title Microwave Oven Operation
 
 state "Door Shut" as DoorShut
 state "Door Open" as DoorOpen
+state Waiting
+state TimeSet
+state PowerSelect
+state Cooking
+state Checking
+state Cook
+state Done
+state Alarm
+state Disabled
 
 DoorShut --> DoorOpen : Door Opened
 DoorOpen --> DoorShut : Door Closed
 
-state Waiting {
+Waiting {
   [*] --> TimeSet
   TimeSet : do / Set Cooking Time
   TimeSet --> PowerSelect : Select Power Level
@@ -35,13 +44,11 @@ state "Alarm" as Alarm {
 }
 
 Done {
-  DoorShut --> [*]
-  DoorOpen --> [*]
-  Waiting --> [*]
-  Cooking --> [*]
-  Alarm --> [*]
+  [*] --> Waiting
 }
 
 DoorOpen --> Disabled : Door Opened
+
+Cooking --> Disabled : Door Opened
 
 @enduml

@@ -1,13 +1,9 @@
 @startuml
 title E-Visa Processing and Follow-up System State Diagram
 
-[*] --> CreateAccount : User creates account
+[*] --> Login : User creates account
 
-state CreateAccount as CreateAccount {
-  state Login as Login
-}
-
-state Login as Login {
+state CreateAccount as Login {
   state ApplyForVisa as ApplyForVisa
   state ViewStatus as ViewStatus
   state CancelApplication as CancelApplication
@@ -46,8 +42,6 @@ state GiveFeedback as GiveFeedback {
   state FeedbackGiven as FeedbackGiven
 }
 
-CreateAccount --> Login : User logs in
-
 Login --> ApplyForVisa : User applies for visa
 ApplyForVisa --> PaymentMade : Payment made
 PaymentMade --> ApplicationAccepted : Application accepted
@@ -71,15 +65,24 @@ Login --> ViewPurpose : User views purpose of application
 ViewPurpose --> PurposeViewed : Purpose viewed
 PurposeViewed --> Login : User logs out after viewing purpose
 
-ApplicationAccepted --> Login : Application accepted
-DetailsModified --> Login : Details modified
-DetailsViewed --> Login : Details viewed
-FeedbackGiven --> Login : Feedback given
-PurposeViewed --> Login : Purpose viewed
-ApplicationCancelled --> Login : Application cancelled
+ApplicationAccepted --> [*] : Visa approved
+ApplicationCancelled --> [*] : Application cancelled
+DetailsModified --> [*] : Details modified
+DetailsViewed --> [*] : Details viewed
+FeedbackGiven --> [*] : Feedback given
+GiveFeedback --> [*] : Status updated
+Login --> [*] : User logs out
+ModifyDetails --> [*] : User modifies details
+PaymentMade --> [*] : Payment made
+PurposeViewed --> [*] : Purpose viewed
+ViewDetails --> [*] : Details viewed
+ViewPurpose --> [*] : Purpose viewed
 
-Login --> End : User logs out
+Login --> ViewStatus : User views status
+ViewStatus --> CheckStatus : User checks status
+CheckStatus --> GiveFeedback : User gives feedback
+GiveFeedback --> Login : User logs out after giving feedback
 
-End --> [*] : System ends
+[*] --> End
 
 @enduml

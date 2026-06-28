@@ -1,12 +1,11 @@
-You are a UML repair assistant.
-Fix the candidate PlantUML using only the validation issues and repair guidance below.
-Make the smallest possible edit.
-Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
-Do not remove or rename unaffected states.
-Do not change unaffected transition labels.
-Do not redesign or simplify the diagram.
-Only change the lines needed to fix the listed validation issues.
-Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
 
 Requirement:
 E Ticketing For Bus — Polished Requirement Specification
@@ -24,65 +23,17 @@ Candidate PlantUML:
 @startuml
 title E-Ticketing System State Machine
 
-[*] --> Unregistered
-
-state Unregistered {
-  [*] --> Register : createAccount()
-}
-
-state Registered {
-  [*] --> Login : login()
-}
-
-state LoggedIn {
-  [*] --> CheckTicketStatus : checkTicketStatus()
-  [*] --> BookTicket : bookTicket()
-  [*] --> ManageAccount : manageAccount()
-  [*] --> Logout : logout()
-}
-
-state CheckTicketStatus {
-  [*] --> BackToLoggedIn : back()
-}
-
-state BookTicket {
-  [*] --> Confirmation : confirmBooking()
-  state Confirmation {
-    [*] --> Payment : makePayment()
-  }
-  state Payment {
-    [*] --> BackToLoggedIn : paymentSuccess()
-  }
-}
-
-state ManageAccount {
-  [*] --> EditingDetails : edit()
-  state EditingDetails {
-    [*] --> SaveChanges : save()
-    [*] --> DeleteAccount : delete()
-  }
-  state SaveChanges {
-    [*] --> BackToLoggedIn : changesSaved()
-  }
-  state DeleteAccount {
-    [*] --> Logout : accountDeleted()
-  }
-}
-
-state Logout {
-  [*] --> finallyLoggedOut
-}
-
-state finallyLoggedOut
-
+[*] --> Unregistered :
 @enduml
 
 
-Validation issues to fix:
-- multiple_initial_state_transitions (Unregistered, Register, Login, CheckTicketStatus, BookTicket, ManageAccount, Logout, BackToLoggedIn, Confirmation, Payment, BackToLoggedIn, EditingDetails, SaveChanges, DeleteAccount, BackToLoggedIn, Logout, finallyLoggedOut)
+Validation issues:
 - missing_final_state_transition (state --> [*])
-- orphan: LoggedIn, Registered
-- orphan_states_detected
+
+Validator details:
+- Current initial state: Unregistered
+- State count: 1
+- Transition count: 0
 
 --- Structural Validation Rules ---
 - Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
@@ -99,9 +50,6 @@ Validation issues to fix:
 - Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
 - If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
 
-Repair guidance for these issues:
-- For multiple initial transitions, keep only the one top-level [*] --> State transition.
-- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
-- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
-- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
-- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
+Valid PlantUML repair patterns:
+Pattern 1: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT

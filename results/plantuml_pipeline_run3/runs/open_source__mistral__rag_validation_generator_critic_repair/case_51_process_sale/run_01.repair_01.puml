@@ -6,6 +6,11 @@ title State diagram of the system operations of "Process Sale"
 state "Waiting for customer" as WaitingCustomer
 state "Record items" as RecordItems
 state "Waiting for payment" as WaitingPayment
+state "Cash Payment" as CashPayment
+state "Card or Check Payment" as CardOrCheckPayment
+state "Payment Verification" as PaymentVerification
+state "Approved Payment" as ApprovedPayment
+state "Completed Sale" as CompletedSale
 
 WaitingCustomer --> RecordItems : enter item
 RecordItems --> RecordItems : enter item
@@ -16,6 +21,10 @@ CardOrCheckPayment --> PaymentVerification : verify payment
 PaymentVerification --> ApprovedPayment : approved payment
 ApprovedPayment --> CompletedSale : complete sale
 CompletedSale --> WaitingCustomer : finish payment
-WaitingCustomer --> [*] : wait for next customer
+CashPayment --> CompletedSale : cash payment approved
+CardOrCheckPayment --> PaymentVerification : card or check payment verified
+PaymentVerification --> ApprovedPayment : payment approved
 
+WaitingPayment --> [*] : Sale completed
+CompletedSale --> [*] : Next sale
 @enduml

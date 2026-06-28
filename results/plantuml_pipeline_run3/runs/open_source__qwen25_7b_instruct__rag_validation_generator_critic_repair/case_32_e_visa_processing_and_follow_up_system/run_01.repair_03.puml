@@ -20,23 +20,46 @@ ViewStatus --> CheckStatus : "User checks the status after viewing it"
 CheckStatus --> CancelApplication : "User cancels an application after logging in"
 CancelApplication --> ModifyDetails : "User modifies their details after logging in"
 ModifyDetails --> ViewDetails : "User views their details after modifying them"
-ViewDetails --> CheckStatusChoice [valid] : "User checks the status after viewing details" [invalid] : "User logs out"
-CheckStatusChoice [valid] : "User gives feedback after checking the status" [invalid] : "User logs out"
-FeedbackChoice [valid] : "User gives feedback after checking the status" [invalid] : "User logs out"
-LoginChoice [valid] : "User logs in" [invalid] : "User logs out"
-LogoutChoice [valid] : "User logs out" [invalid] : "User logs out"
-ModifyDetailsChoice [valid] : "User modifies their details after logging in" [invalid] : "User logs out"
-StartChoice [valid] : "User starts the process" [invalid] : "User logs out"
-ViewStatusChoice [valid] : "User views the status after applying for a visa" [invalid] : "User logs out"
+ViewDetails --> CheckStatusChoice : "User checks the status after viewing details"
+CheckStatusChoice --> Feedback : "User gives feedback after checking the status"
+Feedback --> Logout : "User logs out"
 
-ApplyForVisa --> [*] : "LoggedOut"
-CancelChoice --> [*] : "LoggedOut"
-FeedbackChoice --> [*] : "LoggedOut"
-LoginChoice --> [*] : "LoggedOut"
-LogoutChoice --> [*] : "LoggedOut"
-ModifyDetailsChoice --> [*] : "LoggedOut"
-StartChoice --> [*] : "LoggedOut"
-ViewDetailsChoice --> [*] : "LoggedOut"
-ViewStatusChoice --> [*] : "LoggedOut"
+CreateAccount --> [*] : "Exit without creating an account"
+
+ApplyForVisa --> ApplyChoice : [valid]
+ApplyChoice --> ApplyForVisa : [invalid]
+
+CancelApplication --> CancelChoice : [valid]
+CancelChoice --> CancelApplication : [invalid]
+
+ModifyDetails --> ModifyDetailsChoice : [valid]
+ModifyDetailsChoice --> ModifyDetails : [invalid]
+
+ViewDetails --> ViewDetailsChoice : [valid]
+ViewDetailsChoice --> ViewDetails : [invalid]
+
+CheckStatus --> CheckStatusChoice : [valid]
+CheckStatusChoice --> CheckStatus : [invalid]
+
+Feedback --> FeedbackChoice : [valid]
+FeedbackChoice --> Feedback : [invalid]
+
+LogoutChoice --> Logout : "User logs out"
+
+CreateAccount --> LoginChoice : "User logs in"
+LoginChoice --> LoggedIn : [valid]
+LoggedIn --> ApplyForVisa : "User applies for visa after logging in, makes payment and application is accepted"
+
+ApplyForVisa --> ViewStatusChoice : "User views the status after applying for a visa"
+ViewStatusChoice --> ViewStatus : [valid]
+
+ViewStatus --> CheckStatusChoice : [valid]
+CheckStatusChoice --> CheckStatus : [invalid]
+
+CheckStatus --> FeedbackChoice : [valid]
+FeedbackChoice --> Feedback : [invalid]
+
+Feedback --> LogoutChoice : [valid]
+LogoutChoice --> [*] : "User logs out"
 
 @enduml

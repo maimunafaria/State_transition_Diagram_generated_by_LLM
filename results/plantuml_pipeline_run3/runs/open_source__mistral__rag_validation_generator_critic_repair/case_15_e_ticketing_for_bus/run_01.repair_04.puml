@@ -11,8 +11,7 @@ state ConfirmBooking <<choice>>
 state MakePayment <<choice>>
 state ManageAccountDetails <<choice>>
 state LogoutUser <<choice>>
-state LoggedOut <<choice, terminal>>
-LoggedOut --> [*] : [access ended]
+state EndChoice <<choice>>
 
 [*] --> StartChoice : [start]
 StartChoice --> RegisterUser : [create account]
@@ -24,5 +23,11 @@ BookTicket --> ConfirmBooking : [confirm booking]
 ConfirmBooking --> MakePayment : [make payment]
 MakePayment --> ManageAccountDetails : [manage account details]
 ManageAccountDetails --> LogoutUser : [log out]
-LogoutUser --> LoggedOut : [logged out]
+LogoutUser --> EndChoice : [logged out]
+EndChoice --> [*] : COMPLETION_EVENT
+
+state AccountManagement <<composestate>>
+    ManageAccountDetails --> AccountManagement : [manage account details]
+    LogoutUser --> AccountManagement : [log out]
+end
 @enduml

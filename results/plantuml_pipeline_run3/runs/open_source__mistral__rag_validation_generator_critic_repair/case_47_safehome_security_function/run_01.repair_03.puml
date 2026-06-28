@@ -6,29 +6,40 @@ title Safehome Security Function - State Machine Diagram
 state Startup
 Startup : check_everything_working()
 
-state Ready [initial]
+state Ready
 Ready : become_ready_to_use() if Startup.check_everything_working()
 
 state Reset
 Reset : allow_user_reset() when Ready
+Reset --> [*] : COMPLETION_EVENT
 
 state Activate
 Activate : allow_user_activate() when Ready
+Activate --> Monitoring : SUPPORTED_EVENT
 
 state Off
 Off : turn_off() when Ready
+Off --> [*] : COMPLETION_EVENT
 
-state Monitoring [initial]
-Monitoring : start_monitoring() when Activate
+state Monitoring
+Monitoring : start_monitoring()
+Monitoring --> Alarm : SENSOR_TRIGGERED_EVENT
+Monitoring --> FalseAlarm : TIME_ENDS_EVENT
 
 state Alarm
-Alarm : start_alarm_and_send_alerts() if Sensor.triggered during Monitoring
+Alarm : start_alarm_and_send_alerts()
+Alarm : user_enters_password at any time? if User.enters_password
+    Alarm --> Normal : USER_ENTERS_PASSWORD_EVENT
+    Alarm --> FalseAlarm : SUPPORTED_EVENT
+FalseAlarm : continue_monitoring()
+FalseAlarm --> Monitoring : SUPPORTED_EVENT
 
-state FalseAlarm
-FalseAlarm : continue_monitoring() if FalseAlarm or Time.ends during Alarm
-
-state Normal [initial]
+state Normal
 Normal : stop_and_return_to(Startup) when User.enters_password at any time
+Normal --> [*] : COMPLETION_EVENT
 
-[*] --> LoggedOut [final]
+Ready --> Activate : USER_ACTIVATES_EVENT
+Activate --> Monitoring : SUPPORTED_EVENT
+Monitoring --> FalseAlarm : SENSOR_NOT_TRIGGERED_EVENT
+FalseAlarm --> Ready : TIME_CONTINUES_EVENT
 @enduml

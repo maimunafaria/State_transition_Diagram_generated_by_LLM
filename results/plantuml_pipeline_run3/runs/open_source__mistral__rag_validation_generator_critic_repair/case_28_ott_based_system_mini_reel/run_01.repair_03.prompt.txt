@@ -1,12 +1,11 @@
-You are a UML repair assistant.
-Fix the candidate PlantUML using only the validation issues and repair guidance below.
-Make the smallest possible edit.
-Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
-Do not remove or rename unaffected states.
-Do not change unaffected transition labels.
-Do not redesign or simplify the diagram.
-Only change the lines needed to fix the listed validation issues.
-Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
 
 Requirement:
 Ott Based System Mini Reel — Polished Requirement Specification
@@ -28,39 +27,66 @@ state LoggedOut
 state AccountCreation
 state IncorrectDetails
 state SignIn
+state LoginAttemptInvalid
+state UserProfileManagement
 state WatchVideos
 state UploadVideo
 state SaveVideo
 state ViewSavedVideos
 state EnterDiscussion
-
-AccountCreation --> IncorrectDetails: Incorrect Details
-IncorrectDetails --> AccountCreation: Retry
+state BlogsNewsUpdates
+state ProvideFeedback
+state PublishedArticles
+state SearchArticles
+state ReadArticle
+state NewCase
+state CaseCategorySelection
+state CaseDetailsEntry
+state SetReminder
+state UploadDocuments
+state AccountCreation_Admin
+state ArticleReview
+state ArticleApproval
+state ArticleRejection
 
 Start --> LoggedOut: Login/SignUp
 LoggedOut --> AccountCreation: New Account
-LoggedOut --> SignIn: Existing Account
-
+AccountCreation --> IncorrectDetails: Incorrect Details
+IncorrectDetails --> AccountCreation: Retry
+AccountCreation --> AccountCreation_Admin: Admin Account
+AccountCreation_Admin --> UserProfileManagement: Successful Registration
+UserProfileManagement --> ArticleReview: Review Articles
+ArticleReview --> ArticleApproval: Approve Article
+ArticleReview --> ArticleRejection: Reject Article
 SignIn --> WatchVideos: Successful Login
 WatchVideos --> UploadVideo: Upload Video
 UploadVideo --> SaveVideo: Save to Likes List
 SaveVideo --> ViewSavedVideos: View Saved Videos
 ViewSavedVideos --> EnterDiscussion: Enter Discussion Option
 EnterDiscussion --> WatchVideos: Continue Watching
-
 WatchVideos --> NewCase: Add a New Case
 NewCase --> CaseCategorySelection: Select Category
 CaseCategorySelection --> CaseDetailsEntry: Enter Details
 CaseDetailsEntry --> SetReminder: Set Reminders
 SetReminder --> UploadDocuments: Upload Related Documents
 UploadDocuments --> WatchVideos: Continue Watching
-
-LoggedOut --> [*]: End of Session
+BlogsNewsUpdates --> ProvideFeedback: Give Feedback
+ProvideFeedback --> BlogsNewsUpdates: Await Response
+PublishedArticles --> SearchArticles: Browse Articles
+SearchArticles --> ReadArticle: Select Article
+ReadArticle --> PublishedArticles: Finish Reading
+LoginAttemptInvalid --> LoggedOut: Invalid Login Attempt
 @enduml
 
 
-Validation issues to fix:
+Validation issues:
 - missing_initial_state_transition ([*] --> state)
+- missing_final_state_transition (state --> [*])
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 26
+- Transition count: 27
 
 --- Structural Validation Rules ---
 - Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
@@ -77,5 +103,9 @@ Validation issues to fix:
 - Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
 - If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
 
-Repair guidance for these issues:
-- Add one clear initial transition from [*] to the first lifecycle state.
+Valid PlantUML repair patterns:
+Pattern 1: missing initial transition
+[*] --> INITIAL_STATE
+
+Pattern 2: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT

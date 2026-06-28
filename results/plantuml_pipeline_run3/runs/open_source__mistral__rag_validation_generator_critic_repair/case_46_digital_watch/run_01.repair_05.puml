@@ -10,13 +10,19 @@ state AlarmOn[*]
 state AlarmOff
 state LightOn[*]
 state LightOff
+state CurrentTime
 
-StartWatch:! --> HourAdjustment: Start Adjusting Time
-HourAdjustment: Adjust Hour: HourAdjustment: AlarmOn
-AlarmOn[*]: HourAdjustment: Adjust Alarm On: AlarmOn
-AlarmOff: AlarmOn[*]: Adjust Alarm Off: AlarmOff
-LightOn[*]: StartWatch: Light On: LightOn --> LightOn: Light On
-LightOff: LightOn[*]: Light Off: LightOff --> LightOff: Light Off
+StartWatch:!
+CurrentTime: StartWatch: Display Current Time
+HourAdjustment: CurrentTime: Adjust Hour: HourAdjustment: AlarmOn
+MinuteAdjustment: HourAdjustment: Adjust Minute: MinuteAdjustment: AlarmOn
+AlarmHourAdjustment: MinuteAdjustment: Adjust Alarm Hour: AlarmHourAdjustment: AlarmOn
+AlarmMinuteAdjustment: AlarmHourAdjustment: Adjust Alarm Minute: AlarmMinuteAdjustment: AlarmOn
+AlarmOn[*] --> AlarmOn: Toggle Alarm: AlarmOff
+AlarmOff --> AlarmOn[*] : AlarmEnabledChanged
+LightOn[*] --> LightOn: Turn On Light: LightOn
+LightOn --> LightOff: Turn Off Light: LightOff
+LightOff --> LightOn[*] : LightTurnedOff
 
 title UML State Machine Diagram - Online College Magazine System
 
@@ -30,14 +36,15 @@ state PublishedArticles
 state SearchArticle
 state FeedbackProvided
 
-LoginChoice:! --> AdminProfileManagement: Login Successful
-AdminProfileManagement: Admin Profile Management --> ContentCreation: Create/Edit User Profile
-ContentCreation: Edit User Profile --> ArticleReview: Articles Ready for Review
-ArticleReview: Edit Articles --> Editing: Editing Completed
-Editing: Edited Articles --> AccessDenied: Access Denied
-PublishedArticles: ArticleReview: Publish Articles --> PublishedArticles
-SearchArticle: PublishedArticles: Search for More Articles --> ProductExploration
-FeedbackProvided: SearchArticle: Provide Feedback --> LoginChoice: Return to Login
+LoginChoice:!
+AdminProfileManagement: LoginChoice: Admin Profile Management
+ContentCreation: AdminProfileManagement: Create/Edit User Profile
+ArticleReview: AdminProfileManagement: Review Articles
+Editing: ArticleReview: Edit Articles
+AccessDenied: LoginChoice: Access Denied
+PublishedArticles: ArticleReview: Publish Articles
+SearchArticle: PublishedArticles: Search for More Articles
+FeedbackProvided: SearchArticle: Provide Feedback
 
 title UML State Machine Diagram - Smart Traffic Management System
 
@@ -48,16 +55,18 @@ state VehicleNumberCapture
 state RuleVerification
 state NoViolation
 state ViolationRecorded
-state FinePaid
-state WarningSent
+state FinePaid[*]
+state WarningSent[*]
 
-TrafficMonitoring:! --> VehicleNumberCapture: Monitoring Started
-VehicleNumberCapture: Capture Vehicle Numbers --> RuleVerification: Verifying Rules
-RuleVerification: Verify Traffic Rules --> NoViolation: No Violation Detected
-NoViolation: RuleVerification: No Violation --> TrafficMonitoring: Monitoring Continued
-ViolationRecorded: RuleVerification: Recorded Violation --> FinePaid[*]
-FinePaid[*]: ViolationRecorded: Fine Paid --> TrafficMonitoring: Monitoring Continued
-WarningSent[*]: ViolationRecorded: Warning Sent --> TrafficMonitoring: Monitoring Continued
+TrafficMonitoring:!
+StreetLightControl: TrafficMonitoring: Control Street Lights
+TrafficSignalManagement: TrafficMonitoring: Manage Traffic Signals
+VehicleNumberCapture: TrafficSignalManagement: Capture Vehicle Numbers
+RuleVerification: VehicleNumberCapture: Verify Traffic Rules
+NoViolation: RuleVerification: No Violation: NoViolation
+ViolationRecorded: RuleVerification: Record Violation: ViolationRecorded
+FinePaid[*] --> FinePaid: Pay Fine: FinePaid
+WarningSent[*] --> WarningSent: Send Warning: WarningSent
 
 title UML State Machine Diagram - Online Marketplace
 
@@ -72,13 +81,14 @@ state ProductViewing
 state PurchaseDecision
 state Logout
 
-Registration:! --> Verification: Account Created
-Verification: Verify Account --> SellerWorkspace[*]
-SellerWorkspace[*]: Verified Account --> ProductAddition: Add New Products
-ProductAddition: Added New Products --> ProductPromotion: Promote Existing Products
-ProductPromotion: Promoted Existing Products --> CustomerDashboard[*]
-CustomerDashboard[*]: Access Dashboard --> ProductExploration: Explore Products
-ProductExploration: Explored Products --> ProductViewing: View Available Products
-ProductViewing: Proceed with Purchase or Stop Browsing --> PurchaseDecision
-PurchaseDecision: Purchase Decision Made --> Logout: Log Out
+Registration:!
+Verification: Registration: Verify Account
+SellerWorkspace[*]: Verification: Access Workspace: SellerWorkspace
+ProductAddition: SellerWorkspace: Add New Products
+ProductPromotion: SellerWorkspace: Promote Existing Products
+CustomerDashboard[*]: SellerWorkspace: Access Dashboard: CustomerDashboard
+ProductExploration: CustomerDashboard: Explore Products
+ProductViewing: ProductExploration: View Available Products
+PurchaseDecision: ProductViewing: Proceed with Purchase or Stop Browsing
+Logout: SellerWorkspace: Log Out: Logout
 @enduml

@@ -4,8 +4,8 @@ title Digidoclocker State Transition Diagram
 [*] --> Initial
 
 state Initial <<choice>>
-Initial --> Citizen : [isCitizen]
-Initial --> Registrar : [isRegistrar]
+Initial --> Citizen : [Citizen]
+Initial --> Registrar : [Registrar]
 
 state Citizen
 Citizen --> Register : Not registered
@@ -21,18 +21,18 @@ state Login
 Login --> MainMenu : Login successful
 
 state MainMenu <<choice>>
-MainMenu --> UploadDocuments : [upload]
-MainMenu --> ViewProfile : [viewProfile]
-MainMenu --> ApplyCertificate : [apply]
-MainMenu --> ContinueActions : [continue]
-MainMenu --> EndSession : [logout]
+MainMenu --> UploadDocuments : [LoggedInUser]
+MainMenu --> ViewProfile : [LoggedInUser]
+MainMenu --> ApplyCertificate : [LoggedInUser]
+MainMenu --> ContinueActions : [ContinuePreviousAction]
+MainMenu --> EndSession : Logout
 
 state UploadDocuments
 UploadDocuments --> MainMenu : Back to main menu
 UploadDocuments --> ContinueUploading : Continue uploading
 
-state ContinueUploading
-ContinueUploading --> UploadDocuments : More documents to upload
+state ContinueUploading <<choice>>
+ContinueUploading --> UploadDocuments : More documents
 ContinueUploading --> MainMenu : Done uploading
 
 state ViewProfile
@@ -42,30 +42,16 @@ state ApplyCertificate
 ApplyCertificate --> RequestSent : Certificate request sent
 
 state RequestSent <<choice>>
-RequestSent --> MainMenu : [back]
-RequestSent --> Reapply : [reapply]
-RequestSent --> RequestVerification : [verify]
-
-state Reapply
-Reapply --> MainMenu : Back to main menu
-
-state RequestVerification
-RequestVerification --> MainMenu : [back]
-RequestVerification --> RequestMore : [more]
-
-state RequestMore
-RequestMore --> MainMenu : Back to main menu
+RequestSent --> MainMenu : Back to main menu
+RequestSent --> Reapply : Reapply for certificate
 
 state ContinueActions <<choice>>
-ContinueActions --> UploadDocuments : [upload]
-ContinueActions --> ViewProfile : [view]
-ContinueActions --> ApplyCertificate : [apply]
-ContinueActions --> EndSession : [logout]
+ContinueActions --> UploadDocuments : [Citizen]
+ContinueActions --> ViewProfile : [Citizen]
+ContinueActions --> ApplyCertificate : [Citizen]
+ContinueActions --> EndSession : Logout
 
 state EndSession
 EndSession --> [*] : Session ended
-
-stateMainMenu
-end state
 
 @enduml

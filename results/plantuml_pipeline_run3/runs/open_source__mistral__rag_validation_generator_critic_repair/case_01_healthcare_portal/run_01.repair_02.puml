@@ -15,10 +15,10 @@ state FeedbackCollection <<state>>
 state Logout <<state>>
 
 [*] --> StartChoice
-StartChoice : do / checkUserStatus
 
-StartChoice : [valid] --> newUser
-StartChoice : [invalid] --> RegistrationFailed
+StartChoice : entry / start
+StartChoice : do / checkUserStatus
+StartChoice : exit / newUser
 
 newUser : entry / createAccount
 newUser : do / register
@@ -26,11 +26,11 @@ newUser : exit / RegistrationFailed
 
 RegistrationFailed : entry / showError
 RegistrationFailed : do / waitForRetry
-RegistrationFailed : exit / StartChoice
+RegistrationFailed : exit / StartChoice --> [*] : COMPLETION_EVENT
 
 SignInFailed : entry / showError
 SignInFailed : do / waitForRetry
-SignInFailed : exit / StartChoice
+SignInFailed : exit / StartChoice --> [*] : COMPLETION_EVENT
 
 RegisteredUser : entry / signIn
 RegisteredUser : do / validateCredentials
@@ -53,8 +53,7 @@ HealthInfo : exit / PaymentSelection
 
 PaymentSelection : entry / selectMethod
 PaymentSelection : do / showMethods
-PaymentSelection : [valid] --> CashPaymentDetails
-PaymentSelection : [invalid] --> InsurancePayment
+PaymentSelection : exit / CashPaymentDetails
 
 CashPaymentDetails : entry / displayDetails
 CashPaymentDetails : do / collectCash
@@ -66,7 +65,7 @@ InsurancePayment : exit / PaymentCompleted
 
 FeedbackCollection : entry / collectFeedback
 FeedbackCollection : do / saveFeedback
-FeedbackCollection : exit / Logout
+FeedbackCollection : exit / Logout --> [*] : COMPLETION_EVENT
 
 Logout : entry / logOut
 Logout : do / endSession

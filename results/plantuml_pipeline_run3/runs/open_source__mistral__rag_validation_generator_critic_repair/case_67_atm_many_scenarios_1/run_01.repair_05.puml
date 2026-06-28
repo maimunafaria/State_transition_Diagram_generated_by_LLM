@@ -12,7 +12,6 @@ state "Enter PIN"
 "Enter PIN" : checkPinLimit(incorrectAttempts)
 "Enter PIN" : keepCard(invalidCard, incorrectPin, incorrectAttempts > 3)
 "Enter PIN" : returnCardWithMessage(cancelledOperation, rejectedRequest)
-"Enter PIN" --> Check Information
 "Enter PIN" : displayOptions(correctPin)
 "Enter PIN" : processWithdrawalRequest(requestAmount, availableBalance, approvedTransaction)
 "Enter PIN" : checkCashAvailability(approvedTransaction, cashAvailable)
@@ -21,29 +20,41 @@ state "Enter PIN"
 "Enter PIN" : returnCard(cardReturned, rejectedRequest)
 "Enter PIN" : stopOperation(outOfCash)
 "Enter PIN" : resetATM(finishedSession)
+"Enter PIN" --> TerminatingTransaction : COMPLETION_EVENT
+"Enter PIN" --> "Check Information" : CHECK_INFORMATION_EVENT
+"Enter PIN" --> "Transfer Money" : TRANSFER_MONEY_EVENT
+"Enter PIN" --> "Withdraw Cash" : WITHDRAW_CASH_EVENT
 
-state "Check Information"
-"Check Information" : chooseToCheckInfo(checkInfoOptionSelected)
-"Check Information" --> [*]
+state Check Information
+CheckInformation --> "Enter PIN" : CHECK_INFORMATION_EVENT
+CheckInformation : chooseToCheckInfo(checkInfoOptionSelected)
+CheckInformation : processQueryRequest(queryType, approvedQuery)
+CheckInformation : printReceipt(receiptPrinted, rejectedQuery)
+CheckInformation --> Idle : COMPLETION_EVENT
 
-state "Transfer Money"
-"Transfer Money" : chooseToTransfer(transferOptionSelected)
-"Transfer Money" --> [*]
+state Transfer Money
+TransferMoney --> "Enter PIN" : TRANSFER_MONEY_EVENT
+TransferMoney : chooseToTransfer(transferOptionSelected)
+TransferMoney : processTransferRequest(transferAmount, approvedTransfer)
+TransferMoney : printReceipt(receiptPrinted, rejectedTransfer)
+TransferMoney --> Idle : COMPLETION_EVENT
 
-state "Withdraw Cash"
-"Withdraw Cash" : chooseToWithdraw(withdrawOptionSelected)
-"Withdraw Cash" : processWithdrawalRequest(requestAmount, availableBalance, approvedWithdrawal)
-"Withdraw Cash" : dispenseCash(cashDispensed, rejectedWithdrawal)
-"Withdraw Cash" : printReceipt(receiptPrinted, rejectedWithdrawal)
-"Withdraw Cash" : returnCard(cardReturned, rejectedWithdrawal)
-"Withdraw Cash" : cancelOperation(rejectedWithdrawal)
-"Withdraw Cash" : showMessage(insufficientFunds)
-"Withdraw Cash" : stopOperation(outOfCash)
-"Withdraw Cash" --> [*]
+state Withdraw Cash
+WithdrawCash --> "Enter PIN" : WITHDRAW_CASH_EVENT
+WithdrawCash : chooseToWithdraw(withdrawOptionSelected)
+WithdrawCash : processWithdrawalRequest(requestAmount, availableBalance, approvedWithdrawal)
+WithdrawCash : dispenseCash(cashDispensed, rejectedWithdrawal)
+WithdrawCash : printReceipt(receiptPrinted, rejectedWithdrawal)
+WithdrawCash : returnCard(cardReturned, rejectedWithdrawal)
+WithdrawCash : cancelOperation(rejectedWithdrawal)
+WithdrawCash : showMessage(insufficientFunds)
+WithdrawCash : stopOperation(outOfCash)
+WithdrawCash --> Idle : COMPLETION_EVENT
 
-state "Terminating Transaction"
-"Terminating Transaction" : ejectCard(cardEjected, finishedTransaction)
-"Terminating Transaction" : shortEndingPhase(shortEndingPhaseCompleted)
-"Terminating Transaction" : returnToNormalCondition(normalConditionReached)
-"Terminating Transaction" --> [*]
+state TerminatingTransaction
+TerminatingTransaction : ejectCard(cardEjected, finishedTransaction)
+TerminatingTransaction : shortEndingPhase(shortEndingPhaseCompleted)
+TerminingTransaction : returnToNormalCondition(normalConditionReached)
+TerminatingTransaction : shutDown(shutdownOccured)
+TerminatingTransaction --> [*] : COMPLETION_EVENT
 @enduml

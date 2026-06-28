@@ -16,9 +16,11 @@ StatusCheck --> Running : Status checked
 Running --> ControlledMode : Remote control
 Running --> Shutdown : Shutdown command given
 
-[*] --> InitializeComponent : Load Component
-InitializeComponent --> WaitingForUpdate : Detect update
+[*] --> InitialComponent : Load Component
+state "Initialize\nComponent" as InitializeComponent
+InitialComponent --> WaitingForUpdate : Detect update
 WaitingForUpdate --> ProcessUpdate : Update processed
+ProcessUpdate --> WaitingForUpdate : Update processed
 ProcessUpdate --> UnloadingPhase : Failure/Shutdown
 
 title Equihealth States
@@ -46,12 +48,11 @@ title National Health Id States
 state Choice1 <<choice>>
 state Choice2 : Verification
 state Choice3 : Activation
-Choice1 --> [Choice2: Indian citizen]
-Choice1 --> Running : Not Indian citizen
-
+Choice1 --> Choice2 : Indian citizen
 Choice2 --> Verification : entry
 Verification --> VerifiedStatus : Details verified
 Verification --> NotVerified : Details not verified
+Choice1 --> [*] : Not Indian citizen
 
 Choice3 --> SetPermissions : After activation
 SetPermissions --> AddOldFiles : Allow users to add old files

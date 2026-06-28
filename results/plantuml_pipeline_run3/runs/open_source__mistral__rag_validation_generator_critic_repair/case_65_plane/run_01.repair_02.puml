@@ -1,5 +1,6 @@
 @startuml
 plane_state_machine
+
 [*] --> Order
 Order : entry / acquirePlane
 
@@ -18,26 +19,24 @@ Operations : entry / assignToOperations
 Operations : condition / hasScheduledFlights
 Operations : do / flyIfHasFlights
 Operations : exit / fly
-Operations : choice / checkRequirements
-Operations --> OutOfService [Out of Service]
-Operations --> PermanentlyWithdrawn [Permanently Withdrawn]
 
 state Maintenance
 Maintenance : entry / sendToMaintenance
-Maintenance : condition / checkRequirements
-Maintenance : do / servicePlane
-Maintenance : exit / serviced
+Maintenance : choice / checkRequirements
 Maintenance --> Preparation [Prepare]
 
 state OutOfService
 OutOfService : entry / takeOutOfService
+Order --> OutOfService [Plane unavailable]
 
 state PermanentlyWithdrawn
 PermanentlyWithdrawn : entry / removeFromOperations
+Order --> PermanentlyWithdrawn [Permanent withdrawal]
 
 plane_state_machine @enduml
 
 garment_state_machine
+
 [*] --> CustomerRegistration
 CustomerRegistration : entry / registerCustomer
 
@@ -52,22 +51,18 @@ state Production
 Production : entry / processRawMaterials
 Production : condition / passDefectCheck
 Production : do / produceGarmentsIfPassed
-Production : exit / produced
-Production : choice / checkDeliveryRequirements
-Production --> Delivery [Deliver]
-Production --> LoginError [Login Error]
+Production : exit / produce
+Delivery --> Production [Garments ready]
 
 state Delivery
 Delivery : entry / deliverGarments
 Delivery : do / completeBillingAndPayment
 Delivery : exit / delivered
-Delivery : choice / checkDeliveryStatus
-Delivery --> Purchase [Purchase Again]
-Delivery --> LoginError [Login Error]
 
 garment_state_machine @enduml
 
 art_gallery_management_system
+
 [*] --> Login
 Login : entry / getCredentials
 Login : choice / verifyData
@@ -99,6 +94,7 @@ PaymentSelection --> LoginError [Login Error]
 art_gallery_management_system @enduml
 
 equihealth
+
 [*] --> NewUserRegistration
 NewUserRegistration : entry / registerUser
 NewUserRegistration : condition / registrationCompleted

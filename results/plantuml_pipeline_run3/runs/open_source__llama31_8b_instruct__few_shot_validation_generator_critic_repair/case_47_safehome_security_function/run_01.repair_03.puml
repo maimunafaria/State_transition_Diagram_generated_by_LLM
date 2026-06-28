@@ -4,7 +4,7 @@ title UML State Chart Diagram
 [*] --> Startup
 
 state "Startup" as Startup {
-  [*] --> CheckEverythingWorking
+  Startup --> CheckEverythingWorking : Everything is fine during startup
 }
 
 state "Check everything working" as CheckEverythingWorking
@@ -36,7 +36,9 @@ ReadyToUse {
       SensorTriggered --> AlarmAndAlertsSent : Send alarm and alerts
     }
 
-    FalseAlarmOrTimeEnds --> ReadyToUse : Continue monitoring
+    state "Continue monitoring" as ContinueMonitoring {
+      FalseAlarmOrTimeEnds --> ContinueMonitoring : Continue monitoring
+    }
   }
 
   ReadyToUse --> Monitoring : User initiated activation
@@ -45,6 +47,8 @@ ReadyToUse {
     ReadyToUse --> PasswordEntered : User enters password at any time
   }
 
+  AlarmAndAlertsSent --> [*] : Abnormal termination
+  ContinueMonitoring --> Monitoring : Continue monitoring
   PasswordEntered --> [*] : Abnormal termination
 }
 

@@ -3,7 +3,7 @@ title E Visa Processing And Follow Up System - UML State Machine Diagram
 
 state StartChoice <<choice>>
 state LoggedOut
-state ApplicantChoice <<choice, guard: IsAccountCreated?>>
+state ApplicantChoice <<choice>>
 state ApplicationSubmitted
 state PaymentMade
 state ApplicationAccepted
@@ -13,9 +13,11 @@ state ApplicationCancelled
 state DetailsModified
 state FeedbackGiven
 state LoggedIn
+state InitialState
 
-[*] --> StartChoice: Create Account / Login
-StartChoice --> ApplicantChoice: IsAccountCreated?
+[*] --> InitialState : Create Account / Login
+InitialState --> LoggedOut: None
+LoggedOut --> ApplicantChoice: Login
 ApplicantChoice --> ApplicationSubmitted: Apply for Visa / Check Status / Cancel Application / Modify Details / Give Feedback / Logout
 ApplicationSubmitted --> PaymentMade: Make Payment
 PaymentMade --> ApplicationAccepted: Accepted
@@ -25,7 +27,15 @@ StatusChecked --> StatusViewed: Back to Status View
 StatusViewed --> FeedbackGiven: Give Feedback
 FeedbackGiven --> LoggedIn: Done
 LoggedOut --> ApplicantChoice: Login
-ApplicationCancelled --> ApplicationSubmitted: Cancel Application
-DetailsModified --> DetailsModified: Modified Details
-LoggedIn --> [*]: Logout
+ApplicationCancelled --> LoggedIn: Cancelled
+DetailsModified --> LoggedIn: Modified Details
+
+state DecisionNode <<choice>>
+ApplicantChoice --> DecisionNode : Apply / Check Status / ...
+DecisionNode --> ApplicationSubmitted: [applied]
+DecisionNode --> ApplicationCancelled: [cancelled]
+DecisionNode --> LoggedOut: Login
+DetailsModified --> DecisionNode : Modify Details / Give Feedback / ...
+DecisionNode --> DetailsModified: [modified]
+DecisionNode --> LoggedIn: Done
 @enduml

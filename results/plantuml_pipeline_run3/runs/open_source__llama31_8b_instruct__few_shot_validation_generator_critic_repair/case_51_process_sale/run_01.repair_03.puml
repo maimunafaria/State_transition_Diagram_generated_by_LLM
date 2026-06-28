@@ -9,28 +9,16 @@ state "Payment" as Payment
 state "Verify payment" as VerifyPayment
 state "Complete sale" as CompleteSale
 
-WaitForSale --> AddItem
-AddItem --> AddItem
+WaitForSale --> AddItem : new sale detected
+AddItem --> AddItem : item added
 AddItem --> Payment : all items added
 Payment --> VerifyPayment : customer chooses to pay by card or check
 VerifyPayment --> CompleteSale : payment approved
 CompleteSale --> WaitForSale : payment finished
-CompleteSale --> WaitForSale : cash payment
+
+TERMINAL_STATE CompleteSale --> [*] : COMPLETION_EVENT
 
 VerifyPayment --> WaitForSale : payment declined
 VerifyPayment --> WaitForSale : invalid payment method
-VerifyPayment --> [*] : payment failed
-
-WaitForSale --> AddItem : no sale detected
-
-AddItem --> Payment : all items added
-Payment --> VerifyPayment : customer chooses to pay by card or check
-VerifyPayment --> CompleteSale : payment approved
-CompleteSale --> WaitForSale : payment finished
-CompleteSale --> WaitForSale : cash payment
-
-VerifyPayment --> WaitForSale : payment declined
-VerifyPayment --> WaitForSale : invalid payment method
-VerifyPayment --> [*] : payment failed
 
 @enduml
