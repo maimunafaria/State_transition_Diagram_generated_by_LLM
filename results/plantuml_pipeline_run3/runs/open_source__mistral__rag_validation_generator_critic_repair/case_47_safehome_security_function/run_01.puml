@@ -1,0 +1,32 @@
+@startuml
+title Safehome Security Function - State Machine Diagram
+
+[*] --> Startup
+
+state Startup
+Startup : check_everything_working()
+
+state Ready
+Ready : become_ready_to_use() if Startup.check_everything_working()
+
+state Reset
+Reset : allow_user_reset() when Ready
+
+state Activate
+Activate : allow_user_activate() when Ready
+
+state Off
+Off : turn_off() when Ready
+
+state Monitoring
+Monitoring : start_monitoring() when Activate
+
+state Alarm
+Alarm : start_alarm_and_send_alerts() if Sensor.triggered during Monitoring
+
+state FalseAlarm
+FalseAlarm : continue_monitoring() if FalseAlarm or Time.ends during Alarm
+
+state Normal
+Normal : stop_and_return_to(Startup) when User.enters_password at any time
+@enduml

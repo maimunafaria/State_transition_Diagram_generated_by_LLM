@@ -1,0 +1,43 @@
+@startuml
+title Microwave Oven Operation
+
+[*] --> DoorShut
+
+state "Door Shut" as DoorShut
+state "Door Open" as DoorOpen
+
+DoorShut --> DoorOpen : Door Opened
+DoorOpen --> DoorShut : Door Closed
+
+state Waiting {
+  [*] --> TimeSet
+  TimeSet : do / Set Cooking Time
+  TimeSet --> PowerSelect : Select Power Level
+  PowerSelect : do / Choose Power Level
+  PowerSelect --> Cooking : Start Cooking
+}
+
+Cooking {
+  [*] --> Checking
+  Checking : do / Check Status
+  Checking --> Cook : OK
+  Checking --> Alarm : Turntable Fault
+  Checking --> Alarm : Emitter Fault
+
+  Cook --> Done : Timeout
+  Cook --> DoorOpen : Door Opened
+  Cook --> Cooking : Time
+}
+
+state "Alarm" as Alarm {
+  [*] --> Disabled
+  Disabled : do / Deactivate System
+}
+
+Done {
+  [*] --> Waiting
+}
+
+DoorOpen --> Disabled : Door Opened
+
+@enduml

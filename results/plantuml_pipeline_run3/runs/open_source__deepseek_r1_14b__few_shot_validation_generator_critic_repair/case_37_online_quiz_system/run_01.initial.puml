@@ -1,0 +1,71 @@
+@startuml
+title UML State Machine Diagram - Online Quiz System
+
+[*] --> Idle
+
+state "Idle" as Idle
+Idle : entry/Initial state
+Idle : do/Waiting for user action
+Idle : exit/Register/Login
+
+state "Register/Login" as RegisterLogin
+RegisterLogin : entry/Register/Login
+RegisterLogin : do/Authenticate user details
+RegisterLogin : exit/Proceed to choose role
+
+state "Choose Role" as ChooseRole
+ChooseRole : entry/Choose role
+ChooseRole : do/Select teacher or student
+ChooseRole : exit/Proceed accordingly
+
+state "Create/Edit Quiz" as CreateEditQuiz
+CreateEditQuiz : entry/Create/Edit quiz
+CreateEditQuiz : do/Add/edit questions and options
+CreateEditQuiz : exit/Save Draft/Post/View results
+
+state "Save Draft/Post Quiz" as SaveDraftPost
+SaveDraftPost : entry/Save or post quiz
+SaveDraftPost : do/Save as draft or publish quiz
+SaveDraftPost : exit/Create/Edit Quiz/View Results
+
+state "View Results" as ViewResults
+ViewResults : entry/View results
+ViewResults : do/Display quiz outcomes
+ViewResults : exit/Idle
+
+state "Select Quiz" as SelectQuiz
+SelectQuiz : entry/Choose a quiz
+SelectQuiz : do/Browse available quizzes
+SelectQuiz : exit/Answer Quiz
+
+state "Answer Quiz" as AnswerQuiz
+AnswerQuiz : entry/Start answering
+AnswerQuiz : do/Respond to questions
+AnswerQuiz : exit/Submit Quiz
+
+state "Submit Quiz" as SubmitQuiz
+SubmitQuiz : entry/Submit answers
+SubmitQuiz : do/Send responses for evaluation
+SubmitQuiz : exit/View Results
+
+ChooseRole --> CreateEditQuiz : [teacher]
+ChooseRole --> SelectQuiz : [student]
+
+CreateEditQuiz --> SaveDraftPost
+SaveDraftPost --> CreateEditQuiz : [back to edit]
+SaveDraftPost --> ViewResults : [quiz posted and completed]
+
+SelectQuiz --> AnswerQuiz
+AnswerQuiz --> SubmitQuiz
+
+SubmitQuiz --> ViewResults
+
+ViewResults --> [*] : [exit system]
+ViewResults --> Idle : [choose another quiz]
+
+RegisterLogin --> ChooseRole : [successful login]
+RegisterLogin --> [*] : [invalid credentials]
+
+Idle --> RegisterLogin : [user action]
+
+@enduml

@@ -1,0 +1,610 @@
+{
+  "run_id": "open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair",
+  "case_id": "case_18_digidoclocker",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nControlpanel Class — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check the entered password.\n2. The system shall allow the user to continue making selections if the password is correct.\n3. The system shall limit the number of incorrect password attempts a user can make.\n4. The system shall lock and not allow further access for a certain period after too many incorrect attempts.\n5. The system shall allow users to try accessing again after the lockout period has passed.\n\nExample 1 PlantUML:\n@startuml\ntitle State Diagram - Control Panel\n\n[*] --> Reading : Key hit\n\nstate Reading\nstate Comparing\nstate Locked\nstate Selecting\n\n\nComparing : do / validatePassword\n\n\nReading --> Comparing : Password entered\n\n\nComparing --> Comparing : Password incorrect\\nnumberOfTries < maxTries\n\n\nComparing --> Locked : numberOfTries > maxTries\n\n\nComparing --> Selecting : Password correct\n\n\nLocked --> Locked : Timer <= lockedTime\n\n\nLocked --> Reading : Timer > lockedTime\n\n\nSelecting --> Reading : Activation successful\n\n@enduml\n\nExample 2 Requirement:\nE Province — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall register a new user.\n2. The system shall end the process if registration details are not accepted.\n3. The system shall allow a user to log in after successful registration.\n4. The system shall provide multiple login attempts if the details are incorrect.\n5. The system shall allow the user to cancel a certificate after logging in.\n6. The system shall allow the user to apply for certificates after logging in.\n7. The system shall allow the user to view their profile after logging in.\n8. The system shall allow the user to update their profile after logging in.\n9. The system shall require the user to fill in the form and upload required details when applying for certificates.\n10. The system shall allow users to apply for more certificates as needed.\n11. The system shall allow the user to continue applying or finish once a certificate request is processed.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Machine Diagram (Certificate Management)\n\n\n[*] --> Registration\n\nstate Registration\nRegistration : entry / Get the Registration Details\nRegistration : do / Validate the Details\nRegistration : exit / Valid or Invalid Registration\n\n\nRegistration --> [*] : [Invalid Registration]\n\n\nRegistration --> Login : [Valid Registration]\n\n\nstate Login\nLogin : entry / Get the Login Details\nLogin : do / Validate the Login Details\nLogin : exit / Valid or Invalid Login\n\n\nLogin --> Login : [Invalid Login]\n\n\nLogin --> Choice1 : [Valid Login]\n\n\nstate Choice1 <<choice>>\n\nChoice1 --> CancelCert : [Cancel the Certificate]\nChoice1 --> RequestCert : [Applying for Certificates]\nChoice1 --> ViewProfile : [Profile Viewing]\nChoice1 --> UpdateProfile : [Profile Updation]\n\n\nstate \"Cancellation of Certificates\" as CancelCert\nCancelCert : entry / Certificate is asked for Cancellation\nCancelCert : do / Certificate is Canceled\nCancelCert : exit / Move to End\n\nCancelCert --> EndMerge\n\nstate \"Request for Certificates\" as RequestCert\nRequestCert : entry / Fill the Form and Upload the Details\nRequestCert : do / Request for Certificates\nRequestCert : exit / Apply for another Certificate or Move to End\n\nRequestCert --> RequestCert : [Apply for another Certificate if needed]\n\nRequestCert --> IssueCert : [Certificates requested]\n\nstate \"Issuing the Certificates\" as IssueCert\nIssueCert : entry / Validating Details\nIssueCert : do / Issuing the Certificates\nIssueCert : exit / Updating the Database\n\nIssueCert --> RequestCert : [Certificate is issued]\nRequestCert --> EndMerge : [End]\n\nstate \"View Profile\" as ViewProfile\nViewProfile : entry / View the Profile\nViewProfile : do / Display the Profile\nViewProfile : exit / Exit from Profile Viewing\n\nViewProfile --> EndMerge : [End]\n\n\nstate \"Update the Profile\" as UpdateProfile\nUpdateProfile : entry / Update the User's Profile\nUpdateProfile : do / Citizen Profile is updated\nUpdateProfile : exit / Move to End\n\nUpdateProfile --> EndMerge : [End]\n\n\nstate EndMerge <<choice>>\n\nEndMerge --> [*]\n\n@enduml\n\nExample 3 Requirement:\nOnline Marketplace — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall require the user to provide their details and create an account before they can join as a seller or customer.\n2. The system shall allow the user to sign in and access their workspace after completing registration and verification.\n3. The system shall enable the seller to add new products to the marketplace.\n4. The system shall allow the seller to promote existing products on the platform.\n5. The system shall enable the seller to communicate with customers through the platform.\n6. The system shall allow the seller to leave the platform at any time, leading to logging out.\n7. The system shall require the customer to sign in and access their personal dashboard upon joining.\n8. The system shall allow the customer to explore products on the platform.\n9. The system shall enable the customer to search and view available products during browsing.\n10. The system shall allow the customer to either stop browsing or proceed with a purchase after viewing products.\n11. The system shall add the selected product to the customer's cart and allow them to proceed to checkout if they decide to make a purchase.\n12. The system shall handle payment during the checkout process.\n13. The system shall allow the customer to communicate with a seller during their session.\n14. The system shall enable the customer to report a seller if needed, based on previous interactions.\n15. The system shall allow the customer to rate and review products after receiving them.\n16. The system shall allow both the seller and the customer to log out by choosing to leave the platform at any time.\n\nExample 3 PlantUML:\n@startuml\ntitle UML state machine diagram\n\nstate \"Seller Registration\" as SellerRegistration\nSellerRegistration : entry/Unregistered Seller\nSellerRegistration : do/Get Valid Seller Credentials\nSellerRegistration : exit/Seller Account Registered\n\nstate \"Seller Verification\" as SellerVerification\nSellerVerification : entry/Seller Account Registered\nSellerVerification : do/Verify Seller\nSellerVerification : exit/Login Seller\n\nstate \"Seller Login\" as SellerLogin\nSellerLogin : entry/Unverified Seller\nSellerLogin : entry/Seller not logged in\nSellerLogin : do/Authenticate Seller\nSellerLogin : exit/Logged In Successfully\n\nstate \"Customer Login\" as CustomerLogin\nCustomerLogin : entry/Not Logged In\nCustomerLogin : do/Authenticate Customer\nCustomerLogin : exit/Successfully Logged In\n\nstate \"Seller Home\" as SellerHome\nSellerHome : entry/Logged In Seller\nSellerHome : do/Display Seller Dashboard\nSellerHome : exit/Sale Products\nSellerHome : exit/Promote Products\nSellerHome : exit/Chat\nSellerHome : exit/Logout\n\nstate \"Customer Home\" as CustomerHome\nCustomerHome : entry/Customer Logged in\nCustomerHome : do/Display Recommended/Promoted Products\nCustomerHome : exit/View Product\nCustomerHome : exit/Buy Product\nCustomerHome : exit/Chat\nCustomerHome : exit/Report Seller\nCustomerHome : exit/Rate and Review\n\nstate \"View Product\" as ViewProduct\nViewProduct : entry/To View Products\nViewProduct : do/Search and View Products\nViewProduct : exit/Return to home\nViewProduct : exit/Buy Product\n\nstate \"Buy Product\" as BuyProduct\nBuyProduct : entry/Opted to Buy\nBuyProduct : do/Add product to cart\nBuyProduct : exit/Proceed to Checkout\n\nstate \"Make Purchase\" as MakePurchase\nMakePurchase : entry/Proceeded to Checkout\nMakePurchase : do/Enable payment\nMakePurchase : exit/Payment Successful\nMakePurchase : exit/Payment Unsuccessful\nMakePurchase : exit/Return to Home\n\nstate \"Chat\" as CustomerChat\nCustomerChat : entry/To Chat\nCustomerChat : do/Chat with Seller\nCustomerChat : exit/Return to Home\n\nstate \"Report Seller\" as ReportSeller\nReportSeller : entry/To Report Seller\nReportSeller : entry/Seller in Purchase History\nReportSeller : do/Issue Report to Seller\nReportSeller : exit/Return to Home\n\nstate \"Rate and Review\" as RateReview\nRateReview : entry/To Rate and Review\nRateReview : entry/Product Delivered\nRateReview : do/Rate and Review the product\nRateReview : exit/Return to Home\n\nstate \"Sale Products\" as SaleProducts\nSaleProducts : entry/To Sale Products\nSaleProducts : do/Add new Product to Seller Inventory\nSaleProducts : exit/Product added Successfully\nSaleProducts : exit/Return to Home State\n\nstate \"Promote Products\" as PromoteProducts\nPromoteProducts : entry/To Promote Products\nPromoteProducts : entry/Product in Sale\nPromoteProducts : do/Promote a Product\nPromoteProducts : exit/Return to Home State\n\nstate \"Chat\" as SellerChat\nSellerChat : entry/To Chat\nSellerChat : entry/Seller Product in Sale\nSellerChat : entry/Message from Customer\nSellerChat : do/Enable chat with Customer\nSellerChat : exit/Return to Home State\n\nstate \"Logout\" as Logout\nLogout : entry/To Logout User\nLogout : do/Logout User\nLogout : exit/User Logged out\n\nstate J0 <<choice>>\nstate J1 <<choice>>\nstate J2 <<choice>>\nstate J3 <<choice>>\nstate J4 <<choice>>\nstate J5 <<choice>>\nstate J6 <<choice>>\nstate J7 <<choice>>\nstate J8 <<choice>>\n\n[*] --> J0\nJ0 --> J1 : [Seller Portal]\nJ0 --> CustomerLogin : [Customer Portal]\n\nJ1 --> SellerRegistration : [New Seller]\nJ1 --> J2 : [Registered Seller]\n\nSellerRegistration --> SellerVerification\nSellerVerification --> J2\nJ2 --> SellerLogin\n\nCustomerLogin --> J3\nSellerLogin --> J7\nJ7 --> SellerHome : [Go To Home]\n\nJ3 --> CustomerHome : [Go To Home]\n\nCustomerHome --> J4 : [Possible Activities]\nJ4 --> ViewProduct : [View Products]\nJ4 --> CustomerChat : [Chat]\nJ4 --> ReportSeller : [Report Seller]\nJ4 --> RateReview : [Rate and Review]\nJ4 --> J8 : [Logout]\n\nViewProduct --> J5\nJ5 --> J3 : [Not to Buy]\nJ5 --> BuyProduct : [Proceed to Buy]\n\nBuyProduct --> MakePurchase\nMakePurchase --> J3\n\nCustomerChat --> J3\nReportSeller --> J3\nRateReview --> J3\n\nSellerHome --> J6 : [Possible Activities]\nJ6 --> PromoteProducts : [Promote Products]\nJ6 --> SellerChat : [Chat]\nJ6 --> SaleProducts\nJ6 --> J8 : [Logout]\n\nSaleProducts --> J7\n\nPromoteProducts --> J7\nSellerChat --> J7\n\nJ8 -->  Logout\nLogout --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nDigidoclocker — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall identify the type of user based on their entered details.\n2. The system shall require citizens to register before logging in.\n3. The system shall allow citizens to log in if their login details are correct.\n4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.\n5. The system shall allow citizens to continue uploading documents if needed after initial uploads.\n6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.\n7. The system shall allow registrars to request certificates for verification.\n8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.\n9. The system shall end the session once the user is done with their actions.\n",
+  "requirement_used": "Digidoclocker — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall identify the type of user based on their entered details.\n2. The system shall require citizens to register before logging in.\n3. The system shall allow citizens to log in if their login details are correct.\n4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.\n5. The system shall allow citizens to continue uploading documents if needed after initial uploads.\n6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.\n7. The system shall allow registrars to request certificates for verification.\n8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.\n9. The system shall end the session once the user is done with their actions.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "duplicate_transitions_detected (2)"
+    ],
+    "initial_state": "Registration",
+    "duplicate_transition_count": 2,
+    "unreachable_states": [],
+    "state_count": 10,
+    "transition_count": 14
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "duplicate_transitions_detected (2)"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__llama31_8b_instruct__few_shot",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "duplicate_transitions_detected (2)"
+      ],
+      "strict_issues": [
+        "duplicate_transitions_detected (2)"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": false,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 1,
+      "repair_score": 1,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 10,
+        "repaired_state_count": 10,
+        "current_transition_count": 18,
+        "repaired_transition_count": 18,
+        "min_allowed_state_count": 7,
+        "min_allowed_transition_count": 12,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "duplicate_transitions_detected (2)"
+      ],
+      "strict_issues": [
+        "duplicate_transitions_detected (2)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 1,
+      "reason": "repair_did_not_improve_validation_score",
+      "feedback_for_next_attempt": "",
+      "kept_previous_issues": [
+        "duplicate_transitions_detected (2)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "accepted": false,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 1,
+      "repair_score": 1,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 10,
+        "repaired_state_count": 10,
+        "current_transition_count": 18,
+        "repaired_transition_count": 18,
+        "min_allowed_state_count": 7,
+        "min_allowed_transition_count": 12,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "duplicate_transitions_detected (2)"
+      ],
+      "strict_issues": [
+        "duplicate_transitions_detected (2)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 2,
+      "reason": "repair_did_not_improve_validation_score",
+      "feedback_for_next_attempt": "",
+      "kept_previous_issues": [
+        "duplicate_transitions_detected (2)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "accepted": false,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 1,
+      "repair_score": 1,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 10,
+        "repaired_state_count": 10,
+        "current_transition_count": 18,
+        "repaired_transition_count": 18,
+        "min_allowed_state_count": 7,
+        "min_allowed_transition_count": 12,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "duplicate_transitions_detected (2)"
+      ],
+      "strict_issues": [
+        "duplicate_transitions_detected (2)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 3,
+      "reason": "repair_did_not_improve_validation_score",
+      "feedback_for_next_attempt": "",
+      "kept_previous_issues": [
+        "duplicate_transitions_detected (2)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "accepted": false,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 1,
+      "repair_score": 1,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 10,
+        "repaired_state_count": 10,
+        "current_transition_count": 18,
+        "repaired_transition_count": 16,
+        "min_allowed_state_count": 7,
+        "min_allowed_transition_count": 12,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "duplicate_transitions_detected (1)"
+      ],
+      "strict_issues": [
+        "duplicate_transitions_detected (1)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 4,
+      "reason": "repair_did_not_improve_validation_score",
+      "feedback_for_next_attempt": "",
+      "kept_previous_issues": [
+        "duplicate_transitions_detected (2)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "accepted": false,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 1,
+      "repair_score": 1,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 10,
+        "repaired_state_count": 10,
+        "current_transition_count": 18,
+        "repaired_transition_count": 16,
+        "min_allowed_state_count": 7,
+        "min_allowed_transition_count": 12,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "duplicate_transitions_detected (1)"
+      ],
+      "strict_issues": [
+        "duplicate_transitions_detected (1)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 5,
+      "reason": "repair_did_not_improve_validation_score",
+      "feedback_for_next_attempt": "",
+      "kept_previous_issues": [
+        "duplicate_transitions_detected (2)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 5,
+      "strict_state_diagram_valid": false,
+      "remaining_issues": [
+        "duplicate_transitions_detected (2)"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "duplicate_transitions_detected (2)"
+        ],
+        "initial_state": "Registration",
+        "duplicate_transition_count": 2,
+        "unreachable_states": [],
+        "state_count": 10,
+        "transition_count": 14
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "```plantuml\n@startuml\ntitle UML State Machine Diagram (Digidoclocker)\n\nstate \"Registration\" as Registration\nRegistration : entry / Get the Registration Details\nRegistration : do / Validate the Details\nRegistration : exit / Valid or Invalid Registration\n\nstate \"Login\" as Login\nLogin : entry / Get the Login Details\nLogin : do / Validate the Login Details\nLogin : exit / Valid or Invalid Login\n\nstate \"Citizen Home\" as CitizenHome\nCitizenHome : entry / Logged In Citizen\nCitizenHome : do / Display Citizen Dashboard\nCitizenHome : exit / Upload Documents\nCitizenHome : exit / View Profile\nCitizenHome : exit / Apply for Certificate\nCitizenHome : exit / Logout\n\nstate \"Upload Documents\" as UploadDocuments\nUploadDocuments : entry / To Upload Documents\nUploadDocuments : do / Upload Document\nUploadDocuments : exit / Continue Uploading or Finish\n\nstate \"View Profile\" as ViewProfile\nViewProfile : entry / To View Profile\nViewProfile : do / Display Citizen Profile\nViewProfile : exit / Return to Home\n\nstate \"Apply for Certificate\" as ApplyForCertificate\nApplyForCertificate : entry / To Apply for Certificate\nApplyForCertificate : do / Request Certificate\nApplyForCertificate : exit / Reapply or Finish\n\nstate \"Reapply\" as Reapply\nReapply : entry / To Reapply\nReapply : do / Send New Request to Issuer\nReapply : exit / Continue Applying or Finish\n\nstate \"Registrar Home\" as RegistrarHome\nRegistrarHome : entry / Logged In Registrar\nRegistrarHome : do / Display Registrar Dashboard\nRegistrarHome : exit / Request Certificate\nRegistrarHome : exit / Logout\n\nstate \"Request Certificate\" as RequestCertificate\nRequestCertificate : entry / To Request Certificate\nRequestCertificate : do / Send Request to Issuer\nRequestCertificate : exit / Continue Requesting or Finish\n\nstate \"End Session\" as EndSession\nEndSession : entry / User Done with Actions\nEndSession : do / Log Out User\nEndSession : exit / Session Ended\n\n[*] --> Registration\nRegistration --> Login : [Valid Registration]\n\nLogin --> CitizenHome : [Valid Login]\nCitizenHome --> UploadDocuments : [Upload Documents]\nUploadDocuments --> CitizenHome : [Continue Uploading or Finish]\nUploadDocuments --> ViewProfile : [View Profile]\nUploadDocuments --> ApplyForCertificate : [Apply for Certificate]\n\nApplyForCertificate --> Reapply : [Reapply]\nReapply --> ApplyForCertificate : [Continue Applying or Finish]\nApplyForCertificate --> EndSession : [Finish]\n\nCitizenHome --> ApplyForCertificate : [Apply for Certificate]\nApplyForCertificate --> Reapply : [Reapply]\nApplyForCertificate --> EndSession : [Finish]\n\nLogin --> RegistrarHome : [Valid Login as Registrar]\nRegistrarHome --> RequestCertificate : [Request Certificate]\nRequestCertificate --> RegistrarHome : [Continue Requesting or Finish]\nRequestCertificate --> EndSession : [Finish]\n\nEndSession --> [*] : [Session Ended]\n\n@enduml\n```",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "duplicate_transitions_detected (2)"
+        ],
+        "initial_state": "Registration",
+        "duplicate_transition_count": 2,
+        "unreachable_states": [],
+        "state_count": 10,
+        "transition_count": 14
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "preservation": {
+        "current_state_count": 10,
+        "repaired_state_count": 10,
+        "current_transition_count": 18,
+        "repaired_transition_count": 18,
+        "min_allowed_state_count": 7,
+        "min_allowed_transition_count": 12,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "repair_did_not_improve_validation_score",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.repair_01.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "```plantuml\n@startuml\ntitle UML State Machine Diagram (Digidoclocker)\n\nstate \"Registration\" as Registration\nRegistration : entry / Get the Registration Details\nRegistration : do / Validate the Details\nRegistration : exit / Valid or Invalid Registration\n\nstate \"Login\" as Login\nLogin : entry / Get the Login Details\nLogin : do / Validate the Login Details\nLogin : exit / Valid or Invalid Login\n\nstate \"Citizen Home\" as CitizenHome\nCitizenHome : entry / Logged In Citizen\nCitizenHome : do / Display Citizen Dashboard\nCitizenHome : exit / Upload Documents\nCitizenHome : exit / View Profile\nCitizenHome : exit / Apply for Certificate\nCitizenHome : exit / Logout\n\nstate \"Upload Documents\" as UploadDocuments\nUploadDocuments : entry / To Upload Documents\nUploadDocuments : do / Upload Document\nUploadDocuments : exit / Continue Uploading or Finish\n\nstate \"View Profile\" as ViewProfile\nViewProfile : entry / To View Profile\nViewProfile : do / Display Citizen Profile\nViewProfile : exit / Return to Home\n\nstate \"Apply for Certificate\" as ApplyForCertificate\nApplyForCertificate : entry / To Apply for Certificate\nApplyForCertificate : do / Request Certificate\nApplyForCertificate : exit / Reapply or Finish\n\nstate \"Reapply\" as Reapply\nReapply : entry / To Reapply\nReapply : do / Send New Request to Issuer\nReapply : exit / Continue Applying or Finish\n\nstate \"Registrar Home\" as RegistrarHome\nRegistrarHome : entry / Logged In Registrar\nRegistrarHome : do / Display Registrar Dashboard\nRegistrarHome : exit / Request Certificate\nRegistrarHome : exit / Logout\n\nstate \"Request Certificate\" as RequestCertificate\nRequestCertificate : entry / To Request Certificate\nRequestCertificate : do / Send Request to Issuer\nRequestCertificate : exit / Continue Requesting or Finish\n\nstate \"End Session\" as EndSession\nEndSession : entry / User Done with Actions\nEndSession : do / Log Out User\nEndSession : exit / Session Ended\n\n[*] --> Registration\nRegistration --> Login : [Valid Registration]\n\nLogin --> CitizenHome : [Valid Login]\nCitizenHome --> UploadDocuments : [Upload Documents]\nUploadDocuments --> CitizenHome : [Continue Uploading or Finish]\nUploadDocuments --> ViewProfile : [View Profile]\nUploadDocuments --> ApplyForCertificate : [Apply for Certificate]\n\nApplyForCertificate --> Reapply : [Reapply]\nReapply --> ApplyForCertificate : [Continue Applying or Finish]\nApplyForCertificate --> EndSession : [Finish]\n\nCitizenHome --> ApplyForCertificate : [Apply for Certificate]\nApplyForCertificate --> Reapply : [Reapply]\nApplyForCertificate --> EndSession : [Finish]\n\nLogin --> RegistrarHome : [Valid Login as Registrar]\nRegistrarHome --> RequestCertificate : [Request Certificate]\nRequestCertificate --> RegistrarHome : [Continue Requesting or Finish]\nRequestCertificate --> EndSession : [Finish]\n\nEndSession --> [*] : [Session Ended]\n\n@enduml\n```",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "duplicate_transitions_detected (2)"
+        ],
+        "initial_state": "Registration",
+        "duplicate_transition_count": 2,
+        "unreachable_states": [],
+        "state_count": 10,
+        "transition_count": 14
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "preservation": {
+        "current_state_count": 10,
+        "repaired_state_count": 10,
+        "current_transition_count": 18,
+        "repaired_transition_count": 18,
+        "min_allowed_state_count": 7,
+        "min_allowed_transition_count": 12,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "repair_did_not_improve_validation_score",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.repair_02.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.repair_02.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "```plantuml\n@startuml\ntitle UML State Machine Diagram (Digidoclocker)\n\nstate \"Registration\" as Registration\nRegistration : entry / Get the Registration Details\nRegistration : do / Validate the Details\nRegistration : exit / Valid or Invalid Registration\n\nstate \"Login\" as Login\nLogin : entry / Get the Login Details\nLogin : do / Validate the Login Details\nLogin : exit / Valid or Invalid Login\n\nstate \"Citizen Home\" as CitizenHome\nCitizenHome : entry / Logged In Citizen\nCitizenHome : do / Display Citizen Dashboard\nCitizenHome : exit / Upload Documents\nCitizenHome : exit / View Profile\nCitizenHome : exit / Apply for Certificate\nCitizenHome : exit / Logout\n\nstate \"Upload Documents\" as UploadDocuments\nUploadDocuments : entry / To Upload Documents\nUploadDocuments : do / Upload Document\nUploadDocuments : exit / Continue Uploading or Finish\n\nstate \"View Profile\" as ViewProfile\nViewProfile : entry / To View Profile\nViewProfile : do / Display Citizen Profile\nViewProfile : exit / Return to Home\n\nstate \"Apply for Certificate\" as ApplyForCertificate\nApplyForCertificate : entry / To Apply for Certificate\nApplyForCertificate : do / Request Certificate\nApplyForCertificate : exit / Reapply or Finish\n\nstate \"Reapply\" as Reapply\nReapply : entry / To Reapply\nReapply : do / Send New Request to Issuer\nReapply : exit / Continue Applying or Finish\n\nstate \"Registrar Home\" as RegistrarHome\nRegistrarHome : entry / Logged In Registrar\nRegistrarHome : do / Display Registrar Dashboard\nRegistrarHome : exit / Request Certificate\nRegistrarHome : exit / Logout\n\nstate \"Request Certificate\" as RequestCertificate\nRequestCertificate : entry / To Request Certificate\nRequestCertificate : do / Send Request to Issuer\nRequestCertificate : exit / Continue Requesting or Finish\n\nstate \"End Session\" as EndSession\nEndSession : entry / User Done with Actions\nEndSession : do / Log Out User\nEndSession : exit / Session Ended\n\n[*] --> Registration\nRegistration --> Login : [Valid Registration]\n\nLogin --> CitizenHome : [Valid Login]\nCitizenHome --> UploadDocuments : [Upload Documents]\nUploadDocuments --> CitizenHome : [Continue Uploading or Finish]\nUploadDocuments --> ViewProfile : [View Profile]\nUploadDocuments --> ApplyForCertificate : [Apply for Certificate]\n\nApplyForCertificate --> Reapply : [Reapply]\nReapply --> ApplyForCertificate : [Continue Applying or Finish]\nApplyForCertificate --> EndSession : [Finish]\n\nCitizenHome --> ApplyForCertificate : [Apply for Certificate]\nApplyForCertificate --> Reapply : [Reapply]\nApplyForCertificate --> EndSession : [Finish]\n\nLogin --> RegistrarHome : [Valid Login as Registrar]\nRegistrarHome --> RequestCertificate : [Request Certificate]\nRequestCertificate --> RegistrarHome : [Continue Requesting or Finish]\nRequestCertificate --> EndSession : [Finish]\n\nEndSession --> [*] : [Session Ended]\n\n@enduml\n```",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "duplicate_transitions_detected (2)"
+        ],
+        "initial_state": "Registration",
+        "duplicate_transition_count": 2,
+        "unreachable_states": [],
+        "state_count": 10,
+        "transition_count": 14
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "preservation": {
+        "current_state_count": 10,
+        "repaired_state_count": 10,
+        "current_transition_count": 18,
+        "repaired_transition_count": 18,
+        "min_allowed_state_count": 7,
+        "min_allowed_transition_count": 12,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "repair_did_not_improve_validation_score",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.repair_03.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.repair_03.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "```plantuml\n@startuml\ntitle UML State Machine Diagram (Digidoclocker)\n\nstate \"Registration\" as Registration\nRegistration : entry / Get the Registration Details\nRegistration : do / Validate the Details\nRegistration : exit / Valid or Invalid Registration\n\nstate \"Login\" as Login\nLogin : entry / Get the Login Details\nLogin : do / Validate the Login Details\nLogin : exit / Valid or Invalid Login\n\nstate \"Citizen Home\" as CitizenHome\nCitizenHome : entry / Logged In Citizen\nCitizenHome : do / Display Citizen Dashboard\nCitizenHome : exit / Upload Documents\nCitizenHome : exit / View Profile\nCitizenHome : exit / Apply for Certificate\nCitizenHome : exit / Logout\n\nstate \"Upload Documents\" as UploadDocuments\nUploadDocuments : entry / To Upload Documents\nUploadDocuments : do / Upload Document\nUploadDocuments : exit / Continue Uploading or Finish\n\nstate \"View Profile\" as ViewProfile\nViewProfile : entry / To View Profile\nViewProfile : do / Display Citizen Profile\nViewProfile : exit / Return to Home\n\nstate \"Apply for Certificate\" as ApplyForCertificate\nApplyForCertificate : entry / To Apply for Certificate\nApplyForCertificate : do / Request Certificate\nApplyForCertificate : exit / Reapply or Finish\n\nstate \"Reapply\" as Reapply\nReapply : entry / To Reapply\nReapply : do / Send New Request to Issuer\nReapply : exit / Continue Applying or Finish\n\nstate \"Registrar Home\" as RegistrarHome\nRegistrarHome : entry / Logged In Registrar\nRegistrarHome : do / Display Registrar Dashboard\nRegistrarHome : exit / Request Certificate\nRegistrarHome : exit / Logout\n\nstate \"Request Certificate\" as RequestCertificate\nRequestCertificate : entry / To Request Certificate\nRequestCertificate : do / Send Request to Issuer\nRequestCertificate : exit / Continue Requesting or Finish\n\nstate \"End Session\" as EndSession\nEndSession : entry / User Done with Actions\nEndSession : do / Log Out User\nEndSession : exit / Session Ended\n\n[*] --> Registration\nRegistration --> Login : [Valid Registration]\n\nLogin --> CitizenHome : [Valid Login]\nCitizenHome --> UploadDocuments : [Upload Documents]\nUploadDocuments --> CitizenHome : [Continue Uploading or Finish]\nUploadDocuments --> ViewProfile : [View Profile]\nUploadDocuments --> ApplyForCertificate : [Apply for Certificate]\n\nApplyForCertificate --> Reapply : [Reapply]\nApplyForCertificate --> EndSession : [Finish]\n\nCitizenHome --> ApplyForCertificate : [Apply for Certificate]\nApplyForCertificate --> Reapply : [Reapply]\n\nLogin --> RegistrarHome : [Valid Login as Registrar]\nRegistrarHome --> RequestCertificate : [Request Certificate]\nRequestCertificate --> RegistrarHome : [Continue Requesting or Finish]\nRequestCertificate --> EndSession : [Finish]\n\nEndSession --> [*] : [Session Ended]\n\n@enduml\n```",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "duplicate_transitions_detected (1)"
+        ],
+        "initial_state": "Registration",
+        "duplicate_transition_count": 1,
+        "unreachable_states": [],
+        "state_count": 10,
+        "transition_count": 13
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "preservation": {
+        "current_state_count": 10,
+        "repaired_state_count": 10,
+        "current_transition_count": 18,
+        "repaired_transition_count": 16,
+        "min_allowed_state_count": 7,
+        "min_allowed_transition_count": 12,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "repair_did_not_improve_validation_score",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.repair_04.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.repair_04.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "```plantuml\n@startuml\ntitle UML State Machine Diagram (Digidoclocker)\n\nstate \"Registration\" as Registration\nRegistration : entry / Get the Registration Details\nRegistration : do / Validate the Details\nRegistration : exit / Valid or Invalid Registration\n\nstate \"Login\" as Login\nLogin : entry / Get the Login Details\nLogin : do / Validate the Login Details\nLogin : exit / Valid or Invalid Login\n\nstate \"Citizen Home\" as CitizenHome\nCitizenHome : entry / Logged In Citizen\nCitizenHome : do / Display Citizen Dashboard\nCitizenHome : exit / Upload Documents\nCitizenHome : exit / View Profile\nCitizenHome : exit / Apply for Certificate\nCitizenHome : exit / Logout\n\nstate \"Upload Documents\" as UploadDocuments\nUploadDocuments : entry / To Upload Documents\nUploadDocuments : do / Upload Document\nUploadDocuments : exit / Continue Uploading or Finish\n\nstate \"View Profile\" as ViewProfile\nViewProfile : entry / To View Profile\nViewProfile : do / Display Citizen Profile\nViewProfile : exit / Return to Home\n\nstate \"Apply for Certificate\" as ApplyForCertificate\nApplyForCertificate : entry / To Apply for Certificate\nApplyForCertificate : do / Request Certificate\nApplyForCertificate : exit / Reapply or Finish\n\nstate \"Reapply\" as Reapply\nReapply : entry / To Reapply\nReapply : do / Send New Request to Issuer\nReapply : exit / Continue Applying or Finish\n\nstate \"Registrar Home\" as RegistrarHome\nRegistrarHome : entry / Logged In Registrar\nRegistrarHome : do / Display Registrar Dashboard\nRegistrarHome : exit / Request Certificate\nRegistrarHome : exit / Logout\n\nstate \"Request Certificate\" as RequestCertificate\nRequestCertificate : entry / To Request Certificate\nRequestCertificate : do / Send Request to Issuer\nRequestCertificate : exit / Continue Requesting or Finish\n\nstate \"End Session\" as EndSession\nEndSession : entry / User Done with Actions\nEndSession : do / Log Out User\nEndSession : exit / Session Ended\n\n[*] --> Registration\nRegistration --> Login : [Valid Registration]\n\nLogin --> CitizenHome : [Valid Login]\nCitizenHome --> UploadDocuments : [Upload Documents]\nUploadDocuments --> CitizenHome : [Continue Uploading or Finish]\nUploadDocuments --> ViewProfile : [View Profile]\nUploadDocuments --> ApplyForCertificate : [Apply for Certificate]\n\nApplyForCertificate --> Reapply : [Reapply]\nApplyForCertificate --> EndSession : [Finish]\n\nCitizenHome --> ApplyForCertificate : [Apply for Certificate]\nApplyForCertificate --> Reapply : [Reapply]\n\nLogin --> RegistrarHome : [Valid Login as Registrar]\nRegistrarHome --> RequestCertificate : [Request Certificate]\nRequestCertificate --> RegistrarHome : [Continue Requesting or Finish]\nRequestCertificate --> EndSession : [Finish]\n\nEndSession --> [*] : [Session Ended]\n\n@enduml\n```",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "duplicate_transitions_detected (1)"
+        ],
+        "initial_state": "Registration",
+        "duplicate_transition_count": 1,
+        "unreachable_states": [],
+        "state_count": 10,
+        "transition_count": 13
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 1,
+      "repair_score": 1,
+      "preservation": {
+        "current_state_count": 10,
+        "repaired_state_count": 10,
+        "current_transition_count": 18,
+        "repaired_transition_count": 16,
+        "min_allowed_state_count": 7,
+        "min_allowed_transition_count": 12,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "repair_did_not_improve_validation_score",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.repair_05.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_18_digidoclocker\\run_01.repair_05.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.3,
+    "state_recall": 0.25,
+    "state_f1": 0.2727272727272727,
+    "state_tp": 3,
+    "state_fp": 7,
+    "state_fn": 9,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 14,
+    "transition_fn": 19,
+    "state_precision_relaxed": 0.3,
+    "state_recall_relaxed": 0.25,
+    "state_f1_relaxed": 0.2727272727272727,
+    "state_tp_relaxed": 3,
+    "state_fp_relaxed": 7,
+    "state_fn_relaxed": 9,
+    "transition_precision_relaxed": 0.07142857142857142,
+    "transition_recall_relaxed": 0.05263157894736842,
+    "transition_f1_relaxed": 0.06060606060606061,
+    "transition_tp_relaxed": 1,
+    "transition_fp_relaxed": 13,
+    "transition_fn_relaxed": 18,
+    "transition_precision_semantic": 0.07142857142857142,
+    "transition_recall_semantic": 0.05263157894736842,
+    "transition_f1_semantic": 0.06060606060606061,
+    "transition_tp_semantic": 1,
+    "transition_fp_semantic": 13,
+    "transition_fn_semantic": 18,
+    "transition_event_similarity_mean": 1.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "duplicate_transitions_detected (2)"
+    ],
+    "hallucination_state_rate": 0.7,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.7,
+    "hallucination_transition_rate_relaxed": 0.9285714285714286,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 0.9473684210526315,
+    "overall_f1": 0.13636363636363635,
+    "overall_f1_relaxed": 0.16666666666666666,
+    "weighted_f1_relaxed_70_30": 0.20909090909090908,
+    "overall_f1_semantic": 0.16666666666666666,
+    "weighted_f1_semantic_70_30": 0.20909090909090908,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "duplicate_transitions_detected (2)"
+    ]
+  },
+  "reused_base_run": {
+    "run_id": "open_source__llama31_8b_instruct__few_shot",
+    "strategy": "few_shot",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot\\case_18_digidoclocker\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot\\case_18_digidoclocker\\run_01.prompt.txt"
+  }
+}

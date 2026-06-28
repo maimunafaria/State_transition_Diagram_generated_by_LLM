@@ -1,0 +1,90 @@
+@startuml
+title State diagram for the Online Quiz System
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Register / Login
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state "Invalid registration" as InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state "Invalid login" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state "Teacher" as Teacher
+Teacher : entry/To home page
+Teacher : do/Create new quiz / Edit existing quiz
+Teacher : exit/Draft / Post quiz
+
+state "Draft" as Draft
+Draft : entry/Draft
+Draft : do/Edit quiz after working on it
+Draft : exit/Post quiz / Cancel
+
+state "Posted" as Posted
+Posted : entry/Post quiz
+Posted : do/View quiz results once the quiz is over
+Posted : exit/Idle
+
+state "Student" as Student
+Student : entry/To home page
+Student : do/Select a quiz after getting notified
+Student : exit/Answer quiz / View result
+
+state "Answering quiz" as AnsweringQuiz
+AnsweringQuiz : entry/Answer quiz
+AnsweringQuiz : do/Submit quiz after answering
+AnsweringQuiz : exit/View result
+
+state "Result" as Result
+Result : entry/View result
+Result : do/View the result after submitting the quiz
+Result : exit/Idle
+
+[*] --> Idle
+
+Idle --> J1
+J1 --> Register
+J1 --> Login
+
+Register --> J2
+J2 --> Login
+J2 --> InvalidRegistration
+InvalidRegistration --> [*]
+
+Login --> J3
+J3 --> InvalidLogin
+J3 --> Teacher
+J3 --> Student
+InvalidLogin --> [*]
+
+Teacher --> J4
+J4 --> Draft
+J4 --> Posted
+Draft --> J5
+J5 --> Posted
+Posted --> J6
+
+Student --> J7
+J7 --> AnsweringQuiz
+AnsweringQuiz --> Result
+Result --> J8
+
+J8 --> Idle
+
+@enduml

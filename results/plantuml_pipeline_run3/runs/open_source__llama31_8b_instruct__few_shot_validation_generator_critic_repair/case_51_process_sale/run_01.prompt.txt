@@ -1,0 +1,251 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Product Recommendation — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or sign in to access the platform.
+2. The system shall enable users to search for products after they have registered or logged in.
+3. The system shall display matching product results based on the user's search query.
+4. The system shall allow users to apply filters to refine their search results.
+5. The system shall update the displayed product results based on the applied filters.
+6. The system shall allow users to select a product from search or filtered results.
+7. The system shall redirect the user to the official website of the selected product upon selection.
+
+Example 1 PlantUML:
+@startuml
+[*] --> Register
+Register : entry / nil
+Register : do / login / Register
+Register : exit / valid registration / login
+
+Register --> SearchProduct : user registers
+SearchProduct : entry / login
+SearchProduct : do / search for the product
+SearchProduct : exit / display search results
+
+SearchProduct --> SearchFilterProductFilter : user applies filters
+SearchFilterProductFilter : entry / search product
+SearchFilterProductFilter : do / apply filters to get desired results
+SearchFilterProductFilter : exit / display filtered results
+state J1 <<choice>>
+SearchProduct --> J1 : user selects product
+SearchFilterProductFilter --> J1 : user selects product
+GetProduct : entry / login
+GetProduct : do / get the product from the official website
+GetProduct : exit / redirect to the website
+J1 --> GetProduct
+GetProduct --> [*]
+@enduml
+
+Example 2 Requirement:
+Online Pharmacy Management System Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow customers to search for products.
+2. The system shall allow customers to add products to their wishlist.
+3. The system shall allow customers to move items from their wishlist to the shopping cart.
+4. The system shall allow customers to provide or update delivery details for items in the cart.
+5. The system shall allow customers to place orders after providing delivery details.
+6. The system shall enable customers to track their orders after placement.
+7. The system shall allow customers to complete payments for their orders.
+
+Example 2 PlantUML:
+@startuml
+title UML State Machine Diagram - Customer
+
+[*] --> SearchProduct
+
+state "Search product" as SearchProduct
+state "Add to wishlist" as AddToWishlist
+state "Add to cart" as AddToCart
+state "Update delivery info" as UpdateDeliveryInfo
+state "Track order" as TrackOrder
+state Payment
+
+SearchProduct --> AddToWishlist
+AddToWishlist --> AddToCart
+AddToCart --> UpdateDeliveryInfo
+UpdateDeliveryInfo --> TrackOrder
+TrackOrder --> Payment
+Payment --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Student Counselling Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a student to log in.
+2. The system shall prompt the student to try again if login details are incorrect.
+3. The system shall proceed with registration and payment upon a successful login.
+4. The system shall end there if the registration payment is not completed.
+5. The system shall register the student and declare ranks if the registration payment is completed.
+6. The system shall allow the student to pay enrollment fees after rank declaration.
+7. The system shall end there if the payment for enrollment fees is not successful.
+8. The system shall allow the student to fill in their choices if the payment for enrollment fees is successful.
+9. The system shall lock the choices and allocate seats based on rank if they are correct.
+10. The system shall generate an admit letter once a seat is allotted.
+11. The system shall allow the student to accept or decline the admit letter.
+
+Example 3 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+[*] --> StartMerge
+
+state StartMerge <<choice>>
+state Login
+state LoginDecision <<choice>>
+state "Invalid Login" as InvalidLogin
+state "Valid Login" as ValidLogin
+state RegistrationDecision <<choice>>
+state "Failed Registration" as FailedRegistration
+state "Rank Declaration" as RankDeclaration
+state "Enrollment Fees" as EnrollmentFees
+state PaymentDecision <<choice>>
+state "Invalid Payment" as InvalidPayment
+state "Valid Payment" as ValidPayment
+state "Choice Filing" as ChoiceFiling
+state ChoiceDecision <<choice>>
+state "Failed choice filing" as FailedChoiceFiling
+state "Seat Allotment" as SeatAllotment
+state "Admit Letter Generation" as AdmitLetterGeneration
+state "Accept/Decline" as AcceptDecline
+
+Login : entry / To Action
+Login : do / Log in to the system
+Login : exit / Username and password entered
+
+InvalidLogin : entry / Trying to log in
+InvalidLogin : do / Invalid username and password
+InvalidLogin : exit / Back to login page
+
+ValidLogin : entry / Student logged in
+ValidLogin : do / Registration form submission with payment
+ValidLogin : exit / Student Registered
+
+FailedRegistration : entry / Payment not made
+FailedRegistration : do / Throw an error
+FailedRegistration : exit / Abnormal termination
+
+RankDeclaration : entry / Student registered
+RankDeclaration : do / Declare ranks for all the students
+RankDeclaration : exit / Rank published
+
+EnrollmentFees : entry / Rank declared
+EnrollmentFees : do / Pay enrollment fees
+EnrollmentFees : exit / Payment done
+
+InvalidPayment : entry / Payment not made
+InvalidPayment : do / Show the errors
+InvalidPayment : exit / Abnormal Termination
+
+ValidPayment : entry / Payment made
+ValidPayment : do / Allow to fill choices
+ValidPayment : exit / log out from payment portal
+
+ChoiceFiling : entry / Valid payment
+ChoiceFiling : do / Fill choices
+ChoiceFiling : exit / Lock choices
+
+FailedChoiceFiling : entry / Invalid choices
+FailedChoiceFiling : do / Show the errors
+FailedChoiceFiling : exit / Abnormal Termination
+
+SeatAllotment : entry / Choices must be locked
+SeatAllotment : do / Allot seats based on rank
+SeatAllotment : exit / Publish alloted results
+
+AdmitLetterGeneration : entry / Seat alotted
+AdmitLetterGeneration : do / Generate admit letter
+AdmitLetterGeneration : exit / Publish admit letters to students and colleges
+
+AcceptDecline : entry / Received admit letter
+AcceptDecline : do / Accept/Decline
+AcceptDecline : exit / After decision is made
+
+StartMerge --> Login
+Login --> LoginDecision
+LoginDecision --> InvalidLogin
+LoginDecision --> ValidLogin
+InvalidLogin --> StartMerge
+
+ValidLogin --> RegistrationDecision
+RegistrationDecision --> FailedRegistration
+RegistrationDecision --> RankDeclaration
+
+RankDeclaration --> EnrollmentFees
+EnrollmentFees --> PaymentDecision
+PaymentDecision --> InvalidPayment
+PaymentDecision --> ValidPayment
+
+ValidPayment --> ChoiceFiling
+ChoiceFiling --> ChoiceDecision
+ChoiceDecision --> FailedChoiceFiling
+ChoiceDecision --> SeatAllotment
+
+SeatAllotment --> AdmitLetterGeneration
+AdmitLetterGeneration --> AcceptDecline
+AcceptDecline --> [*]
+
+FailedRegistration --> [*]
+InvalidPayment --> [*]
+FailedChoiceFiling --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Process Sale — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a new sale.
+2. The system shall enter items one by one as they are selected by the customer.
+3. The system shall move to payment after all items have been added.
+4. The system shall complete the sale immediately if the customer pays with cash.
+5. The system shall verify the payment if the customer chooses to pay by card or check.
+6. The system shall complete the sale once the payment is approved.
+7. The system shall return to waiting for the next customer after the payment has been finished.

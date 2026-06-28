@@ -1,0 +1,32 @@
+@startuml
+title ATM Control - Validate PIN and Withdraw Funds
+
+[*] --> Idle
+
+state Idle
+
+state "Checking PIN" as CheckingPIN {
+  state "Correct PIN" as CorrectPIN
+  state "Incorrect PIN" as IncorrectPIN
+
+  CorrectPIN : entry / Display Options
+  CorrectPIN --> ProcessingTransaction
+  IncorrectPIN : entry / Ask for PIN Again
+  IncorrectPIN --> CheckingPIN
+}
+
+state "Processing Transaction" as ProcessingTransaction {
+  state "Withdrawal Request Approved" as WithdrawalApproved
+  state "Withdrawal Request Rejected" as WithdrawalRejected
+
+  WithdrawalApproved : entry / Dispense Cash, Print Receipt, Return Card
+  WithdrawalApproved --> Idle
+  WithdrawalRejected : entry / Cancel Operation, Return Card
+  WithdrawalRejected --> Idle
+}
+
+state Idle : entry / Display Welcome
+
+CheckingPIN --> [*] // Add final transition from CheckingPIN to [*]
+
+@enduml

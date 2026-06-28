@@ -1,0 +1,115 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.
+
+Candidate PlantUML:
+@startuml
+title Weather Station System States
+
+[*] --> Running : Start
+state "Running" as Running
+state "Shutdown" as Shutdown
+
+Running --> ConfigMode : Changes/Power-saving settings
+ConfigMode --> Running : Configuration completed
+Running --> CollectData : Triggered by clock
+CollectData --> Running : Data collected
+Running --> Summary : Request for weather summary
+Summary --> Running : Weather summary prepared
+Running --> StatusCheck : Request for status check
+StatusCheck --> Running : Status checked
+Running --> ControlledMode : Remote control
+Running --> Shutdown : Shutdown command given
+
+[*] --> InitializeComponent : Load Component
+InitializeComponent --> WaitingForUpdate : Detect update
+WaitingForUpdate --> ProcessUpdate : Update processed
+ProcessUpdate --> UnloadingPhase : Failure/Shutdown
+
+title Equihealth States
+
+[*] --> J1 : [check user]
+state J1 <<choice>>
+state J2 : Patient
+state J3 : Health Worker
+state J4 : Government Official
+J1 --> J2 : Patient
+J1 --> J3 : Health Worker
+J1 --> J4 : Government Official
+
+J2 --> ProvideMedicalInfo : Sign in as patient
+ProvideMedicalInfo --> J2 : Medical information provided
+ProvideMedicalInfo --> J3 : Analysis performed
+
+J3 --> PrepareAlerts : Based on analyzed information
+PrepareAlerts --> J3 : Alerts prepared
+PrepareAlerts --> J4 : Alerts sent to appropriate operators
+
+title National Health Id States
+
+[*] --> Choice1
+state Choice1 <<choice>>
+state Choice2 : Verification
+state Choice3 : Activation
+Choice1 --> [Choice2: Indian citizen]
+Choice1 --> Running : Not Indian citizen
+
+Choice2 --> Verification : entry
+Verification --> VerifiedStatus : Details verified
+Verification --> NotVerified : Details not verified
+
+Choice3 --> SetPermissions : After activation
+SetPermissions --> AddOldFiles : Allow users to add old files
+AddOldFiles --> StoreOldFiles : Old files stored
+AddOldFiles --> AccessGranted : Permission granted for access
+AccessGranted --> AddNewFiles : Allow adding new files when permission is granted
+@enduml
+
+
+Validation issues to fix:
+- multiple_initial_state_transitions (Running, InitializeComponent, J1, Choice1)
+- missing_final_state_transition (state --> [*])
+- choice_node_without_guarded_outgoing_transitions (Choice1)
+- choice_node_without_guarded_outgoing_transitions (J1)
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- For multiple initial transitions, keep only the one top-level [*] --> State transition.
+- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
+- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].

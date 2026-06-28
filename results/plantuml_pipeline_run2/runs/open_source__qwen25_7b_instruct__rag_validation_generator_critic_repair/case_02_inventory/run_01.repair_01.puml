@@ -1,6 +1,6 @@
 @startuml
 
-[*] --> CustomerRegistration
+[*] --> CustomerRegistration : start
 
 state CustomerRegistration
 CustomerRegistration : entry / start
@@ -19,21 +19,24 @@ Reporting : entry / start
 Reporting : exit / complete
 
 state LoginDecision <<choice>>
-CustomerRegistration --> LoginDecision
-InventoryManagement --> LoginDecision
-OrderPlacement --> LoginDecision
-Reporting --> LoginDecision
+CustomerRegistration --> LoginDecision : verifyData
+InventoryManagement --> LoginDecision : verifyData
+OrderPlacement --> LoginDecision : verifyData
+Reporting --> LoginDecision : verifyData
 
-LoginDecision --> CustomerRegistration : [invalid]
-LoginDecision --> InventoryManagement : [valid]
-LoginDecision --> OrderPlacement : [valid]
-LoginDecision --> Reporting : [valid]
+LoginDecision --> CustomerRegistration : [valid] verifyData
+LoginDecision --> InventoryManagement : [invalid] verifyData
+LoginDecision --> OrderPlacement : [invalid] verifyData
+LoginDecision --> Reporting : [invalid] verifyData
 
-state LoggedOut
-LoggedOut : exit / complete
+state FinalState
+FinalState : entry / complete
 
-LoginDecision --> LoggedOut : [invalid]
+CustomerRegistration --> FinalState : complete
+InventoryManagement --> FinalState : complete
+OrderPlacement --> FinalState : complete
+Reporting --> FinalState : complete
 
-[*] --> LoggedOut
+[*] --> FinalState : complete
 
 @enduml

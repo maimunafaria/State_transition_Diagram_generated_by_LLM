@@ -1,0 +1,56 @@
+@startuml
+title E-Ticketing System State Machine
+
+[Initial] --> Unregistered
+
+state Unregistered {
+  [*] --> Register : createAccount()
+}
+
+state Registered {
+  [*] --> Login : login()
+}
+
+state LoggedIn {
+  [*] --> CheckTicketStatus : checkTicketStatus()
+  [*] --> BookTicket : bookTicket()
+  [*] --> ManageAccount : manageAccount()
+  [*] --> Logout : logout()
+}
+
+state CheckTicketStatus {
+  [*] --> BackToLoggedIn : back()
+}
+
+state BookTicket {
+  [*] --> Confirmation : confirmBooking()
+  state Confirmation {
+    [*] --> Payment : makePayment()
+  }
+  state Payment {
+    [*] --> BackToLoggedIn : paymentSuccess()
+  }
+}
+
+state ManageAccount {
+  [*] --> EditingDetails : edit()
+  state EditingDetails {
+    [*] --> SaveChanges : save()
+    [*] --> DeleteAccount : delete()
+  }
+  state SaveChanges {
+    [*] --> BackToLoggedIn : changesSaved()
+  }
+  state DeleteAccount {
+    [*] --> Logout : accountDeleted()
+  }
+}
+
+state Logout {
+  [*] --> finallyLoggedOut
+}
+state finallyLoggedOut {
+  [*] --> [*] : logoutSuccess()
+}
+
+@enduml

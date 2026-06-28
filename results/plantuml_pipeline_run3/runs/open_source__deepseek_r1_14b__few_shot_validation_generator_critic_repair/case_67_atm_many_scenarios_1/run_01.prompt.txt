@@ -1,0 +1,282 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Cash Register — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a customer.
+2. The system shall add items one by one when a customer begins a purchase.
+3. The system shall wait for payment after all items are added.
+4. The system shall go back to waiting for the next customer after the payment is made.
+
+Example 1 PlantUML:
+@startuml
+title State diagram of the system operations of "Process sale"
+
+[*] --> WaitingCustomer
+
+state "Waiting for customer" as WaitingCustomer
+state "Record items" as RecordItems
+state "Waiting for payment" as WaitingPayment
+
+WaitingCustomer --> RecordItems : enter item
+RecordItems --> RecordItems : enter item
+RecordItems --> WaitingPayment : end of sale
+WaitingPayment --> WaitingCustomer : enter payment
+
+@enduml
+
+Example 2 Requirement:
+Guide Dropshipping Website — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to choose whether they are a seller or a customer.
+2. The system shall enable the seller to add or remove products from their list and finalize their offerings.
+3. The system shall allow the customer to view available products and select ones of interest.
+4. The system shall facilitate communication between customers and sellers for deal discussions.
+5. The system shall determine whether a purchase is completed based on the discussion or if it does not proceed.
+6. The system shall allow the customer to make payment after a purchase is completed and provide feedback later.
+7. The system shall end the interaction if no deal occurs.
+
+Example 2 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+
+[*] --> StartChoice
+
+state StartChoice <<choice>>
+
+StartChoice --> SellerLogin
+StartChoice --> CustomerLogin
+
+
+state "Seller Login" as SellerLogin
+SellerLogin : entry / seller should be registered
+SellerLogin : do / user provide Login Details
+SellerLogin : exit / login Successful
+
+state "Add/Remove Products" as ManageProducts
+ManageProducts : entry / seller should be LoggedIn
+ManageProducts : do / the seller should be able to add and remove products from the lists
+ManageProducts : exit / fthe seller finalise his products list
+
+SellerLogin --> ManageProducts
+
+
+state "Customer Login" as CustomerLogin
+CustomerLogin : entry / customer should be registered
+CustomerLogin : do / user provide Login Details
+CustomerLogin : exit / login Successful
+
+state "View Products" as ViewProducts
+ViewProducts : entry / customer should be LoggedIn
+ViewProducts : do / the customer view Product List
+ViewProducts : exit / customer decides to buy a product
+
+state "Purchase Products" as PurchaseProducts
+PurchaseProducts : entry / customer select a Product
+PurchaseProducts : do / customer contacts Seller via messaging
+PurchaseProducts : exit / customer should be able to message the seller
+CustomerLogin --> ViewProducts
+ViewProducts --> PurchaseProducts
+
+
+state MergePoint <<choice>>
+
+ManageProducts --> MergePoint
+PurchaseProducts --> MergePoint
+
+
+state Message
+Message : entry /customer wanting to purchase a product
+Message : do / customer seller messaging each other discussing the deal
+Message : exit / conclusion is drawn
+
+MergePoint --> Message
+
+state Decision <<choice>>
+Message --> Decision
+
+state "Purchase successful" as Success
+Success : entry / customer and the seller agrees on the deal
+Success : do / customer pays the seller through external means
+Success : exit / customer asks for product feedback
+
+state "Purchase Unsuccessful" as Fail
+Fail : entry / customer not Interested in the offer
+Fail : do / customer decline sellers's Offer
+Fail : exit / end
+
+Decision --> Success
+Decision --> Fail
+
+
+state "Rate Products" as RateProducts
+RateProducts : entry / customer purchases the products
+RateProducts : do / customer gives Feedback for the transaction
+RateProducts : exit / end
+
+Success --> RateProducts
+
+RateProducts --> [*]
+Fail --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Business Process Outsourcing Bpo Management System Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to upload a new request.
+2. The system shall enable a BPO organization to save the details of a project.
+3. The system shall allow a client to search for a suitable project category.
+4. The system shall enable an BPO organization to accept or decline a request from a client.
+5. The system shall allow a client to decide whether to proceed with an accepted project or reject it.
+6. The system shall update the project status after acceptance by both parties.
+7. The system shall allow a client to track the progress of a project.
+8. The system shall enable an BPO organization to update the progress of a project.
+9. The system shall upload a final project once work is completed.
+10. The system shall perform a quality check on the final project.
+11. The system shall restart the process if a client is unsatisfied with the final project.
+12. The system shall make payment if the client is satisfied with the final project.
+13. The system shall deliver the project after payment.
+14. The system shall allow a client to provide a rating for the completed project.
+
+Example 3 PlantUML:
+@startuml
+title UML State Machine Diagram (Upload or Accept Request)
+
+state "Upload or Accept request" as UAR {
+
+    [*] --> ChoiceUser
+
+
+    UAR : entry / Regarding request details
+    UAR : do / Project dealings
+    UAR : exit / After finishing rating
+
+
+    state ChoiceUser <<choice>>
+
+    ChoiceUser --> EnterDetails : [user = BPO organization]
+    ChoiceUser --> SearchCategory : [user = client]
+
+
+    state "Enter project details" as EnterDetails
+    state "Update database" as UpdateDB
+
+    EnterDetails --> UpdateDB
+    UpdateDB --> [*]
+
+
+    state "Search project category" as SearchCategory
+    state ChoiceBPO <<choice>>
+    state ChoiceClient <<choice>>
+
+    SearchCategory --> ChoiceBPO
+
+    ChoiceBPO --> EndDecline : [BPO org declines]
+    ChoiceBPO --> ChoiceClient : [BPO org accepts]
+
+    ChoiceClient --> EndReject : [client rejects]
+    ChoiceClient --> UpdateStatus : [client accepts]
+
+    state EndDecline <<choice>>
+    EndDecline --> [*]
+
+    state EndReject <<choice>>
+    EndReject --> [*]
+
+    state "Update status of project" as UpdateStatus
+
+    state ChoiceTracking <<choice>>
+
+    UpdateStatus --> ChoiceTracking
+
+    ChoiceTracking --> DisplayProgress : [client wishes to track]
+    ChoiceTracking --> UpdateProgress : [user = BPO org]
+
+    state "Display progress" as DisplayProgress
+    DisplayProgress --> [*]
+
+    state "Update progress" as UpdateProgress
+
+
+    UpdateProgress --> UploadFinal : [End of project]
+
+    state "Upload final project" as UploadFinal
+
+    state QualityCheck <<choice>>
+
+    UploadFinal --> QualityCheck : [Quality check]
+
+    QualityCheck --> Payment : [satisfied]
+    QualityCheck --> ChoiceTracking : [Not satisfied]
+
+    state Payment
+    state Shipment
+    state Rating
+
+    Payment --> Shipment
+    Shipment --> Rating
+
+    Rating --> [*]
+}
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Atm Many Scenarios Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall prompt the user to enter their PIN after the card is inserted.
+2. The system shall verify the entered PIN against the stored information.
+3. The system shall ensure that if the PIN is verified successfully, the system shall provide options to the user.
+4. The system shall support upon user approval, the system shall process the withdrawal request.
+5. The system shall support after dispensing cash, the system shall print a receipt for the transaction.
+6. The system shall support after completing the transaction, the system shall return the user's card.
+7. The system shall support after a brief moment, the system shall reset itself and become ready for the next user.

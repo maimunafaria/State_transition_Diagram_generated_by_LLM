@@ -1,0 +1,140 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Green Rides — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display journey details upon user login and destination selection.
+2. The system shall allow users to activate driving mode or choose other options after viewing journey details.
+3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.
+4. The system shall inform relevant authorities in the event of an accident.
+5. The system shall send notifications during driving or in case of an accident.
+6. The system shall allow users to provide feedback upon completion of their journey.
+
+Candidate PlantUML:
+@startuml
+title State Diagram - Green Rides
+
+[*] --> Login : User logs in
+
+
+state "Login" as Login
+Login : do / Validate user credentials
+Login : exit / Successful login
+
+state "Journey Details" as JourneyDetails
+JourneyDetails : entry / Display journey details
+JourneyDetails : do / Show route and estimated time of arrival
+JourneyDetails : exit / User views journey details
+
+
+state "Driving Mode" as DrivingMode
+DrivingMode : entry / Activate driving mode
+DrivingMode : do / Enable navigation and alerts
+DrivingMode : exit / User chooses other options
+
+state "Other Options" as OtherOptions
+OtherOptions : entry / Choose other options
+OtherOptions : do / Show available options (e.g., music, podcasts)
+OtherOptions : exit / User activates driving mode
+
+
+state "Place to Eat" as PlaceToEat
+PlaceToEat : entry / Select a place to eat
+PlaceToEat : do / Display menu and allow order placement
+PlaceToEat : exit / User places an order or views menu
+
+state "Menu" as Menu
+Menu : entry / View menu
+Menu : do / Show available dishes and prices
+Menu : exit / User places an order
+
+
+state "Order Placement" as OrderPlacement
+OrderPlacement : entry / Place an order
+OrderPlacement : do / Confirm order details
+OrderPlacement : exit / Order is placed
+
+state "Accident Notification" as AccidentNotification
+AccidentNotification : entry / Inform authorities of accident
+AccidentNotification : do / Send notification to relevant authorities
+AccidentNotification : exit / Authorities notified
+
+
+state "Notifications" as Notifications
+Notifications : entry / Send notifications during driving or in case of an accident
+Notifications : do / Display notifications on screen
+Notifications : exit / User acknowledges notifications
+
+state "Feedback" as Feedback
+Feedback : entry / Provide feedback upon completion of journey
+Feedback : do / Collect user feedback and ratings
+Feedback : exit / Feedback is submitted
+
+
+state "Completed Journey" as CompletedJourney
+CompletedJourney : entry / Journey is completed
+CompletedJourney : do / Display completion message
+CompletedJourney : exit / User provides feedback
+
+state "Final State" as FinalState <<final>>
+FinalState : entry / System ends
+
+
+Login --> JourneyDetails : Successful login
+JourneyDetails --> DrivingMode : View journey details
+DrivingMode --> OtherOptions : Activate driving mode
+OtherOptions --> DrivingMode : Choose other options
+
+PlaceToEat --> Menu : Select a place to eat
+Menu --> PlaceToEat : View menu
+OrderPlacement --> PlaceToEat : Place an order
+
+AccidentNotification --> Notifications : Inform authorities of accident
+Notifications --> AccidentNotification : Send notifications during driving or in case of an accident
+
+Feedback --> CompletedJourney : Provide feedback upon completion of journey
+CompletedJourney --> FinalState : Journey is completed
+
+
+FinalState --> [*] : System ends
+PlaceToEat --> [*] : User places an order or views menu
+Menu --> [*] : User places an order
+OrderPlacement --> [*] : Order is placed
+Notifications --> [*] : User acknowledges notifications
+Feedback --> [*] : Feedback is submitted
+CompletedJourney --> [*] : Journey is completed
+
+
+@enduml
+
+
+Validation issues to fix:
+- unreachable: Accident Notification, Completed Journey, Feedback, Final State, Menu, Notifications, Order Placement, Place to Eat
+- unreachable_states_detected
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.

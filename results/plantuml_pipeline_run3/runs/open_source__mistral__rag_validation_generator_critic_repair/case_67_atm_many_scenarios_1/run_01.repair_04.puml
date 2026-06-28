@@ -1,0 +1,52 @@
+@startuml
+title ATM Control - Combined Scenarios
+
+[*] --> Idle
+
+state Idle
+Idle : entry / Display Welcome
+
+state "Enter PIN"
+"Enter PIN" : enterPin(pin)
+"Enter PIN" : verifyPin(pin, storedPin)
+"Enter PIN" : checkPinLimit(incorrectAttempts)
+"Enter PIN" : keepCard(invalidCard, incorrectPin, incorrectAttempts > 3)
+"Enter PIN" : returnCardWithMessage(cancelledOperation, rejectedRequest)
+"Enter PIN" --> Check Information
+"Enter PIN" : displayOptions(correctPin)
+"Enter PIN" : processWithdrawalRequest(requestAmount, availableBalance, approvedTransaction)
+"Enter PIN" : checkCashAvailability(approvedTransaction, cashAvailable)
+"Enter PIN" : dispenseCash(cashDispensed, rejectedRequest)
+"Enter PIN" : printReceipt(receiptPrinted, rejectedRequest)
+"Enter PIN" : returnCard(cardReturned, rejectedRequest)
+"Enter PIN" : stopOperation(outOfCash)
+"Enter PIN" : resetATM(finishedSession)
+
+choice Check Information or Withdraw Cash or Transfer Money
+Check Information : chooseToCheckInfo(checkInfoOptionSelected)
+"Check Information" : processQueryRequest(queryType, approvedQuery)
+"Check Information" : printReceipt(receiptPrinted, rejectedQuery)
+"Check Information" --> [*]
+
+Withdraw Cash : chooseToWithdraw(withdrawOptionSelected)
+"Withdraw Cash" : processWithdrawalRequest(requestAmount, availableBalance, approvedWithdrawal)
+"Withdraw Cash" : dispenseCash(cashDispensed, rejectedWithdrawal)
+"Withdraw Cash" : printReceipt(receiptPrinted, rejectedWithdrawal)
+"Withdraw Cash" : returnCard(cardReturned, rejectedWithdrawal)
+"Withdraw Cash" : cancelOperation(rejectedWithdrawal)
+"Withdraw Cash" : showMessage(insufficientFunds)
+"Withdraw Cash" : stopOperation(outOfCash)
+"Withdraw Cash" --> [*]
+
+Transfer Money : chooseToTransfer(transferOptionSelected)
+"Transfer Money" : processTransferRequest(transferAmount, approvedTransfer)
+"Transfer Money" : printReceipt(receiptPrinted, rejectedTransfer)
+"Transfer Money" --> [*]
+
+state "Terminating Transaction"
+"Terminating Transaction" : ejectCard(cardEjected, finishedTransaction)
+"Terminating Transaction" : shortEndingPhase(shortEndingPhaseCompleted)
+"Terminating Transaction" : returnToNormalCondition(normalConditionReached)
+"Terminating Transaction" : shutDown(shutdownOccured)
+[*] --> Terminating Transaction
+@enduml

@@ -1,0 +1,42 @@
+@startuml
+title ATM State Transition Diagram
+
+state "User Arrives" as UserArrives
+state "Card Inserted" as CardInserted
+state "Invalid Card" as InvalidCard
+state "PIN Check" as PINCheck
+state "Incorrect PIN" as IncorrectPIN
+state "Card Retained" as CardRetained
+state "Menu Options" as MenuOptions
+state "Processing Withdraw" as ProcessingWithdraw
+state "Processing Information" as ProcessingInformation
+state "Processing Transfer" as ProcessingTransfer
+state "Card Returned" as CardReturned
+
+UserArrives --> CardInserted : insertCard()
+
+CardInserted --> InvalidCard : [invalid card]
+CardInserted --> PINCheck : [valid card]
+
+PINCheck --> IncorrectPIN : [incorrect PIN]
+IncorrectPIN --> PINCheck : retryPin()
+IncorrectPIN --> CardRetained : [too many incorrect tries]
+
+CardRetained --> CardReturned : cancelOperation()
+
+PINCheck --> MenuOptions : [correct PIN]
+
+MenuOptions --> ProcessingWithdraw : withdrawMoney()
+MenuOptions --> ProcessingInformation : checkInfo()
+MenuOptions --> ProcessingTransfer : makeTransfer()
+
+ProcessingWithdraw --> MenuOptions : backToMenu()
+ProcessingInformation --> MenuOptions : backToMenu()
+ProcessingTransfer --> MenuOptions : backToMenu()
+
+[*] --> UserArrives
+
+InvalidCard --> [*]
+CardRetained --> [*]
+CardReturned --> [*]
+@enduml

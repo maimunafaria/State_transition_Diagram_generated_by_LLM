@@ -1,0 +1,80 @@
+@startuml
+title UML State Machine Diagram (Digidoclocker)
+
+state "Registration" as Registration
+Registration : entry / Get the Registration Details
+Registration : do / Validate the Details
+Registration : exit / Valid or Invalid Registration
+
+state "Login" as Login
+Login : entry / Get the Login Details
+Login : do / Validate the Login Details
+Login : exit / Valid or Invalid Login
+
+state "Citizen Home" as CitizenHome
+CitizenHome : entry / Logged In Citizen
+CitizenHome : do / Display Citizen Dashboard
+CitizenHome : exit / Upload Documents
+CitizenHome : exit / View Profile
+CitizenHome : exit / Apply for Certificate
+CitizenHome : exit / Logout
+
+state "Upload Documents" as UploadDocuments
+UploadDocuments : entry / To Upload Documents
+UploadDocuments : do / Upload Document
+UploadDocuments : exit / Continue Uploading or Finish
+
+state "View Profile" as ViewProfile
+ViewProfile : entry / To View Profile
+ViewProfile : do / Display Citizen Profile
+ViewProfile : exit / Return to Home
+
+state "Apply for Certificate" as ApplyForCertificate
+ApplyForCertificate : entry / To Apply for Certificate
+ApplyForCertificate : do / Request Certificate
+ApplyForCertificate : exit / Reapply or Finish
+
+state "Reapply" as Reapply
+Reapply : entry / To Reapply
+Reapply : do / Send New Request to Issuer
+Reapply : exit / Continue Applying or Finish
+
+state "Registrar Home" as RegistrarHome
+RegistrarHome : entry / Logged In Registrar
+RegistrarHome : do / Display Registrar Dashboard
+RegistrarHome : exit / Request Certificate
+RegistrarHome : exit / Logout
+
+state "Request Certificate" as RequestCertificate
+RequestCertificate : entry / To Request Certificate
+RequestCertificate : do / Send Request to Issuer
+RequestCertificate : exit / Continue Requesting or Finish
+
+state "End Session" as EndSession
+EndSession : entry / User Done with Actions
+EndSession : do / Log Out User
+EndSession : exit / Session Ended
+
+[*] --> Registration
+Registration --> Login : [Valid Registration]
+
+Login --> CitizenHome : [Valid Login]
+CitizenHome --> UploadDocuments : [Upload Documents]
+UploadDocuments --> CitizenHome : [Continue Uploading or Finish]
+UploadDocuments --> ViewProfile : [View Profile]
+UploadDocuments --> ApplyForCertificate : [Apply for Certificate]
+
+ApplyForCertificate --> Reapply : [Reapply]
+ApplyForCertificate --> EndSession : [Finish]
+
+CitizenHome --> ApplyForCertificate : [Apply for Certificate]
+ApplyForCertificate --> Reapply : [Reapply]
+
+Login --> RegistrarHome : [Valid Login as Registrar]
+RegistrarHome --> RequestCertificate : [Request Certificate]
+RequestCertificate --> RegistrarHome : [Continue Requesting or Finish]
+RequestCertificate --> EndSession : [Finish]
+
+EndSession --> [*] : [Session Ended]
+
+@enduml

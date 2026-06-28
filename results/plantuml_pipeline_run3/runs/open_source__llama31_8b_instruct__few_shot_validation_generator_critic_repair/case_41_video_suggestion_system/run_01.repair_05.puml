@@ -1,0 +1,41 @@
+@startuml
+[*] --> ReceiveRequest : [user sends video suggestion request]
+
+state "Receive Request" as ReceiveRequest
+ReceiveRequest : entry / receive video suggestion request from user
+ReceiveRequest : do / identify user who made the request
+ReceiveRequest : exit / identified user
+
+ReceiveRequest --> IdentifyUser : user is identified
+state "Identify User" as IdentifyUser
+IdentifyUser : entry / identify user based on profile or preferences
+IdentifyUser : do / gather user's information
+IdentifyUser : exit / user identified
+
+IdentifyUser --> GatherVideos : videos are gathered
+state "Gather Videos" as GatherVideos
+GatherVideos : entry / gather different types of videos simultaneously
+GatherVideos : do / gather trending videos from user’s area
+GatherVideos : do / gather videos with similar tags
+GatherVideos : do / gather videos from similar genres
+GatherVideos : do / gather promoted videos
+GatherVideos --> AddDetails : add additional details to suggested videos
+state "Add Details" as AddDetails
+AddDetails : entry / add thumbnails and view counts to suggested videos
+AddDetails : do / add more information to the suggested videos
+AddDetails : exit / added details
+
+AddDetails --> SendVideos : send suggested videos to user
+state "Send Videos" as SendVideos
+SendVideos : entry / send suggested videos to user
+SendVideos : do / deliver the suggested videos to the user
+SendVideos : exit / sent videos
+SendVideos --> [*] : all done
+
+[*] --> LJ
+state LJ <<choice>>
+LJ --> [valid] ReceiveRequest
+LJ --> [invalid] SendVideos
+LJ --> [*]
+
+@enduml

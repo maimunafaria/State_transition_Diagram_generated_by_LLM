@@ -1,0 +1,260 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Class Campaign — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall begin a campaign once a manager and staff are assigned.
+2. The system shall activate and start running a campaign upon approval and signing of the contract.
+3. The system shall prepare a final statement when the campaign is finished and move the process toward completion.
+4. The system shall handle payment after the final statement is prepared.
+5. The system shall generate a refund if the payment is less than what is due.
+6. The system shall wait for the correct amount to be settled if the payment exceeds the due amount.
+7. The system shall mark the campaign as fully paid when the payment matches exactly.
+8. The system shall archive the campaign and release the assigned staff and manager after everything is settled.
+
+Example 1 PlantUML:
+@startuml
+title State machine for Campaign
+
+state Commissioned
+state Active
+state Completed
+state Paid
+
+[*] --> Commissioned : /assignManager;\nassignStaff
+
+Commissioned --> Active : Authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+
+Active --> Completed : campaignCompleted\n/prepareFinalStatement
+
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = zero]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > zero]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < zero]\n/generateRefund
+
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+
+@enduml
+
+Example 2 Requirement:
+Loggedin Mechanism — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall prompt the user to enter their username.
+2. The system shall terminate the login process and exit if the user cancels at any point.
+3. The system shall check the entered username against its records.
+4. The system shall prompt for a password if the username is valid.
+5. The system shall verify both the username and password to allow login.
+6. The system shall allow the user to try again if the credentials are incorrect.
+7. The system shall increase the number of failed attempts with each incorrect entry.
+8. The system shall limit the number of login attempts for a user.
+9. The system shall block further login attempts if the maximum number of attempts is reached.
+10. The system shall prevent login if it cannot recognize the user during any step.
+
+Example 2 PlantUML:
+@startuml
+title LoggingOn State Machine
+
+state LoggingOn {
+  [*] --> AcceptingUserName
+
+  state AcceptingUserName
+  state AcceptingPassword
+  state VerifyingDetails
+
+  state BadDetails {
+    state BadUsername
+    state BadPassword
+  }
+
+  BadDetails : entry / ++tries
+
+  AcceptingUserName --> AcceptingPassword : ok
+
+  AcceptingUserName --> Canceling : cancel
+
+  AcceptingPassword --> VerifyingDetails : ok
+  AcceptingPassword --> Canceling : cancel
+
+  VerifyingDetails --> BadUsername : badUserName
+  VerifyingDetails --> BadPassword : badPassword
+  VerifyingDetails --> Authenticated : detailsVerified
+
+  BadDetails --> AcceptingUserName : [tries < 4]
+  BadDetails --> Fail : [tries = 4]
+}
+
+LoggingOn : entry / tries := 0
+
+state Canceling
+state Authenticated
+state Fail
+Fail : entry / logFailure
+userRecognized --> AcceptingPassword
+@enduml
+
+Example 3 Requirement:
+For Online College Magazine System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall require a person to either create an account or log in.
+2. The system shall allow admins to add, edit, or remove user profiles.
+3. The system shall enable admins to review articles and decide on their publication or rejection.
+4. The system shall permit content creators to write articles and send them for editing.
+5. The system shall have editors review articles from content creators and pass them for approval.
+6. The system shall restrict access if a login attempt is invalid.
+7. The system shall make published articles available for user reading.
+8. The system shall allow users to search for more articles during their reading session.
+9. The system shall enable users to provide feedback after reading articles.
+10. The system shall end when users complete their search or provide feedback.
+
+Example 3 PlantUML:
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>>
+state EditorChoice <<choice>>
+state ReadFeedbackChoice <<choice>>
+state EndJoin <<choice>>
+
+[*] --> StartChoice
+
+state Register
+Register : do / Fill details
+Register : exit / Registration successful
+
+state Login
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+state "Manage profiles" as ManageProfiles
+ManageProfiles : entry / Admin logged in
+ManageProfiles : do / Manage profile in database
+ManageProfiles : do / Add, delete or edit profiles if necessary
+ManageProfiles : exit / Action completed
+
+state "Invalid user" as InvalidUser
+InvalidUser : entry / Invalid login or invalid registration
+InvalidUser : do / Block entry to system
+InvalidUser : exit / Abnormal termination
+
+state Writing
+Writing : entry / Writer logged in
+Writing : do / Write article
+Writing : exit / Send to editor
+
+state Editing
+Editing : entry / Editor logged in and article to be edited
+Editing : do / Edit article
+Editing : exit / Send to moderator/admin
+
+state Publishing
+Publishing : entry / Admin logged in and article to be approved
+Publishing : do / Choose to approve and publish or reject article
+Publishing : do / Add article to database if approved
+Publishing : exit / Publish article
+
+state Search
+Search : entry / Choose to search for articles
+Search : do / Read searched articles
+Search : exit / Completed reading
+
+state Reading
+Reading : entry / Published article
+Reading : do / Read article
+Reading : exit / Completed reading
+
+state Feedback
+Feedback : entry / Reader chosen to give feedback
+Feedback : do / Get feedback
+Feedback : exit / Feedback entry successful
+
+StartChoice --> Register
+StartChoice --> Login
+
+Register --> AdminChoice
+Login --> EditorChoice
+
+AdminChoice --> ManageProfiles
+AdminChoice --> InvalidUser
+
+EditorChoice --> Writing
+EditorChoice --> Editing
+EditorChoice --> InvalidUser
+
+Writing --> Editing
+Editing --> Publishing
+ManageProfiles --> Publishing
+
+InvalidUser --> [*]
+
+Publishing --> Reading
+Reading --> Reading
+
+Search --> Search
+Reading --> ReadFeedbackChoice
+
+ReadFeedbackChoice --> Search
+ReadFeedbackChoice --> Feedback
+
+Feedback --> EndJoin
+Search --> EndJoin
+
+EndJoin --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Graderate — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall keep the rate in a waiting state until the start date arrives.
+2. The system shall activate the rate once the current date equals or surpasses its start date.
+3. The system shall maintain the rate's active state until the end of its validity period.
+4. The system shall mark the rate as expired once the finish date is reached.
+5. The system shall remove or archive the rate after one year from its expiration date.

@@ -1,0 +1,61 @@
+@startuml
+title Weather Station System States
+
+[*] --> Running : Start
+state "Running" as Running
+state "Shutdown" as Shutdown
+
+Running --> ConfigMode : Changes/Power-saving settings
+ConfigMode --> Running : Configuration completed
+Running --> CollectData : Triggered by clock
+CollectData --> Running : Data collected
+Running --> Summary : Request for weather summary
+Summary --> Running : Weather summary prepared
+Running --> StatusCheck : Request for status check
+StatusCheck --> Running : Status checked
+Running --> ControlledMode : Remote control
+Running --> Shutdown : Shutdown command given
+
+[*] --> InitializeComponent : Load Component
+InitializeComponent --> WaitingForUpdate : Detect update
+WaitingForUpdate --> ProcessUpdate : Update processed
+ProcessUpdate --> UnloadingPhase : Failure/Shutdown
+
+title Equihealth States
+
+[*] --> J1 : [check user]
+state J1 <<choice>>
+state J2 : Patient
+state J3 : Health Worker
+state J4 : Government Official
+J1 --> J2 : Patient [valid]
+J1 --> J3 : Health Worker [valid]
+J1 --> J4 : Government Official [invalid]
+
+J2 --> ProvideMedicalInfo : Sign in as patient
+ProvideMedicalInfo --> J2 : Medical information provided
+ProvideMedicalInfo --> J3 : Analysis performed
+
+J3 --> PrepareAlerts : Based on analyzed information
+PrepareAlerts --> J3 : Alerts prepared
+PrepareAlerts --> J4 : Alerts sent to appropriate operators
+
+title National Health Id States
+
+[*] --> Choice1
+state Choice1 <<choice>>
+state Choice2 : Verification
+state Choice3 : Activation
+Choice1 --> [Choice2: Indian citizen] [valid]
+Choice1 --> Running : Not Indian citizen [invalid]
+
+Choice2 --> Verification : entry
+Verification --> VerifiedStatus : Details verified
+Verification --> NotVerified : Details not verified
+
+Choice3 --> SetPermissions : After activation
+SetPermissions --> AddOldFiles : Allow users to add old files
+AddOldFiles --> StoreOldFiles : Old files stored
+AddOldFiles --> AccessGranted : Permission granted for access
+AccessGranted --> AddNewFiles : Allow adding new files when permission is granted
+@enduml

@@ -1,0 +1,51 @@
+@startuml
+title ATM State Transition Diagram
+
+state "Insert Card" as InsertCard {
+  [*] --> InsertCard
+}
+
+state SelectWithdrawalAmount {
+  entry / select withdrawal method
+  do / choose predefined or custom amount
+  exit / proceed to next step
+}
+
+state ConfirmTransaction {
+  entry / confirm details
+  do / verify transaction
+  exit / ready for action
+}
+
+state ProcessWithdrawal {
+  entry / process the withdrawal
+  do / dispense cash and update account
+  exit / complete transaction
+}
+
+state CancelTransaction {
+  entry / cancel operation
+  do / terminate transaction
+  exit / return card immediately
+}
+
+state ReturnCard {
+  entry / prepare to return card
+  do / eject card
+  exit / system resets
+}
+
+InsertCard --> SelectWithdrawalAmount : user inserts card
+
+SelectWithdrawalAmount --> ConfirmTransaction : amount selected
+SelectWithdrawalAmount --> CancelTransaction : cancel pressed
+
+ConfirmTransaction --> ProcessWithdrawal : confirm pressed
+ConfirmTransaction --> CancelTransaction : cancel pressed
+
+ProcessWithdrawal --> ReturnCard : transaction complete
+
+CancelTransaction --> ReturnCard : cancel completed
+
+ReturnCard --> [*] : system ends
+@enduml

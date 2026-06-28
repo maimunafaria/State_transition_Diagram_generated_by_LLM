@@ -1,0 +1,46 @@
+@startuml
+title ATM State Machine Diagram
+
+state "Card Inserted" as CI {
+  [*] --> PINEntry
+}
+
+state "PIN Entry" as PE {
+  [*] --> PINVerification
+}
+
+state "PIN Verification" as PV {
+  [*] --> Successful
+  state "Failed" as Failed
+
+  Successful --> Options : pinVerified()
+  Failed --> Retry : invalidPinEntered()
+
+  state "Options" as Opt {
+    [*] --> Withdrawal
+    state "Withdrawal" as WD
+
+    WD --> DispenseCash : withdrawalApproved()
+    WD --> PrintReceipt : cashDispensed()
+  }
+
+  state "Retry" as RT {
+    [*] --> PINEntry
+  }
+}
+
+state "Successful" as Suc {
+  [*] --> ReturnCard
+}
+
+state "Return Card" as RC {
+  [*] --> ResetATM
+}
+
+state "Reset ATM" as RA {
+  [*] --> ReadyForNextUser
+}
+
+ReadyForNextUser --> CI : newCardInserted()
+
+@enduml

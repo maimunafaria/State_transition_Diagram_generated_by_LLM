@@ -1,0 +1,74 @@
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state RegistrationFailed <<state>>
+state SignInFailed <<state>>
+state RegisteredUser <<state>>
+state FacilityAccess <<state>>
+state NewsContent <<state>>
+state HealthInfo <<state>>
+state PaymentSelection <<state>>
+state CashPaymentDetails <<state>>
+state InsurancePayment <<state>>
+state FeedbackCollection <<state>>
+state Logout <<state>>
+
+[*] --> StartChoice
+StartChoice : do / checkUserStatus
+
+StartChoice : [valid] --> newUser
+StartChoice : [invalid] --> RegistrationFailed
+
+newUser : entry / createAccount
+newUser : do / register
+newUser : exit / RegistrationFailed
+
+RegistrationFailed : entry / showError
+RegistrationFailed : do / waitForRetry
+RegistrationFailed : exit / StartChoice
+
+SignInFailed : entry / showError
+SignInFailed : do / waitForRetry
+SignInFailed : exit / StartChoice
+
+RegisteredUser : entry / signIn
+RegisteredUser : do / validateCredentials
+RegisteredUser : exit / SignInFailed
+
+RegisteredUser --> FacilityAccess
+RegisteredUser : exit / Logout
+
+FacilityAccess : entry / accessFacilities
+FacilityAccess : do / checkPermissions
+FacilityAccess : exit / NewsContent
+
+NewsContent : entry / readNews
+NewsContent : do / showContent
+NewsContent : exit / HealthInfo
+
+HealthInfo : entry / checkSymptoms
+HealthInfo : do / provideOptions
+HealthInfo : exit / PaymentSelection
+
+PaymentSelection : entry / selectMethod
+PaymentSelection : do / showMethods
+PaymentSelection : [valid] --> CashPaymentDetails
+PaymentSelection : [invalid] --> InsurancePayment
+
+CashPaymentDetails : entry / displayDetails
+CashPaymentDetails : do / collectCash
+CashPaymentDetails : exit / InsurancePayment
+
+InsurancePayment : entry / processInsurance
+InsurancePayment : do / checkCoverage
+InsurancePayment : exit / PaymentCompleted
+
+FeedbackCollection : entry / collectFeedback
+FeedbackCollection : do / saveFeedback
+FeedbackCollection : exit / Logout
+
+Logout : entry / logOut
+Logout : do / endSession
+Logout : exit / StartChoice
+@enduml

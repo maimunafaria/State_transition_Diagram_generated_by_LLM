@@ -1,0 +1,109 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
+
+Candidate PlantUML:
+@startuml
+title Digidoclocker State Transition Diagram
+
+[*] --> Initial
+
+state Initial <<choice>>
+Initial --> Citizen : Identify as citizen
+Initial --> Registrar : Identify as registrar
+
+state Citizen
+Citizen --> Register : Not registered
+Citizen --> Login : Already registered
+
+state Registrar
+Registrar --> Login : Proceed to login
+
+state Register
+Register --> Login : Registration successful
+
+state Login
+Login --> MainMenu : Login successful
+
+state MainMenu <<choice>>
+MainMenu --> UploadDocuments : Upload documents
+MainMenu --> ViewProfile : View profile
+MainMenu --> ApplyCertificate : Apply for certificate
+MainMenu --> ContinueActions : Continue previous action
+MainMenu --> EndSession : Logout
+
+state UploadDocuments
+UploadDocuments --> MainMenu : Back to main menu
+UploadDocuments --> ContinueUploading : Continue uploading
+ContinueUploading --> UploadDocuments : More documents to upload
+ContinueUploading --> MainMenu : Done uploading
+
+state ViewProfile
+ViewProfile --> MainMenu : Back to main menu
+
+state ApplyCertificate
+ApplyCertificate --> RequestSent : Certificate request sent
+RequestSent --> MainMenu : Back to main menu
+RequestSent --> Reapply : Reapply for certificate
+
+state ContinueActions <<choice>>
+ContinueActions --> UploadDocuments : Continue uploading
+ContinueActions --> ViewProfile : Continue viewing profile
+ContinueActions --> ApplyCertificate : Continue applying
+ContinueActions --> EndSession : Logout
+
+state EndSession
+EndSession --> [*] : Session ended
+
+state RequestVerification
+RequestVerification --> MainMenu : Back to main menu
+RequestVerification --> RequestMore : Request additional certificates
+
+@enduml
+
+
+Validation issues to fix:
+- unreachable: RequestMore, RequestVerification
+- unreachable_states_detected
+- choice_node_without_guarded_outgoing_transitions (ContinueActions)
+- choice_node_without_guarded_outgoing_transitions (Initial)
+- choice_node_without_guarded_outgoing_transitions (MainMenu)
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].

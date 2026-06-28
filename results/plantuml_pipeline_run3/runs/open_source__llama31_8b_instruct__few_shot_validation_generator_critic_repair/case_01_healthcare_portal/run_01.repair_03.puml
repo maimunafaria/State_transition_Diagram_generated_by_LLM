@@ -1,0 +1,74 @@
+@startuml
+title UML State Chart Diagram
+
+state "Registration" as Registration {
+  [*] --> RegEnterDetails
+
+  state "Enter Details" as RegEnterDetails
+  state "Get Member_ID" as GetMemberID
+  state "Successful Registration" as SuccessfulRegistration
+  state "Re-enter Details" as ReEnterDetails
+
+  RegEnterDetails --> GetMemberID : [Valid]
+  RegEnterDetails --> ReEnterDetails : [Invalid]
+  ReEnterDetails --> RegEnterDetails
+  GetMemberID --> SuccessfulRegistration
+}
+
+state "Authentication" as Authentication {
+  [*] --> AuthEnterMemberID
+
+  state "Enter Member_ID" as AuthEnterMemberID
+  state "Enter Password" as EnterPassword
+  state "successful Login" as SuccessfulLogin
+  state "Invalid Member_ID or Password" as InvalidCreds
+
+  AuthEnterMemberID --> EnterPassword : [Valid]
+  EnterPassword --> SuccessfulLogin : [Valid]
+  EnterPassword --> InvalidCreds : [Invalid]
+}
+
+state "Access Facilities" as AccessFacilities {
+  [*] --> ViewNewsContent
+
+  state "View News and Expert Content" as ViewNewsContent
+  state "Check Symptoms or Fitness Options" as CheckSymptomsFitness
+  state "Continue Using System or Finish Session" as ContinueFinishSession
+
+  ViewNewsContent --> CheckSymptomsFitness : [User Choice]
+  CheckSymptomsFitness --> ContinueFinishSession : [User Choice]
+}
+
+state "Payment Processing" as PaymentProcessing {
+  [*] --> SelectPaymentMethod
+
+  state "Select Payment Method (Cash or Insurance)" as SelectPaymentMethod
+  state "Inform Cash Payment Details" as InformCashDetails
+  state "Complete Insurance-Based Payment Process" as CompleteInsurancePayment
+  state "Collect User Feedback" as CollectFeedback
+
+  SelectPaymentMethod --> InformCashDetails : [Cash]
+  SelectPaymentMethod --> CompleteInsurancePayment : [Insurance]
+}
+
+state StartJoin <<choice>> {
+  Registration --> StartJoin
+  Authentication --> StartJoin
+  AccessFacilities --> StartJoin
+  PaymentProcessing --> StartJoin
+  StartJoin --> Registration
+  StartJoin --> Authentication
+  StartJoin --> AccessFacilities
+  StartJoin --> PaymentProcessing
+}
+
+SuccessfulRegistration --> AuthEnterMemberID
+
+SuccessfulLogin --> ViewNewsContent
+SuccessfulLogin --> SelectPaymentMethod
+
+
+ContinueFinishSession --> [*]
+CollectFeedback --> CompleteInsurancePayment : [User Choice]
+
+@enduml

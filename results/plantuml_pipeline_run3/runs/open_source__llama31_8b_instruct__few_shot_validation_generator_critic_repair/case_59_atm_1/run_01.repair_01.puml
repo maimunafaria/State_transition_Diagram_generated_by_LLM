@@ -1,0 +1,59 @@
+@startuml
+title UML State Machine Diagram
+
+
+[*] --> ChooseAmount : [initial]
+
+state "Choose Amount" as ChooseAmount
+ChooseAmount : entry / select predefined amount or custom amount
+ChooseAmount : do / user selects an option
+ChooseAmount : exit / selected amount displayed
+
+ChooseAmount --> InputCustomAmount : [user chooses to input custom amount]
+InputCustomAmount : entry / enter custom amount
+InputCustomAmount : do / validate custom amount
+InputCustomAmount : exit / custom amount accepted or rejected
+
+
+state "Cancel Transaction" as CancelTransaction
+CancelTransaction : entry / cancel transaction option selected
+CancelTransaction : do / stop transaction and return card
+CancelTransaction : exit / transaction cancelled
+
+ChooseAmount --> CancelTransaction : [user selects cancel option]
+InputCustomAmount --> CancelTransaction : [user selects cancel option]
+
+
+state C1 <<choice>>
+CancelTransaction --> C1 : [possibilities after cancellation]
+
+state ReturnCard
+ReturnCard : entry / stop transaction and return card
+ReturnCard : do / return card to user
+ReturnCard : exit / transaction completed
+
+C1 --> ReturnCard
+
+
+state C2 <<choice>>
+ChooseAmount --> C2 : [possibilities for amount selection]
+C2 --> PredefinedAmounts : [user selects predefined option]
+
+state PredefinedAmounts
+PredefinedAmounts : entry / select predefined amounts
+PredefinedAmounts : do / display predefined amounts
+PredefinedAmounts : exit / user selects an option
+
+C2 --> InputCustomAmount : [user chooses to input custom amount]
+InputCustomAmount : entry / enter custom amount
+InputCustomAmount : do / validate custom amount
+InputCustomAmount : exit / custom amount accepted or rejected
+
+
+state MergeEnd <<choice>>
+ReturnCard --> MergeEnd : [transaction completed]
+CancelTransaction --> MergeEnd : [transaction cancelled]
+
+MergeEnd --> [*] : [end of transaction]
+
+@enduml

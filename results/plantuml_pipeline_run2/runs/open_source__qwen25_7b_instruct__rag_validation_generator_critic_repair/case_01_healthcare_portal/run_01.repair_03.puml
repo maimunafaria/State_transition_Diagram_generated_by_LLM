@@ -1,7 +1,7 @@
 @startuml
 title UML State Machine Diagram
 
-[*] --> Registration
+[*] --> Registration : startRegistration
 
 state Registration
 Registration : entry / startRegistration
@@ -16,51 +16,49 @@ Login : entry / verifyCredentials
 Login : exit / loginSuccess
 
 state MainMenu <<choice>>
-Login --> MainMenu
-RegistrationFailure --> MainMenu
+Login --> MainMenu : verifyCredentials [valid]
+MainMenu --> FacilityAccess : accessFacilities [valid]
+MainMenu --> NewsAndContent : readNewsOrContent [invalid]
 
 state FacilityAccess
-MainMenu --> FacilityAccess : accessFacilities
+FacilityAccess : entry / grantAccess
+FacilityAccess : exit / accessGranted
 
 state NewsAndContent
-MainMenu --> NewsAndContent : readNewsOrContent
+NewsAndContent : entry / readContent
+NewsAndContent : exit / contentRead
 
 state SymptomChecker
-NewsAndContent --> SymptomChecker : checkSymptomsOrFitness
-
-state SessionContinuation <<choice>>
-SymptomChecker --> SessionContinuation : continueSession
+NewsAndContent --> SymptomChecker : checkSymptomsOrFitness [valid]
+SymptomChecker --> SessionContinuation : continueSession [valid]
 SessionContinuation --> SymptomChecker : viewResult [invalid]
 
 state InsuranceProcessing
-RegistrationFailure --> InsuranceProcessing : processInsurance
-MainMenu --> InsuranceProcessing : validateInsuranceForFinanceServices
+RegistrationFailure --> InsuranceProcessing : processInsurance [valid]
+MainMenu --> InsuranceProcessing : validateInsuranceForFinanceServices [valid]
 
 state PaymentSelection
-InsuranceProcessing --> PaymentSelection : selectPaymentMethod
+InsuranceProcessing --> PaymentSelection : selectPaymentMethod [valid]
 
 state CashDetails
-PaymentSelection --> CashDetails : showCashDetails [invalid]
+PaymentSelection --> CashDetails : showCashDetails [valid]
 
 state InsurancePayment
-PaymentSelection --> InsurancePayment : completeInsurancePayment
+PaymentSelection --> InsurancePayment : completeInsurancePayment [valid]
 
 state FeedbackCollection
-SessionContinuation --> FeedbackCollection : provideFeedback
+SessionContinuation --> FeedbackCollection : provideFeedback [valid]
 
 state Logout
 MainMenu --> Logout : endSession
 
 FacilityAccess --> [*] : endAccess
-FeedbackCollection --> [*] : endSession
-Login --> [*] : endAccess
-Logout --> [*] : endSession
-MainMenu --> [*] : endAccess
-NewsAndContent --> [*] : endAccess
-SymptomChecker --> [*] : endAccess
-InsuranceProcessing --> [*] : endAccess
-PaymentSelection --> [*] : endAccess
-CashDetails --> [*] : endAccess
-InsurancePayment --> [*] : endSession
+NewsAndContent --> [*] : endContentReading
+SymptomChecker --> [*] : endSymptomChecking
+InsuranceProcessing --> [*] : processComplete
+PaymentSelection --> [*] : paymentSelected
+CashDetails --> [*] : detailsShown
+InsurancePayment --> [*] : paymentCompleted
+FeedbackCollection --> [*] : feedbackProvided
 
 @enduml
