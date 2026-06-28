@@ -1,0 +1,73 @@
+@startuml
+title Weather Station System States
+
+[*] --> Running : Shutdown
+
+state "Running" as Running
+state "Configuration" as Configuration
+state "Collect Data" as CollectData
+state "Prepare Summary" as PrepareSummary
+state "Check Status" as CheckStatus
+state "Controlled Mode" as ControlledMode
+state "Shutdown" as Shutdown
+
+Running --> Configuration : Changes or Power-saving Settings
+Running --> CollectData : Triggered by Clock
+Running --> PrepareSummary : Request
+Running --> CheckStatus : Request
+Running --> ControlledMode : Remote Control
+Running --> Shutdown : Shutdown Command
+
+Configuration --> Running : Completed
+ControlledMode --> Running : Activity Completed
+Shutdown --> Shutdown : Successful
+
+title Alert Notifier Component States
+
+[*] --> InitializeComponent : Load Component
+
+state "Initialize\nComponent" as InitializeComponent
+state "Waiting for Update" as WaitingForUpdate
+state "Processing Update" as ProcessingUpdate
+state "Unloading" as Unloading
+
+InitializeComponent --> WaitingForUpdate : Successful Initialization
+WaitingForUpdate --> ProcessingUpdate : Detected Update
+ProcessingUpdate --> WaitingForUpdate : Update Processed
+Unloading --> [*] : Failure or Shutdown
+
+title Equihealth States
+
+[*] --> J1 : [check user]
+state J1 <<choice>>
+state J2 <<choice>>
+state PatientDashboard : Patient
+state HealthWorkerDashboard : Health Worker
+state GovernmentOfficialDashboard : Government Official
+state Logout : Logged Out
+
+J1 --> J2 : Registered User
+J1 --> [*] : Not Registered User
+
+J2 --> PatientDashboard : Patient
+J2 --> HealthWorkerDashboard : Health Worker
+J2 --> GovernmentOfficialDashboard : Government Official
+
+PatientDashboard --> Logout : Completed Tasks
+HealthWorkerDashboard --> Logout : Completed Tasks
+GovernmentOfficialDashboard --> Logout : Completed Tasks
+
+title National Health Id States
+
+[*] --> Choice1
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+state Choice3 <<choice>>
+Choice1 --> Verification : Indian
+Choice1 --> [*] : not Indian
+
+Verification : entry / Citizenship status
+Verification : do / Verify details
+Verification : exit / Verified status
+
+@enduml

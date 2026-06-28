@@ -1,0 +1,116 @@
+@startuml
+title ATM Control - Validate PIN and Withdraw Funds
+
+[*] --> Idle
+
+state Idle {
+  Idle --> [*] : depositCard
+}
+
+state VerifyPin {
+  state "Enter Pin" as EnterPin
+  EnterPin --> CheckPin
+  state CheckPin {
+    [*] --> IncorrectPin
+    state IncorrectPin
+    IncorrectPin --> KeepCard : invalidPin / <<final>>
+    IncorrectPin --> EnterPin : retry
+    state CorrectPin {
+      [*] --> SelectOption
+      state SelectOption
+      SelectOption --> WithdrawFunds
+      SelectOption --> Cancel : cancelOperation / <<final>>
+    }
+  }
+}
+
+state WithdrawFunds {
+  state "Verify Transaction" as VerifyTransaction
+  VerifyTransaction --> [*] : verifyTransaction
+  VerifyTransaction --> RejectedTransaction : rejectedTransaction
+  VerifyTransaction --> ApprovedTransaction : approvedTransaction
+}
+
+state RejectedTransaction {
+  [*] --> EnterPin : retry
+}
+
+state ApprovedTransaction {
+  state DispenseCash {
+    [*] --> DispenseReceipt
+    state DispenseReceipt
+    DispenseReceipt --> ReturnCard : dispenseReceipt / <<final>>
+  }
+  state OutOfCash : outOfCash
+}
+
+state Cancel {
+  [*] --> ReturnCard : cancelOperation / <<final>>
+}
+
+Idle --> VerifyPin : verifyCard
+VerifyPin --> WithdrawFunds : correctPin
+WithdrawFunds --> ApprovedTransaction
+ApprovedTransaction --> DispenseCash
+DispenseCash --> Cancel : cancelReceipt
+DispenseCash --> OutOfCash : outOfCash / <<final>>
+
+
+title BPO Management System - Project Lifecycle
+
+[*] --> UploadRequest
+
+state UploadRequest {
+  [*] --> SaveProjectDetails
+  state SaveProjectDetails
+  SaveProjectDetails --> SearchProjectCategory
+}
+
+state SearchProjectCategory {
+  [*] --> AcceptRequest
+  state AcceptRequest
+  AcceptRequest --> ProceedWithProject
+  AcceptRequest --> DeclineRequest
+}
+
+state ProceedWithProject {
+  state UpdateProjectStatus : updateProjectStatus
+  UpdateProjectStatus --> TrackProgress : trackProgress / <<final>>
+}
+
+state DeclineRequest {
+  [*] --> UploadRequest : declineRequest / <<final>>
+}
+
+state UpdateProgress {
+  [*] --> FinalizeProject
+}
+
+state FinalizeProject {
+  state "Quality Check" as QualityCheck
+  QualityCheck --> SatisfiedClient : qualityCheckPassed
+  QualityCheck --> UnsatisfiedClient : qualityCheckFailed
+}
+
+state SatisfiedClient {
+  [*] --> MakePayment : makePayment / <<final>>
+}
+
+state UnsatisfiedClient {
+  [*] --> RestartProcess : restartProcess / <<final>>
+}
+
+UploadRequest --> SaveProjectDetails
+SaveProjectDetails --> SearchProjectCategory
+SearchProjectCategory --> AcceptRequest
+AcceptRequest --> ProceedWithProject
+ProceedWithProject --> UpdateProgress
+UpdateProgress --> FinalizeProject
+FinalizeProject --> SatisfiedClient
+SatisfiedClient --> MakePayment
+MakePayment --> ResetSystem : resetSystem / <<final>>
+
+FinalizeProject --> UnsatisfiedClient
+UnsatisfiedClient --> RestartProcess
+RestartProcess --> ResetSystem : resetSystem / <<final>>
+@enduml

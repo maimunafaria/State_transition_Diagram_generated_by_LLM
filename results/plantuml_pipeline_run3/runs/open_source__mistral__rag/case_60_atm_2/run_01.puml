@@ -1,0 +1,52 @@
+@startuml
+title ATM Control - Validate PIN and Withdraw Funds
+
+[*] --> Idle
+
+state Idle
+
+state UploadRequest {
+  [*] --> NewRequest
+  state NewRequest
+  NewRequest --> SaveProjectDetails : uploadNewRequest
+}
+
+state SearchProjectCategory {
+  state SearchCategory
+  SearchCategory --> AcceptOrDeclineRequest
+}
+
+state AcceptOrDeclineRequest {
+  state AcceptRequest
+  state DeclineRequest
+  AcceptRequest --> ProceedWithProject / proceed
+  DeclineRequest --> RejectProject / reject
+}
+
+state UpdateProjectStatus {
+  state UpdateStatus
+  UpdateStatus --> TrackProgress
+}
+
+state TrackProgress {
+  state ClientTracking
+  state BPOUpdating
+  ClientTracking --> FinalProjectUpload : trackProgress
+  BPOUpdating --> QualityCheck : updateProgress
+}
+
+state QualityCheck {
+  state PassQualityCheck
+  state RestartProcess
+  PassQualityCheck --> MakePayment : passQualityCheck
+  RestartProcess --> UploadRequest : restartProcess
+}
+
+Idle --> UploadRequest
+UploadRequest --> SearchProjectCategory
+SearchProjectCategory --> AcceptOrDeclineRequest
+AcceptOrDeclineRequest --> UpdateProjectStatus
+UpdateProjectStatus --> TrackProgress
+TrackProgress --> QualityCheck
+QualityCheck --> Idle
+@enduml

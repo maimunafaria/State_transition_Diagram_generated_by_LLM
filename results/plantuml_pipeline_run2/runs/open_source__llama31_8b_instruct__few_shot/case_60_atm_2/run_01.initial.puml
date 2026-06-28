@@ -1,0 +1,40 @@
+@startuml
+title UML State Machine Diagram - ATM
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Select amount / Enter custom value
+
+state "Select Amount" as SelectAmount
+SelectAmount : entry/Select amount from list
+SelectAmount : do/Verify transaction after selecting amount
+SelectAmount : exit/Transaction rejected / Transaction successful
+
+state "Enter Custom Value" as EnterCustomValue
+EnterCustomValue : entry/Enter custom value
+EnterCustomValue : do/Verify transaction after entering custom value
+EnterCustomValue : exit/Transaction rejected / Transaction successful
+
+state "Transaction Rejected" as TransactionRejected
+TransactionRejected : entry/Transaction rejected
+TransactionRejected : do/Allow re-entry of amount
+TransactionRejected : exit/Idle
+
+state "Transaction Successful" as TransactionSuccessful
+TransactionSuccessful : entry/Transaction successful
+TransactionSuccessful : do/End transaction
+TransactionSuccessful : exit/Idle
+
+[*] --> Idle
+
+Idle --> SelectAmount : selectAmountButtonPressed()
+SelectAmount --> EnterCustomValue : customValueEntered()
+
+EnterCustomValue --> SelectAmount : cancelButtonPressed()
+SelectAmount --> TransactionRejected : verifyTransactionFailed()
+
+TransactionRejected --> SelectAmount : reenterAmountButtonPressed()
+TransactionSuccessful --> [*]
+
+@enduml

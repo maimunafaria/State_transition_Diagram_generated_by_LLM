@@ -1,0 +1,80 @@
+@startuml
+title E Visa Processing and Follow-Up System State Diagram
+
+[*] --> CreateUserAccount
+state "Create User Account" as CreateUserAccount
+state "Login" as Login
+state "LoggedInMenu" as LoggedInMenu
+state "ApplicationProcessing" as ApplicationProcessing
+state "Approved" as Approved
+state "Rejected" as Rejected
+state "ViewStatus" as ViewStatus
+state "CheckStatus" as CheckStatus
+state "CancelApplication" as CancelApplication
+state "ModifyDetails" as ModifyDetails
+state "ViewDetails" as ViewDetails
+state "ViewPurpose" as ViewPurpose
+state "GiveFeedback" as GiveFeedback
+state "Logout" as Logout
+
+CreateUserAccount --> Login : [account created]
+
+Login --> LoggedInMenu : successful login
+
+LoggedInMenu:
+  do / access menu options
+  transition based on user choice
+
+LoggedInMenu --> ApplicationProcessing : apply for visa
+LoggedInMenu --> ViewStatus : view status
+LoggedInMenu --> CheckStatus : check status
+LoggedInMenu --> CancelApplication : cancel application
+LoggedInMenu --> ModifyDetails : modify details
+LoggedInMenu --> ViewDetails : view details
+LoggedInMenu --> ViewPurpose : view purpose
+LoggedInMenu --> GiveFeedback : give feedback
+
+ApplicationProcessing:
+  entry / after login and payment made
+  do / process application
+  transition based on approval status
+
+ApplicationProcessing --> Approved : approved
+ApplicationProcessing --> Rejected : rejected
+
+Approved --> ViewStatus : update status
+Rejected --> ViewStatus : update status
+
+ViewStatus --> CheckStatus : check status
+
+CheckStatus:
+  entry / after viewing status
+  do / recheck status if needed
+  transition based on user action
+
+CheckStatus --> GiveFeedback : give feedback
+CheckStatus --> Logout : log out
+
+CancelApplication --> ViewStatus : update status
+
+ModifyDetails --> ViewDetails : view details
+ModifyDetails --> GiveFeedback : give feedback
+ModifyDetails --> Logout : log out
+
+ViewDetails --> ModifyDetails : modify again if needed
+ViewDetails --> GiveFeedback : give feedback
+ViewDetails --> Logout : log out
+
+ViewPurpose:
+  entry / after login and document check
+  do / view application purpose
+  transition based on system decision
+
+ViewPurpose --> ApplicationProcessing : reapply if needed
+ViewPurpose --> ViewStatus : check status
+
+GiveFeedback --> ViewStatus : check status
+GiveFeedback --> Logout : log out
+
+Logout --> [*] : successful logout
+@enduml

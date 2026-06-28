@@ -1,0 +1,33 @@
+@startuml
+title ATM Control - Combined Scenarios
+
+[*] --> Idle
+
+state Idle
+state "Waiting for PIN" as WaitingForPIN
+state "Validating PIN" as ValidatingPIN
+state "Waiting for Customer Choice" as WaitingForChoice
+state Confiscating
+state Ejecting
+state ProcessingTransaction
+state PrintingReceipt
+state DispensingCash
+state ClosedDown
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> Confiscating : Incorrect PIN Limit Reached / Security Measures
+
+WaitingForChoice --> ProcessingTransaction : Correct PIN / Display Options
+ProcessingTransaction --> PrintingReceipt : Approved Transaction / Print Receipt
+ProcessingTransaction --> DispensingCash : Approved Transaction / Dispense Cash
+ProcessingTransaction --> ClosedDown : Rejected Transaction / Cancel Everything
+ProcessingTransaction --> Confiscating : Invalid Card / Security Measures
+
+ClosedDown --> Ejecting : User Cancelled / Return Card
+Ejecting --> Idle : Card Ejected / Display Welcome
+
+@enduml

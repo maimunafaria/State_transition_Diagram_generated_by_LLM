@@ -1,0 +1,25 @@
+@startuml
+title ATM State Machine Diagram
+
+state "Idle" as Idle
+state "Waiting for Card" as WaitingForCard
+state "Validating PIN" as ValidatingPIN
+state "Displaying Options" as DisplayingOptions
+state "Processing Request" as ProcessingRequest
+state "Confiscating" as Confiscating
+
+[*] --> Idle
+
+Idle --> WaitingForCard : Card Inserted / Get PIN
+
+WaitingForCard --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForCard : Invalid PIN / Invalid PIN Prompt
+ValidatingPIN --> DisplayingOptions : Valid PIN / Display Menu
+ValidatingPIN --> Confiscating : Third Invalid PIN, Card Stolen, Card Expired / Confiscate
+
+DisplayingOptions --> ProcessingRequest : Select Option / Process Request
+ProcessingRequest --> WaitingForCard : Cancel Operation / Return Card
+
+Confiscating --> [*] : Card Confiscated
+
+@enduml

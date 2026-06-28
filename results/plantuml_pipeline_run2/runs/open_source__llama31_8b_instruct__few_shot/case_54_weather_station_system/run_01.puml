@@ -1,0 +1,64 @@
+@startuml
+title UML State Machine Diagram - Weather Station System
+
+[*] --> Restart
+
+state "Restart" as Restart
+Restart : entry / system restarts from shut down condition
+Restart : do / system begins running
+Restart : exit / system is in running state
+
+state "Running" as Running
+Running : entry / system collects data when triggered by clock
+Running : do / system prepares and sends out weather summary upon request
+Running : do / system checks its own status and transmits the result upon request
+Running : exit / system returns to running state after performing an activity
+
+state "Configuration Mode" as ConfigurationMode
+ConfigurationMode : entry / system enters configuration mode when changes or power-saving settings are required
+ConfigurationMode : do / user configures system
+ConfigurationMode : exit / system returns to running state after configuration is completed
+
+state "Controlled Mode" as ControlledMode
+ControlledMode : entry / system moves into controlled mode through remote control
+ControlledMode : do / user controls system remotely
+ControlledMode : exit / system returns to running state or shut down condition
+
+Restart --> Running
+Running --> ConfigurationMode : [configuration required]
+ConfigurationMode --> Running : [configuration completed]
+Running --> ControlledMode : [remote control enabled]
+
+state "Shutdown" as Shutdown
+Shutdown : entry / system receives shutdown command while running
+Shutdown : do / system moves into shut down condition
+Shutdown : exit / system is in shut down state
+
+ControlledMode --> Shutdown : [shutdown command received]
+Running --> Shutdown : [shutdown command received]
+
+state "Data Collection" as DataCollection
+DataCollection : entry / system collects data when triggered by clock while running
+DataCollection : do / system prepares and sends out weather summary upon request
+DataCollection : exit / system returns to running state after performing an activity
+
+state "Summary Preparation" as SummaryPreparation
+SummaryPreparation : entry / system prepares and sends out weather summary upon request
+SummaryPreparation : do / system checks its own status and transmits the result upon request
+SummaryPreparation : exit / system returns to running state after performing an activity
+
+state "Status Checking" as StatusChecking
+StatusChecking : entry / system checks its own status and transmits the result upon request
+StatusChecking : do / system collects data when triggered by clock while running
+StatusChecking : exit / system returns to running state after performing an activity
+
+Running --> DataCollection
+DataCollection --> Running : [data collection completed]
+Running --> SummaryPreparation
+SummaryPreparation --> Running : [summary preparation completed]
+Running --> StatusChecking
+StatusChecking --> Running : [status checking completed]
+
+Shutdown --> [*]
+
+@enduml

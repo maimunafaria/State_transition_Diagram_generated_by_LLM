@@ -1,0 +1,132 @@
+{
+  "run_id": "open_source__deepseek_r1_14b__few_shot",
+  "case_id": "case_32_e_visa_processing_and_follow_up_system",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nCd Player — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start in a stopped state.\n2. The system shall begin playing music when a disc is inserted and the user presses play.\n3. The system shall allow the user to pause the music at any time while it is playing.\n4. The system shall stop the music temporarily when paused but allow resuming from the same point.\n5. The system shall allow the user to stop the player at any time, regardless of whether the music is playing or paused.\n6. The system shall return to a stopped state when the player is stopped.\n7. The system shall allow switching to another disc and continuing playback if multiple discs are available.\n8. The system shall remain in a stopped state when no more discs are left.\n\nExample 1 PlantUML:\n@startuml\ntitle CD Player State Machine\n\n[*] --> Stopped\n\nstate Playing\nPlaying : do / read disc\n\nstate Stopped\nstate Paused\n\nStopped --> Playing : press play [disc in tray]\nPlaying --> Stopped : press stop\nPlaying --> Stopped : [no more discs]\n\nPlaying --> Paused : press pause\nPaused --> Playing : press play\nPaused --> Stopped : press stop\n\nPlaying --> Playing : [another disc] / change disc\n\n@enduml\n\nExample 2 Requirement:\nLoggedin Mechanism — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall prompt the user to enter their username.\n2. The system shall terminate the login process and exit if the user cancels at any point.\n3. The system shall check the entered username against its records.\n4. The system shall prompt for a password if the username is valid.\n5. The system shall verify both the username and password to allow login.\n6. The system shall allow the user to try again if the credentials are incorrect.\n7. The system shall increase the number of failed attempts with each incorrect entry.\n8. The system shall limit the number of login attempts for a user.\n9. The system shall block further login attempts if the maximum number of attempts is reached.\n10. The system shall prevent login if it cannot recognize the user during any step.\n\nExample 2 PlantUML:\n@startuml\ntitle LoggingOn State Machine\n\nstate LoggingOn {\n  [*] --> AcceptingUserName\n\n  state AcceptingUserName\n  state AcceptingPassword\n  state VerifyingDetails\n\n  state BadDetails {\n    state BadUsername\n    state BadPassword\n  }\n\n  BadDetails : entry / ++tries\n\n  AcceptingUserName --> AcceptingPassword : ok\n\n  AcceptingUserName --> Canceling : cancel\n\n  AcceptingPassword --> VerifyingDetails : ok\n  AcceptingPassword --> Canceling : cancel\n\n  VerifyingDetails --> BadUsername : badUserName\n  VerifyingDetails --> BadPassword : badPassword\n  VerifyingDetails --> Authenticated : detailsVerified\n\n  BadDetails --> AcceptingUserName : [tries < 4]\n  BadDetails --> Fail : [tries = 4]\n}\n\nLoggingOn : entry / tries := 0\n\nstate Canceling\nstate Authenticated\nstate Fail\nFail : entry / logFailure\nuserRecognized --> AcceptingPassword\n@enduml\n\nExample 3 Requirement:\nCar Care — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to choose whether they are using the service center side or the car owner side.\n2. The system shall allow service center users to register or log in if already registered.\n3. The system shall allow service center users to enter damaged parts, update parts information, or send expiry-related notifications after logging in.\n4. The system shall allow service center users to log out after finishing any of the above activities.\n5. The system shall allow car owner users to register or log in.\n6. The system shall allow car owners to view parts information, request or respond to services, or report a service center after logging in.\n7. The system shall allow car owners to select required parts and make a payment when choosing a service.\n8. The system shall allow car owners to log out after completing their activities.\n\nExample 3 PlantUML:\n@startuml\ntitle UML state machine diagram\n\nstate PortalChoice1 <<choice>>\nstate PortalChoice2 <<choice>>\nstate PortalChoice3 <<choice>>\nstate ServiceJoin <<choice>>\nstate OwnerJoin <<choice>>\n\n\n[*] --> PortalChoice1\n\nPortalChoice1 --> PortalChoice2 : [Service Center Portal]\nPortalChoice1 --> PortalChoice3 : [Car Owner Portal]\n\nPortalChoice2 --> ServiceCenterRegistration : [New Service Center]\nPortalChoice2 --> ServiceJoin : [Registered Service center]\nPortalChoice3 --> CarOwnerRegistration : [New Car Owner]\nPortalChoice3 --> OwnerJoin : [Registered Car Owner]\n\nstate \"Service Center Registration\" as ServiceCenterRegistration\nServiceCenterRegistration : entry / Unregistered service center\nServiceCenterRegistration : do / Enter Valid Credentials\nServiceCenterRegistration : exit / Account registered\n\nstate \"Service Center Verification\" as ServiceCenterVerification\nServiceCenterVerification : entry / Service Center account registered\nServiceCenterVerification : do / Verify Service center\nServiceCenterVerification : exit / Login Service center\n\nstate \"Service Center Login\" as ServiceCenterLogin\nServiceCenterLogin : entry / Verified Service Center\nServiceCenterLogin : entry / Service Center not logged in\nServiceCenterLogin : do / Authenticate Service Center\nServiceCenterLogin : exit / Logged In Successfully\n\nstate \"Service center Home\" as ServiceCenterHome\nServiceCenterHome : entry / Logged in Service Center\nServiceCenterHome : do / Display home page\nServiceCenterHome : exit / Enter Damaged parts list\nServiceCenterHome : exit / Expiry Notification page\nServiceCenterHome : exit / Updating Information list\n\nstate \"Expiry Notification page\" as ExpiryNotification\nExpiryNotification : entry / To view expiry notification\nExpiryNotification : do / Send service request to Car owner\nExpiryNotification : exit / Return to Service center home page\n\nstate \"Entering Damaged parts list\" as DamagedParts\nDamagedParts : entry / To enter Damaged parts list\nDamagedParts : do / Preparing and entering damaged parts list\nDamagedParts : exit / Return to service center home page\n\nstate \"Updating parts Information\" as UpdatingParts\nUpdatingParts : entry / To update changed parts information\nUpdatingParts : do / Update Information\nUpdatingParts : exit / Return to Service center home page\n\nstate \"Logout\" as Logout\nLogout : entry / To Logout\nLogout : do / Logout\nLogout : exit / Logged out Successfully\n\nstate \"Car Owner Registration\" as CarOwnerRegistration\nCarOwnerRegistration : entry / Unregistered Car Owner\nCarOwnerRegistration : do / Enter valid Credentials\nCarOwnerRegistration : exit / Account registered\n\nstate \"Car owner Verification\" as CarOwnerVerification\nCarOwnerVerification : entry / Car owner account registered\nCarOwnerVerification : do / Verify Car owner\nCarOwnerVerification : exit / Login Car Owner\n\nstate \"Car Owner Login\" as CarOwnerLogin\nCarOwnerLogin : entry / Verified Car Owner\nCarOwnerLogin : entry / Car owner not logged in\nCarOwnerLogin : do / Authenticate Car Owner\nCarOwnerLogin : exit / Logged In Successfully\n\nstate \"Car Owner Home\" as CarOwnerHome\nCarOwnerHome : entry / Logged in Car Owner\nCarOwnerHome : do / Display home page\nCarOwnerHome : exit / View parts information\nCarOwnerHome : exit / Service\nCarOwnerHome : exit / Report\n\nstate \"Report\" as Report\nReport : entry / To Report Service center\nReport : do / Enter the report\nReport : exit / Return to car owner home page\n\nstate \"View Parts Information\" as ViewPartsInformation\nViewPartsInformation : entry / To view parts information\nViewPartsInformation : do / View car parts Information\nViewPartsInformation : exit / Return to Car owner home page\n\nstate \"Service\" as Service\nService : entry / Service request from service center\nService : do / Accept or deny request\nService : exit / Return to Car Owner home page\n\nstate \"Choose parts\" as ChooseParts\nChooseParts : entry / To choose selected parts\nChooseParts : do / Choose the part to be serviced\nChooseParts : exit / Return to service page\n\nstate \"Make Payment\" as MakePayment\nMakePayment : entry / To make payments\nMakePayment : do / Make payments\nMakePayment : exit / Return to Service page\n\n\nstate ServiceHomeChoice <<choice>>\nstate ServiceLoginChoice <<choice>>\nstate OwnerHomeChoice <<choice>>\nstate OwnerLoginChoice <<choice>>\nstate FinalJoin <<choice>>\n\n\nServiceCenterRegistration --> ServiceCenterVerification\nServiceCenterVerification --> ServiceJoin\nServiceJoin --> ServiceCenterLogin\nServiceCenterLogin --> ServiceLoginChoice\nServiceLoginChoice --> ServiceCenterHome\nExpiryNotification --> ServiceLoginChoice\nUpdatingParts --> ServiceLoginChoice\nDamagedParts --> ServiceLoginChoice\n\nServiceCenterHome --> ServiceHomeChoice : [Possible Activities]\nServiceHomeChoice --> ExpiryNotification\nServiceHomeChoice --> DamagedParts\nServiceHomeChoice --> UpdatingParts\nServiceHomeChoice --> FinalJoin\n\nFinalJoin --> Logout\nLogout --> [*]\n\n\n\nCarOwnerRegistration --> CarOwnerVerification\nCarOwnerVerification --> OwnerJoin\nOwnerJoin --> CarOwnerLogin\n\nCarOwnerLogin --> OwnerLoginChoice\nOwnerLoginChoice --> CarOwnerHome\nCarOwnerHome --> OwnerHomeChoice : [Possible Activities]\nViewPartsInformation --> OwnerLoginChoice\nReport --> OwnerLoginChoice\nService --> OwnerLoginChoice\n\nOwnerHomeChoice --> Report\nOwnerHomeChoice --> ViewPartsInformation\nOwnerHomeChoice --> Service\nOwnerHomeChoice --> FinalJoin\n\nService --> ChooseParts\nChooseParts --> MakePayment\nMakePayment --> Service\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nE Visa Processing And Follow Up System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create an account.\n2. The system shall allow a user to log in after they have created an account.\n3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .\n4. The system shall allow a user to view the status after they have applied for a visa.\n5. The system shall allow a user to check the status after they have viewed it.\n6. The system shall allow a user to cancel an application after they have logged in.\n7. The system shall allow a user to modify their details after they have logged in.\n8. The system shall allow a user to view their details after they have logged in.\n9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..\n10. The system shall allow a user to give feedback after they have checked the status.\n11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.\n",
+  "requirement_used": "E Visa Processing And Follow Up System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create an account.\n2. The system shall allow a user to log in after they have created an account.\n3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .\n4. The system shall allow a user to view the status after they have applied for a visa.\n5. The system shall allow a user to check the status after they have viewed it.\n6. The system shall allow a user to cancel an application after they have logged in.\n7. The system shall allow a user to modify their details after they have logged in.\n8. The system shall allow a user to view their details after they have logged in.\n9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..\n10. The system shall allow a user to give feedback after they have checked the status.\n11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__deepseek_r1_14b__few_shot\\case_32_e_visa_processing_and_follow_up_system\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 0,
+    "transition_count": 0
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_57_cd_player",
+        "case_64_loggedin_mechanism",
+        "case_19_car_care"
+      ],
+      "seed": 44,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_initial_state_transition ([*] --> state)",
+        "missing_final_state_transition (state --> [*])"
+      ],
+      "strict_issues": [
+        "missing_initial_state_transition ([*] --> state)",
+        "missing_final_state_transition (state --> [*])"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_initial_state_transition ([*] --> state)",
+          "missing_final_state_transition (state --> [*])"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 0,
+        "transition_count": 0
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__deepseek_r1_14b__few_shot\\case_32_e_visa_processing_and_follow_up_system\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 0,
+    "state_fn": 20,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 0,
+    "transition_fn": 27,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 0,
+    "state_fn_relaxed": 20,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 0,
+    "transition_fn_relaxed": 27,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 0,
+    "transition_fn_semantic": 27,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])"
+    ],
+    "hallucination_state_rate": 0.0,
+    "hallucination_transition_rate": 0.0,
+    "hallucination_state_rate_relaxed": 0.0,
+    "hallucination_transition_rate_relaxed": 0.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "missing_initial_state_transition ([*] --> state)",
+      "missing_final_state_transition (state --> [*])"
+    ]
+  }
+}

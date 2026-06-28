@@ -1,0 +1,51 @@
+@startuml
+title Statechart diagram of E-Ticketing System
+
+[*] --> Unregistered : «M» Start/
+
+state Unregistered
+state Registered
+state LoggedIn
+state TicketBooking
+state AccountManagement
+state LoggedOut
+
+Unregistered : entry / User not logged in/
+Unregistered : do / Create new account/
+Unregistered : exit / Registration process/
+
+Unregistered --> Registered : «M» registration success/
+Unregistered --> Unregistered : «M» registration failed/
+
+Registered : entry / New user registered/
+Registered : do / Validate registration details/
+Registered : exit / Login enabled/
+
+Registered --> LoggedIn : «M» login success/
+Registered --> Registered : «M» login failed/
+
+LoggedIn : entry / User logged in/
+LoggedIn : do / Access dashboard/
+LoggedIn : exit / Ready for actions/
+
+LoggedIn --> TicketBooking : «M» Book ticket/
+LoggedIn --> AccountManagement : «M» Manage account/
+LoggedIn --> LoggedOut : «M» Logout/
+
+TicketBooking : entry / Booking process started/
+TicketBooking : do / Confirm booking details/
+TicketBooking : exit / Payment processing/
+
+TicketBooking --> LoggedIn : «M» payment confirmed/
+TicketBooking --> TicketBooking : «M» cancel booking/
+
+AccountManagement : entry / Account management started/
+AccountManagement : do / Edit or delete account details/
+AccountManagement : exit / Return to dashboard/
+
+AccountManagement --> LoggedIn : «M» changes saved/
+AccountManagement --> AccountManagement : «M» changes failed/
+
+LoggedIn --> [*] : «M» logout action/
+
+@enduml

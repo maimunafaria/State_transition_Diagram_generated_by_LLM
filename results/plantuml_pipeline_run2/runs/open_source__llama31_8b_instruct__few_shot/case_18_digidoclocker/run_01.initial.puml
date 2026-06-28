@@ -1,0 +1,39 @@
+@startuml
+title UML State Machine Diagram - Digidoclocker
+
+state "Unregistered Citizen" as UnregisteredCitizen
+state "Registered Citizen" as RegisteredCitizen
+state "Logged In Citizen" as LoggedInCitizen
+state "Registrars Requesting Certificate" as RegistrarsRequestingCertificate
+state "Multiple Certificates Applied" as MultipleCertificatesApplied
+state "Session Ended" as SessionEnded
+
+UnregisteredCitizen : entry / Unregistered User
+UnregisteredCitizen : do / Register Citizen
+UnregisteredCitizen : exit / Registered Citizen
+
+RegisteredCitizen --> LoggedInCitizen : [Login]
+LoggedInCitizen : entry / Correct Login Details
+LoggedInCitizen : do / Upload Documents, View Profile or Apply for Certificate
+LoggedInCitizen : exit / Continue Uploading Documents or Apply for Multiple Certificates
+
+RegistrarsRequestingCertificate : entry / Request Certificate for Verification
+RegistrarsRequestingCertificate : do / Request Multiple Certificates and Continue Requesting More
+RegistrarsRequestingCertificate : exit / End Session
+
+MultipleCertificatesApplied : entry / Applied for Multiple Certificates
+MultipleCertificatesApplied : do / Reapply after Sending Request to Issuer
+MultipleCertificatesApplied : exit / End Session
+
+SessionEnded : entry / User Done with Actions
+SessionEnded : do / End Session
+SessionEnded : exit / [*]
+
+[*] --> UnregisteredCitizen
+UnregisteredCitizen --> RegisteredCitizen : [Register]
+RegisteredCitizen --> LoggedInCitizen : [Login]
+LoggedInCitizen --> MultipleCertificatesApplied : [Apply for Certificate]
+MultipleCertificatesApplied --> RegistrarsRequestingCertificate : [Reapply]
+RegistrarsRequestingCertificate --> SessionEnded : [End Session]
+
+@enduml

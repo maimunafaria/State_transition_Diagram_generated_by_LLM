@@ -1,0 +1,97 @@
+@startuml
+title ATM Control - Combined Scenarios
+
+[*] --> Idle
+
+state Idle
+Idle : entry / Display Welcome
+
+state "Entering PIN"
+"Entering PIN" : enterPin
+enterPin : validatePIN(pin)
+enterPin : if (validPIN) then
+    enterPin --> ProcessingCustomerInput
+else
+    enterPin --> InvalidPIN
+InvalidPIN : askForPINAgain()
+
+state "Processing Customer Input" as ProcessingCustomerInput
+ProcessingCustomerInput : entry / Display Options
+ProcessingCustomerInput : if (transfer) then
+    ProcessingCustomerInput --> ProcessingTransfer
+else if (withdraw) then
+    ProcessingCustomerInput --> ProcessingTransaction
+else if (query) then
+    ProcessingCustomerInput --> ProcessingQuery
+else if (cancel) then
+    ProcessingCustomerInput --> ReturnCard
+else
+    ProcessingCustomerInput : displayError()
+
+state "Processing Transaction" as ProcessingTransaction {
+  state "Processing Withdrawal" as ProcessingWithdrawal
+  state "Processing Transfer" as ProcessingTransfer
+  state "Processing Query" as ProcessingQuery
+
+  ProcessingTransaction : entry / Display Enter Amount
+  ProcessingTransaction : if (validAmount) then
+    ProcessingTransaction --> CheckCashAvailability
+  else
+    ProcessingTransaction : displayError()
+
+  state CheckCashAvailability
+  CheckCashAvailability : checkCashAvailability(amount)
+  CheckCashAvailability : if (enoughCash) then
+    CheckCashAvailability --> DispenseCash
+  else
+    CheckCashAvailability : displayError()
+
+  state "Dispensing Cash" as DispenseCash
+  DispenseCash : dispenseCash(amount)
+  DispenseCash : printReceipt()
+  DispenseCash --> ReturnCard
+
+  state "Processing Transfer" as ProcessingTransfer {
+    state "Transferring Funds" as TransferringFunds
+    TransferringFunds : transferFunds(amount)
+    TransferringFunds : printReceipt()
+    TransferringFunds --> ReturnCard
+  }
+
+  state "Processing Query" as ProcessingQuery {
+    state "Checking Information" as CheckingInformation
+    CheckingInformation : checkInformation()
+    CheckingInformation : printReceipt()
+    CheckingInformation --> ReturnCard
+  }
+}
+
+state InvalidPIN
+InvalidPIN : keepCardForSecurity()
+
+state ReturnCard
+ReturnCard : returnCardToUser()
+ReturnCard : if (cancelled) then
+    ReturnCard --> ClosedDown
+else if (rejected) then
+    ReturnCard : displayRejectionMessage()
+    ReturnCard --> Idle
+else
+    ReturnCard : printReceipt()
+    ReturnCard --> EndingPhase
+
+state "Ending Phase" as EndingPhase
+EndingPhase : entry / Display Ending Message
+EndingPhase : shortDelay()
+EndingPhase --> Reset
+
+state "Resetting" as Reset
+Reset : resetATM()
+Reset : if (nextUser) then
+    Reset --> Idle
+else
+    Reset --> ClosedDown
+
+state ClosedDown
+ClosedDown : entry / Display System Down
+@enduml

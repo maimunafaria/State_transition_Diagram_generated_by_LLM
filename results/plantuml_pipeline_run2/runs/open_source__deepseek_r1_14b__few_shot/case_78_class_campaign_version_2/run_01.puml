@@ -1,0 +1,36 @@
+@startuml
+title Class Campaign Version 2 State Machine
+
+state "Campaign Initialized" as Initialized {
+    [*] --> Initialized : Start campaign
+}
+
+state Activated
+state PreparingAdverts
+state Approved
+state Running
+state Completed
+state HandlingPayment
+state Archived
+
+Initialized --> Activated : Activate campaign [approved and contract signed]
+
+Activated --> PreparingAdverts : Prepare adverts
+
+PreparingAdverts --> Approved : Approve and schedule adverts
+
+Approved --> Running : Run adverts
+
+Running --> Running : Extend or adjust campaign
+
+Running --> Completed : All adverts finished
+
+Completed --> HandlingPayment : Handle payment
+
+HandlingPayment --> Archived : Full amount paid
+HandlingPayment --> HandlingPayment : Amount exceeded [wait for balance]
+HandlingPayment --> Completed : Generate refund request
+
+Archived --> [*] : Archive campaign and release staff
+
+@enduml

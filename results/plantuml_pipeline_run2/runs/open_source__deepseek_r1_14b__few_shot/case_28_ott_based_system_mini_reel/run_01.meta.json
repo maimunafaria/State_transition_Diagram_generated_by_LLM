@@ -1,0 +1,132 @@
+{
+  "run_id": "open_source__deepseek_r1_14b__few_shot",
+  "case_id": "case_28_ott_based_system_mini_reel",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nJava — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall skip non-meaningful elements like spaces or comments.\n2. The system shall ignore empty spaces and line breaks at the beginning.\n3. The system shall skip all characters from // to the end of the line.\n4. The system shall continue skipping content until the end of a block comment (*/).\n\nExample 1 PlantUML:\n@startuml\ntitle State diagram for advancing past whitespace and comments in Java\n\n[*] --> Start\n\nstate Start\nstate \"saw '/'\" as SawSlash\nstate \"line comment\" as LineComment\nstate \"saw '*'\" as SawStar\nstate \"block comment\" as BlockComment\nstate EndWhitespace\n\n' whitespace loop\nStart --> Start : next char = ' ' \\\\t \\\\r \\\\n / advance\n\n' detect slash\nStart --> SawSlash : next char = '/' / advance\n\n' anything else → end\nStart --> EndWhitespace : next char = anything else\n\n' after seeing '/'\nSawSlash --> LineComment : next char = '/' / advance\nSawSlash --> SawStar : next char = '*' / advance\nSawSlash --> EndWhitespace : next char != '/' or '*' / pushback '/'\n\n' line comment behavior\nLineComment --> LineComment : next char != eoln / advance\nLineComment --> Start : next char = eoln / advance\n\n' saw '*' (possible block comment)\nSawStar --> BlockComment : next char = '*' / advance\n\n' block comment behavior\nBlockComment --> BlockComment : next char != '*' / advance\nBlockComment --> SawStar : next char = '*' / advance\n\n' loop back\nSawStar --> BlockComment : next char = '*' / advance\nBlockComment --> Start : next char = '/' / advance\n\nEndWhitespace --> [*]\n\n@enduml\n\nExample 2 Requirement:\nClass Campaign Final Version — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall activate a campaign once a manager and staff are assigned, it is approved, and the contract is signed.\n2. The system shall allow surveys to be carried out and evaluated during the campaign.\n3. The system shall prepare, approve, schedule, and run adverts during the campaign.\n4. The system shall allow adjustments to the campaign, such as extending its duration or changing the budget.\n5. The system shall pause a campaign, stopping all adverts, and allow resuming to continue work.\n6. The system shall calculate costs and prepare a final statement if the campaign is cancelled.\n7. The system shall complete the campaign and prepare a final statement when all work is finished.\n8. The system shall handle payment after completion; if the amount does not match what is due, it may make adjustments such as refunds.\n9. The system shall mark a campaign as paid once the correct payment is settled.\n10. The system shall archive the campaign and release all assigned staff and managers after completion.\n\nExample 2 PlantUML:\n@startuml\ntitle Campaign State Machine (Final Version)\n\n[*] --> Commissioned : /assignManager; assignStaff\n\nstate Commissioned\nstate Suspended\nstate Completed\nstate Paid\n\nCommissioned --> Active : authorized(authorizationCode)\\n[contract signed]\\n/setCampaignActive\nCommissioned --> Completed : campaignCancelled;\\ncalculateCosts;\\nprepareFinalStatement\nstate Active {\n\n  state Monitoring {\n    [*] --> Survey\n\n    state Survey\n    state Evaluation\n    state H1 <<history>>\n\n    Survey --> Evaluation : surveyComplete\n    Evaluation --> Survey : runSurvey\n  }\n\n  --\n\n  state Running {\n    [*] --> AdvertPreparation\n\n    state AdvertPreparation\n    state Scheduling\n    state \"Running Adverts\" as RunningAdverts\n    state H2 <<history>>\n\n    AdvertPreparation --> Scheduling : advertsApproved\\n/authorize\n    Scheduling --> RunningAdverts : confirmSchedule\n    RunningAdverts --> AdvertPreparation : extendCampaign\\n/modifyBudget\n  }\n\n}\n\n\nActive --> Suspended : suspendCampaign\\n/stopAdverts\nSuspended --> Active : resumeCampaign\n\n\nActive --> Completed : campaignCancelled\\n/cancelSchedule;\\ncalculateCosts;\\nprepareFinalStatement\nAdvertPreparation --> Completed : campaignCompleted\\n/prepareFinalStatement\n\n\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment = 0]\nCompleted --> Completed : paymentReceived(payment)\\n[paymentDue - payment > 0]\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment < 0]\\n/generateRefund\n\n\nPaid --> [*] : archiveCampaign\\n/unassignStaff;\\nunassignManager\n\n@enduml\n\nExample 3 Requirement:\nBook Bank Management System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to register by entering their details.\n2. The system shall issue a member ID and complete the registration upon correct entry of details.\n3. The system shall require the user to re-enter their details upon incorrect entry of details.\n4. The system shall allow a user to log in after successful registration using their member ID and password.\n5. The system shall allow the user to continue upon correct entry of member ID and password during login. Otherwise, they cannot log in.\n6. The system shall allow a user to search for a book by entering its details.\n7. The system shall show suggestions if a book is found during a search; otherwise, it shall allow the user to choose another option.\n8. The system shall allow a user to get a book by entering its ID and their member ID.\n9. The system shall allow the user to get the book if their membership is active; otherwise, it shall require them to pay the fine amount first.\n10. The system shall allow a user to buy a book by entering its ID and seeing the price.\n11. The system shall provide the book if the user pays; otherwise, it shall end the process there.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\nstate \"Registration\" as Registration {\n  [*] --> RegEnterDetails\n\n  state \"Enter Details\" as RegEnterDetails\n  state \"Get Member_ID\" as GetMemberID\n  state \"Successful Registration\" as SuccessfulRegistration\n  state \"Re-enter Details\" as ReEnterDetails\n\n  RegEnterDetails --> GetMemberID : [Valid]\n  RegEnterDetails --> ReEnterDetails : [Invalid]\n  ReEnterDetails --> RegEnterDetails\n  GetMemberID --> SuccessfulRegistration\n}\n\nstate \"Authentication\" as Authentication {\n  [*] --> AuthEnterMemberID\n\n  state \"Enter Member_ID\" as AuthEnterMemberID\n  state \"Enter Password\" as EnterPassword\n  state \"successful Login\" as SuccessfulLogin\n  state \"Invalid Member_ID or Password\" as InvalidCreds\n\n  AuthEnterMemberID --> EnterPassword\n  EnterPassword --> SuccessfulLogin : [Valid]\n  EnterPassword --> InvalidCreds : [Invalid]\n}\n\nstate \"Search Books\" as SearchBooks {\n  [*] --> EnterBookDetails\n\n  state \"Enter Book Details\" as EnterBookDetails\n  state \"Display Suggestion\" as DisplaySuggestion\n  state \"choose Alternate option\" as ChooseAlternate\n\n  EnterBookDetails --> DisplaySuggestion : [Found]\n  EnterBookDetails --> ChooseAlternate : [Not Found]\n}\n\nstate \"Get Books\" as GetBooksState {\n  [*] --> GetEnterBookID\n\n  state \"Enter Book_ID\" as GetEnterBookID\n  state \"Enter Member_ID\" as GetEnterMemberID\n  state \"Obtain Books\" as ObtainBooks\n  state \"Pay Fine Amount\" as PayFineAmount\n\n  GetEnterBookID --> GetEnterMemberID\n  GetEnterMemberID --> ObtainBooks : [Active Member]\n  GetEnterMemberID --> PayFineAmount : [Inactive Member]\n}\n\nstate \"Buy Books\" as BuyBooks {\n  [*] --> BuyEnterBookID\n\n  state \"Enter Book_ID\" as BuyEnterBookID\n  state \"Display Book Amount\" as DisplayBookAmount\n  state \"Get Books\" as BuyGetBooks\n  state BuyNotPaidEnd <<choice>>\n\n  BuyEnterBookID --> DisplayBookAmount\n  DisplayBookAmount --> BuyGetBooks : [Paid]\n  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]\n  BuyNotPaidEnd --> [*]\n}\n\nstate StartJoin <<choice>>\n\n[*] --> StartJoin\nStartJoin --> Registration\nStartJoin --> Authentication\nStartJoin --> SearchBooks\nStartJoin --> GetBooksState\nStartJoin --> BuyBooks\n\nSuccessfulRegistration --> AuthEnterMemberID\n\nSuccessfulLogin --> EnterBookDetails\nSuccessfulLogin --> GetEnterBookID\nSuccessfulLogin --> BuyEnterBookID\n\n\nObtainBooks --> [*]\nBuyGetBooks --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nOtt Based System Mini Reel — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create an account.\n2. The system shall enable a user to watch videos after they have created an account.\n3. The system shall permit a user to upload videos.\n4. The system shall allow a user to save videos in their likes list during video viewing.\n5. The system shall enable a user to view their saved videos from the likes list.\n6. The system shall allow a user to enter the discussion option.\n",
+  "requirement_used": "Ott Based System Mini Reel — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create an account.\n2. The system shall enable a user to watch videos after they have created an account.\n3. The system shall permit a user to upload videos.\n4. The system shall allow a user to save videos in their likes list during video viewing.\n5. The system shall enable a user to view their saved videos from the likes list.\n6. The system shall allow a user to enter the discussion option.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run2\\runs\\open_source__deepseek_r1_14b__few_shot\\case_28_ott_based_system_mini_reel\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "multiple_initial_state_transitions (InitialState, CreateAccount, Login, AccountCreated, LoggedIn, WatchingVideo, UploadingVideo, LikesList, DiscussionOption, ContinueWatching, PauseVideo, AddToLikes, BackToMenu, UploadComplete, UploadFailed, ViewVideo, RemoveFromLikes, BackToListMenu, PostComment, ViewComments, ExitDiscussion)",
+      "missing_final_state_transition (state --> [*])"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 22,
+    "transition_count": 5
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "multiple_initial_state_transitions (InitialState, CreateAccount, Login, AccountCreated, LoggedIn, WatchingVideo, UploadingVideo, LikesList, DiscussionOption, ContinueWatching, PauseVideo, AddToLikes, BackToMenu, UploadComplete, UploadFailed, ViewVideo, RemoveFromLikes, BackToListMenu, PostComment, ViewComments, ExitDiscussion)",
+      "missing_final_state_transition (state --> [*])"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_50_java",
+        "case_79_class_campaign_final_version",
+        "case_38_book_bank_management_system"
+      ],
+      "seed": 43,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (InitialState, CreateAccount, Login, AccountCreated, LoggedIn, WatchingVideo, UploadingVideo, LikesList, DiscussionOption, ContinueWatching, PauseVideo, AddToLikes, BackToMenu, UploadComplete, UploadFailed, ViewVideo, RemoveFromLikes, BackToListMenu, PostComment, ViewComments, ExitDiscussion)",
+        "missing_final_state_transition (state --> [*])"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (InitialState, CreateAccount, Login, AccountCreated, LoggedIn, WatchingVideo, UploadingVideo, LikesList, DiscussionOption, ContinueWatching, PauseVideo, AddToLikes, BackToMenu, UploadComplete, UploadFailed, ViewVideo, RemoveFromLikes, BackToListMenu, PostComment, ViewComments, ExitDiscussion)",
+        "missing_final_state_transition (state --> [*])"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (InitialState, CreateAccount, Login, AccountCreated, LoggedIn, WatchingVideo, UploadingVideo, LikesList, DiscussionOption, ContinueWatching, PauseVideo, AddToLikes, BackToMenu, UploadComplete, UploadFailed, ViewVideo, RemoveFromLikes, BackToListMenu, PostComment, ViewComments, ExitDiscussion)",
+          "missing_final_state_transition (state --> [*])"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 22,
+        "transition_count": 5
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run2\\runs\\open_source__deepseek_r1_14b__few_shot\\case_28_ott_based_system_mini_reel\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 22,
+    "state_fn": 11,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 5,
+    "transition_fn": 11,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 22,
+    "state_fn_relaxed": 10,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 5,
+    "transition_fn_relaxed": 11,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 5,
+    "transition_fn_semantic": 11,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "multiple_initial_state_transitions (InitialState, CreateAccount, Login, AccountCreated, LoggedIn, WatchingVideo, UploadingVideo, LikesList, DiscussionOption, ContinueWatching, PauseVideo, AddToLikes, BackToMenu, UploadComplete, UploadFailed, ViewVideo, RemoveFromLikes, BackToListMenu, PostComment, ViewComments, ExitDiscussion)",
+      "missing_final_state_transition (state --> [*])"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "multiple_initial_state_transitions (InitialState, CreateAccount, Login, AccountCreated, LoggedIn, WatchingVideo, UploadingVideo, LikesList, DiscussionOption, ContinueWatching, PauseVideo, AddToLikes, BackToMenu, UploadComplete, UploadFailed, ViewVideo, RemoveFromLikes, BackToListMenu, PostComment, ViewComments, ExitDiscussion)",
+      "missing_final_state_transition (state --> [*])"
+    ]
+  }
+}

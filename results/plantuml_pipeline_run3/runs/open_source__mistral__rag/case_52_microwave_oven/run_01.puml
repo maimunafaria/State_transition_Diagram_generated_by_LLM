@@ -1,0 +1,109 @@
+@startuml
+Microwave Oven Operation and Control
+
+state MicrowaveOven {
+  state Checking
+  Checking : do / Check Status
+
+  state Cook
+  Cook : do / Run Generator
+
+  state Alarm
+  Alarm : do / Display Event
+
+  state Done
+  Done : do / Buzzer On for 5 Secs.
+
+  [*] --> Checking
+
+  Checking --> Cook : OK
+  Checking --> Alarm : Turntable Fault
+  Checking --> Alarm : Emitter Fault
+
+  Cook --> Done : Timeout
+  Cook --> Cook : Time
+
+  state Door {
+    state Shut
+    state Open
+  }
+
+  DoorShut : do / Allow DoorOpen
+  DoorOpen : do / Allow PlaceFood
+  DoorShutItem : do / RequireCloseDoor
+  DoorOpenItem : do / RequireCloseDoorAfterPlace
+
+  DoorShut --> DoorOpen : DoorOpened
+  DoorOpen --> DoorShut : DoorClosed
+  DoorOpen --> DoorOpenItem : FoodPlaced
+  DoorShutItem --> DoorShut : FoodPlacedAndDoorClosed
+}
+
+Case ID: case_73_oven
+Complexity: medium
+
+Requirement:
+Oven — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to open the door whenever it is closed.
+2. The system shall allow the user to place food inside or remove it from the microwave when the door is open.
+3. The system shall require the user to close the door after placing food inside.
+4. The system shall require the user to enter cooking time after the door is closed.
+5. The system shall start cooking the food when the user initiates the microwave and continue until the set time is completed.
+6. The system shall stop immediately if the door is opened during cooking for safety reasons.
+7. The system shall stop when the cooking time ends and allow the user to open the door to remove the food.
+
+state MicrowaveOven {
+  state DoorShutItem : do / RequireEnterTime
+  DoorShutItem --> Cooking
+  Cooking --> Done : Timeout or DoorOpened
+  Cooking --> Cooking : Time
+}
+
+Case ID: case_69_atm_many_scenarios_6
+Complexity: medium
+
+Requirement:
+ATM Many Scenarios Scenario 6 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if the entered PIN is correct.
+2. The system shall ask for the PIN again if it is incorrect.
+3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.
+4. The system shall return the card if the user cancels the process at any moment during this stage.
+5. The system shall display options for the user to choose from if the PIN is correct.
+6. The system shall process the withdrawal request and check if it can approve the transaction.
+7. The system shall cancel everything and return the card if the withdrawal request is rejected.
+8. The system shall dispense cash, print a receipt, and return the card if the withdrawal request is approved.
+9. The system shall stop the operation if it runs out of cash during the process.
+10. The system shall reset itself to be ready for the next user after completing or ending the session.
+
+state ATM {
+  state Idle
+  state EnterPIN
+  state InvalidCard
+  state IncorrectPin
+  state CardKept
+  state Options
+  state WithdrawalRequest
+  state Rejected
+  state DispenseCash
+  state OutOfCash
+  state Completed
+}
+
+EnterPIN --> Options : Correct PIN
+IncorrectPin --> EnterPIN : Incorrect PIN again
+InvalidCard --> InvalidCard : Card Kept
+Idle --> EnterPIN : Card Inserted
+EnterPIN --> InvalidCard : Invalid Card
+EnterPIN --> CardKept : User Cancels
+
+Options --> WithdrawalRequest : User Chooses Withdrawal Option
+WithdrawalRequest --> Rejected : Insufficient Funds or Other Issues
+WithdrawalRequest --> DispenseCash : Approved Withdrawal Request
+DispenseCash --> OutOfCash : No More Cash Available
+DispenseCash --> Completed : Cash Dispensed and Receipt Printed
+Completed --> Idle
+@enduml

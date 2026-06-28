@@ -1,0 +1,62 @@
+@startuml
+title UML State Machine Diagram - Green Rides
+
+[*] --> Login
+
+state "Login" as Login
+Login : entry / User logs in
+Login : do / Authenticate user
+Login : exit / Display journey details if successful
+
+Login --> [*] : [Invalid login credentials]
+
+Login --> JourneyDetails : [Valid login and destination selection]
+
+state "Journey Details" as JourneyDetails
+JourneyDetails : entry / Display journey details
+JourneyDetails : do / Show driving mode options or other alternatives
+JourneyDetails : exit / User selects an option
+
+JourneyDetails --> DrivingMode : [User chooses driving mode]
+DrivingMode : entry / Activate driving mode
+DrivingMode : do / Send notifications during driving
+DrivingMode : exit / Continue journey or end
+
+state "Other Options" as OtherOptions
+OtherOptions : entry / Display alternative options
+OtherOptions : do / Show other available features
+OtherOptions : exit / User selects an option
+
+JourneyDetails --> OtherOptions : [User chooses another option]
+
+state "Place to Eat" as PlaceToEat
+PlaceToEat : entry / Select a place to eat
+PlaceToEat : do / View menu and place order if hungry
+PlaceToEat : exit / Continue journey or end
+
+DrivingMode --> PlaceToEat : [User is hungry]
+OtherOptions --> PlaceToEat : [User chooses to eat]
+
+state "Accident" as Accident
+Accident : entry / Inform authorities in case of an accident
+Accident : do / Send notifications and alert relevant parties
+Accident : exit / Continue journey or end
+
+DrivingMode --> Accident : [Accident occurs]
+PlaceToEat --> Accident : [Accident occurs while eating]
+
+state "Feedback" as Feedback
+Feedback : entry / Provide feedback upon completion of journey
+Feedback : do / Collect user feedback
+Feedback : exit / End journey
+
+JourneyDetails --> Feedback : [User completes journey]
+DrivingMode --> Feedback : [User completes journey]
+OtherOptions --> Feedback : [User completes journey]
+PlaceToEat --> Feedback : [User completes journey]
+Accident --> Feedback : [User completes journey]
+
+state End <<choice>>
+End --> [*]
+
+@enduml

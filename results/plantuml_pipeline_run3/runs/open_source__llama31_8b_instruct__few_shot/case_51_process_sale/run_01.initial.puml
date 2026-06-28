@@ -1,0 +1,34 @@
+@startuml
+title UML State Machine Diagram - Process Sale
+
+[*] --> WaitForSale
+
+state "Wait for sale" as WaitForSale
+state "Add item" as AddItem
+state "Move to payment" as MoveToPayment
+state "Verify payment" as VerifyPayment
+state "Complete sale" as CompleteSale
+state "Return to waiting" as ReturnToWaiting
+
+WaitForSale --> AddItem : new sale detected
+AddItem --> MoveToPayment : all items added
+MoveToPayment --> CompleteSale : cash payment
+MoveToPayment --> VerifyPayment : card or check payment
+VerifyPayment --> CompleteSale : payment approved
+CompleteSale --> ReturnToWaiting : payment finished
+
+state "Cash payment" as CashPayment
+CashPayment --> CompleteSale : payment made
+
+state "Card/Check payment" as CardCheckPayment
+CardCheckPayment --> VerifyPayment : payment verification in progress
+
+state "Payment verified" as PaymentVerified
+PaymentVerified --> CompleteSale : payment approved
+
+state "Payment failed" as PaymentFailed
+PaymentFailed --> ReturnToWaiting : payment cancelled
+
+ReturnToWaiting --> WaitForSale : new sale detected
+
+@enduml

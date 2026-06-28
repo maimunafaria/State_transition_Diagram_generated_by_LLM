@@ -1,0 +1,83 @@
+@startuml
+title Weather Station System States
+
+[*] --> Running : Shutdown
+state "Running" as Running
+state "Configuration" as Configuration
+state "Collecting Data" as CollectingData
+state "Preparing Summary" as PreparingSummary
+state "Checking Status" as CheckingStatus
+state "Controlled Mode" as ControlledMode
+state "Shutdown" as Shutdown
+
+Running --> Configuration : Changes or Power-saving Settings
+Running --> CollectingData : Clock Triggered
+Running --> PreparingSummary : Summary Request
+Running --> CheckingStatus : Status Request
+Running --> ControlledMode : Remote Control
+Running --> Shutdown : Shutdown Command
+
+Configuration --> Running : Configuration Completed
+CollectingData --> Running : Activity Completed
+PreparingSummary --> Running : Activity Completed
+CheckingStatus --> Running : Activity Completed
+ControlledMode --> Running : Normal Operation
+Shutdown --> Shutdown : Successful Shutdown
+
+title Alert Notifier Component States
+
+[*] --> InitializeComponent : Load Component
+state "Initialize\nComponent" as InitializeComponent
+state "Waiting for Update" as WaitingForUpdate
+state "Processing Update" as ProcessingUpdate
+state "Unloading" as Unloading
+
+InitializeComponent --> WaitingForUpdate : Successful Initialization
+WaitingForUpdate --> WaitingForUpdate : No Updates Detected
+WaitingForUpdate --> ProcessingUpdate : Update Detected
+ProcessingUpdate --> WaitingForUpdate : Update Processed
+Unloading --> [*] : System Shutdown or Failure
+
+title Equihealth States
+
+[*] --> J1 : [check user]
+state J1 <<choice>>
+state J2 : PatientDashboard
+state J3 : HealthWorkerDashboard
+state J4 : GovernmentOfficialDashboard
+state J5 : Logout
+
+J1 --> J2 : Patient
+J1 --> J3 : Health Worker
+J1 --> J4 : Government Official
+J2 --> J5 : Task Completed
+J3 --> J5 : Task Completed
+J4 --> J5 : Task Completed
+
+title National Health Id States
+
+[*] --> Choice1 : Check Citizenship
+state Choice1 <<choice>>
+state Choice2 : Verify Details
+state Choice3 : Generate ID
+state Choice4 : Activate Account
+state Choice5 : Set Permissions
+state Choice6 : Add Old Files
+state Choice7 : Store Files
+state Choice8 : Provide Access
+state Choice9 : Add New Files
+state Choice10 : Government Access
+
+Choice1 --> Choice2 : Indian
+Choice1 --> [*] : Not Indian
+Choice2 --> Choice3 : Verified
+Choice3 --> Choice4 : Account Activated
+Choice4 --> Choice5 : After Activation
+Choice5 --> Choice6 : Add Old Files
+Choice6 --> Choice7 : Stored Files
+Choice7 --> Choice8 : Provide Access
+Choice8 --> [*] : Task Completed
+Choice5 --> Choice9 : Set Permissions
+Choice9 --> [*] : Permission Granted
+Choice9 --> Choice10 : Government Access
+@enduml

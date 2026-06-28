@@ -1,0 +1,33 @@
+@startuml
+[*] --> WaitingState : [rate created]
+state "Waiting State" as WaitingState {
+  entry / nil
+  do / wait until start date arrives
+  exit / rate activated
+}
+
+WaitingState --> ActiveState : [current date equals or surpasses start date]
+
+state "Active State" as ActiveState {
+  entry / rate activated
+  do / maintain active state until end of validity period
+  exit / rate expired
+}
+
+ActiveState --> ExpirationState : [finish date reached]
+
+state "Expiration State" as ExpirationState {
+  entry / rate expired
+  do / mark rate as expired
+  exit / rate removed or archived
+}
+
+ExpirationState --> RemovedOrArchivedState : [one year from expiration date]
+state "Removed Or Archived State" as RemovedOrArchivedState {
+  entry / rate removed or archived
+  exit / final state
+}
+
+[*] --> RemovedOrArchivedState : [rate expired one year ago]
+
+@enduml

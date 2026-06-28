@@ -1,0 +1,67 @@
+@startuml
+[*] --> AssignManagerStaff : [assign manager and staff]
+state "Assign Manager Staff" as AMS
+AMS : entry / assign manager and staff
+AMS : do / approve assignment
+AMS : exit / wait for approval
+
+AMS --> ApproveAssignment : [approval received]
+state "Approve Assignment" as AA
+AA : entry / approval received
+AA : do / activate campaign
+AA : exit / wait for contract signing
+
+AA --> SignContract : [contract signed]
+state "Sign Contract" as SC
+SC : entry / contract signed
+SC : do / prepare adverts
+SC : exit / wait for advert approval
+
+SC --> ApproveAdverts : [advert approval received]
+state "Approve Adverts" as AAV
+AAV : entry / advert approval received
+AAV : do / schedule adverts
+AAV : exit / run adverts
+
+AAV --> RunAdverts : [adverts running]
+state "Run Adverts" as RA
+RA : entry / adverts running
+RA : do / allow campaign extension or adjustment
+RA : exit / wait for adverts completion
+
+RA --> CompleteCampaign : [adverts completed]
+state "Complete Campaign" as CC
+CC : entry / adverts completed
+CC : do / prepare final statement
+CC : exit / handle payment
+
+CC --> HandlePayment : [payment handled]
+state "Handle Payment" as HP
+HP : entry / payment handled
+HP : do / generate refund if amount paid is less than required
+HP : do / wait for correct balance to be settled if amount paid exceeds required amount
+HP : exit / mark campaign as paid
+
+HP --> MarkCampaignPaid : [campaign marked as paid]
+state "Mark Campaign Paid" as MCP
+MCP : entry / campaign marked as paid
+MCP : do / archive campaign
+MCP : do / release assigned staff and managers
+
+MCP --> ArchiveReleaseStaff : [archive and release completed]
+
+[*] --> LJ
+state LJ <<choice>>
+
+LJ --> AssignManagerStaff
+AssignManagerStaff --> ApproveAssignment
+ApproveAssignment --> SignContract
+SignContract --> ApproveAdverts
+ApproveAdverts --> RunAdverts
+RunAdverts --> CompleteCampaign
+CompleteCampaign --> HandlePayment
+HandlePayment --> MarkCampaignPaid
+MarkCampaignPaid --> ArchiveReleaseStaff
+
+ArchiveReleaseStaff --> [*]
+@enduml

@@ -1,0 +1,45 @@
+@startuml
+title Staff Member Class State Machine Diagram
+
+state "Unassigned" as Unassigned
+state "Assigned to Client" as AssignedClient
+state "Added to Campaign" as AddedCampaign
+state "Archived" as Archived
+state "Marked as Unemployed" as MarkedUnemployed
+
+state "Idle" as Idle
+[*] --> Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Assign / Add to Campaign
+
+state "Assignment" as Assignment
+Assignment : entry/Assign
+Assignment : do/Assign staff member to client or campaign
+Assignment : exit/Unassigned / AssignedClient / AddedCampaign
+
+state "Switch Assignment" as SwitchAssignment
+SwitchAssignment : entry/Switch assignment
+SwitchAssignment : do/Switch between assignments during work period
+SwitchAssignment : exit/AssignedClient / AddedCampaign
+
+state "Leave Job" as LeaveJob
+LeaveJob : entry/Mark as unemployed
+LeaveJob : do/Mark staff member as unemployed when they leave the job
+LeaveJob : exit/Archived
+
+state "Archive Record" as ArchiveRecord
+ArchiveRecord : entry/Archive record
+ArchiveRecord : do/Archive record of former employee after some time has passed
+ArchiveRecord : exit/Archived
+
+state J1 <<choice>>
+Idle --> J1
+J1 --> Assignment
+Assignment --> J2
+J2 --> SwitchAssignment
+SwitchAssignment --> LeaveJob
+LeaveJob --> ArchiveRecord
+ArchiveRecord --> [*]
+
+@enduml

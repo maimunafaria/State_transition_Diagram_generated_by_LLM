@@ -1,0 +1,70 @@
+@startuml
+title UML State Machine Diagram (Safehome Security Function)
+
+state "Power-on" as PowerOn {
+    [*] --> CheckStartup
+}
+
+state "Ready to use" as ReadyToUse {
+    state "Reset" as Reset
+    state "Activate" as Activate
+    state "Turn off" as TurnOff
+}
+
+state "Monitoring" as Monitoring {
+    state "Alarm triggered" as AlarmTriggered
+    state "False alarm or time ends" as FalseAlarmOrTimeEnds
+}
+
+ReadyToUse : entry / To Action
+ReadyToUse : do / Allow user to reset, activate, turn off
+ReadyToUse : exit / User interaction
+
+Monitoring : entry / Start monitoring
+Monitoring : do / Monitor sensors and send alerts if triggered
+Monitoring : exit / Continue or stop monitoring
+
+AlarmTriggered : entry / Sensor triggered during monitoring
+AlarmTriggered : do / Send alarm and alert
+AlarmTriggered : exit / Continue monitoring or stop
+
+FalseAlarmOrTimeEnds : entry / False alarm or time ends
+FalseAlarmOrTimeEnds : do / Stop monitoring
+FalseAlarmOrTimeEnds : exit / Return to normal
+
+Reset : entry / User reset
+Reset : do / Reset system
+Reset : exit / System reset
+
+Activate : entry / User activate
+Activate : do / Activate system
+Activate : exit / System activated
+
+TurnOff : entry / User turn off
+TurnOff : do / Turn off system
+TurnOff : exit / System turned off
+
+PowerOn --> CheckStartup
+CheckStartup --> ReadyToUse : no problem during startup
+CheckStartup --> Stop : problem during startup
+
+ReadyToUse --> Reset : user reset
+ReadyToUse --> Activate : user activate
+ReadyToUse --> TurnOff : user turn off
+
+Monitoring --> AlarmTriggered : sensor triggered
+Monitoring --> FalseAlarmOrTimeEnds : false alarm or time ends
+
+AlarmTriggered --> ContinueMonitoring : continue monitoring
+AlarmTriggered --> Stop : stop monitoring
+
+FalseAlarmOrTimeEnds --> ContinueMonitoring : continue monitoring
+FalseAlarmOrTimeEnds --> Stop : stop monitoring
+
+Reset --> ReadyToUse : system reset
+Activate --> Monitoring : start monitoring
+TurnOff --> ReadyToUse : return to normal
+
+Stop --> [*]
+
+@enduml

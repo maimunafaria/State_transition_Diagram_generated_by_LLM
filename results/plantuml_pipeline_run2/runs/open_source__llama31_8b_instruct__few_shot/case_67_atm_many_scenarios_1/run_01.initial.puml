@@ -1,0 +1,45 @@
+@startuml
+title ATM State Machine
+
+state "Card Inserted" as CardInserted {
+  [*] --> PromptPIN
+
+  state "Prompt PIN" as PromptPIN
+  state "Verify PIN" as VerifyPIN
+  state "Successful Login" as SuccessfulLogin
+  state "Invalid PIN" as InvalidPIN
+
+  PromptPIN --> VerifyPIN : [Valid]
+  PromptPIN --> InvalidPIN : [Invalid]
+  VerifyPIN --> SuccessfulLogin : [Correct]
+  VerifyPIN --> InvalidPIN : [Incorrect]
+}
+
+state "Transaction" as Transaction {
+  [*] --> WithdrawCash
+
+  state "Withdraw Cash" as WithdrawCash
+  state "Dispense Cash" as DispenseCash
+  state "Print Receipt" as PrintReceipt
+  state "Return Card" as ReturnCard
+
+  WithdrawCash --> DispenseCash : [Approved]
+  DispenseCash --> PrintReceipt
+  PrintReceipt --> ReturnCard
+}
+
+state "Reset" as Reset {
+  [*] --> ReadyForNextUser
+
+  state "Ready for Next User" as ReadyForNextUser
+}
+
+CardInserted --> Transaction : [Successful Login]
+Transaction --> Reset : [Completed Transaction]
+
+InvalidPIN --> PromptPIN : [Retry PIN]
+SuccessfulLogin --> WithdrawCash : [Start Transaction]
+
+Reset --> CardInserted : [New User]
+
+@enduml

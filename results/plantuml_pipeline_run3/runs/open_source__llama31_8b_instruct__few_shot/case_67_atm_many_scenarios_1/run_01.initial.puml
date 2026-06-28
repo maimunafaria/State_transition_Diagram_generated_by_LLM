@@ -1,0 +1,44 @@
+@startuml
+title ATM State Machine Diagram
+
+state "Card Inserted" as CI
+
+state "PIN Entry" as PE {
+  [*] --> InvalidPIN
+
+  state "Valid PIN" as ValidPIN
+
+  InvalidPIN --> ValidPIN : correctPinEntered()
+  ValidPIN --> WithdrawalOptions : validPinVerified()
+
+  state "Withdrawal Options" as WithdrawalOptions
+  WithdrawalOptions --> ProcessWithdrawal : withdrawalApproved()
+  WithdrawalOptions --> CancelTransaction : cancellationRequested()
+
+  state "Process Withdrawal" as ProcessWithdrawal {
+    [*] --> CashDispensed
+
+    state "Cash Dispensing" as CashDispensing
+    CashDispensing --> ReceiptPrinting : cashDispensed()
+    ReceiptPrinting --> CardReturn : cardReturned()
+
+    CashDispensing --> CancelTransaction : cancellationRequested()
+  }
+
+  state "Cancel Transaction" as CancelTransaction {
+    [*] --> CardReturn
+
+    CardReturn --> CI : newCardInserted()
+  }
+}
+
+state "Receipt Printing" as RP
+RP --> CardReturn : receiptPrinted()
+
+state "Card Return" as CR
+CR --> CI : cardReturned()
+
+state "Reset" as R
+R --> CI : resetComplete()
+
+@enduml

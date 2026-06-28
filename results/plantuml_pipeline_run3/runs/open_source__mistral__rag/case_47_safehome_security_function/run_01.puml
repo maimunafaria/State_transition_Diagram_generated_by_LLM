@@ -1,0 +1,39 @@
+@startuml
+title Safehome Security Function - State Machine Diagram
+
+[*] --> Startup
+
+state Startup
+Startup : check_everything
+if (problem) then
+    Startup : stop
+else
+    Startup : become_ready
+endif
+
+state Ready
+Ready : allow_reset
+Ready : allow_activate
+Ready : allow_turnoff
+
+state Activated
+Activated : start_monitoring
+
+state Monitoring
+Monitoring : start_alarm_and_send_alert if (sensor_triggered)
+Monitoring : continue_monitoring if (false_alarm or time_ends)
+
+state FalseAlarm
+FalseAlarm : return_to_normal
+
+state AlertSent
+AlertSent : check_password
+if (incorrect_password) then
+    AlertSent : ask_for_password_again
+else
+    AlertSent : stop_and_return_to_normal
+endif
+
+state PasswordEntered
+PasswordEntered : reset_system
+@enduml

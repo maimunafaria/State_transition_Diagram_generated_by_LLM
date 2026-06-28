@@ -1,0 +1,65 @@
+@startuml
+title State machine for Staff Member
+
+state Unassigned
+state AssignedToClient
+state AssignedToCampaign
+state Unemployed
+state Archived
+
+[*] --> Unassigned : /newAssignmentRequest/
+
+Unassigned --> AssignedToClient : assignToClient
+Unassigned --> AssignedToCampaign : assignToCampaign
+
+AssignedToClient --> Unassigned : removeAssignment
+AssignedToCampaign --> Unassigned : removeAssignment
+
+AssignedToClient --> Unemployed : leaveJob
+AssignedToCampaign --> Unemployed : leaveJob
+
+Unemployed --> Archived : afterTimePasses
+
+
+title State machine for Campaign
+
+state Inactive
+state Active
+state Paused
+state Completed
+state Paid
+state Archived
+
+[*] --> Inactive : /assignManager;\nassignStaff\n/contractSigned/
+
+Inactive --> Active : approved
+Active --> Paused : pauseCampaign
+Paused --> Active : resumeCampaign
+Active --> Completed : workFinished
+Completed --> Paid : paymentReceived
+Paused --> Inactive : cancelCampaign
+Completed --> Archived : afterCompletion
+
+
+title State machine for Advocate Diary
+
+state Unregistered
+state Registering
+state LoggedIn
+state AddingCase
+state ReminderSet
+state DocumentUploaded
+state CaseClosed
+state Archived
+
+[*] --> Unregistered : /browseBlogsAndNews/
+
+Unregistered --> Registering : createAccountRequest
+Registering --> LoggedIn : accountDetailsValidated
+LoggedIn --> AddingCase : newCaseRequest
+AddingCase --> ReminderSet : setReminder
+ReminderSet --> DocumentUploaded : uploadDocument
+DocumentUploaded --> CaseClosed : caseCompleted
+CaseClosed --> Archived : afterTimePasses
+
+@enduml

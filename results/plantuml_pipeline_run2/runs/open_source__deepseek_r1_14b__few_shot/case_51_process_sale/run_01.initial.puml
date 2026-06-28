@@ -1,0 +1,50 @@
+@startuml
+title Process Sale State Transition Diagram
+
+state "Idle" as Idle
+state "WaitingForItems" as WaitingForItems
+state "PaymentRequired" as PaymentRequired
+state "ProcessingCashPayment" as ProcessingCashPayment
+state "ProcessingCardOrCheckPayment" as ProcessingCardOrCheckPayment
+state "SaleCompleted" as SaleCompleted
+
+Idle : entry / Start
+Idle : do / Wait for new sale
+Idle : exit / -
+
+WaitingForItems : entry / Enter items
+WaitingForItems : do / Add item(s)
+WaitingForItems : exit / -
+
+PaymentRequired : entry / Ready to pay
+PaymentRequired : do / Process payment
+PaymentRequired : exit / -
+
+ProcessingCashPayment : entry / Cash payment
+ProcessingCashPayment : do / Complete sale immediately
+ProcessingCashPayment : exit / -
+
+ProcessingCardOrCheckPayment : entry / Card or Check payment
+ProcessingCardOrCheckPayment : do / Verify payment
+ProcessingCardOrCheckPayment : exit / -
+
+SaleCompleted : entry / Sale completed
+SaleCompleted : do / Return to waiting
+SaleCompleted : exit / -
+
+[*] --> Idle
+
+Idle --> WaitingForItems : NewItemSelected / Add item(s)
+
+WaitingForItems --> PaymentRequired : AllItemsEntered / Move to payment
+
+PaymentRequired --> ProcessingCashPayment : CashPaymentSubmitted / Process cash
+PaymentRequired --> ProcessingCardOrCheckPayment : CardOrCheckPaymentSubmitted / Process card/check
+
+ProcessingCashPayment --> SaleCompleted : CashPaymentApproved / Complete sale
+
+ProcessingCardOrCheckPayment --> SaleCompleted : PaymentApproved / Complete sale
+
+SaleCompleted --> Idle : SaleFinished / Return to waiting
+
+@enduml

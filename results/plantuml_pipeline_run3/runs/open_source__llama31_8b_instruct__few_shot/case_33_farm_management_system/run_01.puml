@@ -1,0 +1,66 @@
+@startuml
+title UML State Machine Diagram (Farm Management System)
+
+[*] --> UserType
+
+state UserType <<choice>>
+UserType --> Login : [New user]
+UserType --> Login : [Registered user]
+
+state "Login" as Login {
+    [*] --> GettingDetails
+
+    state GettingDetails
+    state ChoiceReg <<choice>>
+    state "Update Database" as UpdateDB
+    state EndInvalid <<choice>>
+
+    GettingDetails --> ChoiceReg : [Registration verification]
+    ChoiceReg --> UpdateDB : [valid]
+    ChoiceReg --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+Login : entry / User login
+Login : do / Login process
+Login : exit / After successful login
+
+UpdateDB --> MainArea : [verified]
+
+state "Main Area" as MainArea {
+    [*] --> ChoiceUser
+
+
+    state ChoiceUser <<choice>>
+    ChoiceUser --> MarketConditions : [user selects market conditions]
+    ChoiceUser --> PestControlHelp : [user selects pest control help]
+    ChoiceUser --> SoilSuggestions : [user provides soil information]
+    ChoiceUser --> WeatherInsights : [user provides location]
+    ChoiceUser --> LabourAvailability : [user provides location]
+
+    state "Market Conditions" as MarketConditions
+    MarketConditions --> [*]
+
+    state "Pest Control Techniques" as PestControlHelp
+    PestControlHelp --> [*]
+
+    state "Soil Suggestions" as SoilSuggestions
+    SoilSuggestions --> [*]
+
+    state "Weather Insights" as WeatherInsights
+    WeatherInsights --> [*]
+
+    state "Labour Availability" as LabourAvailability
+    LabourAvailability --> [*]
+}
+
+MainArea : entry / User selects main area
+MainArea : do / Display results
+MainArea : exit / After viewing results
+
+[*] --> Logout
+
+state Logout
+Logout : do / End session
+@enduml

@@ -1,0 +1,302 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Flight — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall schedule and assign a flight number when a new flight is created.
+2. The system shall change the flight status to 'on journey' once it takes off.
+3. The system shall mark the flight as inactive and record it as a past record upon landing.
+4. The system shall record cancelled flights in the same manner as landed flights if they are cancelled before starting.
+5. The system shall remove inactive flights over time.
+
+Example 1 PlantUML:
+@startuml
+title Statechart diagram of the class "Flight"
+
+[*] --> Planned : «M» Flight Defined/
+
+state Planned
+state "In Transit" as InTransit
+state Historic
+
+Planned : «M» New Flight Number/
+
+Planned --> InTransit : «M» Flight Started/
+InTransit --> Historic : «M» Flight Landed/
+
+Planned --> Historic : «M» Flight Cancelled/
+Historic --> [*] : «M» Flight Irrelevant/
+Planned --> [*] : «M» Flight Number Irrelevant/
+
+@enduml
+
+Example 2 Requirement:
+Textile — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow customers to create an account by filling in required details.
+2. The system shall enable customers to place orders for garments once they are registered.
+3. The system shall send out sample materials if a customer needs them after placing an order.
+4. The system shall review the availability of raw materials for orders that require stock checking.
+5. The system shall purchase raw materials if they are not available after stock checking.
+6. The system shall process raw materials if they are already available.
+7. The system shall begin garment production once raw materials are ready, either through purchasing or processing.
+8. The system shall conduct a defect check on the produced garments.
+9. The system shall deliver the finished garments to the customer if all checks pass.
+10. The system shall complete billing and payment processes after delivering the garments.
+11. The system shall generate a report along with feedback at the end of the process.
+
+Example 2 PlantUML:
+@startuml
+
+[*] --> CustomerRegistration
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+CustomerRegistration : entry / Start state
+CustomerRegistration : do / Fill in required details
+CustomerRegistration : exit / Getting garment orders
+
+CustomerRegistration --> GettingGarmentOrders : registration complete
+
+GettingGarmentOrders : entry / Customer registration
+GettingGarmentOrders : do / Place the orders
+GettingGarmentOrders : exit / Sampling / Stock checking
+
+GettingGarmentOrders --> Sampling : sampling required
+GettingGarmentOrders --> StockChecking : check stock
+
+Sampling : entry / Getting garment orders
+Sampling : do / Send out sample materials while ordering
+Sampling : exit / decision
+
+Sampling --> Choice1 : proceed
+StockChecking --> Choice1
+
+StockChecking : entry / Getting garment orders
+StockChecking : do / Check availability of raw material
+StockChecking : exit / decision making
+
+Choice1 --> PurchasingRawMaterials : not in stock
+Choice1 --> ProcessingRawMaterials : in stock
+
+PurchasingRawMaterials : entry / Stock checking
+PurchasingRawMaterials : do / Buy raw materials
+PurchasingRawMaterials : exit / Production of garments
+
+ProcessingRawMaterials : entry / Stock checking
+ProcessingRawMaterials : do / Processing
+ProcessingRawMaterials : exit / Production of garments
+ProcessingRawMaterials --> Choice2
+PurchasingRawMaterials --> Choice2
+Choice2 --> ProductionOfGarments
+
+ProductionOfGarments : entry / Purchasing or processing of raw materials
+ProductionOfGarments : do / Manufacturing
+ProductionOfGarments : exit / Product checking
+
+ProductionOfGarments --> ProductChecking
+
+ProductChecking : entry / Production of garments
+ProductChecking : do / Checking for defects and clearance
+ProductChecking : exit / Receiving the ordered garments
+
+ProductChecking --> ReceivingOrderedGarments
+
+ReceivingOrderedGarments : entry / Product checking
+ReceivingOrderedGarments : do / Garment delivered
+ReceivingOrderedGarments : exit / Billing
+
+ReceivingOrderedGarments --> Billing
+
+Billing : entry / Receiving the ordered garments
+Billing : do / Making payments
+Billing : exit / Report generation
+
+Billing --> ReportGeneration
+
+ReportGeneration : entry / Billing
+ReportGeneration : do / Giving feedback
+ReportGeneration : exit / final state
+
+ReportGeneration --> [*]
+
+@enduml
+
+Example 3 Requirement:
+Student Counselling Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a student to log in.
+2. The system shall prompt the student to try again if login details are incorrect.
+3. The system shall proceed with registration and payment upon a successful login.
+4. The system shall end there if the registration payment is not completed.
+5. The system shall register the student and declare ranks if the registration payment is completed.
+6. The system shall allow the student to pay enrollment fees after rank declaration.
+7. The system shall end there if the payment for enrollment fees is not successful.
+8. The system shall allow the student to fill in their choices if the payment for enrollment fees is successful.
+9. The system shall lock the choices and allocate seats based on rank if they are correct.
+10. The system shall generate an admit letter once a seat is allotted.
+11. The system shall allow the student to accept or decline the admit letter.
+
+Example 3 PlantUML:
+@startuml
+title UML State Chart Diagram
+
+[*] --> StartMerge
+
+state StartMerge <<choice>>
+state Login
+state LoginDecision <<choice>>
+state "Invalid Login" as InvalidLogin
+state "Valid Login" as ValidLogin
+state RegistrationDecision <<choice>>
+state "Failed Registration" as FailedRegistration
+state "Rank Declaration" as RankDeclaration
+state "Enrollment Fees" as EnrollmentFees
+state PaymentDecision <<choice>>
+state "Invalid Payment" as InvalidPayment
+state "Valid Payment" as ValidPayment
+state "Choice Filing" as ChoiceFiling
+state ChoiceDecision <<choice>>
+state "Failed choice filing" as FailedChoiceFiling
+state "Seat Allotment" as SeatAllotment
+state "Admit Letter Generation" as AdmitLetterGeneration
+state "Accept/Decline" as AcceptDecline
+
+Login : entry / To Action
+Login : do / Log in to the system
+Login : exit / Username and password entered
+
+InvalidLogin : entry / Trying to log in
+InvalidLogin : do / Invalid username and password
+InvalidLogin : exit / Back to login page
+
+ValidLogin : entry / Student logged in
+ValidLogin : do / Registration form submission with payment
+ValidLogin : exit / Student Registered
+
+FailedRegistration : entry / Payment not made
+FailedRegistration : do / Throw an error
+FailedRegistration : exit / Abnormal termination
+
+RankDeclaration : entry / Student registered
+RankDeclaration : do / Declare ranks for all the students
+RankDeclaration : exit / Rank published
+
+EnrollmentFees : entry / Rank declared
+EnrollmentFees : do / Pay enrollment fees
+EnrollmentFees : exit / Payment done
+
+InvalidPayment : entry / Payment not made
+InvalidPayment : do / Show the errors
+InvalidPayment : exit / Abnormal Termination
+
+ValidPayment : entry / Payment made
+ValidPayment : do / Allow to fill choices
+ValidPayment : exit / log out from payment portal
+
+ChoiceFiling : entry / Valid payment
+ChoiceFiling : do / Fill choices
+ChoiceFiling : exit / Lock choices
+
+FailedChoiceFiling : entry / Invalid choices
+FailedChoiceFiling : do / Show the errors
+FailedChoiceFiling : exit / Abnormal Termination
+
+SeatAllotment : entry / Choices must be locked
+SeatAllotment : do / Allot seats based on rank
+SeatAllotment : exit / Publish alloted results
+
+AdmitLetterGeneration : entry / Seat alotted
+AdmitLetterGeneration : do / Generate admit letter
+AdmitLetterGeneration : exit / Publish admit letters to students and colleges
+
+AcceptDecline : entry / Received admit letter
+AcceptDecline : do / Accept/Decline
+AcceptDecline : exit / After decision is made
+
+StartMerge --> Login
+Login --> LoginDecision
+LoginDecision --> InvalidLogin
+LoginDecision --> ValidLogin
+InvalidLogin --> StartMerge
+
+ValidLogin --> RegistrationDecision
+RegistrationDecision --> FailedRegistration
+RegistrationDecision --> RankDeclaration
+
+RankDeclaration --> EnrollmentFees
+EnrollmentFees --> PaymentDecision
+PaymentDecision --> InvalidPayment
+PaymentDecision --> ValidPayment
+
+ValidPayment --> ChoiceFiling
+ChoiceFiling --> ChoiceDecision
+ChoiceDecision --> FailedChoiceFiling
+ChoiceDecision --> SeatAllotment
+
+SeatAllotment --> AdmitLetterGeneration
+AdmitLetterGeneration --> AcceptDecline
+AcceptDecline --> [*]
+
+FailedRegistration --> [*]
+InvalidPayment --> [*]
+FailedChoiceFiling --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+E Ticketing For Bus — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create a new account.
+2. The system shall validate the registration of a new user.
+3. The system shall allow the user to log in upon successful registration.
+4. The system shall provide options for logged-in users to check their ticket status.
+5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.
+6. The system shall enable users to manage their account details such as editing or deleting them.
+7. The system shall log out the user after they complete any action.

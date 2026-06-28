@@ -1,0 +1,111 @@
+{
+  "run_id": "open_source__llama31_8b_instruct__few_shot",
+  "case_id": "case_80_staff_member_class",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nFirst Person Shooter Fps Games — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall keep the troll in a calm state with no actions if there is no detected threat.\n2. The system shall determine the troll's reaction based on the perceived strength of the detected opponent.\n3. The system shall make the troll aggressive and start an attack if the opponent appears weak enough to defeat.\n4. The system shall continue the troll's fight while it can see the opponent.\n5. The system shall calm the troll and return it to a normal state if it loses sight of the opponent.\n6. The system shall make the troll scared and panic if the opponent appears too strong.\n7. The system shall calm the troll and return it to a normal state if it gets away from or loses sight of a stronger opponent.\n8. The system shall remove the troll from the game if it takes a fatal hit and its health reaches zero.\n\nExample 1 PlantUML:\n@startuml\ntitle Troll State Diagram\n\n[*] --> Neutral\n\nstate Neutral\nstate Attack\nstate Panic\nstate Die\n\nNeutral --> Attack : see opponent [defeatable]\nAttack --> Neutral : lost opponent\n\nNeutral --> Panic : see opponent [undefeatable]\nPanic --> Neutral : lost opponent\n\nAttack --> Die : receive blow [health = 0] / pray\nPanic --> Die : receive blow [health = 0] / pray\n\nDie --> [*]\n\n@enduml\n\nExample 2 Requirement:\nAtm Many Scenarios Scenario 8 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall keep the card if it is invalid, expired, or the PIN was entered incorrectly too many times.\n2. The system shall return the card with a message if the user cancels the operation or the request is rejected.\n3. The system shall print a receipt and dispense cash if needed before returning the card to the user after a successful transaction.\n4. The system shall consider the session finished once the card is ejected.\n5. The system shall move into a short ending phase before resetting itself after completing the transaction or cancellation process.\n6. The system shall return to its normal waiting condition or shut down depending on the situation.\n\nExample 2 PlantUML:\n@startuml\ntitle ATM Control - Terminating Transaction\n\nstate \"Closed Down\" as ClosedDown\nClosedDown : entry / Display System Down\n\nstate Idle\nIdle : entry / Display Welcome\n\nstate \"Processing Customer Input\" as ProcessingCustomerInput\nstate \"Processing Transaction\" as ProcessingTransaction\n\nstate \"Terminating Transaction\" as TerminatingTransaction {\n\n  state Terminating\n  state Confiscating\n  state Ejecting\n  state Printing\n  state Dispensing\n\n  Confiscating --> Terminating : Card Confiscated /\\nDisplay Confiscated\n  Ejecting --> Terminating : Card Ejected /\\nDisplay Ejected\n  Printing --> Ejecting : Receipt Printed /\\nEject\n  Dispensing --> Printing : Cash Dispensed /\\nPrint Receipt,\\nDisplay Cash Dispensed,\\nConfirm Cash Dispensed\n}\n\nProcessingCustomerInput --> Confiscating : Stolen Card, Expired Card /\\nConfiscate, Update Status\nProcessingCustomerInput --> Confiscating : Third Invalid PIN /\\nConfiscate\nProcessingCustomerInput --> Ejecting : Cancel / Eject,\\nDisplay Cancel\n\nProcessingTransaction --> Ejecting : Rejected / Eject,\\nDisplay Apology\nProcessingTransaction --> Printing : Transfer Approved /\\nPrint Receipt,\\nUpdate Status\nProcessingTransaction --> Printing : Query Approved /\\nPrint Receipt,\\nUpdate Status\nProcessingTransaction --> Dispensing : Withdrawal Approved /\\nDispense Cash,\\nUpdate Status\n\nDispensing --> ClosedDown : Insufficient Cash /\\nEject,\\nAbort Cash Dispensed\n\nTerminating --> Idle : After (Elapsed Time) [Closedown Not Requested]\nTerminating --> ClosedDown : After (Elapsed Time) [Closedown Was Requested]\n\n@enduml\n\nExample 3 Requirement:\nAdvocate Diary — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to explore blogs and news updates.\n2. The system shall permit users to leave at any time after viewing blogs and news updates.\n3. The system shall enable users to create an account by providing their details.\n4. The system shall check the provided details during account creation.\n5. The system shall prevent users from proceeding if the provided details are incorrect during account creation.\n6. The system shall allow users to sign in using a password after creating an account.\n7. The system shall check the entered password during sign-in.\n8. The system shall allow users to add a new case after signing in.\n9. The system shall require users to select a category ( civil or criminal ) when adding a new case.\n10. The system shall allow users to enter details for the selected category when adding a new case.\n11. The system shall enable users to set reminders after entering case details.\n12. The system shall allow users to upload related documents for their cases.\n13. The system shall enable users to file something online after signing in.\n14. The system shall allow users to download model forms after signing in.\n15. The system shall enable users to view references ( quick or book )after signing in.\n16. The system shall allow users to provide feedback after signing in.\n17. The system shall permit users to leave the system after completing their tasks.\n\nExample 3 PlantUML:\n@startuml\ntitle UML state machine diagram\n\nstate \"View blogs as news updates\" as ViewBlogs\nViewBlogs : entry/Visit page\nViewBlogs : do/Shows blogs and news updates\nViewBlogs : exit/Leave the page\n\nstate \"Register\" as Register\nRegister : entry/New user\nRegister : do/Verify details\nRegister : exit/Verified details\n\nstate \"Login\" as Login\nLogin : entry/Registered\nLogin : do/Verify password\nLogin : exit/View details\n\nstate \"View details and logs\" as ViewDetails\nViewDetails : entry/Login\nViewDetails : do/Show details of case and logs\nViewDetails : exit/Do required function\n\nstate \"Add case\" as AddCase\nAddCase : entry/Wants to add case\nAddCase : do/Show Category\nAddCase : exit/Selects a category\n\nstate \"Civil\" as Civil\nCivil : entry/Selects this category\nCivil : do/update view table\nCivil : exit/Allows to add details\n\nstate \"Criminal\" as Criminal\nCriminal : entry/Selects this category\nCriminal : do/Update the view table\nCriminal : exit/Allows to add details\n\nstate \"Add details\" as AddDetails\nAddDetails : entry/Selects category\nAddDetails : do/Add details about case\nAddDetails : exit/Update view table\n\nstate \"Add remainder\" as AddReminder\nAddReminder : entry/Adds details\nAddReminder : do/Add remainder\nAddReminder : exit/Update calender\n\nstate \"Upload document\" as UploadDocument\nUploadDocument : entry/Add details\nUploadDocument : do/Upload documents\nUploadDocument : exit/leave page\n\nstate \"File online\" as FileOnline\nFileOnline : entry/Prefers online filing\nFileOnline : do/Select category\nFileOnline : exit/Click a link\n\nstate \"Redirect to page\" as RedirectPage\nRedirectPage : entry/Click a link\nRedirectPage : do/Redirects to page\nRedirectPage : exit/Returns to page\n\nstate \"Download model forms\" as DownloadForms\nDownloadForms : entry/wants to download forms\nDownloadForms : do/Select a form\nDownloadForms : exit/Downloads form\n\nstate \"Reference\" as Reference\nReference : entry/Pefers to refer\nReference : do/Select a category\nReference : exit/prefered categoried is showed\n\nstate \"Quick References\" as QuickReferences\nQuickReferences : entry/Selects quick references\nQuickReferences : do/Shows some Quick references\nQuickReferences : exit/Leave the page\n\nstate \"Books\" as Books\nBooks : entry/Selects books\nBooks : do/Shows books\nBooks : exit/Leave page\n\nstate \"Feedback\" as Feedback\nFeedback : entry/Wants to give feedback\nFeedback : do/Add feedback\nFeedback : exit/Exit page\n\nstate \"Logout\" as Logout\nLogout : entry/Wants to leave the site\nLogout : do/The session of logged in user ended\nLogout : exit/Leave the site\n\nstate J1 <<choice>>\nstate J2 <<choice>>\nstate J3 <<choice>>\nstate J4 <<choice>>\nstate J5 <<choice>>\nstate J6 <<choice>>\n\nstate J10 <<choice>>\n\n[*] --> J1\n\nJ1 --> ViewBlogs\nJ1 --> Register\n\nViewBlogs --> [*]\n\nRegister --> J2\nJ2 --> [*] : [Invalid Credentials]\nJ2 --> Login : [Valid]\n\nLogin --> [*] : [Improper]\nLogin --> ViewDetails : [Proper]\n\nViewDetails --> J3\n\nJ3 --> AddCase\nJ3 --> FileOnline\nJ3 --> DownloadForms\nJ3 --> Reference\nJ3 --> Feedback\n\nAddCase --> J4\nJ4 --> Civil\nJ4 --> Criminal\n\nCivil --> J5\nCriminal --> J5\nJ5 --> AddDetails\nAddDetails --> AddReminder\nAddReminder --> UploadDocument\nUploadDocument --> J10\n\nFileOnline --> RedirectPage\nRedirectPage --> J10\n\nDownloadForms --> J10\n\nReference --> J6\nJ6 --> QuickReferences\nJ6 --> Books\nQuickReferences --> J10\nBooks --> J10\n\nFeedback --> J10\n\nJ10 --> Logout\nLogout --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nStaff Member Class — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow assigning a staff member to a client or adding them to a campaign.\n2. The system shall allow removing assignments from staff members, returning them to an unassigned state.\n3. The system shall enable staff members to switch between different assignments during their work period.\n4. The system shall mark a staff member as unemployed when they leave the job.\n5. The system shall archive the record of a former employee after some time has passed.\n",
+  "requirement_used": "Staff Member Class — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow assigning a staff member to a client or adding them to a campaign.\n2. The system shall allow removing assignments from staff members, returning them to an unassigned state.\n3. The system shall enable staff members to switch between different assignments during their work period.\n4. The system shall mark a staff member as unemployed when they leave the job.\n5. The system shall archive the record of a former employee after some time has passed.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run2\\runs\\open_source__llama31_8b_instruct__few_shot\\case_80_staff_member_class\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "Unassigned",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 5,
+    "transition_count": 8
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_58_first_person_shooter_fps_games",
+        "case_71_atm_many_scenarios_8",
+        "case_05_advocate_diary"
+      ],
+      "seed": 43,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "Unassigned",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 5,
+        "transition_count": 8
+      },
+      "strict_state_diagram_valid": true,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run2\\runs\\open_source__llama31_8b_instruct__few_shot\\case_80_staff_member_class\\run_01.initial.puml"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 5,
+    "state_fn": 8,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 8,
+    "transition_fn": 5,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 5,
+    "state_fn_relaxed": 7,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 8,
+    "transition_fn_relaxed": 5,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 8,
+    "transition_fn_semantic": 5,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  }
+}
