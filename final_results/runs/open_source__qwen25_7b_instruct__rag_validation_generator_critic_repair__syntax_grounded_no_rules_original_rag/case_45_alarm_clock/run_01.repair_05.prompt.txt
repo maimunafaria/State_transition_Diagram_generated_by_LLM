@@ -1,0 +1,61 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Alarm Clock — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall be in an off state initially.
+2. The system shall support when the user sets an alarm time, the system shall activate the alarm.
+3. The system shall ensure that the user shall be able to turn off the activated alarm.
+4. The system shall support when the current time matches the set alarm time, the system shall start ringing the alarm.
+5. The system shall ensure that once the alarm is ringing, the user shall be able to stop it.
+6. The system shall support after stopping the alarm, the system shall remain active for the next scheduled alarm time.
+
+Candidate PlantUML:
+@startuml
+[*] --> Off
+
+state Off {
+  Off --> Idle : turn off
+}
+
+state Idle {
+  Idle --> SetAlarm : set alarm
+  SetAlarm --> AlarmSet : alarm set
+}
+
+state AlarmSet {
+  AlarmSet --> Ringing : alarm time reached
+  Ringing --> Ringing : keep ringing
+  Ringing --> Stopped : stop alarm
+  Stopped --> Idle : alarm stopped
+}
+
+Ringing --> Ringing : keep ringing
+Stopped --> Idle : alarm stopped
+
+AlarmSet --> Off : turn off
+Off --> [*] : completion
+@enduml
+
+
+Validation issues:
+- duplicate_transitions_detected (2)
+
+Validator details:
+- Current initial state: Off
+- State count: 6
+- Transition count: 8
+- Duplicate transition count: 2
+
+Valid PlantUML repair patterns:
+Pattern 1: merge duplicate transitions
+' Keep one transition for the same source and target
+SOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT

@@ -1,0 +1,102 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+E Ticketing For Bus — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create a new account.
+2. The system shall validate the registration of a new user.
+3. The system shall allow the user to log in upon successful registration.
+4. The system shall provide options for logged-in users to check their ticket status.
+5. The system shall allow a user to book a ticket, which will be confirmed then make the payment.
+6. The system shall enable users to manage their account details such as editing or deleting them.
+7. The system shall log out the user after they complete any action.
+
+Candidate PlantUML:
+@startuml
+title UML State Chart Diagram for E Ticketing For Bus
+
+[*] --> Registration
+
+state Registration {
+    [*] --> EnterDetails
+
+    state EnterDetails
+    state ValidateDetails
+    state RegistrationComplete
+    state ReEnterDetails
+
+    EnterDetails --> ValidateDetails : [Valid]
+    EnterDetails --> ReEnterDetails : [Invalid]
+    ReEnterDetails --> EnterDetails
+    ValidateDetails --> RegistrationComplete
+}
+
+RegistrationComplete --> Login
+
+state Login {
+    [*] --> Authenticate
+
+    state Authenticate
+    state LoginSuccess
+    state LoginFailed
+
+    Authenticate --> LoginSuccess : [Valid]
+    Authenticate --> LoginFailed : [Invalid]
+}
+
+LoginSuccess --> Dashboard
+
+state Dashboard {
+    [*] --> CheckTicketStatus
+    CheckTicketStatus --> Dashboard
+    [*] --> BookTicket
+    BookTicket --> ConfirmBooking
+    ConfirmBooking --> MakePayment
+    MakePayment --> PaymentSuccess
+    PaymentSuccess --> Dashboard
+    [*] --> ManageAccount
+    ManageAccount --> Dashboard
+    [*] --> Logout
+    Logout --> [*]
+}
+
+state ManageAccount {
+    [*] --> EditDetails
+    EditDetails --> Dashboard
+    [*] --> DeleteAccount
+    DeleteAccount --> [*]
+}
+
+CheckTicketStatus --> Dashboard
+
+@enduml
+
+
+Validation issues:
+- multiple_initial_state_transitions (Registration, EnterDetails, Authenticate, CheckTicketStatus, BookTicket, ManageAccount, Logout, EditDetails, DeleteAccount)
+- duplicate_transitions_detected (1)
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 19
+- Transition count: 15
+- Duplicate transition count: 1
+
+Valid PlantUML repair patterns:
+Pattern 1: exactly one top-level initial transition
+[*] --> INITIAL_STATE
+
+' Replace every additional [*] --> OTHER_STATE with a normal supported transition
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Pattern 2: merge duplicate transitions
+' Keep one transition for the same source and target
+SOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT

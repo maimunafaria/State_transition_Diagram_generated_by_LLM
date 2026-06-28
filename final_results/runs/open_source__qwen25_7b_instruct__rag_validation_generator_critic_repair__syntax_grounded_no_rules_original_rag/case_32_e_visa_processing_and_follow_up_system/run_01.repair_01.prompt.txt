@@ -1,0 +1,77 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Candidate PlantUML:
+@startuml
+[*] --> LoggedIn
+
+state LoggedIn {
+  [*] --> Dashboard
+  Dashboard --> Settings : open settings
+  Settings --> Dashboard : back
+  Dashboard --> ViewStatus : view status
+  ViewStatus --> ViewStatus : check status
+  ViewStatus --> CancelApp : cancel application
+  ViewStatus --> ModifyDetails : modify details
+  ViewStatus --> ViewDetails : view details
+  ViewDetails --> ViewDetails : view purpose of application
+  ViewDetails --> ViewStatus : view status
+  ViewDetails --> Feedback : give feedback
+  ModifyDetails --> ViewDetails : view details
+  ModifyDetails --> ViewStatus : view status
+  CancelApp --> ViewStatus : view status
+  CancelApp --> ViewDetails : view details
+  CancelApp --> Feedback : give feedback
+  ViewStatus --> ViewDetails : view details
+  ViewStatus --> Feedback : give feedback
+  Feedback --> ViewDetails : view details
+  Feedback --> ViewStatus : view status
+  ViewDetails --> ViewStatus : view status
+}
+
+LoggedIn --> [*] : logout
+@enduml
+
+
+Validation issues:
+- multiple_initial_state_transitions (LoggedIn, Dashboard)
+- duplicate_transitions_detected (2)
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 8
+- Transition count: 18
+- Duplicate transition count: 2
+
+Valid PlantUML repair patterns:
+Pattern 1: exactly one top-level initial transition
+[*] --> INITIAL_STATE
+
+' Replace every additional [*] --> OTHER_STATE with a normal supported transition
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Pattern 2: merge duplicate transitions
+' Keep one transition for the same source and target
+SOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT

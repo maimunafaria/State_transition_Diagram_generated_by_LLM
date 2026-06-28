@@ -1,0 +1,95 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Website Development — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to navigate from the homepage using a navigation bar.
+2. The system shall display information about projects when selected by the user.
+3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.
+4. The system shall display information about career opportunities when selected by the user.
+5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.
+6. The system shall check submitted job applications after they are submitted.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram
+
+[*] --> NavigationBar
+
+state HomePage {
+  [*] --> Projects
+  [*] --> CareerOpportunities
+}
+
+state Projects {
+  Projects --> ViewPhotos
+  Projects --> ViewVideos
+  ViewPhotos --> Projects
+  ViewVideos --> Projects
+}
+
+state CareerOpportunities {
+  CareerOpportunities --> ViewUpdates
+  CareerOpportunities --> ApplicationForm
+  ViewUpdates --> CareerOpportunities
+  ApplicationForm --> CareerOpportunities
+}
+
+state ViewPhotos {
+  ViewPhotos --> Projects
+}
+
+state ViewVideos {
+  ViewVideos --> Projects
+}
+
+state ViewUpdates {
+  ViewUpdates --> CareerOpportunities
+}
+
+state ApplicationForm {
+  ApplicationForm --> CareerOpportunities
+}
+
+state CareerOpportunitiesReview {
+  CareerOpportunities --> CareerOpportunitiesReview
+  CareerOpportunitiesReview --> [*]
+}
+
+@enduml
+
+
+Validation issues:
+- multiple_initial_state_transitions (NavigationBar, Projects, CareerOpportunities)
+- duplicate_transitions_detected (4)
+- orphan: HomePage
+- orphan_states_detected
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 9
+- Transition count: 9
+- Duplicate transition count: 4
+
+Valid PlantUML repair patterns:
+Pattern 1: exactly one top-level initial transition
+[*] --> INITIAL_STATE
+
+' Replace every additional [*] --> OTHER_STATE with a normal supported transition
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Pattern 2: merge duplicate transitions
+' Keep one transition for the same source and target
+SOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT
+
+Pattern 3: connect a requirement-supported orphan state
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT

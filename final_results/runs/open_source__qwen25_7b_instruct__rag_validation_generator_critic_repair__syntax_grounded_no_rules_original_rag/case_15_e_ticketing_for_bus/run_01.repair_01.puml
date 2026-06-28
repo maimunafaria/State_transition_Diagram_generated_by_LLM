@@ -1,0 +1,68 @@
+@startuml
+title UML State Chart Diagram for E Ticketing For Bus
+
+[*] --> Registration
+
+state Registration {
+    EnterDetails
+    ValidateDetails
+    RegistrationComplete
+    ReEnterDetails
+
+    [*] --> EnterDetails : [New]
+    EnterDetails --> ValidateDetails : [Valid]
+    EnterDetails --> ReEnterDetails : [Invalid]
+    ReEnterDetails --> EnterDetails : [Re-enter Valid]
+    ValidateDetails --> RegistrationComplete : [Complete]
+}
+
+RegistrationComplete --> Login
+
+state Login {
+    Authenticate
+    LoginSuccess
+    LoginFailed
+
+    [*] --> Authenticate : [Login]
+    Authenticate --> LoginSuccess : [Valid]
+    Authenticate --> LoginFailed : [Invalid]
+}
+
+LoginSuccess --> Dashboard
+
+state Dashboard {
+    CheckTicketStatus
+    BookTicket
+    ConfirmBooking
+    MakePayment
+    PaymentSuccess
+    ManageAccount
+    Logout
+    EditDetails
+    DeleteAccount
+
+    CheckTicketStatus --> Dashboard : [Check Status]
+    [*] --> BookTicket : [Book Ticket]
+    BookTicket --> ConfirmBooking : [Confirm]
+    ConfirmBooking --> MakePayment : [Make Payment]
+    MakePayment --> PaymentSuccess : [Success]
+    PaymentSuccess --> Dashboard : [Back to Dashboard]
+    [*] --> ManageAccount : [Manage Account]
+    ManageAccount --> Dashboard : [Back to Dashboard]
+    [*] --> Logout : [Logout]
+    Logout --> [*] : [Logged Out]
+}
+
+state ManageAccount {
+    EditDetails
+    DeleteAccount
+
+    [*] --> EditDetails : [Edit Details]
+    EditDetails --> Dashboard : [Back to Dashboard]
+    [*] --> DeleteAccount : [Delete Account]
+    DeleteAccount --> [*] : [Deleted]
+}
+
+CheckTicketStatus --> Dashboard : [Check Status]
+
+@enduml
