@@ -1,0 +1,944 @@
+
+===== PAGE 1 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+ 
+ 
+Large Language Model–Driven 
+Generation of State Transition 
+Diagrams from Natural Language 
+Requirements 
+ 
+Result and Analysis 
+ 
+Submitted by 
+Mussammat Maimuna Faria 
+Institute of Information Technology 
+University of Dhaka 
+ 
+ 
+Supervised by 
+Dr. Ahmedul Kabir 
+Associate Professor 
+Institute of Information Technology 
+University of Dhaka 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Submission Date: 29 June, 2026 
+Results and Analysis  |  1 
+
+===== PAGE 2 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+Master’s Thesis Result & Analysis 
+ 
+ 
+ 
+ 
+ 
+Large Language Model–Driven Generation of 
+State Transition Diagrams from Natural 
+Language Requirements 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Author 
+Mussammat Maimuna Faria 
+Institute of Information Technology 
+University of Dhaka 
+ 
+       Supervisor 
+Dr. Ahmedul Kabir 
+Associate Professor 
+Institute of Information Technology 
+University of Dhaka 
+Results and Analysis  |  2 
+
+===== PAGE 3 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+Table of Content 
+1. Introduction---------------------------------------------------------------------------------------------------------------5 
+2. Experimental Setup---------------------------------------------------------------------------------------------------- 5 
+2.1 Dataset and Split---------------------------------------------------------------------------------------------------5 
+2.2 Models and Generation Strategies---------------------------------------------------------------------------- 5 
+2.3 Validation and Repair--------------------------------------------------------------------------------------------- 6 
+2.4 Human and LLM Evaluation-------------------------------------------------------------------------------------6 
+2.5 Computing Environment and Hyperparameters------------------------------------------------------------6 
+3. Evaluation Metrics------------------------------------------------------------------------------------------------------6 
+3.1 Syntactic and Structural Validity--------------------------------------------------------------------------------6 
+3.2 State, Transition, and Overall F1-------------------------------------------------------------------------------6 
+3.3 Repair Metrics------------------------------------------------------------------------------------------------------ 7 
+3.4 Stability--------------------------------------------------------------------------------------------------------------- 7 
+3.5 Human–LLM Agreement-----------------------------------------------------------------------------------------7 
+4. Experimental Results--------------------------------------------------------------------------------------------------7 
+4.1 Prompting Strategies and Validity----------------------------------------------------------------------------- 7 
+4.2 Retrieval-Corpus Analysis--------------------------------------------------------------------------------------- 9 
+4.3 Original Iterative Repair Results------------------------------------------------------------------------------- 9 
+4.4 Baseline versus Syntax-Grounded Repair------------------------------------------------------------------ 9 
+4.5 State, Transition, and Overall F1----------------------------------------------------------------------------- 11 
+4.6 Stability Across Three Runs-----------------------------------------------------------------------------------12 
+4.7 LLM-as-a-Judge Results--------------------------------------------------------------------------------------- 12 
+4.7.1 Overall Alignment with Human Scores-------------------------------------------------------------- 12 
+4.7.2 Alignment by Generation or Repair Strategy------------------------------------------------------ 13 
+4.7.3 Inter-Judge Agreement----------------------------------------------------------------------------------14 
+4.7.4 Same-Model Evaluation Pattern---------------------------------------------------------------------- 14 
+5. Comparative Analysis----------------------------------------------------------------------------------------------- 14 
+5.1 Prompting, Retrieval, and Repair---------------------------------------------------------------------------- 14 
+5.2 Automated Metrics versus Human Quality-----------------------------------------------------------------15 
+5.3 LLM Judges versus Human Evaluators-------------------------------------------------------------------- 15 
+6. Statistical Analysis--------------------------------------------------------------------------------------------------- 15 
+7. Resource Utilization Analysis-------------------------------------------------------------------------------------15 
+8. Discussion of Findings----------------------------------------------------------------------------------------------16 
+8.1 Why Examples Improve Syntax More Than Structure--------------------------------------------------16 
+8.2 Why Targeted Repair Helps Selectively-------------------------------------------------------------------- 16 
+8.3 Why LLM Judges Under-Score Humans-------------------------------------------------------------------16 
+8.4 Practical Implications--------------------------------------------------------------------------------------------16 
+9. Threats to Validity and Limitations------------------------------------------------------------------------------16 
+9.1 Construct Validity-------------------------------------------------------------------------------------------------16 
+9.2 Internal Validity----------------------------------------------------------------------------------------------------16 
+9.3 External Validity---------------------------------------------------------------------------------------------------17 
+9.4 Human and LLM Evaluation-----------------------------------------------------------------------------------17 
+Results and Analysis  |  3 
+
+===== PAGE 4 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+9.5 Potential Same-Model Confounding-------------------------------------------------------------------------17 
+10. Summary--------------------------------------------------------------------------------------------------------------- 17 
+Appendix A. Final Data-Insertion Checklist--------------------------------------------------------------------- 18 
+ 
+List of Figures 
+List of Tables 
+ 
+ 
+Results and Analysis  |  4 
+
+===== PAGE 5 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+1. Introduction 
+This chapter presents and analyses the empirical results of the study on generating UML state transition 
+diagrams from natural-language requirements using open-source large language models (LLMs). The 
+evaluation covers the effects of prompting strategies, retrieval-augmented generation (RAG), automated 
+syntactic and structural validation, iterative repair, semantic graph-overlap metrics, generation stability, and 
+LLM-as-a-Judge evaluation. The chapter first reports the original generation and repair findings, then presents 
+the extension comparing baseline repair with syntax-grounded repair and examining the alignment of three 
+LLM judges with human evaluators. 
+The analysis is organised around three complementary notions of quality. First, syntactic validity determines 
+whether the generated PlantUML code can be parsed. Second, structural validity checks graph-level UML 
+constraints, including lifecycle, reachability, duplicate transitions, and special-node rules. Third, semantic 
+quality examines whether the diagram represents the intended behaviour through State F1, human judgment, 
+and LLM-based judgment. This separation is necessary because a diagram can compile successfully and 
+satisfy structural rules while still omitting or contradicting required behaviour. 
+2. Experimental Setup 
+2.1 Dataset and Split 
+The benchmark contains 80 requirement–diagram pairs collected from software-engineering textbooks and 
+UML instructional materials. Each item includes a structured natural-language requirement and a 
+corresponding ground-truth PlantUML state transition diagram. Twenty-seven cases were selected as the 
+held-out test set, while the remaining 53 cases were used only for prompting examples and retrieval support. 
+The test cases were excluded from the example pool and the RAG corpus to reduce information leakage. 
+The dataset covers simple, medium, and complex diagrams. Complexity was operationalised using the number 
+of states: simple diagrams contain at most six states, medium diagrams contain seven to fourteen states, and 
+complex diagrams contain more than fourteen states. These thresholds correspond to the 25th and 75th 
+percentiles of the dataset distribution. 
+2.2 Models and Generation Strategies 
+Role 
+Model 
+Configuration 
+Generator / general judge 
+Llama 3.1 8B Instruct 
+Open-weight instruction-tuned model 
+Generator 
+Mistral 7B Instruct 
+Open-weight instruction-tuned model 
+Generator / general judge 
+DeepSeek-R1 14B 
+Reasoning-oriented open-weight model 
+Generator 
+Qwen 2.5 7B Instruct 
+Open-weight instruction-tuned model 
+Specialised judge 
+Prometheus 2 7B 
+Rubric-based evaluator 
+ 
+Four generation strategies were evaluated: zero-shot prompting, one-shot prompting, few-shot prompting using 
+three examples spanning the three complexity categories, and RAG. The RAG corpus combined 
+requirement–diagram examples, PlantUML documentation, and theoretical UML resources. Additional RAG 
+analysis isolated examples-only, rules-only, and theory-only retrieval configurations. 
+Results and Analysis  |  5 
+
+===== PAGE 6 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+2.3 Validation and Repair 
+Every generated output was checked using the PlantUML command-line validator and a deterministic 
+rule-based graph analyser. The structural analyser verifies exactly one initial transition, at least one final 
+transition, absence of duplicate transitions, reachability, absence of orphan states, valid choice/fork/join 
+behaviour, valid use of history states, and reliable graph extraction. 
+The original study used a validation-aware repair workflow in which detected syntax and structural violations 
+were supplied to the same LLM that generated the diagram. The extension compares this baseline repair 
+prompt with a syntax-grounded repair prompt that provides targeted guidance relevant to the detected 
+violation. Both repair methods were applied to the same set of 108 cases, enabling paired comparison. 
+2.4 Human and LLM Evaluation 
+Only diagrams that passed both syntactic and structural validation were submitted for semantic quality 
+evaluation. Human evaluators rated four criteria on a five-point Likert scale: completeness, correctness, 
+understandability, and terminological alignment. Scores below five required a short justification. 
+Three LLM judges evaluated the same requirement–diagram pairs using the same rubric content. DeepSeek 
+and Llama evaluated all four criteria in one structured JSON response. Prometheus evaluated one criterion per 
+call using its rubric-based absolute-grading format. The LLM judges were not used as formal syntax or 
+structural validators; their role was to approximate human semantic assessment after automated filtering. 
+2.5 Computing Environment and Hyperparameters 
+CPU, GPU/VRAM, RAM, operating system, Python version, Java version, PlantUML version, Ollama 
+version, exact model tags/digests, quantisation, temperature, top-p, context length, maximum output 
+tokens, and embedding-model version. State explicitly that all experiments were inference-only and no 
+model fine-tuning was performed. 
+3. Evaluation Metrics 
+3.1 Syntactic and Structural Validity 
+Syntactic validity is a binary measure indicating whether PlantUML accepts the diagram without an error. 
+Structural validity is also binary and is satisfied only when all deterministic graph rules pass. These metrics are 
+reported as the percentage of outputs that pass each stage. 
+3.2 State, Transition, and Overall F1 
+State matching uses semantic one-to-one alignment between generated and ground-truth state labels. Initial, 
+final, choice, fork, join, and history pseudostates are excluded. Candidate and reference states are embedded 
+locally, pairwise cosine similarities are calculated, and the Hungarian algorithm selects a maximum-weight 
+one-to-one alignment subject to a configurable similarity threshold. 
+Precision = TP / (TP + FP)     Recall = TP / (TP + FN)     F1 = 2PR / (P + R) 
+Transition matching is topology-based after semantic state alignment. A generated transition matches a 
+reference transition when its mapped source and target states are the same. Transition labels are optional and 
+are retained as diagnostic information rather than required for the primary topology match. Overall F1 is the 
+macro-average of State F1 and Transition F1. 
+Overall F1 = (State F1 + Transition F1) / 2 
+Results and Analysis  |  6 
+
+===== PAGE 7 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+3.3 Repair Metrics 
+Strict repair validity is the proportion of repaired diagrams that pass both syntax and structural checks. 
+Error-resolution rate is the number of initially detected violations that are removed divided by the total number 
+of initial violations. These two metrics are complementary: a repair may resolve one violation yet remain 
+invalid because another violation persists, or a new violation is introduced. 
+3.4 Stability 
+Stability measures the consistency of a model across three independent runs of the same configuration. For 
+each LLM, the mean State F1, Transition F1, Overall F1, syntax-validity rate, and structural-validity rate are 
+first calculated separately for each run. The standard deviation of the three run-level means is then reported. 
+Lower standard deviation indicates greater model-level stability. Mean case-wise standard deviation is 
+additionally reported to avoid masking offsetting changes across cases. 
+3.5 Human–LLM Agreement 
+LLM judge scores are compared with final human scores using Spearman rank correlation, mean absolute error 
+(MAE), exact agreement, within-one-point agreement, weighted Cohen’s kappa, and mean signed error. Mean 
+signed error is calculated as judge score minus human score; negative values therefore indicate systematic 
+under-scoring. 
+4. Experimental Results 
+4.1 Prompting Strategies and Validity 
+ 
+Metric 
+Strategy 
+Llama 
+Mistral 
+DeepSeek 
+Qwen 
+Syntactic validity 
+Zero-shot 
+29.6% 
+3.7% 
+59.3% 
+22.2% 
+Syntactic validity 
+One-shot 
+96.3% 
+85.2% 
+92.6% 
+74.1% 
+Syntactic validity 
+Few-shot 
+92.6% 
+96.3% 
+88.9% 
+96.3% 
+Syntactic validity 
+RAG 
+100.0% 
+74.1% 
+85.2% 
+100.0% 
+Structural validity 
+Zero-shot 
+0.0% 
+0.0% 
+0.0% 
+0.0% 
+Structural validity 
+One-shot 
+18.5% 
+3.7% 
+11.1% 
+3.7% 
+Structural validity 
+Few-shot 
+29.6% 
+7.4% 
+22.2% 
+11.1% 
+Structural validity 
+RAG 
+22.2% 
+14.8% 
+14.8% 
+14.8% 
+ 
+Results and Analysis  |  7 
+
+===== PAGE 8 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+ 
+Figure 1. Syntactic validity across prompting and retrieval strategies. 
+ 
+Figure 2. Structural validity across prompting and retrieval strategies. 
+Finding 1. Examples produced a large improvement in PlantUML syntax, but structural validity 
+remained below 30% for the initial prompting and full-RAG configurations. 
+Zero-shot prompting produced no structurally valid diagram for any model. One-shot and few-shot examples 
+substantially improved syntax, demonstrating that the models can imitate PlantUML surface form. The much 
+smaller gain in structural validity indicates that syntax learning does not automatically provide lifecycle 
+completeness, reachability, or correct branching structure. 
+Results and Analysis  |  8 
+
+===== PAGE 9 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+4.2 Retrieval-Corpus Analysis 
+RAG corpus 
+Metric 
+Llama 
+Mistral 
+DeepSeek 
+Qwen 
+Rules only 
+Syntactic 
+77.8% 
+66.7% 
+81.5% 
+81.5% 
+Rules only 
+Structural 
+42.9% 
+5.6% 
+18.2% 
+50.0% 
+Examples only 
+Syntactic 
+96.3% 
+88.9% 
+74.1% 
+92.6% 
+Examples only 
+Structural 
+15.4% 
+4.2% 
+10.0% 
+12.0% 
+Theory only 
+Syntactic 
+88.9% 
+25.9% 
+63.0% 
+81.5% 
+Theory only 
+Structural 
+4.2% 
+0.0% 
+0.0% 
+4.6% 
+ 
+ 
+Finding 2. Retrieval effectiveness was model-dependent: rules-only retrieval helped Llama and Qwen 
+most, while theory-only retrieval was consistently weak. 
+The results do not support a single universally optimal RAG corpus. Rules improved structurally constrained 
+instruction-tuned models, whereas Mistral achieved its strongest reported full-RAG result when multiple 
+source types were combined. Qualitative inspection also identified retrieval-induced hallucination, where a 
+textually similar but behaviourally different example caused the generated diagram to omit target behaviour 
+and borrow unsupported states or transitions. 
+4.3 Original Iterative Repair Results 
+ 
+ 
+Results and Analysis  |  9 
+
+===== PAGE 10 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+Metric 
+Llama 
+Mistral 
+DeepSeek 
+Qwen 
+Syntactic validity 
+96.30% (26/27) 
+74.07% (20/27) 
+92.59% (25/27) 
+92.59% (25/27) 
+Structural validity 
+55.56% (15/27) 
+29.63% (8/27) 
+88.89% (24/27) 
+40.74% (11/27) 
+Human completeness 
+(median) 
+4 
+4 
+4 
+4 
+Human correctness 
+(median) 
+4 
+5 
+4 
+4 
+Human understandability 
+(median) 
+5 
+5 
+5 
+3 
+Human terminology 
+(median) 
+4 
+5 
+5 
+4 
+ 
+Repair improved structural validity for all four models, with DeepSeek achieving the strongest outcome. Most 
+successful repairs occurred in the first two iterations. Later iterations yielded diminishing returns and 
+sometimes removed necessary behavioural content while attempting to satisfy structural constraints. 
+4.4 Baseline versus Syntax-Grounded Repair 
+Repair method 
+Strict validity 
+Errors resolved 
+Baseline repair 
+58/108 (53.70%) 
+86/161 (53.42%) 
+Syntax-grounded repair 
+63/108 (58.33%) 
+103/161 (63.98%) 
+ 
+ 
+Figure 3. Overall comparison of baseline and syntax-grounded repair. 
+Finding 3. Syntax grounding produced a modest 4.63 percentage-point gain in strict validity but a larger 
+10.56 percentage-point gain in error resolution. 
+Results and Analysis  |  10 
+
+===== PAGE 11 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+The gap between error resolution and strict validity indicates that resolving more individual violations does not 
+guarantee that the entire diagram becomes valid. Some diagrams contained multiple violations, while other 
+repairs introduced new violations or left one unresolved problem that prevented strict acceptance. 
+Violation type 
+Baseline 
+Syntax-grounded 
+Better method 
+Missing final transition 
+81.63% (40/49) 
+77.55% (38/49) 
+Baseline 
+Missing initial transition 
+71.43% (10/14) 
+78.57% (11/14) 
+Syntax-grounded 
+Multiple initial transitions 
+20.00% (5/25) 
+40.00% (10/25) 
+Syntax-grounded 
+Unreachable states 
+42.11% (8/19) 
+57.89% (11/19) 
+Syntax-grounded 
+Orphan states 
+42.86% (6/14) 
+100.00% (14/14) 
+Syntax-grounded 
+PlantUML syntax error 
+16.67% (2/12) 
+25.00% (3/12) 
+Syntax-grounded 
+Duplicate transitions 
+70.00% (7/10) 
+60.00% (6/10) 
+Baseline 
+Choice without outgoing paths 
+50.00% (5/10) 
+30.00% (3/10) 
+Baseline 
+Choice without guards 
+33.33% (2/6) 
+83.33% (5/6) 
+Syntax-grounded 
+Invalid [*] → [*] 
+50.00% (1/2) 
+100.00% (2/2) 
+Syntax-grounded 
+Overall error resolution 
+53.42% (86/161) 
+63.98% (103/161) 
+Syntax-grounded 
+ 
+ 
+Figure 4. Error-type sensitivity of the two repair methods. 
+Finding 4. The advantage of syntax grounding was strongly violation-dependent rather than uniform. 
+Syntax grounding was especially effective for orphan states, missing choice guards, invalid direct 
+initial-to-final transitions, multiple initial transitions, and unreachable states. The baseline method remained 
+stronger for missing final transitions, duplicate transitions, and choice nodes without outgoing paths. This 
+Results and Analysis  |  11 
+
+===== PAGE 12 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+result suggests that targeted guidance is most useful for violations requiring explicit graph rules, whereas 
+simpler local edits may already be handled effectively by natural-language feedback. 
+4.5 State, Transition, and Overall F1 
+PENDING DATA: Insert the final model/strategy table containing mean State F1, Transition F1, and 
+Overall F1. Also insert the final semantic-state matching threshold, embedding model, number of 
+manually checked alignments, and any observed false matches. 
+Model / strategy 
+State F1 
+Transition F1 
+Overall F1 
+Llama — selected 
+configuration 
+[insert] 
+[insert] 
+[insert] 
+Mistral — selected 
+configuration 
+[insert] 
+[insert] 
+[insert] 
+DeepSeek — selected 
+configuration 
+[insert] 
+[insert] 
+[insert] 
+Qwen — selected 
+configuration 
+[insert] 
+[insert] 
+[insert] 
+Baseline repair 
+[insert] 
+[insert] 
+[insert] 
+Syntax-grounded repair 
+[insert] 
+[insert] 
+[insert] 
+ 
+4.6 Stability Across Three Runs 
+PENDING DATA: Insert the completed model-level stability summary: run-level mean F1, run-level SD, 
+mean case-wise SD, syntax-validity SD, structural-validity SD, and consistent-validity percentage for 
+each LLM. 
+LLM 
+Mean Overall F1 
+Run SD 
+Mean case-wise 
+SD 
+Syntax rate 
+Structural rate 
+Llama 
+[insert] 
+[insert] 
+[insert] 
+[insert] 
+[insert] 
+Mistral 
+[insert] 
+[insert] 
+[insert] 
+[insert] 
+[insert] 
+DeepSeek 
+[insert] 
+[insert] 
+[insert] 
+[insert] 
+[insert] 
+Qwen 
+[insert] 
+[insert] 
+[insert] 
+[insert] 
+[insert] 
+ 
+4.7 LLM-as-a-Judge Results 
+4.7.1 Overall Alignment with Human Scores 
+Judge 
+n_valid 
+Spearman 
+MAE 
+Exact % 
+Within-1 % 
+Weighted κ 
+Mean signed 
+error 
+DeepSeek 
+232 
+0.131 
+1.164 
+32.33 
+68.53 
+0.165 
+−0.603 
+Llama 
+232 
+0.179 
+1.375 
+28.88 
+61.64 
+0.127 
+−1.030 
+Prometheus 
+196 
+0.125 
+1.321 
+23.98 
+68.88 
+0.139 
+−1.005 
+ 
+Results and Analysis  |  12 
+
+===== PAGE 13 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+ 
+Figure 5. Exact and within-one-point agreement between LLM judges and human scores. 
+ 
+Figure 6. Mean absolute error and systematic scoring bias of the LLM judges. 
+Finding 5. All three judges showed weak human alignment and systematically assigned lower scores 
+than the human evaluators. 
+DeepSeek provided the strongest overall balance, achieving the lowest MAE, highest exact agreement, and 
+highest weighted kappa. Llama produced the highest Spearman correlation but also the largest MAE and the 
+strongest negative scoring bias. Prometheus did not outperform the two general-purpose judges despite being 
+specialised for rubric-based evaluation. The negative mean signed errors show that the disagreement was not 
+random: every judge was more conservative than the human evaluators. 
+Results and Analysis  |  13 
+
+===== PAGE 14 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+4.7.2 Alignment by Generation or Repair Strategy 
+Subset 
+Judge 
+n_valid 
+Spearman 
+MAE 
+Exact % 
+Within-1 % 
+κ 
+Baseline repair 
+DeepSeek 
+144 
+0.118 
+1.201 
+34.03 
+65.97 
+0.180 
+Baseline repair 
+Llama 
+144 
+0.060 
+1.472 
+29.17 
+58.33 
+0.054 
+Baseline repair 
+Prometheus 
+120 
+0.212 
+1.275 
+26.67 
+71.67 
+0.221 
+Few-shot raw 
+DeepSeek 
+56 
+0.143 
+1.214 
+33.93 
+62.50 
+0.066 
+Few-shot raw 
+Llama 
+56 
+0.308 
+1.161 
+37.50 
+67.86 
+0.186 
+Few-shot raw 
+Prometheus 
+50 
+0.076 
+1.360 
+18.00 
+68.00 
+0.031 
+RAG raw 
+DeepSeek 
+32 
+0.269 
+0.906 
+21.88 
+90.63 
+0.361 
+RAG raw 
+Llama 
+32 
+0.513 
+1.313 
+12.50 
+65.63 
+0.356 
+RAG raw 
+Prometheus 
+26 
+−0.228 
+1.462 
+23.08 
+57.69 
+−0.164 
+ 
+Judge performance varied markedly across subsets. Prometheus showed the highest rank correlation and kappa 
+on baseline-repaired diagrams, Llama performed best on the few-shot subset, and Llama showed a 
+comparatively high Spearman correlation on the small RAG subset. The RAG subgroup contains only eight 
+complete DeepSeek/Llama diagrams and fewer Prometheus criterion rows, so these subgroup estimates should 
+be interpreted cautiously. 
+4.7.3 Inter-Judge Agreement 
+Judge pair 
+n_valid 
+Spearman 
+MAE 
+Exact % 
+Within-1 % 
+Weighted κ 
+DeepSeek vs 
+Llama 
+232 
+0.443 
+1.082 
+32.76 
+70.26 
+0.447 
+DeepSeek vs 
+Prometheus 
+196 
+0.282 
+1.168 
+27.55 
+70.41 
+0.325 
+Llama vs 
+Prometheus 
+196 
+0.253 
+1.148 
+29.08 
+77.04 
+0.287 
+ 
+Finding 6. DeepSeek and Llama agreed with each other substantially more strongly than either judge 
+agreed with the humans. 
+The two general-purpose judges achieved a weighted kappa of 0.447 and Spearman correlation of 0.443 with 
+each other. Their stronger mutual agreement suggests shared LLM evaluation tendencies that do not fully 
+reproduce human assessment. Prometheus displayed a more distinct scoring profile and weaker alignment with 
+both general-purpose judges. 
+4.7.4 Same-Model Evaluation Pattern 
+Judge 
+Subset 
+n_valid 
+MAE 
+Exact agreement 
+DeepSeek 
+Same-model diagrams 
+96 
+1.094 
+41.67% 
+DeepSeek 
+Other-model diagrams 
+136 
+1.213 
+25.74% 
+Llama 
+Same-model diagrams 
+60 
+1.133 
+38.33% 
+Llama 
+Other-model diagrams 
+172 
+1.459 
+25.58% 
+ 
+Results and Analysis  |  14 
+
+===== PAGE 15 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+Both general-purpose judges aligned more closely with humans on diagrams produced by their own model 
+families. However, this result should not be interpreted as confirmed self-preference bias because the 
+same-model and other-model groups differ in sample size, strategy distribution, and possible diagram 
+difficulty. A controlled analysis by criterion and repair strategy is needed before attributing the pattern to 
+model identity. 
+PENDING DATA: Audit Prometheus missing outputs. Report expected criterion rows, successfully 
+parsed rows, missing/failed rows, and the number of complete diagrams containing all four criterion 
+scores. Re-run the headline comparison on the common complete-case subset shared by all three judges. 
+5. Comparative Analysis 
+5.1 Prompting, Retrieval, and Repair 
+The results establish a clear hierarchy of workflow effects. Examples are highly effective for syntax 
+acquisition, but they are insufficient for preserving global lifecycle properties. RAG does not provide a 
+uniform advantage; its value depends on both the model and the retrieved source. Repair has the strongest 
+effect on structural validity because it supplies precise feedback after generation rather than relying only on 
+context provided before generation. 
+The syntax-grounded extension improves the resolution of difficult, rule-specific violations, but it does not 
+dominate the baseline for every error type. This argues against a single universal repair prompt. A practical 
+system should select targeted guidance based on the detected violation while retaining simpler repair 
+instructions for local errors that general LLMs already handle well. 
+5.2 Automated Metrics versus Human Quality 
+Automated syntax and structural checks are necessary but not sufficient. The original human evaluation 
+showed that understandability could receive a median score of five even when correctness was lower. 
+Consequently, visually clear and structurally valid diagrams can still omit required flows or introduce 
+unsupported behaviour. State and Transition F1 provide additional reference-based evidence, while human 
+evaluation remains necessary for semantic and practical judgment. 
+5.3 LLM Judges versus Human Evaluators 
+None of the three LLM judges achieved strong enough alignment to replace human evaluation. DeepSeek was 
+the most balanced overall, but its rank correlation and kappa remained weak. Llama showed slightly better 
+rank correlation while under-scoring by approximately one point on average. Prometheus, despite specialised 
+evaluation training, did not consistently outperform general-purpose models. The judges may therefore be 
+useful for supplementary screening, prioritising cases for review, or generating initial critiques, but not as an 
+independent ground truth for UML diagram quality. 
+6. Statistical Analysis 
+The experimental design supports paired non-parametric testing because the same requirements are evaluated 
+under multiple strategies and the score distributions are bounded. Strict-validity differences between baseline 
+and syntax-grounded repair should be tested using McNemar’s test on the paired case-level outcomes. Paired 
+State F1, Transition F1, and Overall F1 should be compared using the Wilcoxon signed-rank test. When more 
+than two generation strategies are compared, the Friedman test followed by Holm-corrected pairwise Wilcoxon 
+tests is appropriate. 
+Results and Analysis  |  15 
+
+===== PAGE 16 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+PENDING DATA: Insert the paired 2×2 strict-validity table (both valid, baseline only, syntax-grounded 
+only, neither valid), McNemar p-value and effect estimate. Insert Wilcoxon statistics, p-values, and effect 
+sizes for State F1, Transition F1, and Overall F1. 
+For LLM-as-a-Judge comparison, the absolute errors of the three judges can be compared on the common 
+complete-case subset using a Friedman test followed by paired Wilcoxon tests with Holm correction. Bootstrap 
+confidence intervals should be added for Spearman correlation, MAE, exact agreement, and weighted kappa 
+because some strategy-level subsets are small. 
+7. Resource Utilization Analysis 
+Resource utilisation was not a primary research question. Nevertheless, the final reproducibility package 
+should report average wall-clock time per generation, repair, and judgment call, together with the number of 
+calls required by each evaluation design. Prometheus requires four criterion-specific calls per diagram, 
+whereas the general-purpose judges return four scores in a single call. These differences affect practical cost 
+even when all models are run locally. 
+PENDING DATA: Insert mean runtime per generation, repair, DeepSeek judgment, Llama judgment, 
+and Prometheus criterion call, plus peak GPU memory or token counts if these were logged. If 
+unavailable, state that resource profiling was not collected and treat it as a limitation. 
+8. Discussion of Findings 
+8.1 Why Examples Improve Syntax More Than Structure 
+PlantUML surface syntax is local and highly imitable: examples expose keywords, arrow notation, state 
+declarations, and diagram boundaries. Structural correctness is global. It requires reasoning across the 
+complete lifecycle, checking whether all states are reachable, ensuring branching constructs are well formed, 
+and preserving a consistent initial-to-final path. These properties are not guaranteed by reproducing the 
+appearance of an example. 
+8.2 Why Targeted Repair Helps Selectively 
+Syntax-grounded repair is most beneficial when the violation corresponds to a precise, reusable structural 
+pattern. The gains for orphan states, missing guards, and multiple initial transitions support this explanation. 
+For straightforward edits such as adding a final transition or removing a duplicate, additional grounding may 
+distract the model or encourage unnecessary changes, which explains why the baseline remained competitive 
+or better for several local violations. 
+8.3 Why LLM Judges Under-Score Humans 
+All judges produced negative mean signed error. One plausible explanation is that the judge prompts explicitly 
+enumerate every possible source of deficiency, encouraging strict criterion-by-criterion checking, whereas 
+human evaluators may apply a more holistic interpretation and tolerate semantically equivalent abstractions. 
+Prometheus evaluates one criterion in isolation, which may further intensify local fault detection. The result 
+demonstrates that rubric equivalence does not guarantee identical scoring behaviour across human and 
+machine evaluators. 
+Results and Analysis  |  16 
+
+===== PAGE 17 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+8.4 Practical Implications 
+●​ Use few-shot examples to obtain reliable PlantUML syntax, but do not treat successful compilation as 
+evidence of correct behaviour. 
+●​ Apply deterministic validation and targeted repair before semantic assessment. 
+●​ Select repair guidance by violation type rather than relying on one universal prompt. 
+●​ Retain human review for completeness and correctness, particularly in safety-critical systems. 
+●​ Use LLM judges as supplementary reviewers or triage tools, not as replacements for expert judgment. 
+9. Threats to Validity and Limitations 
+9.1 Construct Validity 
+Semantic State F1 depends on an embedding model, a similarity threshold, and one-to-one alignment 
+decisions. Equivalent states may be missed, while similarly worded but behaviourally distinct states may be 
+matched. Transition F1 intentionally treats labels as optional, which measures topology but may overestimate 
+behavioural equivalence when two transitions connect the same states for different reasons. These risks should 
+be mitigated through manual inspection of a representative sample and transparent release of all mappings. 
+9.2 Internal Validity 
+LLM outputs depend on prompt wording, inference parameters, quantisation, and nondeterministic decoding. 
+The stability study addresses some of this variability, but only three repeated runs are available. Repair results 
+may also depend on the exact violation message supplied to the model. The comparison of LLM judges uses 
+different calling structures for Prometheus and the general-purpose models, so observed differences reflect 
+both model capability and prompt interface. 
+9.3 External Validity 
+The benchmark is derived primarily from textbook examples and may not represent the ambiguity, scale, 
+hierarchy, concurrency, and timing constraints of industrial systems. The test set contains 27 requirements, and 
+all evaluated generators are open-weight models of moderate size. Generalisation to proprietary models, larger 
+models, industrial requirements, and other UML diagram types therefore requires further study. 
+9.4 Human and LLM Evaluation 
+Human evaluation is subjective and was conducted only on diagrams that passed automated validation. 
+Consequently, the LLM-as-a-Judge results apply to the semantic assessment of already-valid diagrams and 
+cannot establish whether LLM judges detect syntax or structural invalidity. Prometheus produced fewer valid 
+criterion rows than DeepSeek and Llama, creating unequal sample sizes. Headline judge comparisons should 
+therefore be confirmed on a common complete-case subset. 
+9.5 Potential Same-Model Confounding 
+DeepSeek and Llama aligned more closely with humans on outputs produced by their own model families. 
+However, this apparent advantage is confounded by unequal sample sizes and differences in strategy and 
+diagram difficulty. It should be reported as a same-model pattern rather than definitive self-evaluation bias 
+unless a controlled analysis confirms the effect. 
+Results and Analysis  |  17 
+
+===== PAGE 18 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+10. Summary 
+The results show that reliable state transition diagram generation requires a layered workflow. Prompt 
+examples sharply improve syntactic validity, but initial structural validity remains low. RAG is model- and 
+source-dependent and may introduce behaviour from mismatched examples. Automated repair provides the 
+largest structural gains, with DeepSeek performing particularly strongly in the original workflow. The 
+syntax-grounded extension resolves more individual violations and improves full-diagram validity modestly, 
+but its advantage varies by violation type. 
+Human evaluation confirms that structurally valid diagrams can still be behaviourally incomplete or incorrect. 
+LLM judges only weakly reproduce human scores: DeepSeek provides the best overall balance, Llama shows 
+the highest rank correlation but the strongest under-scoring, and Prometheus does not consistently outperform 
+the general-purpose judges. The combined evidence supports using automated validators, targeted repair, 
+semantic graph metrics, and LLM-based critique as complementary aids while retaining human assessment as 
+the final authority for behavioural quality. 
+PENDING DATA: After the remaining F1, stability, and statistical outputs are available, replace every 
+yellow box, update the numerical summary, and verify that all values match the final analysis CSV files. 
+ 
+Results and Analysis  |  18 
+
+===== PAGE 19 =====
+Large Language Model–Driven Generation of State Transition Diagrams 
+Appendix A. Final Data-Insertion Checklist 
+●​ Hardware, software, model tags, inference parameters, and embedding-model details. 
+●​ Final State F1, Transition F1, and Overall F1 tables. 
+●​ Manual semantic state-alignment audit and final similarity threshold. 
+●​ Three-run model-level stability table and interpretation. 
+●​ Prometheus parsing/missing-output audit and common complete-case judge analysis. 
+●​ Paired baseline-versus-syntax-grounded McNemar and Wilcoxon tests with effect sizes. 
+●​ Resource-utilisation values or an explicit statement that they were not collected. 
+●​ Three to five qualitative examples illustrating successful repair, regression, and human–LLM 
+disagreement. 
+Results and Analysis  |  19 
