@@ -10,6 +10,8 @@ from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+from PIL import Image
+
 from plantuml_pipeline.generation import is_strict_state_diagram_valid
 from plantuml_pipeline.parser import parse_and_validate_puml_text
 from validate_run_folder_fresh import configure_plantuml
@@ -147,12 +149,30 @@ def content_hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def rendered_image_hash(path: Path) -> str:
+    with Image.open(path) as image:
+        rgba = image.convert("RGBA")
+        payload = (
+            rgba.width.to_bytes(4, "big")
+            + rgba.height.to_bytes(4, "big")
+            + rgba.tobytes()
+        )
+    return hashlib.sha256(payload).hexdigest()
+
+
 def write_csv(path: Path, rows: list[dict[str, object]]) -> None:
     if not rows:
         return
+    fieldnames: list[str] = []
+    seen_fields: set[str] = set()
+    for row in rows:
+        for field in row:
+            if field not in seen_fields:
+                seen_fields.add(field)
+                fieldnames.append(field)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
 
@@ -218,11 +238,11 @@ def prepare_output(path: Path, overwrite: bool) -> None:
 def covered_human_hashes(
     evaluated_root: Path,
     scores_csv: Path,
-) -> set[tuple[str, str]]:
+) -> set[tuple[str, str, str]]:
     if not evaluated_root.is_dir() or not scores_csv.is_file():
         return set()
 
-    covered: set[tuple[str, str]] = set()
+    covered: set[tuple[str, str, str]] = set()
     with scores_csv.open(newline="", encoding="utf-8-sig") as handle:
         for row in csv.DictReader(handle):
             try:
@@ -235,10 +255,10 @@ def covered_human_hashes(
             model = (row.get("generation_model") or "").strip()
             method = (row.get("generation_method") or "").strip()
             case_id = (row.get("case_id_full") or "").strip()
-            puml_path = evaluated_root / model / method / case_id / "diagram.puml"
-            if not puml_path.is_file():
+            png_path = evaluated_root / model / method / case_id / "diagram.png"
+            if not png_path.is_file():
                 continue
-            covered.add((case_id, content_hash(normalized_text(puml_path))))
+            covered.add((model, case_id, rendered_image_hash(png_path)))
     return covered
 
 
@@ -297,9 +317,15 @@ def main() -> int:
         source_path = Path(str(row["source_path"]))
         row["content_sha256"] = content_hash(normalized_text(source_path))
 
-    grouped: dict[tuple[str, str], list[dict[str, object]]] = defaultdict(list)
+    grouped: dict[tuple[str, str, str], list[dict[str, object]]] = defaultdict(list)
     for row in strict_rows:
-        grouped[(str(row["case_id"]), str(row["content_sha256"]))].append(row)
+        grouped[
+            (
+                str(row["model"]),
+                str(row["case_id"]),
+                str(row["content_sha256"]),
+            )
+        ].append(row)
 
     unique_rows: list[dict[str, object]] = []
     all_source_rows: list[dict[str, object]] = []
@@ -308,19 +334,19 @@ def main() -> int:
     sorted_groups = sorted(
         grouped.items(),
         key=lambda item: (
-            item[0][0],
+            item[0][1],
+            MODEL_ORDER.get(item[0][0], 99),
             min(
-                (
-                    METHOD_ORDER.get(str(row["method"]), 99),
-                    MODEL_ORDER.get(str(row["model"]), 99),
-                )
+                METHOD_ORDER.get(str(row["method"]), 99)
                 for row in item[1]
             ),
-            item[0][1],
+            item[0][2],
         ),
     )
 
-    for index, ((case_id, digest), sources) in enumerate(sorted_groups, start=1):
+    for index, ((_group_model, case_id, digest), sources) in enumerate(
+        sorted_groups, start=1
+    ):
         sources = sorted(
             sources,
             key=lambda row: (
@@ -373,6 +399,7 @@ def main() -> int:
             "content_sha256": digest,
             "equivalent_source_count": len(sources),
             "diagram_path": str(diagram_path),
+            "png_path": str(diagram_path.with_suffix(".png")),
             "requirement_path": str(target_dir / "requirement.txt"),
         }
         unique_rows.append(unique_row)
@@ -402,7 +429,12 @@ def main() -> int:
     needs_human = [
         row
         for row in unique_rows
-        if (str(row["case_id"]), str(row["content_sha256"])) not in covered
+        if (
+            str(row["representative_model"]),
+            str(row["case_id"]),
+            rendered_image_hash(Path(str(row["png_path"]))),
+        )
+        not in covered
     ]
 
     human_mapping_rows: list[dict[str, object]] = []
@@ -512,7 +544,7 @@ def main() -> int:
         "Final strict-valid evaluation package",
         "",
         f"Strict-valid source outputs: {len(strict_rows)}",
-        f"Unique diagrams after content deduplication within each case: {len(unique_rows)}",
+        f"Unique diagrams after content deduplication within each model-case: {len(unique_rows)}",
         "",
         "Each diagram folder contains:",
         "- diagram.puml",
