@@ -40,6 +40,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--output-csv", required=True)
     parser.add_argument("--expected-run-count", type=int, default=3)
+    parser.add_argument(
+        "--group-by",
+        choices=["llm", "llm_method"],
+        default="llm",
+        help="Aggregate by llm only, or by llm+method for repair-technique stability.",
+    )
     return parser
 
 
@@ -76,21 +82,29 @@ def main() -> int:
                 }
             )
 
-    by_llm_run: dict[str, dict[str, list[dict[str, object]]]] = defaultdict(lambda: defaultdict(list))
-    by_llm_case: dict[str, dict[str, list[dict[str, object]]]] = defaultdict(lambda: defaultdict(list))
+    by_group_run: dict[str, dict[str, list[dict[str, object]]]] = defaultdict(lambda: defaultdict(list))
+    by_group_case: dict[str, dict[str, list[dict[str, object]]]] = defaultdict(lambda: defaultdict(list))
 
     for row in per_case_rows:
-        by_llm_run[str(row["llm"])][str(row["results_set"])].append(row)
-        by_llm_case[str(row["llm"])][str(row["case_id"])].append(row)
+        if args.group_by == "llm_method":
+            group_key = f"{row['llm']}|{row['method_name']}"
+        else:
+            group_key = str(row["llm"])
+        by_group_run[group_key][str(row["results_set"])].append(row)
+        by_group_case[group_key][str(row["case_id"])].append(row)
 
     summary_rows: list[dict[str, object]] = []
-    for llm in sorted(by_llm_run):
+    for group_key in sorted(by_group_run):
+        if "|" in group_key:
+            llm, method_name = group_key.split("|", 1)
+        else:
+            llm, method_name = group_key, "all"
         run_state_means: list[float] = []
         run_syntax_means: list[float] = []
         run_structural_means: list[float] = []
 
-        for run_label in sorted(by_llm_run[llm]):
-            run_rows = by_llm_run[llm][run_label]
+        for run_label in sorted(by_group_run[group_key]):
+            run_rows = by_group_run[group_key][run_label]
             run_state_means.append(_mean([float(r["semantic_state_f1"]) for r in run_rows]))
             run_syntax_means.append(
                 _mean([1.0 if bool(r["syntax_valid"]) else 0.0 for r in run_rows])
@@ -104,8 +118,8 @@ def main() -> int:
         structural_consistent_cases = 0
         complete_cases = 0
 
-        for case_id in sorted(by_llm_case[llm]):
-            case_rows = by_llm_case[llm][case_id]
+        for case_id in sorted(by_group_case[group_key]):
+            case_rows = by_group_case[group_key][case_id]
             distinct_runs = {str(r["results_set"]) for r in case_rows}
             if len(distinct_runs) != args.expected_run_count:
                 continue
@@ -125,6 +139,7 @@ def main() -> int:
         summary_rows.append(
             {
                 "llm": llm,
+                "method_name": method_name,
                 "mean_state_f1": round(_mean(run_state_means), 6),
                 "state_f1_run_sd": round(_sample_sd(run_state_means), 6),
                 "mean_case_state_f1_sd": round(_mean(case_state_sds), 6),
