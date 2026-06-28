@@ -1,31 +1,30 @@
 @startuml
 title E Visa Processing And Follow Up System - UML State Machine Diagram
 
-state AccountCreation <<choice>>
-state Login <<choice>>
-state Application <<choice>>
-state Payment <<choice>>
-state Accepted <<choice>>
-state StatusView <<choice>>
-state StatusCheck <<choice>>
-state Cancellation <<choice>>
-state DetailsModification <<choice>>
-state DetailsView <<choice>>
-state FeedbackGiving <<choice>>
-state Logout <<choice>>
-state PurposeView <<choice>>
+state StartChoice <<choice>>
+state LoggedOut
+state ApplicantChoice <<choice>>
+state ApplicationSubmitted
+state PaymentMade
+state ApplicationAccepted
+state StatusViewed
+state StatusChecked
+state ApplicationCancelled
+state DetailsModified
+state FeedbackGiven
+state LoggedIn
 
-AccountCreation -[*]> Login
-Login -.-> Application: After login
-Application -.-> Payment: After application submission
-Payment -.-> Accepted: After successful payment
-Accepted -.-> StatusView: After acceptance
-StatusView -.-> StatusCheck: To check status
-StatusCheck -.-> Checked: After checking status
-Checked -.-> FeedbackGiving: If feedback is given
-FeedbackGiving -.-> Logout: After giving feedback
-Logout -.-> AccountCreation: After logout
-PurposeView -.-> ApprovedOrRejected: Based on document check
-ApprovedOrRejected -.-> StatusUpdate: Update status after approval or rejection
-
+[*] StartChoice --> LoggedOut: Create Account / Login
+LoggedOut --> ApplicantChoice: Login
+ApplicantChoice --> ApplicationSubmitted: Apply for Visa / Check Status / Cancel Application / Modify Details / Give Feedback / Logout
+ApplicationSubmitted --> PaymentMade: Make Payment
+PaymentMade --> ApplicationAccepted: Accepted
+ApplicationAccepted --> StatusViewed: View Status
+StatusViewed --> StatusChecked: Check Status
+StatusChecked --> StatusViewed: Back to Status View
+StatusViewed --> FeedbackGiven: Give Feedback
+FeedbackGiven --> LoggedIn: Done
+LoggedOut --> ApplicantChoice: Login
+ApplicationCancelled --> LoggedIn: Cancelled
+DetailsModified --> LoggedIn: Modified Details
 @enduml

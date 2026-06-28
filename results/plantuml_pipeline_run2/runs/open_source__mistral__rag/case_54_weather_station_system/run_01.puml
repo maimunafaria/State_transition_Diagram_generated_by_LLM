@@ -1,29 +1,21 @@
 @startuml
 title Weather Station System States
 
-[*] --> Running : Start
+[*] --> Running : Shutdown
 state "Running" as Running
-state "Shutdown" as Shutdown
-state "Configuration" as Configuration
+state "Configuration Mode" as ConfigurationMode
+state "Collecting Data" as CollectingData
+state "Preparing Summary" as PreparingSummary
+state "Checking Status" as CheckingStatus
 state "Controlled Mode" as ControlledMode
+state "Shutdown Condition" as ShutdownCondition
 
-Running --> Shutdown : ShutdownCommand
-Running --> Configuration : ChangesRequired
-Running --> ControlledMode : RemoteControl
-
-Configuration --> Running : ConfigurationCompleted
-Configuration --> Shutdown : CancelConfiguration
-
-ControlledMode --> Running : ActivityCompleted
-ControlledMode --> Shutdown : RemoteShutdownCommand
-
-Running --> CollectData : ClockTriggered
-Running --> PrepareSummary : RequestSummary
-Running --> CheckStatus : RequestStatus
-
-PrepareSummary --> Running : SummaryPrepared
-CheckStatus --> Running : StatusChecked
-
+Running --> ConfigurationMode : Changes or Power-saving Settings
+Running --> CollectingData : Triggered by Clock
+PreparingSummary --> Running : Summary Prepared
+CheckingStatus --> Running : Status Check Completed
+ControlledMode --> Running : Remote Control
+ShutdownCondition --> [*] : Shutdown Command Given
 
 title Alert Notifier Component States
 
@@ -31,94 +23,31 @@ title Alert Notifier Component States
 state "Initialize\nComponent" as InitializeComponent
 state "Waiting for Update" as WaitingForUpdate
 state "Processing Update" as ProcessingUpdate
-state "Unloading" as Unloading
+state "Unloading Phase" as UnloadingPhase
 
-InitializeComponent --> WaitingForUpdate : SuccessfulInitialization
-InitializeComponent --> Unloading : InitializationFailure
-
-WaitingForUpdate --> ProcessingUpdate : UpdateDetected
-WaitingForUpdate --> Unloading : ShutdownCommand
-
-ProcessingUpdate --> WaitingForUpdate : UpdateProcessed
-Unloading --> Terminate : ComponentRemoved
+InitializeComponent --> WaitingForUpdate : Successful Initialization
+WaitingForUpdate --> ProcessingUpdate : Update Detected
+ProcessingUpdate --> WaitingForUpdate : Update Processed
+UnloadingPhase --> [*] : System Shutdown or Failure
 
 title Equihealth States
 
 [*] --> J1 : [check user]
 state J1 <<choice>>
-state J2 <<choice>>
-state J3 <<choice>>
-state J4 <<choice>>
-state J5 <<choice>>
-state J6 <<choice>>
-state J7 <<choice>>
-state J8 <<choice>>
-state J9 <<choice>>
-
-J1 --> J2 : Patient
-J1 --> J3 : NotPatient
-
-J2 --> J4 : NewUser
-J2 --> J5 : ExistingUser
-
-J4 --> J6 : RegistrationCompleted
-J4 --> J7 : RegistrationFailed
-
-J5 --> J8 : CorrectCredentials
-J5 --> J9 : IncorrectCredentials
-
-J6 --> DashboardPatient : PatientDashboard
-J6 --> HealthWorkerDashboard : HealthWorkerDashboard
-J6 --> GovernmentOfficialDashboard : GovernmentOfficialDashboard
-
-J7 --> LoginFailed : LoginFailed
-
-J8 --> MedicalInformation : ProvideMedicalInfo
-J8 --> PlannedActivities : ShowPlannedActivities
-J8 --> Alerts : PrepareAlerts
-J8 --> HealthPlanningResults : DisplayHealthPlanningResults
-J8 --> Logout : LogOut
-
-J9 --> LoginFailed : LoginFailed
+state PatientDashboard : Patient
+state HealthWorkerDashboard : Health Worker
+state GovernmentOfficialDashboard : Government Official
+J1 --> PatientDashboard : Patient
+J1 --> HealthWorkerDashboard : Health Worker
+J1 --> GovernmentOfficialDashboard : Government Official
 
 title National Health Id States
 
-[*] --> Choice1 : Check Citizenship
+[*] --> Choice1
 state Choice1 <<choice>>
-state Choice2 : VerifyDetails
-state Choice3 : GenerateId
-state Choice4 : ActivateAccount
-state Choice5 : SetPermissions
-state Choice6 : AddOldFiles
-state Choice7 : StoreFiles
-state Choice8 : AccessData
-state Choice9 : AddNewFiles
-state Choice10 : ViewDetails
-state Choice11 : PrepareReports
-
-Choice1 --> Choice2 : Indian
-Choice1 --> [*] : NotIndian
-
-Choice2 --> Choice3 : Verified
-Choice2 --> [*] : VerificationFailed
-
-Choice3 --> Choice4 : AccountActivated
-Choice3 --> [*] : ActivationFailed
-
-Choice4 --> Choice5 : SetPermissions
-Choice4 --> Choice6 : AddOldFiles
-
-Choice5 --> Choice7 : PermissionsSet
-Choice5 --> Choice8 : AccessData
-
-Choice6 --> Choice7 : OldFilesAdded
-Choice6 --> Choice9 : PermissionNotGranted
-
-Choice7 --> Choice8 : DataStored
-Choice7 --> [*] : Error
-
-Choice8 --> Choice10 : ViewDetails
-Choice8 --> Choice11 : PrepareReports
-
-Choice9 --> Choice6 : AddNewFiles
+state Verification : Indian
+state NotIndian : not Indian
+Choice1 --> Verification : Indian Citizen
+Choice1 --> NotIndian : Non-Indian Citizen
+Verification --> [*] : Verify Details
 @enduml

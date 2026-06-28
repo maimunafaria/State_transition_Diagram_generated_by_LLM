@@ -7,26 +7,30 @@ state "Door Open With Item" as DoorOpenItem
 state "Door Shut With Item" as DoorShutItem
 state "Ready To Cook" as ReadyToCook
 state Cooking
-state "Checking"
+state Checking
 state Alarm
 state Done
-state Disabled
-state Waiting
 
 DoorShut --> DoorOpen : Door Opened
 DoorOpen --> DoorShut : Door Closed
 DoorOpen --> DoorShutItem : Food Placed
-DoorShut --> DoorShutItem : Food Placed
 DoorShutItem --> ReadyToCook : Door Closed
 ReadyToCook --> Cooking : Start Cooking
 Cooking --> Done : Timeout or Cancel
-Cooking --> Alarm : Door Opened
-Alarm --> Disabled
-Done --> Waiting : Completed
-Disabled --> Waiting : Door Closed or Cancel
-Waiting --> Checking : User Input
-Checking --> Cooking : No Issues
-Checking --> Alarm : Turntable Fault or Emitter Fault
+Done --> DoorShut : Completed
+
+Checking --> Cook : OK
+Checking --> Alarm : Turntable Fault
+Checking --> Alarm : Emitter Fault
+Alarm --> Disabled : Issue Detected
+
+state Disabled
+state Waiting
+
+Operation --> Disabled : Door Open
+Operation --> Waiting : Cancel
+Disabled --> Checking : Reset
+Waiting --> DoorShut : User Input
 
 Case ID: case_73_oven
 Complexity: medium
@@ -43,27 +47,21 @@ Functional Requirements
 6. The system shall stop immediately if the door is opened during cooking for safety reasons.
 7. The system shall stop when the cooking time ends and allow the user to open the door to remove the food.
 
-Reference PlantUML:
+state "Door Open" as DoorOpen
+state "Door Closed" as DoorClosed
+state "Food Placed" as FoodPlaced
+state "Ready To Cook" as ReadyToCook
+state Cooking
+state Done
 
-title ATM Control - Validate PIN and Withdraw Funds
+DoorClosed --> FoodPlaced : Food Placed
+FoodPlaced --> ReadyToCook : Door Closed
+ReadyToCook --> Cooking : Start Cooking
+Cooking --> Done : Timeout or Cancel
+Done --> DoorOpen : Completed
 
-state Idle
-
-Idle --> CheckPIN : User Input PIN
-CheckPIN --> CorrectPIN : Valid PIN
-CorrectPIN --> Options : Display Options
-Options --> WithdrawalRequest : User Chooses Withdrawal
-WithdrawalRequest --> Approval : Check Transaction and Approve
-Approval --> DispenseCash : Dispense Cash
-Approval --> Receipt : Print Receipt
-Approval --> ReturnCard : Return Card
-Approval --> Error : Insufficient Funds or Out of Cash
-Error --> Idle
-CheckPIN --> IncorrectPIN : Invalid PIN
-IncorrectPIN --> KeepCard : Keep Card for Security
-KeepCard --> Cancel : User Cancels Process
-Cancel --> ReturnCard : Return Card
-Cancel --> Idle
+DoorOpen --> DoorClosed : Door Closed
+DoorOpen --> FoodPlaced : Food Placed
 
 Case ID: case_69_atm_many_scenarios_6
 Complexity: medium
@@ -83,5 +81,26 @@ Functional Requirements
 9. The system shall stop the operation if it runs out of cash during the process.
 10. The system shall reset itself to be ready for the next user after completing or ending the session.
 
-Reference PlantUML:
+state Idle
+state PINEntered
+state InvalidPIN
+state CardRetained
+state Options
+state WithdrawalRequest
+state RejectedTransaction
+state ApprovedTransaction
+state DispenseCash
+state PrintReceipt
+state ReturnCard
+state OutOfCash
+state Reset
+
+Idle --> PINEntered : PIN Entered
+PINEntered --> InvalidPIN : Incorrect PIN
+InvalidPIN --> Idle : Retry or Cancel
+InvalidPIN --> CardRetained : Multiple Incorrect PINs
+CardRetained --> Idle : User Returns Card
+
+PINEntered --> Options : Correct PIN
+Options --> WithdrawalRequest : User
 @enduml

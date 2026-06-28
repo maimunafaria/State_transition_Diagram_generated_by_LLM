@@ -1,82 +1,82 @@
 @startuml
-title Rate Management System State Diagram
+title Rate Management State Diagram
 
-[*] --> StartDateArrived
-StartDateArrived --> Active
-Active --> Expired
-Expired --> ArchivedAfterOneYear
+[*] --> Active
 
+state Active {
+    [Start Date <= Current Date] as StartDate
+    [Current Date < End Date] as ValidityPeriod
+    [Finish Date >= Current Date + 1 year] as ExpirationPeriod
+    Expired <<final>>
+}
 
-title Traffic Management System State Diagram
+state Expired {}
 
-state OnRoadOrWaiting
-state ControllingStreetLights
-state ManagingTrafficSignals
-state CapturingVehicleNumbersAndDetails
-state VerifyingTrafficRules
-state NoViolation
-state Violation
-state FineIssued
-state PaidFine
-state WarningSent
+title Traffic Management State Diagram
 
-OnRoadOrWaiting --> ControllingStreetLights
-ControllingStreetLights --> ManagingTrafficSignals
-ManagingTrafficSignals --> CapturingVehicleNumbersAndDetails
-CapturingVehicleNumbersAndDetails --> VerifyingTrafficRules
-VerifyingTrafficRules --> NoViolation
-NoViolation --> EndProcess
-VerifyingTrafficRules --> Violation
-Violation --> FineIssued
-FineIssued --> PaidFine
-PaidFine --> EndProcess
-FineIssued --> WarningSent
-WarningSent --> EndProcess
+[*] --> Monitoring
 
+state Monitoring {
+    [Traffic Condition Detected] as TrafficConditionDetected
+    StreetLightsControlled
+    TrafficSignalsManaged
+    VehicleNumberCaptured
+    DriverDetailsChecked
+    RuleBroken <<choice>>
+    NoRuleBroken
+    RuleBrokenContinue
+}
+
+state NoRuleBroken {
+    EndProcess
+}
+
+state RuleBroken {
+    ViolationRecorded
+    FineIssued
+    PaidFine
+    Completed
+    UnpaidFine
+    WarningSent
+}
 
 title Training Request State Diagram
 
 [*] --> Creation
-Creation --> AwaitingApproval
-AwaitingApproval --> Rejected
-AwaitingApproval --> SearchForSession
-SearchForSession --> WaitingForEnrolment
-WaitingForEnrolment --> Satisfied
-WaitingForEnrolment --> Cancelled
-Cancelled --> EndProcess
-Satisfied --> Completed
-Completed --> EndProcess
 
+state Creation {
+    [Request Sent For Approval] as RequestAwaitingApproval
+    Rejected <<final>>
+}
+
+state Accepted {
+    SearchForSession
+    Enrolment
+    Satisfied <<final>>
+    Cancelled <<final>>
+}
 
 title Book Bank Management System State Diagram
 
-state Registration
-state DetailsCorrect
-state DetailsIncorrect
-state Login
-state MemberIDAndPasswordCorrect
-state MemberIDAndPasswordIncorrect
-state SearchingForBook
-state SuggestionsFound
-state SuggestionsNotFound
-state GettingBook
-state MembershipActive
-state FineAmountRequired
-state BookReceived
+[*] --> Registration
 
-Registration --> DetailsCorrect
-DetailsCorrect --> MemberIDIssued
-MemberIDIssued --> Login
-Login --> MemberIDAndPasswordCorrect
-MemberIDAndPasswordCorrect --> SearchingForBook
-SearchingForBook --> SuggestionsFound
-SuggestionsFound --> GettingBook
-GettingBook --> MembershipActive
-MembershipActive --> BookReceived
-MembershipActive --> FineAmountRequired
-FineAmountRequired --> BookReceived
-DetailsIncorrect --> Registration
-MemberIDAndPasswordIncorrect --> Login
-SuggestionsNotFound --> ChooseAnotherOption
+state Registration {
+    CorrectDetailsEntered as CorrectEntry
+    IncorrectDetailsEntered
+    Re-entryRequired
+    Login
+    MemberIDAndPasswordCorrect as CorrectLogin
+    MemberIDAndPasswordIncorrect
+}
 
+state SearchBook {
+    BookFound as FoundBook
+    NoSuggestions
+    AnotherOption
+    GetBook
+    MembershipActive as ActiveMembership
+    FineAmountRequired
+    PayFine
+    GetBookConfirmed
+}
 @enduml

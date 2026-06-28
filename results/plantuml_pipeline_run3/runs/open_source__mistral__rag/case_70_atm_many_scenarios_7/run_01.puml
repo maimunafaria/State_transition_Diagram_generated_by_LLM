@@ -19,16 +19,15 @@ Idle --> WaitingForPIN : Card Inserted / Get PIN
 WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
 ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
 
-ValidatingPIN --> Confiscating : Incorrect PIN Limit Reached / Security Measures
+ValidatingPIN --> Confiscating : Invalid PIN Too Many Times / Security Reason
+Confiscating --> Ejecting : Card Ejected
 
-WaitingForChoice --> ProcessingTransaction : Correct PIN / Display Options
+WaitingForPIN --> WaitingForChoice : Correct PIN / Display Options
+WaitingForChoice --> ProcessingTransaction : Choice Made / Process Request
 ProcessingTransaction --> PrintingReceipt : Approved Transaction / Print Receipt
-ProcessingTransaction --> DispensingCash : Approved Transaction / Dispense Cash
-ProcessingTransaction --> ClosedDown : Rejected Transaction / Cancel Everything
-ProcessingTransaction --> Confiscating : Invalid Card / Security Measures
+PrintingReceipt --> DispensingCash : Cash Needed / Dispense Cash
+DispensingCash --> Ejecting : Card Ejected
 
-PrintingReceipt --> Ejecting : Completed Transaction / Return Card with Receipt
-DispensingCash --> Ejecting : Completed Transaction / Return Card with Cash
-Ejecting --> Idle : Customer Cancelled / Display Welcome
-ClosedDown --> Idle : System Reset / Display Welcome
+ProcessingTransaction --> ClosedDown : Rejected Request / Display System Down
+Ejecting --> Idle : Card Ejected / Return to Waiting State
 @enduml

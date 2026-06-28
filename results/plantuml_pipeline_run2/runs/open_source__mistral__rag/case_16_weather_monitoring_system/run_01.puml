@@ -2,21 +2,36 @@
 title Weather Monitoring System - User Authentication and Location Selection
 
 [*] --> Login
+
 state Login <<choice>>
-Login --> Successful_Login : [successful login]
-Login --> Registration : [new user]
+Login --> RegisteredUser : [Registered user]
+Login --> NewUser : [New user]
 
-Successful_Login --> Check_Location : [check current location or enter another]
-Check_Location --> Valid_Location : [valid location entered]
-Valid_Location --> Weather_Info : [select weather information to check]
-Weather_Info --> Additional_Details : [view additional details]
-ReadFeedbackChoice --> Logout : [log out after completing task]
+state RegisteredUser
+state NewUser
 
-Registration --> Registration_Success : [successful registration]
-Registration --> Invalid_Details : [invalid user details]
-Invalid_Details --> End_Process : [end process]
-Registration_Success --> Save_User_Info : [save user's information]
-Save_User_Info --> Login : [allow login after successful registration]
+RegisteredUser --> CheckLocation : [Logged in]
+RegisteredUser --> Logout : [Log out]
 
-Invalid_Location --> End_Process : [end process if new location entered is not valid]
+NewUser --> Registration : [Enter details]
+NewUser --> EndRegistration : [Details invalid]
+NewUser --> SaveInfo : [Successful registration]
+
+CheckLocation --> ValidLocation : [Valid location]
+CheckLocation --> InvalidLocation : [Invalid location]
+
+ValidLocation --> WeatherSelection : [Choose what to check]
+ValidLocation --> DetailsView : [View additional details]
+ValidLocation --> Logout : [Log out]
+
+InvalidLocation --> EndProcess : [Not valid location]
+
+WeatherSelection --> Temperature : [Temperature]
+WeatherSelection --> Humidity : [Humidity]
+WeatherSelection --> Rainfall : [Rainfall]
+WeatherSelection --> Pressure : [Pressure]
+WeatherSelection --> DewPoint : [Dew Point]
+
+EndProcess --> EndSession : [Registration not successful]
+Logout --> EndSession : [Logged out]
 @enduml

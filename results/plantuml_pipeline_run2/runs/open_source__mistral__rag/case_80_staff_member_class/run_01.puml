@@ -2,53 +2,62 @@
 title Staff Member State Machine
 
 state Unemployed
-state Assigned
-state Working
+state AssignedToClient
+state AssignedToCampaign
+state SwitchingAssignments
 
-[*] --> Assigned : assignToClient\norassignToCampaign
+[*] --> Unemployed : /leaveJob/
 
-Assigned --> Working : switchAssignment
+Unemployed --> AssignedToClient : Hired(hiringDocument)
+Unemployed --> AssignedToCampaign : CampaignActivated
 
-Working --> Unemployed : leaveJob
+AssignedToClient --> AssignedToCampaign : SwitchedAssignment(reason)
+AssignedToCampaign --> SwitchingAssignments
+SwitchingAssignments --> AssignedToClient : SwitchedBack(reason)
+SwitchingAssignments --> AssignedToCampaign
 
-Assigned --> Unemployed : removeAssignment
+AssignedToClient --> Unemployed : Fired(terminationDocument)
+AssignedToCampaign --> Completed : CampaignCompleted
+
+Completed --> Archived : TimePassed(archivalTime)
+Unemployed --> Archived : TimePassed(archivalTime)
 
 
 title Campaign State Machine
 
-state Inactive
+state Commissioned
 state Active
+state Paused
 state Completed
 state Paid
+state Cancelled
 
-[*] --> Active : startCampaign
+[*] --> Commissioned : /assignManager;\nassignStaff;\n/approveContract;\n/signContract/
 
-Active --> Completed : finishWork
+Commissioned --> Active : /startCampaign/
+Active --> Paused : /pauseCampaign/
+Paused --> Active : /resumeCampaign/
+Active --> Completed : AllWorkFinished
+Completed --> Paid : PaymentReceived(paymentAmount)
+Paid --> Archived : TimePassed(archivalTime)
+Cancelled --> Archived : TimePassed(archivalTime)
 
-Completed --> Paid : prepareFinalStatement
-
-Paid --> Paid : correctPaymentReceived
-
-Paid --> Paid : paymentAdjusted
-
-Inactive --> Active : assignManager\nassignStaff\napproveContract\n[contract signed]
 
 title Advocate Diary State Machine
 
-state Unregistered
+state Guest
 state Registered
 state LoggedIn
 state AddingCase
 state ReminderSet
-state CaseClosed
+state DocumentUploaded
 
-[*] --> Registered : createAccount
-
-Registered --> LoggedIn : verifyDetails\ncheckPassword
-
-LoggedIn --> AddingCase : addNewCase
-
-AddingCase --> ReminderSet : setReminders
-
-ReminderSet --> CaseClosed : closeCase
+[*] --> Guest : /exploreBlogsAndNews/
+Guest --> Registered : /createAccount/
+Registered --> LoggedIn : /validateCredentials/
+LoggedIn --> AddingCase : /addNewCase/
+AddingCase --> ReminderSet : /setReminders/
+ReminderSet --> DocumentUploaded : /uploadDocuments/
+DocumentUploaded --> Completed : CaseAdded
+Completed --> Guest : /logout/
 @enduml

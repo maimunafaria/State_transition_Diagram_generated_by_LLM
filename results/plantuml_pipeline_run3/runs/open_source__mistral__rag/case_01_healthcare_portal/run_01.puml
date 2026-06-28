@@ -2,64 +2,72 @@
 title UML State Machine Diagram
 
 state StartChoice <<choice>>
-state RegistrationChoice <<choice>>
-state SignInChoice <<choice>>
-state FacilityAccessChoice <<choice>>
-state NewsContentChoice <<choice>>
-state HealthInfoChoice <<choice>>
-state ResultChoice <<choice>>
-state InsuranceCheckChoice <<choice>>
-state PaymentMethodChoice <<choice>>
-state CashPaymentDetailsChoice <<choice>>
-state InsurancePaymentChoice <<choice>>
-state FeedbackChoice <<choice>>
-state LogoutChoice <<choice>>
+state RegistrationFailed <<state>>
+state SignInFailed <<state>>
+state RegisteredUser <<state>>
+state FacilityAccess <<state>>
+state NewsContent <<state>>
+state HealthInfo <<state>>
+state PaymentSelection <<state>>
+state CashPaymentDetails <<state>>
+state InsurancePayment <<state>>
+state FeedbackCollection <<state>>
+state Logout <<state>>
 
-[*] --> RegistrationChoice
+[*] --> StartChoice
 
-RegistrationChoice : entry / getUserDetails
-RegistrationChoice : do / registerUser
-RegistrationChoice : exit / registrationSuccess
-RegistrationChoice : exit / registrationFailed
+StartChoice : entry / start
+StartChoice : do / checkUserStatus
+StartChoice : exit / newUser
 
-SignInChoice : entry / getCredentials
-SignInChoice : do / validateCredentials
-SignInChoice : exit / signInSuccess
-SignInChoice : exit / signInFailed
+newUser : entry / createAccount
+newUser : do / register
+newUser : exit / RegistrationFailed
 
-FacilityAccessChoice : entry / checkLogin
-FacilityAccessChoice : do / provideAccess
+RegistrationFailed : entry / showError
+RegistrationFailed : do / waitForRetry
+RegistrationFailed : exit / StartChoice
 
-NewsContentChoice : entry / readNews
-NewsContentChoice : do / viewContent
-NewsContentChoice : exit / continueSession
-NewsContentChoice : exit / finishSession
+SignInFailed : entry / showError
+SignInFailed : do / waitForRetry
+SignInFailed : exit / StartChoice
 
-HealthInfoChoice : entry / checkSymptoms
-HealthInfoChoice : do / provideHealthInfo
-HealthInfoChoice : exit / continueSession
-HealthInfoChoice : exit / finishSession
+RegisteredUser : entry / signIn
+RegisteredUser : do / validateCredentials
+RegisteredUser : exit / SignInFailed
 
-ResultChoice : entry / viewResult
-ResultChoice : do / processResult
-ResultChoice : exit / continueSession
-ResultChoice : exit / finishSession
+RegisteredUser --> FacilityAccess
+RegisteredUser : exit / Logout
 
-InsuranceCheckChoice : entry / checkInsurance
-InsuranceCheckChoice : do / validateInsurance
-InsuranceCheckChoice : exit / insuranceValid
-InsuranceCheckChoice : exit / insuranceInvalid
+FacilityAccess : entry / accessFacilities
+FacilityAccess : do / checkPermissions
+FacilityAccess : exit / NewsContent
 
-PaymentMethodChoice : entry / selectPaymentMethod
-PaymentMethodChoice : do / chooseCashOrInsurance
+NewsContent : entry / readNews
+NewsContent : do / showContent
+NewsContent : exit / HealthInfo
 
-CashPaymentDetailsChoice : entry / provideCashDetails
-CashPaymentDetailsChoice : do / completeCashPayment
+HealthInfo : entry / checkSymptoms
+HealthInfo : do / provideOptions
+HealthInfo : exit / PaymentSelection
 
-InsurancePaymentChoice : entry / completeInsurancePayment
+PaymentSelection : entry / selectMethod
+PaymentSelection : do / showMethods
+PaymentSelection : exit / CashPaymentDetails
 
-FeedbackChoice : entry / giveFeedback
-FeedbackChoice : do / collectFeedback
+CashPaymentDetails : entry / displayDetails
+CashPaymentDetails : do / collectCash
+CashPaymentDetails : exit / InsurancePayment
 
-LogoutChoice : entry / logOut
+InsurancePayment : entry / processInsurance
+InsurancePayment : do / checkCoverage
+InsurancePayment : exit / PaymentCompleted
+
+FeedbackCollection : entry / collectFeedback
+FeedbackCollection : do / saveFeedback
+FeedbackCollection : exit / Logout
+
+Logout : entry / logOut
+Logout : do / endSession
+Logout : exit / StartChoice
 @enduml

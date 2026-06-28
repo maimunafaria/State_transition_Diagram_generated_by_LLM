@@ -5,70 +5,67 @@ title UML State Machine Diagram (BPO Management System)
 
 state UserLogin {
     UserLogin : entry / Start
-    UserLogin : do / Login or Register
-    UserLogin : exit / End
+    UserLogin : choose / Login or Register
 }
 
 UserLogin --> Registration : [New user]
 UserLogin --> Login : [Registered user]
 
 state Registration {
-    Registration : entry / Start registration
-    Registration : do / Enter details
-    Registration : exit / Save or Fail
-
-    state DetailsEntry {
-        [*] --> Validation
-
-        state Validation {
-            Validation : entry / Validate details
-            Validation : do / Check details
-            Validation : exit / Save or Fail
-        }
-    }
+    Registration : enterDetails / Enter details
+    Registration : validateDetails / Validate details
+    Registration : saveDetails / Save details
+    Registration : success / Successful registration
+    Registration : failure / Failed registration
 }
+
+Registration --> success : [Valid details]
+Registration --> failure : [Invalid details]
 
 state Login {
-    Login : entry / Start login
-    Login : do / Enter credentials
-    Login : exit / Success or Fail
+    Login : enterCredentials / Enter credentials
+    Login : validateCredentials / Validate credentials
+    Login : loginSuccess / Successful login
+    Login : loginFailure / Failed login
 }
 
-Login --> ProfileManagement : [Successful login]
-Login --> Error : [Invalid credentials]
+Login --> loginSuccess : [Valid credentials]
+Login --> loginFailure : [Invalid credentials]
 
-state ProfileManagement {
-    ProfileManagement : entry / Start profile management
-    ProfileManagement : do / Manage profile
-    ProfileManagement : exit / Logout
-
-    state ManageProfile {
-        [*] --> ChangePassword
-        [*] --> EditDetails
-
-        state ChangePassword {
-            ChangePassword : entry / Start change password
-            ChangePassword : do / Enter old and new passwords
-            ChangePassword : exit / Validate or Fail
-
-            state Validation {
-                Validation : entry / Validate details
-                Validation : do / Check details
-                Validation : exit / Save or Fail
-            }
-        }
-
-        state EditDetails {
-            EditDetails : entry / Start edit details
-            EditDetails : do / Enter new details
-            EditDetails : exit / Validate or Fail
-
-            state Validation {
-                Validation : entry / Validate details
-                Validation : do / Check details
-                Validation : exit / Save or Fail
-            }
-        }
-    }
+state UserDashboard {
+    UserDashboard : manageProfile / Manage profile
+    UserDashboard : logout / Logout
 }
+
+UserDashboard --> manageProfile : [Manage profile]
+UserDashboard --> logout : [Logout]
+
+state ManageProfile {
+    ManageProfile : changePassword / Change password
+    ManageProfile : updateDetails / Update details
+}
+
+ManageProfile --> changePassword : [Change password]
+ManageProfile --> updateDetails : [Update details]
+
+state ChangePassword {
+    ChangePassword : enterOldPassword / Enter old password
+    ChangePassword : enterNewPassword / Enter new password
+    ChangePassword : validateChanges / Validate changes
+    ChangePassword : saveChanges / Save changes
+}
+
+ChangePassword --> validateChanges : [Valid changes]
+ChangePassword --> saveChanges : [Save changes]
+
+state UpdateDetails {
+    UpdateDetails : enterNewDetails / Enter new details
+    UpdateDetails : validateDetails / Validate details
+    UpdateDetails : saveDetails / Save details
+    UpdateDetails : success / Successful update
+    UpdateDetails : failure / Failed update
+}
+
+UpdateDetails --> success : [Valid details]
+UpdateDetails --> failure : [Invalid details]
 @enduml

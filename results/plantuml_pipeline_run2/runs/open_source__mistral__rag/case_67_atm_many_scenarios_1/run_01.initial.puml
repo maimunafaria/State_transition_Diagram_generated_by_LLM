@@ -9,44 +9,37 @@ Idle : entry / Display Welcome
 state "Enter PIN"
 "Enter PIN" : enterPin(pin)
 "Enter PIN" : verifyPin(pin, storedPIN)
-"Enter PIN" : checkPinLimit(incorrectEntries)
-"Enter PIN" : checkCardValidity(cardStatus)
+"Enter PIN" : checkPinValidity(pin, maxInvalidAttempts)
+"Enter PIN" : keepCard(pin, maxInvalidAttempts)
+"Enter PIN" --> "Check PIN Correctness" if (verifiedPin) else "Ask for PIN again" end
+"Check PIN Correctness" --> "Display Options" if (checkPinValidity) else "Keep Card" end
 
-state "Processing Transaction" as ProcessingTransaction {
-  state "Processing Transfer" as ProcessingTransfer
-  state "Processing Query" as ProcessingQuery
-  state "Withdrawal"
+state "Display Options"
+"Display Options" : displayOptions()
+"Display Options" : userChoice(choice)
+"Display Options" --> "Process Transaction" if (userChoice == "Withdrawal") else "Check Information" end
 
-  "Processing Transaction" : chooseOption()
-  "Processing Transaction" : processRequest(request)
-  "Processing Transaction" : checkApproval(approved)
-  "Processing Transaction" : printReceipt(receipt)
-  "Processing Transaction" : dispenseCash(cash)
-  "Processing Transaction" : returnCard()
-  "Processing Transaction" : cancelOperation(message)
-  "Processing Transaction" : shutdown()
-}
+state "Process Transaction"
+"Process Transaction" : processTransaction(request, cashAvailable)
+"Process Transaction" : printReceipt()
+"Process Transaction" : dispenseCash()
+"Process Transaction" : returnCard()
+"Process Transaction" --> "Ending Phase" if (processTransactionApproved) else "Cancel Operation and Return Card" end
 
-state "Invalid Card or PIN Limit Reached" {
-  state "Retaining Card" as RetainingCard
-  "Invalid Card or PIN Limit Reached" : retainCard()
-  "Invalid Card or PIN Limit Reached" : returnMessage(message)
-}
+state "Ending Phase"
+"Ending Phase" : shortEndingPhase()
+"Ending Phase" : resetATM()
+"Ending Phase" : returnToIdle()
 
-state "Transfer" {
-  "Transfer" : transferMoney(amount)
-}
+state "Transfer Money"
+"Transfer Money" : userChoice(choice)
+"Transfer Money" : processTransferRequest(request, cashAvailable)
+"Transfer Money" : printReceipt()
+"Transfer Money" --> "Ending Phase" if (processTransferApproved) else "Cancel Operation and Return Card" end
 
-state "Query" {
-  "Query" : processQuery(query)
-}
-
-Idle --> "Enter PIN"
-"Enter PIN" --> "Processing Transaction"
-"Processing Transaction" -->|approved| "Print Receipt"
-"Processing Transaction" -->|rejected| "Cancel Operation"
-"Invalid Card or PIN Limit Reached" --> "Retaining Card"
-"Retaining Card" --> "Return Message"
-"Transfer" --> "Dispense Cash"
-"Query" --> "Print Receipt"
+state "Check Information"
+"Check Information" : userChoice(choice)
+"Check Information" : processQueryRequest(request, cashAvailable)
+"Check Information" : printReceipt()
+"Check Information" --> "Ending Phase" if (processQueryApproved) else "Cancel Operation and Return Card" end
 @enduml

@@ -9,26 +9,21 @@ state "Validating PIN" as ValidatingPIN
 state "Withdrawal Options" as WithdrawalOptions
 state Confiscating
 state Ejecting
-state "Waiting for Amount" as WaitingForAmount
-state "Processing Transaction" as ProcessingTransaction
-state "Dispensing Cash" as DispensingCash
-state "Printing Receipt" as PrintingReceipt
+state "Processing Withdrawal" as ProcessingWithdrawal
+state "Dispensing Cash and Printing Receipt" as DispensingCash
 state "Returning Card" as ReturningCard
-state "Out of Cash" as OutOfCash
-state "Resetting" as Resetting
 
 Idle --> WaitingForPIN : Card Inserted / Get PIN
 
 WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
 ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
-
 ValidatingPIN --> WithdrawalOptions : Correct PIN / Show Options
-WithdrawalOptions --> WaitingForAmount : User Chooses Amount / Get Amount
-WaitingForAmount --> ProcessingTransaction : Valid Amount / Check Balance & Approve
-ProcessingTransaction --> DispensingCash : Approved / Dispense Cash
-ProcessingTransaction --> ReturningCard : Rejected / Cancel Transaction & Return Card
-ProcessingTransaction --> OutOfCash : No Cash / Stop Operation & Return Card
-DispensingCash --> PrintingReceipt : Cash Dispensed / Print Receipt
-PrintingReceipt --> ReturningCard : Receipt Printed / Return Card
-Resetting --> Idle : Completed Session / Reset ATM
+
+WithdrawalOptions --> ProcessingWithdrawal : Approved Transaction / Process Withdrawal
+ProcessingWithdrawal --> DispensingCash : Cash Available / Dispense Cash and Print Receipt
+ProcessingWithdrawal --> Confiscating : No Cash / Card Confiscated
+ProcessingWithdrawal --> ReturningCard : Cancelled Transaction / Return Card
+
+WithdrawalOptions --> Ejecting : User Cancels / Return Card
+
 @enduml

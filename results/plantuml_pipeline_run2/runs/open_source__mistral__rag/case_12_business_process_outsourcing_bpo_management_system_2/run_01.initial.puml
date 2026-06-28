@@ -1,5 +1,5 @@
 @startuml
-title UML State Machine Diagram (Business Process Outsourcing Bpo Management System)
+title UML State Machine Diagram (BPO Management System)
 
 [*] --> UserType
 
@@ -7,37 +7,51 @@ state UserType <<choice>>
 UserType --> Registration : [New user]
 UserType --> Login : [Registered user]
 
-Login --> ManageProfile : [Successful login]
-Registration --> SaveInfo : [Successful registration]
+state "Registration" as Registration {
+    Registration : entry / Start registration
+    Registration : validateDetails / Validate details
+    Registration : saveDetails : [details valid]
+    Registration : exit : [details invalid]
+}
 
-ManageProfile --> EditDetails : [Edit details]
-ManageProfile --> UploadRequest : [Upload request]
-ManageProfile --> SearchUsers : [Search users]
-ManageProfile --> CurrentDeals : [View current deals]
-ManageProfile --> Logout : [Log out]
+state "Login" as Login {
+    Login : enterCredentials / Enter username and password
+    Login : validateCredentials / Validate credentials
+    Login : loginSuccess : [successful login]
+    Login : loginFailed : [unsuccessful login]
+}
 
-EditDetails --> ChangePassword : [Change password]
-EditDetails --> ValidateInfo : [Validate information]
-EditDetails --> SaveChanges : [Save changes]
+state User as User {
+    User : logout / Logout
+    User : manageProfile / Manage profile
+    User : searchUsers : [search users]
+    User : viewDeals : [view current deals]
+}
 
-UploadRequest --> SaveProject : [Save project details]
-UploadRequest --> SearchCategory : [Search for suitable project category]
+state ChangePassword as ChangePassword {
+    state "Enter old password" as EnterOldPassword {
+        EnterOldPassword : enterOldPassword / Enter old password
+        EnterOldPassword : validateOldPassword / Validate old password
+    }
+    state "Enter new password" as EnterNewPassword {
+        EnterNewPassword : enterNewPassword / Enter new password
+        EnterNewPassword : validateNewPassword / Validate new password
+    }
+    ChangePassword : saveChanges : [save changes]
+}
 
-SearchUsers --> MatchingUsers : [Display matching users based on chosen criteria]
-
-SaveProject --> AcceptRequest : [Accept request from client]
-SaveProject --> DeclineRequest : [Decline request from client]
-
-AcceptRequest --> Proceed : [Client decides to proceed with accepted project]
-AcceptRequest --> Reject : [Client rejects the accepted project]
-
-Proceed --> UpdateStatus : [Update project status after acceptance by both parties]
-Reject --> RestartProcess : [Restart the process if a client is unsatisfied with the final project]
-
-UpdateStatus --> TrackProgress : [Allow a client to track the progress of a project]
-UpdateStatus --> UpdateProgress : [Enable an BPO organization to update the progress of a project]
-
-TrackProgress --> FinalProject : [Upload a final project once work is completed]
-FinalProject --> QualityCheck : [Perform a quality check on the final project]
-FinalProject --> MakePayment : [Make payment if the client is satisfied with the final project]
+state Project as Project {
+    Project : uploadRequest / Upload request
+    Project : saveProjectDetails : [save project details]
+    Project : searchCategory : [search for suitable project category]
+    Project : acceptDeclineRequest : [accept or decline a request]
+    Project : proceedReject : [decide whether to proceed with an accepted project or reject it]
+    Project : updateStatus : [update the project status]
+    Project : trackProgress : [track the progress of a project]
+    Project : updateProgress : [update the progress of a project]
+    Project : uploadFinalProject : [upload a final project]
+    Project : qualityCheck : [perform a quality check on the final project]
+    Project : restartProcess : [restart the process if a client is unsatisfied with the final project]
+    Project : makePayment : [make payment if the client is satisfied with the final project]
+}
 @enduml

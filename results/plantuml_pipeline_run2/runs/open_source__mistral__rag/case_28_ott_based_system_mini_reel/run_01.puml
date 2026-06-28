@@ -1,5 +1,5 @@
 @startuml
-title UML State Machine Diagram - Ott Based System Mini Reel
+title UML State Machine Diagram for Ott Based System Mini Reel
 
 state Start
 state LoggedOut
@@ -14,7 +14,7 @@ state IncorrectDetails
 state SignIn
 state NewCase
 state CaseCategorySelection
-state CaseDetailEntry
+state CaseDetailsEntry
 state SetReminder
 state UploadDocuments
 state LoginAttemptInvalid
@@ -22,26 +22,33 @@ state PublishedArticles
 state SearchArticles
 state ReadArticle
 state ProvideFeedback
-state LoggedIn
+state AccountCreation_Admin
+state UserProfileManagement
+state ArticleReview
+state ArticleApproval
+state ArticleRejection
 
-AccountCreation --* LoggedOut: Create Account
-LoggedOut --> SignIn
-SignIn --* LoggedOut: Sign In
-LoggedIn --> WatchVideos
-WatchVideos --> SaveVideo
-SaveVideo --> ViewSavedVideos
-ViewSavedVideos --> EnterDiscussion
-BlogsNewsUpdates --* LoggedIn: Explore Blogs and News Updates
-EnterDiscussion --> EnterDiscussion: Enter Discussion Option
-
-AccountCreation --> IncorrectDetails: Provided Incorrect Details
-SignIn --> LoginAttemptInvalid: Invalid Login Attempt
-
-NewCase --* LoggedIn: Add a New Case
-NewCase --> CaseCategorySelection
-CaseCategorySelection --> CaseDetailEntry
-CaseDetailEntry --> SetReminder
-SetReminder --> UploadDocuments
-UploadDocuments --> LoggedIn
-
+AccountCreation --> LoggedOut: Create Account
+LoggedOut --> WatchVideos: Login
+WatchVideos --> SaveVideo: Save Video
+SaveVideo --> ViewSavedVideos: View Saved Videos
+ViewSavedVideos --> EnterDiscussion: Enter Discussion Option
+BlogsNewsUpdates --> AccountCreation: Explore Blogs and News Updates
+AccountCreation --> IncorrectDetails: Check Provided Details
+IncorrectDetails --> AccountCreation: Retry with Correct Details
+SignIn --> LoggedOut: Sign In
+NewCase --> CaseCategorySelection: Add New Case
+CaseCategorySelection --> CaseDetailsEntry: Select Category
+CaseDetailsEntry --> SetReminder: Enter Case Details
+SetReminder --> UploadDocuments: Upload Related Documents
+Upon(LoggedOut, WatchVideos) : Login Attempt Invalid -> LoginAttemptInvalid
+LoginAttemptInvalid --> LoggedOut: Retry Login
+PublishedArticles --> SearchArticles: Available for Reading
+SearchArticles --> ReadArticle: Select Article to Read
+ReadArticle --> ProvideFeedback: Provide Feedback
+ProvideFeedback --> PublishedArticles: End Session
+AccountCreation_Admin --> UserProfileManagement: Admin Privileges
+UserProfileManagement --> AccountCreation_Admin: Manage User Profiles
+ArticleReview --> ArticleApproval: Approve Article for Publication
+ArticleReview --> ArticleRejection: Reject Article
 @enduml

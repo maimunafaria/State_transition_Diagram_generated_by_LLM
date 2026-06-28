@@ -12,32 +12,56 @@ state BlogsNewsUpdates
 state AccountCreation
 state IncorrectDetails
 state SignIn
-state AddCase
-state CaseDetails
+state NewCase
+state CaseCategorySelection
+state CaseDetailsEntry
 state SetReminder
 state UploadDocuments
-state OnlineCollegeMagazineSystem
 state LoginAttemptInvalid
 state PublishedArticles
 state SearchArticles
+state ReadArticle
 state ProvideFeedback
-state Logout
+state AccountCreation_Admin
+state UserProfileManagement
+state ArticleReview
+state ArticleApproval
+state ArticleRejection
 
-AccountCreation --* LoggedOut: Create Account
-LoggedOut --> SignIn: Enter Password
-SignIn --* LoggedOut: Check Password
-LoggedOut --> WatchVideos: Watch Videos after Login
-WatchVideos --> SaveVideo: Save Video in Likes List
+AccountCreation --> IncorrectDetails: Incorrect Details
+IncorrectDetails --> AccountCreation: Retry
+
+Start --> LoggedOut: Login/SignUp
+LoggedOut --> AccountCreation: New Account
+LoggedOut --> SignIn: Existing Account
+
+SignIn --> LoginAttemptInvalid: Invalid Credentials
+LoginAttemptInvalid --> SignIn: Retry
+
+AccountCreation --> AccountCreation_Admin: Admin Account
+AccountCreation_Admin --> UserProfileManagement: Successful Registration
+
+UserProfileManagement --> ArticleReview: Review Articles
+ArticleReview --> ArticleApproval: Approve Article
+ArticleReview --> ArticleRejection: Reject Article
+
+SignIn --> WatchVideos: Successful Login
+WatchVideos --> UploadVideo: Upload Video
+UploadVideo --> SaveVideo: Save to Likes List
 SaveVideo --> ViewSavedVideos: View Saved Videos
 ViewSavedVideos --> EnterDiscussion: Enter Discussion Option
-BlogsNewsUpdates --* LoggedOut: Explore Blogs and News Updates
-LoggedOut --> AccountCreation: Create Account by Providing Details
-AccountCreation --> IncorrectDetails: Check Provided Details
-IncorrectDetails --> LoggedOut: Prevent Proceeding if Details are Incorrect
-SignIn --> AccountCreation: Sign-in using Password after Creating Account
-AddCase --* SignIn: Add a New Case
-AddCase --> CaseDetails: Select Category and Enter Case Details
-CaseDetails --> SetReminder: Set Reminders
-SetReminder --> UploadDocuments: Upload Related Documents for Cases
-Upon Logout: LoggedOut
+EnterDiscussion --> WatchVideos: Continue Watching
+
+WatchVideos --> UploadVideo: Upload Video
+UploadVideo --> SaveVideo: Save to Likes List
+SaveVideo --> ViewSavedVideos: View Saved Videos
+ViewSavedVideos --> EnterDiscussion: Enter Discussion Option
+EnterDiscussion --> WatchVideos: Continue Watching
+
+WatchVideos --> NewCase: Add a New Case
+NewCase --> CaseCategorySelection: Select Category
+CaseCategorySelection --> CaseDetailsEntry: Enter Details
+CaseDetailsEntry --> SetReminder: Set Reminders
+SetReminder --> UploadDocuments: Upload Related Documents
+UploadDocuments --> WatchVideos: Continue Watching
 @enduml

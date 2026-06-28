@@ -8,35 +8,43 @@ Idle : entry / Display Welcome
 
 state "Enter PIN"
 "Enter PIN" : enterPin(pin)
-"Enter PIN" : verifyPin(pin, storedPIN)
-"Enter PIN" : checkPinValidity(pin, maxInvalidAttempts)
-"Enter PIN" : keepCard(pin, maxInvalidAttempts)
-"Enter PIN" --> "Check Card Validity"
-"Enter PIN" : returnCard(userCancels)
-"Enter PIN" : displayOptions(pinIsCorrect)
-"Enter PIN" : processWithdrawalRequest(approved, cashDispensed, receiptPrinted)
-"Enter PIN" : checkTransactionApproval(withdrawalRequest)
-"Enter PIN" : cancelOperation(rejected)
-"Enter PIN" --> "Process Transaction"
+"Enter PIN" : verifyPin(pin, storedPin)
+"Enter PIN" : checkPinLimit(incorrectAttempts)
+"Enter PIN" : keepCard(invalidCard, incorrectPin, incorrectAttempts > 3)
+"Enter PIN" : returnCardWithMessage(cancelledOperation, rejectedRequest)
+"Enter PIN" : displayOptions(correctPin)
+"Enter PIN" : processWithdrawalRequest(requestAmount, availableBalance, approvedTransaction)
+"Enter PIN" : checkCashAvailability(approvedTransaction, cashAvailable)
+"Enter PIN" : dispenseCash(cashDispensed, rejectedRequest)
+"Enter PIN" : printReceipt(receiptPrinted, rejectedRequest)
+"Enter PIN" : returnCard(cardReturned, rejectedRequest)
+"Enter PIN" : stopOperation(outOfCash)
+"Enter PIN" : resetATM(finishedSession)
 
-state "Processing Transaction" {
-  state "Processing Transfer" {
-    state "Processing Transfer" : processTransfer(approved, receiptPrinted)
-  }
+state "Transfer Money"
+"Transfer Money" : chooseToTransfer(transferOptionSelected)
+"Transfer Money" : processTransferRequest(transferAmount, approvedTransfer)
+"Transfer Money" : printReceipt(receiptPrinted, rejectedTransfer)
 
-  state "Processing Query" {
-    state "Processing Query" : processQuery(approved, receiptPrinted)
-  }
+state "Check Information"
+"Check Information" : chooseToCheckInfo(checkInfoOptionSelected)
+"Check Information" : processQueryRequest(queryType, approvedQuery)
+"Check Information" : printReceipt(receiptPrinted, rejectedQuery)
 
-  state "Processing Withdrawal" {
-    state "Processing Withdrawal" : checkCashAvailability(withdrawalRequest)
-    state "Processing Withdrawal" : dispenseCash(cashDispensed)
-    state "Processing Withdrawal" : printReceipt(receiptPrinted)
-    state "Processing Withdrawal" --> "Return Card"
-  }
-}
+state "Withdraw Cash"
+"Withdraw Cash" : chooseToWithdraw(withdrawOptionSelected)
+"Withdraw Cash" : processWithdrawalRequest(requestAmount, availableBalance, approvedWithdrawal)
+"Withdraw Cash" : dispenseCash(cashDispensed, rejectedWithdrawal)
+"Withdraw Cash" : printReceipt(receiptPrinted, rejectedWithdrawal)
+"Withdraw Cash" : returnCard(cardReturned, rejectedWithdrawal)
+"Withdraw Cash" : cancelOperation(rejectedWithdrawal)
+"Withdraw Cash" : showMessage(insufficientFunds)
+"Withdraw Cash" : stopOperation(outOfCash)
+"Withdraw Cash" : resetATM(finishedSession)
 
-state "Return Card"
-"Return Card" : ejectCard()
-"Return Card" : resetSystem()
+state "Terminating Transaction"
+"Terminating Transaction" : ejectCard(cardEjected, finishedTransaction)
+"Terminating Transaction" : shortEndingPhase(shortEndingPhaseCompleted)
+"Terminating Transaction" : returnToNormalCondition(normalConditionReached)
+"Terminating Transaction" : shutDown(shutdownOccured)
 @enduml

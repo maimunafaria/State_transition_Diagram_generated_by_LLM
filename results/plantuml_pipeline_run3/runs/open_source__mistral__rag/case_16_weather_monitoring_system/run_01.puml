@@ -1,34 +1,39 @@
 @startuml
 title Weather Monitoring System - User Authentication and Location Selection
 
-[*] --> LoginOrRegister : [User chooses to log in or register]
+[*] --> LoginOrRegister : [Prompt user to choose]
 
-state LoginOrRegister
+state LoginOrRegister <<choice>>
 LoginOrRegister --> Register : [New user]
 LoginOrRegister --> LogIn : [Registered user]
 
-state Register
+state Register <<choice>>
 Register --> SuccessfulRegistration : [Details are valid]
 Register --> InvalidRegistration : [Details are invalid]
 
-state SuccessfulRegistration
-SuccessfulRegistration --> Login : [Save user's information and allow login]
-
-state LogIn
+state LogIn <<choice>>
 LogIn --> SuccessfulLogin : [Username and password match]
-LogIn --> IncorrectCredentials : [Username or password is incorrect]
+LogIn --> InvalidLogin : [Invalid username or password]
 
-state InvalidRegistration
-InvalidRegistration --> RepeatRegistration : [Re-enter details]
+state UserDashboard <<choice>>
+UserDashboard --> LocationSelection : [Check weather for current or another location]
+UserDashboard --> ProfileManagement : [Edit details, upload or accept requests, search for other users, or view current deals]
+UserDashboard --> Logout : [Log out after completing tasks]
 
-state Login
-Login --> UserSession : [Allow user to check weather, manage profile, view details, log out]
-UserSession --> Logout : [User logs out]
+state LocationSelection <<choice>>
+LocationSelection --> ValidLocation : [Enter a valid location]
+LocationSelection --> InvalidLocation : [Enter an invalid location]
 
-state UserSession
-UserSession --> CheckWeather : [Check the weather for current or another location]
-UserSession --> InvalidLocation : [New location entered is not valid]
-UserSession --> ChooseInfo : [Choose what to check (temperature, humidity, rainfall, pressure, dew point)]
-UserSession --> ShowInfo : [Update and show selected weather information]
-UserSession --> ViewDetails : [View additional weather details]
+state WeatherInformationChoice <<choice>>
+WeatherInformationChoice --> Temperature : [Temperature]
+WeatherInformationChoice --> Humidity : [Humidity]
+WeatherInformationChoice --> Rainfall : [Rainfall]
+WeatherInformationChoice --> Pressure : [Pressure]
+WeatherInformationChoice --> DewPoint : [Dew point]
+
+state WeatherDetails <<choice>>
+WeatherDetails --> Alerts : [Alerts]
+WeatherDetails --> WeeklyAnalysis : [Weekly analysis]
+WeatherDetails --> FuturePrediction : [Future prediction]
+WeatherDetails --> Graph : [Graph]
 @enduml

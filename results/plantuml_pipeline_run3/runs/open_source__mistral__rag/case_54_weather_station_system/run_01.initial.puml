@@ -1,72 +1,65 @@
 @startuml
 title Weather Station System States
 
-[*] --> Running : Shutdown
+[*] --> Running : Start
 state "Running" as Running
-state "Configuration Mode" as ConfigurationMode
-state "Collecting Data" as CollectingData
-state "Preparing Summary" as PreparingSummary
-state "Checking Status" as CheckingStatus
-state "Controlled Mode" as ControlledMode
-state "Shutdown Condition" as ShutdownCondition
+state "Shutdown" as Shutdown
 
-Running --> ConfigurationMode : Changes/Power-saving settings
-Running --> CollectingData : Clock trigger
-Running --> PreparingSummary : Summary request
-Running --> CheckingStatus : Status check request
+Running --> ConfigMode : Changes/Power-saving settings
+ConfigMode --> Running : Configuration completed
+Running --> CollectData : Triggered by clock
+CollectData --> Running : Data collected
+Running --> Summary : Request for weather summary
+Summary --> Running : Weather summary prepared
+Running --> StatusCheck : Request for status check
+StatusCheck --> Running : Status checked
 Running --> ControlledMode : Remote control
-Running --> ShutdownCondition : Shutdown command
-
-ConfigurationMode --> Running : Configuration completed
-ControlledMode --> Running : Activity completion
-ShutdownCondition --> ShutdownCondition : Successful shutdown
-
+Running --> Shutdown : Shutdown command given
 
 title Alert Notifier Component States
 
 [*] --> InitializeComponent : Load Component
 state "Initialize\nComponent" as InitializeComponent
 state "Waiting for Update" as WaitingForUpdate
-state "Processing Update" as ProcessingUpdate
-state "Unloading" as Unloading
-
-InitializeComponent --> WaitingForUpdate : Successful initialization
-WaitingForUpdate --> WaitingForUpdate : No update detected
-WaitingForUpdate --> ProcessingUpdate : Update detected
-ProcessingUpdate --> WaitingForUpdate : Update processed
-Unloading --> [*] : System shutdown or failure
-
+WaitingForUpdate --> ProcessUpdate : Detect update
+ProcessUpdate --> WaitingForUpdate : Update processed
+ProcessUpdate --> UnloadingPhase : Failure/Shutdown
 
 title Equihealth States
 
 [*] --> J1 : [check user]
 state J1 <<choice>>
-state PatientDashboard : Patient
-state HealthWorkerDashboard : Health Worker
-state GovernmentOfficialDashboard : Government Official
-state Logout : Logout
+state J2 : Patient
+state J3 : Health Worker
+state J4 : Government Official
+J1 --> J2 : Patient
+J1 --> J3 : Health Worker
+J1 --> J4 : Government Official
 
-J1 --> PatientDashboard : Patient
-J1 --> HealthWorkerDashboard : Health Worker
-J1 --> GovernmentOfficialDashboard : Government Official
-Logout --> [*] : User completes tasks
+J2 --> ProvideMedicalInfo : Sign in as patient
+ProvideMedicalInfo --> J2 : Medical information provided
+ProvideMedicalInfo --> J3 : Analysis performed
 
-PatientDashboard --> [*] : Provide medical information
-HealthWorkerDashboard --> [*] : Check and analyze medical information
-GovernmentOfficialDashboard --> [*] : View health planning results
-
+J3 --> PrepareAlerts : Based on analyzed information
+PrepareAlerts --> J3 : Alerts prepared
+PrepareAlerts --> J4 : Alerts sent to appropriate operators
 
 title National Health Id States
 
 [*] --> Choice1
 state Choice1 <<choice>>
-state Choice2
-state Choice3
-Choice1 --> Verification : Indian
-Choice1 --> [*] : not Indian
+state Choice2 : Verification
+state Choice3 : Activation
+Choice1 --> Choice2 : Indian citizen
+Choice1 --> [*] : Not Indian citizen
 
-Verification : entry / Citizenship status
-Verification : do / Verify details
-Verification : exit / Verified status
+Choice2 --> Verification : entry
+Verification --> VerifiedStatus : Details verified
+Verification --> NotVerified : Details not verified
 
+Choice3 --> SetPermissions : After activation
+SetPermissions --> AddOldFiles : Allow users to add old files
+AddOldFiles --> StoreOldFiles : Old files stored
+AddOldFiles --> AccessGranted : Permission granted for access
+AccessGranted --> AddNewFiles : Allow adding new files when permission is granted
 @enduml

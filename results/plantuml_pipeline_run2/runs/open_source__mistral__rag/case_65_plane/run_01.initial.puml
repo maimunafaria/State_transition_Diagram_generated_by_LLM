@@ -1,41 +1,35 @@
 @startuml
-
-plane_state_machine
-title UML State Machine Diagram for Plane
+title UML State Machine Diagram - Plane Management System
 
 [*] --> Order
 
 state Order
 Order : entry / acquirePlane
+Order : do / placeInOrderState
 
 state Arrival
-Arrival : entry / planeArrives
+Arrival : entry / arrive
 Arrival : do / transitionToPreparation
 
 state Preparation
-Preparation : entry / preparePlane
-Preparation : choice / checkConditionAndSchedule(plane)
-Preparation --> Operations / scheduledFlightsExist
-Preparation --> Maintenance / noScheduledFlightsOrMaintenanceRequired
+Preparation : entry / prepare
+Preparation : do / assignState
 
 state Operations
-Operations : entry / assignToOperations
-Operations : condition / checkScheduledFlights(plane)
-Operations : when / scheduledFlightsExist
-Operations : do / keepInOperations
-Operations : else
-Operations : do / sendToMaintenance
+Operations : entry / assignFlights
+Operations : do / checkScheduledFlights
+Operations : exit / fly
 
 state Maintenance
-Maintenance : entry / sendToMaintenance
-Maintenance : choice / checkRequirements(plane)
-Maintenance --> Preparation / readyForOperations
-Maintenance --> Order / outOfService
+Maintenance : entry / noMoreFlightsOrRequiresMaintenance
+Maintenance : do / servicePlane
+Maintenance : exit / readyForPreparation
 
 state OutOfService
-OutOfService : entry / takeOutOfService
+OutOfService : entry / outOfService
+OutOfService : do / removeFromOperations
 
 state PermanentlyWithdrawn
-PermanentlyWithdrawn : entry / permanentlyWithdrawPlane
-PermanentlyWithdrawn : do / removeFromOperations
+PermanentlyWithdrawn : entry / permanentlyWithdrawn
+PermanentlyWithdrawn : do / removeFromService
 @enduml

@@ -10,7 +10,7 @@ state "Withdrawal Options" as WithdrawalOptions
 state Confiscating
 state Ejecting
 state "Inputting Amount" as InputtingAmount
-state "Processing Transaction" as ProcessingTransaction
+state "Checking Amount" as CheckingAmount
 state "Dispensing Cash" as DispensingCash
 state "Printing Receipt" as PrintingReceipt
 state "Returning Card" as ReturningCard
@@ -22,13 +22,20 @@ Idle --> WaitingForPIN : Card Inserted / Get PIN
 WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
 ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
 
-ValidatingPIN --> WithdrawalOptions : Correct PIN / Show Options
-WithdrawalOptions --> InputtingAmount : User Chooses Amount / Get Amount
-InputtingAmount --> ProcessingTransaction : Valid Amount / Check Balance and Approve
-ProcessingTransaction --> DispensingCash : Approved / Dispense Cash
-ProcessingTransaction --> ReturningCard : Rejected / Cancel Everything and Return Card
-ProcessingTransaction --> OutOfCash : No Cash / Stop Operation
+ValidatingPIN --> WithdrawalOptions : Correct PIN
+WithdrawalOptions --> InputtingAmount : User Chooses Amount
+InputtingAmount --> CheckingAmount : Valid Amount
+CheckingAmount --> DispensingCash : Approve Transaction
+DispensingCash --> PrintingReceipt : Cash Dispensed
+PrintingReceipt --> ReturningCard : Receipt Printed
+ReturningCard --> Idle : Card Returned
 
-WithdrawalOptions --> Cancelling : User Cancels / Return Card
+InputtingAmount --> CheckingAmount : Invalid Amount
+CheckingAmount --> Confiscating : Reject Transaction / Keep Card
+Confiscating --> Ejecting : Card Ejected
+Ejecting --> Idle : Ready for Next User
 
+CheckingAmount --> OutOfCash : No Cash Available
+OutOfCash --> Resetting : System Reset
+Resetting --> Idle : Ready for Next User
 @enduml

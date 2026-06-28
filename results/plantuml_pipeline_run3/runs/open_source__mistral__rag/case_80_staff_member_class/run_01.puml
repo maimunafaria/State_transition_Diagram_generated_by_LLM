@@ -2,22 +2,14 @@
 title Staff Member State Machine
 
 state Unemployed
-state AssignedToClient
-state AssignedToCampaign
-state SwitchingAssignments
+state Assigned
+state Working
 
-[*] --> Unemployed : /leaveJob/
+[*] --> Assigned : Hired(details)
 
-Unemployed --> AssignedToClient : Hired(hiringDetails)
-Unemployed --> AssignedToCampaign : CampaignActivated(campaignId)
-
-AssignedToClient --> AssignedToCampaign : SwitchAssignment(assignmentId)
-AssignedToCampaign --> SwitchingAssignments : SwitchAssignment(assignmentId)
-SwitchingAssignments --> AssignedToClient : SwitchAssignment(assignmentId)
-SwitchingAssignments --> AssignedToCampaign : SwitchAssignment(assignmentId)
-
-AssignedToClient --> Unemployed : /leaveJob/
-AssignedToCampaign --> Unemployed : /leaveJob/
+Assigned --> Working : AssignClientOrCampaign(assignment)
+Working --> Unemployed : LeftJob(reason)
+Working --> Assigned : SwitchAssignment(newAssignment)
 
 
 title Campaign State Machine
@@ -27,30 +19,28 @@ state Active
 state Completed
 state Paid
 
-[*] --> Inactive : /assignManager;\nassignStaff\n/approveContract
+[*] --> Active : Commissioned(manager, staff, approvalCode)
 
-Inactive --> Active : ContractSigned(contractId)
-Active --> Completed : FinishedWork(workDetails)
-Completed --> Paid : PaymentReceived(paymentDetails)
-Paid --> Archived : TimePassed(timePeriod)
+Active --> Completed : FinishedWork(finalStatement)
+Completed --> Paid : PaymentReceived(payment)
+Paid --> Archived : AllSettled(completion)
+Inactive --> Active : Activated(contractSigned)
+
 
 title Advocate Diary State Machine
 
-state NotRegistered
+state Unregistered
 state Registered
 state LoggedIn
 state AddingCase
-state CaseCreated
-state ReminderSet
-state DocumentUploaded
+state WorkingOnCase
+state CompletedCase
 
-[*] --> NotRegistered : /exploreBlogsAndNews/
+[*] --> Registered : CreateAccount(details)
+Registered --> LoggedIn : VerifyDetails(password)
+LoggedIn --> AddingCase : StartNewCase(category)
+AddingCase --> WorkingOnCase : EnterCaseDetails(caseData)
+WorkingOnCase --> CompletedCase : CaseCompleted(reminders, documents)
+CompletedCase --> Unregistered : Logout
 
-NotRegistered --> Registered : CreateAccount(accountDetails)
-Registered --> LoggedIn : SignIn(signInDetails)
-LoggedIn --> AddingCase : NewCaseSelected
-AddingCase --> CaseCreated : CategorySelected(category)
-CaseCreated --> ReminderSet : SetReminder(reminderDetails)
-ReminderSet --> DocumentUploaded : UploadDocument(document)
-DocumentUploaded --> LoggedIn : /logout/
 @enduml

@@ -4,112 +4,113 @@ title ATM Control - Validate PIN and Withdraw Funds
 [*] --> Idle
 
 state Idle {
-  Idle --> VerifyPIN : enter_pin
+  Idle --> VerifyPin : enterPIN
 }
 
-state VerifyPIN {
-  VerifyPIN --> CorrectPIN : correct_pin
-  VerifyPIN --> IncorrectPIN : incorrect_pin
+state VerifyPin {
+  VerifyPin --> CorrectPin : correctPIN
+  VerifyPin --> IncorrectPin : incorrectPIN
 }
 
-state CorrectPIN {
-  CorrectPIN --> DisplayOptions : display_options
-  CorrectPIN --> RequestRejected : request_rejected
-  CorrectPIN --> ProcessWithdrawal : process_withdrawal
+state IncorrectPin {
+  IncorrectPin --> EnterPINAgain : enterPIN
+  IncorrectPin --> CardRetained : cardInvalid / <<final>>
 }
 
-state IncorrectPIN {
-  IncorrectPIN --> AskForPINAgain : ask_for_pin_again
-  IncorrentPIN --> CardRetained : card_retained
-  IncorrectPIN --> CancelProcess : cancel_process
+state CorrectPin {
+  CorrectPin --> DisplayOptions : displayOptions
 }
 
 state DisplayOptions {
-  DisplayOptions --> RequestWithdrawal : request_withdrawal
-  DisplayOptions --> CancelProcess : cancel_process
+  DisplayOptions --> RequestWithdrawal : requestWithdrawal
+  DisplayOptions --> CancelProcess : cancelProcess
 }
 
-state RequestRejected {
-  RequestRejected --> AskForPINAgain : ask_for_pin_again
+state RequestWithdrawal {
+  RequestWithdrawal --> CheckCash : checkCash
+  RequestWithdrawal --> RejectRequest : rejectRequest / <<final>>
 }
 
-state ProcessWithdrawal {
-  ProcessWithdrawal --> Approved : approved
-  ProcessWithdrawal --> Rejected : rejected
-  ProcessWithdrawal --> OutOfCash : out_of_cash
+state CheckCash {
+  CheckCash --> ApproveRequest : approveRequest
+  CheckCash --> NoCash : noCash / <<final>>
 }
 
-state Approved {
-  Approved --> DispenseCash : dispense_cash
-  Approved --> PrintReceipt : print_receipt
-  Approved --> ReturnCard : return_card
-  Approved --> Reset : reset
+state ApproveRequest {
+  ApproveRequest --> DispenseCash : dispenseCash
+  ApproveRequest --> PrintReceipt : printReceipt
+  ApproveRequest --> ReturnCard : returnCard / <<final>>
 }
 
-state Rejected {
-  Rejected --> AskForPINAgain : ask_for_pin_again
+state RejectRequest {
+  RejectRequest --> CancelEverything : cancelEverything / <<final>>
+  RejectRequest --> ReturnCard : returnCard
 }
 
-state OutOfCash {
-  OutOfCash --> NotifyUser : notify_user
-  OutOfCash --> Reset : reset
+state NoCash {
+  NoCash --> OutOfService : outOfService / <<final>>
 }
 
-state Reset {
-  Reset --> Idle : back_to_idle
+state CancelProcess {
+  CancelProcess --> ReturnCard : returnCard / <<final>>
 }
 
-title BPO Management System Scenario 3
+state OutOfService {
+  OutOfService --> Reset : reset / <<final>>
+}
+
+
+title BPO Management System - Project Management
 
 [*] --> Idle
 
 state Idle {
-  Idle --> UploadRequest : upload_request
+  Idle --> UploadRequest : uploadRequest
 }
 
 state UploadRequest {
-  UploadRequest --> SaveProjectDetails : save_project_details
+  UploadRequest --> SaveProjectDetails : saveProjectDetails
+  UploadRequest --> RejectRequest : rejectRequest / <<final>>
 }
 
 state SaveProjectDetails {
-  SaveProjectDetails --> SearchProjectCategory : search_project_category
+  SaveProjectDetails --> SearchProjectCategory : searchProjectCategory
 }
 
 state SearchProjectCategory {
-  SearchProjectCategory --> AcceptRequest : accept_request
-  SearchProjectCategory --> DeclineRequest : decline_request
+  SearchProjectCategory --> AcceptRequest : acceptRequest
+  SearchProjectCategory --> DeclineRequest : declineRequest / <<final>>
 }
 
 state AcceptRequest {
-  AcceptRequest --> ProceedWithProject : proceed_with_project
-  AcceptRequest --> RejectProject : reject_project
+  AcceptRequest --> ProceedWithProject : proceedWithProject
+  AcceptRequest --> RejectProject : rejectProject / <<final>>
 }
 
 state ProceedWithProject {
-  ProceedWithProject --> UpdateProjectStatus : update_project_status
-  ProceedWithProject --> TrackProgress : track_progress
+  ProceedWithProject --> UpdateProjectStatus : updateProjectStatus
+  ProceedWithProject --> TrackProgress : trackProgress
 }
 
-state RejectProject {
-  RejectProject --> UploadFinalProject : upload_final_project
+state UpdateProjectStatus {
+  UpdateProjectStatus --> UploadFinalProject : uploadFinalProject
 }
 
 state UploadFinalProject {
-  UploadFinalProject --> QualityCheck : quality_check
+  UploadFinalProject --> QualityCheck : qualityCheck
 }
 
 state QualityCheck {
-  QualityCheck --> Satisfied : satisfied
-  QualityCheck --> Unsatisfied : unsatisfied
+  QualityCheck --> SatisfiedClient : satisfiedClient
+  QualityCheck --> UnsatisfiedClient : unsatisfiedClient / <<final>>
 }
 
-state Satisfied {
-  Satisfied --> MakePayment : make_payment
-  Satisfied --> Reset : reset
+state SatisfiedClient {
+  SatisfiedClient --> MakePayment : makePayment / <<final>>
 }
 
-state Unsatisfied {
-  Unsatisfied --> RestartProcess : restart_process
-  Unsatisfied --> Reset : reset
+state UnsatisfiedClient {
+  UnsatisfiedClient --> RestartProcess : restartProcess / <<final>>
 }
+
 @enduml

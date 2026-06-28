@@ -3,29 +3,26 @@ title State machine for Campaign
 
 state Commissioned
 state Active
-state Paused
-state Adjusting
 state Completed
 state Paid
-state Archived
+state Cancelled
+state Adjusting
 
 [*] --> Commissioned : /assignManager;\nassignStaff\n/approveContract
 
-Commissioned --> Active : Authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+Commissioned --> Active : Approved(authorizationCode)\n[contract signed]\n/setCampaignActive
 
-Active --> Paused : /pauseCampaign
-Active --> Adjusting : /extendDuration\n/changeBudget
+Active --> Completed : AllWorkFinished
+Active --> Cancelled : CampaignCancelled
+Active --> Adjusting : /extendDuration;\n/changeBudget
 
-Adjusting --> Active : /resumeCampaign
+Completed --> Paid : CorrectPaymentReceived
+Completed --> Paid : PaymentAdjusted(refundOrWait)
 
-Active --> Completed : /finishWork
+Paid --> Archived : FinalStatementPrepared\n/releaseStaffAndManager
 
-Completed --> Paid : /calculateCosts\n/prepareFinalStatement\n/handlePayment\n[payment matches due]\n/markAsPaid
+Cancelled --> Completed : CalculateCosts\nFinalStatementPrepared
 
-Paid --> Archived : /archiveCampaign\n/releaseStaffAndManager
-
-Active --> Completed : /runAdverts
-
-Completed --> Paid : /calculateCosts\n/prepareFinalStatement\n/handlePayment\n[payment does not match due]\n/makeAdjustments\n/markAsPaid
+Adjusting --> Active : ResumeWork
 
 @enduml
