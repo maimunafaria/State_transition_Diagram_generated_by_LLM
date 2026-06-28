@@ -57,6 +57,8 @@ RANKING_FIELDS = (
     "candidate_id",
     "valid_candidate_count",
     "rank",
+    "ranking_source",
+    "judge_score_count",
     "completeness_median",
     "correctness_median",
     "understandability_median",
@@ -322,21 +324,21 @@ def candidate_judge_ranking(
         dict[str, dict[str, Any]],
     ],
     expected_judges: tuple[str, str, str],
-) -> tuple[dict[str, float] | None, list[str]]:
+) -> tuple[dict[str, Any] | None, list[str]]:
     key = (candidate.model, candidate.method, candidate.case_id)
     judge_rows = judge_scores.get(key, {})
-    gaps: list[str] = []
-    criterion_values: dict[str, list[float]] = {
-        criterion: [] for criterion in CRITERIA
-    }
+    parsed_by_judge: dict[str, dict[str, float]] = {}
+    issues_by_judge: dict[str, str] = {}
 
     for judge in expected_judges:
         row = judge_rows.get(judge)
         if row is None:
-            gaps.append(f"{judge}: missing row")
+            issues_by_judge[judge] = f"{judge}: missing row"
             continue
         if str(row.get("status", "")).strip().lower() != "ok":
-            gaps.append(f"{judge}: status={row.get('status', '')}")
+            issues_by_judge[judge] = (
+                f"{judge}: status={row.get('status', '')}"
+            )
             continue
         judge_valid = True
         parsed: dict[str, float] = {}
@@ -346,35 +348,59 @@ def candidate_judge_ranking(
                 score = float(raw_score)
             except ValueError:
                 judge_valid = False
-                gaps.append(f"{judge}: invalid {criterion} score={raw_score!r}")
+                issues_by_judge[judge] = (
+                    f"{judge}: invalid {criterion} score={raw_score!r}"
+                )
                 break
             if not 1.0 <= score <= 5.0:
                 judge_valid = False
-                gaps.append(
+                issues_by_judge[judge] = (
                     f"{judge}: out-of-range {criterion} score={score}"
                 )
                 break
             parsed[criterion] = score
         if judge_valid:
-            for criterion, score in parsed.items():
-                criterion_values[criterion].append(score)
+            parsed_by_judge[judge] = parsed
 
-    if gaps:
-        return None, gaps
-    if any(len(values) != 3 for values in criterion_values.values()):
-        return None, ["expected exactly three valid judge scores per criterion"]
+    deepseek_judge, llama_judge, prometheus_judge = expected_judges
+    required_general_judges = (deepseek_judge, llama_judge)
+    missing_general = [
+        issues_by_judge.get(judge, f"{judge}: missing valid scores")
+        for judge in required_general_judges
+        if judge not in parsed_by_judge
+    ]
+    if missing_general:
+        return None, missing_general
+
+    active_judges = [deepseek_judge, llama_judge]
+    ranking_source = "deepseek_llama_fallback"
+    if prometheus_judge in parsed_by_judge:
+        active_judges.append(prometheus_judge)
+        ranking_source = "three_judge_median"
+
+    criterion_values = {
+        criterion: [
+            parsed_by_judge[judge][criterion]
+            for judge in active_judges
+        ]
+        for criterion in CRITERIA
+    }
 
     medians = {
         f"{criterion}_median": float(statistics.median(values))
         for criterion, values in criterion_values.items()
     }
-    medians["ranking_score"] = statistics.mean(medians.values())
+    medians["ranking_score"] = statistics.mean(
+        medians[f"{criterion}_median"] for criterion in CRITERIA
+    )
+    medians["ranking_source"] = ranking_source
+    medians["judge_score_count"] = len(active_judges)
     return medians, []
 
 
 def rank_valid_candidates(
     candidates: list[Candidate],
-    rankings: dict[str, dict[str, float]],
+    rankings: dict[str, dict[str, Any]],
 ) -> list[Candidate]:
     return sorted(
         candidates,
@@ -804,7 +830,7 @@ def main() -> int:
     if len(set(expected_judges)) != 3:
         raise ValueError("The three judge model tags must be distinct")
     judge_scores = load_judge_scores(args.judge_scores_csv, expected_judges)
-    rankings: dict[str, dict[str, float]] = {}
+    rankings: dict[str, dict[str, Any]] = {}
     gap_rows: list[dict[str, Any]] = []
 
     for case_id in expected_case_ids:
@@ -878,10 +904,16 @@ def main() -> int:
         case_id: len(valid_by_case[case_id])
         for case_id in expected_case_ids
     }
+    two_judge_fallback_count = sum(
+        ranking.get("ranking_source") == "deepseek_llama_fallback"
+        for ranking in rankings.values()
+    )
     print(
         f"Cases: {len(expected_case_ids)}\n"
         f"Discovered candidates: {len(candidates)}\n"
         f"Syntax + structural valid candidates: {len(valid_candidates)}\n"
+        f"Candidates ranked with DeepSeek + Llama fallback: "
+        f"{two_judge_fallback_count}\n"
         f"Cases with 0 valid candidates: "
         f"{sum(count == 0 for count in valid_counts.values())}\n"
         f"Cases with 1 valid candidate: "
