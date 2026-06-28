@@ -21,6 +21,57 @@ from plantuml_pipeline.parser import normalize_puml_text, parse_and_validate_pum
 
 DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 DEFAULT_THRESHOLD = 0.80
+SYNONYM_CANONICAL_FORMS = {
+    "signin": "login",
+    "sign in": "login",
+    "signed in": "login",
+    "login": "login",
+    "log in": "login",
+    "logout": "logout",
+    "log out": "logout",
+    "logged out": "logout",
+    "register": "registration",
+    "registration": "registration",
+    "symptom check": "symptoms checker",
+    "symptoms check": "symptoms checker",
+    "symptom checker": "symptoms checker",
+    "symptoms checker": "symptoms checker",
+    "news": "news and experts",
+    "read news": "news and experts",
+    "payment": "payment",
+    "pay": "payment",
+    "checkout": "payment",
+}
+GENERIC_CONTAINMENT_TOKENS = {
+    "active",
+    "data",
+    "details",
+    "end",
+    "idle",
+    "info",
+    "input",
+    "main",
+    "menu",
+    "new",
+    "page",
+    "process",
+    "result",
+    "start",
+    "state",
+    "user",
+    "view",
+}
+TOKEN_STOPWORDS = {
+    "a",
+    "an",
+    "and",
+    "for",
+    "in",
+    "of",
+    "on",
+    "the",
+    "to",
+}
 PSEUDOSTATE_STEREOTYPES = {
     "choice",
     "fork",
@@ -45,6 +96,7 @@ CSV_FIELDS = [
     "ground_truth_path",
     "embedding_model",
     "similarity_threshold",
+    "relaxed_similarity_threshold",
     "ground_truth_states",
     "candidate_states",
     "matched_state_pairs",
@@ -83,7 +135,42 @@ def normalize_state_name(name: str) -> str:
     normalized = re.sub(r"(?<=[A-Z])(?=[A-Z][a-z])", " ", normalized)
     normalized = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", normalized)
     normalized = normalized.lower()
-    return " ".join(normalized.split())
+    normalized = " ".join(normalized.split())
+    return SYNONYM_CANONICAL_FORMS.get(normalized, normalized)
+
+
+def meaningful_tokens(normalized_name: str) -> set[str]:
+    return {
+        token
+        for token in re.findall(r"[a-z0-9]+", normalized_name)
+        if token not in TOKEN_STOPWORDS
+    }
+
+
+def is_lexical_containment_match(
+    ground_truth_state: StateName,
+    candidate_state: StateName,
+) -> bool:
+    ground_truth_tokens = meaningful_tokens(ground_truth_state.normalized)
+    candidate_tokens = meaningful_tokens(candidate_state.normalized)
+    if not ground_truth_tokens or not candidate_tokens:
+        return False
+
+    smaller = (
+        ground_truth_tokens
+        if len(ground_truth_tokens) <= len(candidate_tokens)
+        else candidate_tokens
+    )
+    larger = (
+        candidate_tokens
+        if len(ground_truth_tokens) <= len(candidate_tokens)
+        else ground_truth_tokens
+    )
+    if not smaller <= larger:
+        return False
+    if len(smaller) == 1 and next(iter(smaller)) in GENERIC_CONTAINMENT_TOKENS:
+        return False
+    return True
 
 
 def extract_real_states(puml_text: str) -> list[StateName]:
@@ -239,6 +326,7 @@ def match_states(
     candidate_states: list[StateName],
     embedding_lookup: dict[str, np.ndarray],
     threshold: float,
+    relaxed_threshold: float | None = None,
 ) -> tuple[list[dict[str, Any]], list[str], list[str]]:
     if not ground_truth_states or not candidate_states:
         return (
@@ -261,11 +349,28 @@ def match_states(
 
     maximum_pair_count = min(len(ground_truth_states), len(candidate_states))
     cardinality_bonus = (2 * maximum_pair_count) + 1
-    utility = np.where(
-        similarities >= threshold,
-        cardinality_bonus + similarities,
-        0.0,
+    exact_normalized_matches = np.asarray(
+        [
+            [
+                ground_truth.normalized == candidate.normalized
+                for candidate in candidate_states
+            ]
+            for ground_truth in ground_truth_states
+        ],
+        dtype=bool,
     )
+    lexical_containment_matches = np.asarray(
+        [
+            [
+                is_lexical_containment_match(ground_truth, candidate)
+                for candidate in candidate_states
+            ]
+            for ground_truth in ground_truth_states
+        ],
+        dtype=bool,
+    )
+    strict_candidates = (similarities >= threshold) | exact_normalized_matches
+    utility = np.where(strict_candidates, cardinality_bonus + similarities, 0.0)
     row_indexes, column_indexes = linear_sum_assignment(-utility)
 
     accepted_indexes = sorted(
@@ -276,10 +381,66 @@ def match_states(
                 column_indexes,
                 strict=True,
             )
-            if similarities[row_index, column_index] >= threshold
+            if strict_candidates[row_index, column_index]
         ),
         key=lambda item: item[0],
     )
+
+    if relaxed_threshold is not None:
+        if relaxed_threshold > threshold:
+            raise ValueError("relaxed_threshold must be less than or equal to threshold")
+        unmatched_ground_truth = [
+            index
+            for index in range(len(ground_truth_states))
+            if index not in {row_index for row_index, _ in accepted_indexes}
+        ]
+        unmatched_candidates = [
+            index
+            for index in range(len(candidate_states))
+            if index not in {column_index for _, column_index in accepted_indexes}
+        ]
+        if unmatched_ground_truth and unmatched_candidates:
+            relaxed_utility = np.zeros(
+                (len(unmatched_ground_truth), len(unmatched_candidates)),
+                dtype=np.float64,
+            )
+            for local_row, row_index in enumerate(unmatched_ground_truth):
+                for local_column, column_index in enumerate(unmatched_candidates):
+                    similarity = similarities[row_index, column_index]
+                    if (
+                        similarity >= relaxed_threshold
+                        or lexical_containment_matches[row_index, column_index]
+                    ):
+                        relaxed_utility[local_row, local_column] = (
+                            cardinality_bonus
+                            + max(float(similarity), relaxed_threshold)
+                        )
+            relaxed_rows, relaxed_columns = linear_sum_assignment(
+                -relaxed_utility
+            )
+            relaxed_indexes = sorted(
+                (
+                    (
+                        unmatched_ground_truth[int(local_row)],
+                        unmatched_candidates[int(local_column)],
+                    )
+                    for local_row, local_column in zip(
+                        relaxed_rows,
+                        relaxed_columns,
+                        strict=True,
+                    )
+                    if relaxed_utility[
+                        int(local_row),
+                        int(local_column),
+                    ]
+                    > 0.0
+                ),
+                key=lambda item: item[0],
+            )
+            accepted_indexes = sorted(
+                accepted_indexes + relaxed_indexes,
+                key=lambda item: item[0],
+            )
     matched_ground_truth = {row_index for row_index, _ in accepted_indexes}
     matched_candidates = {column_index for _, column_index in accepted_indexes}
 
@@ -292,6 +453,22 @@ def match_states(
             "similarity": round(
                 float(similarities[row_index, column_index]),
                 6,
+            ),
+            "match_type": (
+                "exact_normalized"
+                if exact_normalized_matches[row_index, column_index]
+                else (
+                    "strict"
+                    if similarities[row_index, column_index] >= threshold
+                    else (
+                        "relaxed_lexical"
+                        if lexical_containment_matches[
+                            row_index,
+                            column_index,
+                        ]
+                        else "relaxed"
+                    )
+                )
             ),
         }
         for row_index, column_index in accepted_indexes
@@ -416,6 +593,16 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_EMBEDDING_MODEL,
     )
     parser.add_argument("--threshold", type=float, default=DEFAULT_THRESHOLD)
+    parser.add_argument(
+        "--relaxed-threshold",
+        type=float,
+        default=None,
+        help=(
+            "Optional second-pass threshold for unmatched state names. "
+            "Use this to count high-confidence human-obvious paraphrases "
+            "without lowering the main strict threshold."
+        ),
+    )
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--seed", type=int, default=42)
@@ -427,6 +614,13 @@ def main() -> int:
     args = build_parser().parse_args()
     if not -1.0 <= args.threshold <= 1.0:
         raise ValueError("--threshold must be between -1.0 and 1.0")
+    if args.relaxed_threshold is not None:
+        if not -1.0 <= args.relaxed_threshold <= 1.0:
+            raise ValueError("--relaxed-threshold must be between -1.0 and 1.0")
+        if args.relaxed_threshold > args.threshold:
+            raise ValueError(
+                "--relaxed-threshold must be less than or equal to --threshold"
+            )
     if args.batch_size < 1:
         raise ValueError("--batch-size must be at least 1")
     if args.sample_count < 0:
@@ -504,6 +698,8 @@ def main() -> int:
     print(
         f"Embedding model: {args.embedding_model}\n"
         f"Similarity threshold: {args.threshold:.2f}\n"
+        f"Relaxed threshold: "
+        f"{args.relaxed_threshold if args.relaxed_threshold is not None else 'disabled'}\n"
         f"Device: {args.device}\n"
         f"Seed: {args.seed}\n"
         f"Candidate diagrams: {len(prepared)}\n"
@@ -525,6 +721,7 @@ def main() -> int:
             candidate_states,
             embedding_lookup,
             args.threshold,
+            args.relaxed_threshold,
         )
         matched_count = len(matched_pairs)
         precision, recall, f1 = semantic_metrics(
@@ -542,6 +739,11 @@ def main() -> int:
             "ground_truth_path": str(ground_truth_path),
             "embedding_model": args.embedding_model,
             "similarity_threshold": f"{args.threshold:.6f}",
+            "relaxed_similarity_threshold": (
+                f"{args.relaxed_threshold:.6f}"
+                if args.relaxed_threshold is not None
+                else ""
+            ),
             "ground_truth_states": json_cell(ground_truth_names),
             "candidate_states": json_cell(candidate_names),
             "matched_state_pairs": json_cell(matched_pairs),
