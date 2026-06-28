@@ -1,0 +1,32 @@
+@startuml
+title Safehome Security Function - State Machine Diagram
+
+[*] --> PowerOn
+PowerOn --> CheckWorking
+CheckWorking --> EverythingFine
+EverythingFine --> ReadyToUse
+ReadyToUse --> Activate
+Activate --> Monitoring
+Monitoring --> SensorTriggered
+SensorTriggered --> AlarmActivated
+AlarmActivated --> SendAlerts
+SendAlerts --> FalseAlarmOrTimeEnds
+FalseAlarmOrTimeEnds --> ContinueMonitoring
+ContinueMonitoring --> [*]
+Monitoring --> NoSensorTriggered
+NoSensorTriggered --> ContinueMonitoring
+ReadyToUse --> Reset
+Reset --> EnterPassword
+EnterPassword --> PasswordCorrect
+PasswordCorrect --> OptionsDisplayed
+OptionsDisplayed --> [*]
+EnterPassword --> PasswordIncorrect
+PasswordIncorrect --> AskForPINAgain
+AskForPINAgain --> [*]
+ProblemDuringStartup:
+    ProblemDuringStartup --> Stop
+Stop --> PowerOn:[invalid]
+ReadyToUse --> TurnOff
+TurnOff --> [*]
+PowerOn:[clear] --> ProblemDuringStartup:[guard]
+@enduml

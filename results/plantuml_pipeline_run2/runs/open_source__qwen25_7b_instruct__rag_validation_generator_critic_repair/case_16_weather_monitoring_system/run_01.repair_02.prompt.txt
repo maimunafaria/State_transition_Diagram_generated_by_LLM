@@ -1,0 +1,108 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram (Weather Monitoring System)
+
+[*] --> RegistrationOrLogin
+
+state RegistrationOrLogin <<choice>>
+RegistrationOrLogin --> CreateAccount : [New user]
+RegistrationOrLogin --> ExistingUser : [Registered user]
+
+state CreateAccount
+CreateAccount --> AccountCreated : [Successful registration]
+CreateAccount --> EndProcess : [Not successful]
+
+state ExistingUser
+ExistingUser --> LoginSuccess : [Valid login]
+ExistingUser --> EndProcess : [Invalid login]
+
+state MainMenu
+MainMenu --> CheckWeather : [Check weather]
+MainMenu --> ViewDetails : [View additional details]
+
+state CheckWeather
+CheckWeather --> LocationValid : [Valid location]
+CheckWeather --> EndProcess : [Not valid location]
+
+state LocationValid
+LocationValid --> WeatherInfoSelected : [Choose what to check]
+LocationValid --> EndProcess : [No selection]
+
+state WeatherInfoSelected
+WeatherInfoSelected --> ShowWeatherInfo : [Show selected weather info]
+WeatherInfoSelected --> EndProcess : [Invalid choice]
+
+state ViewDetails
+ViewDetails --> DetailsChosen : [Choose details]
+ViewDetails --> LoggedOut : [Logout]
+
+state DetailsChosen
+DetailsChosen --> ShowDetails : [Show chosen details]
+DetailsChosen --> EndSession : [Logout]
+
+state ShowWeatherInfo
+ShowWeatherInfo --> [*] : [End process]
+
+state ShowDetails
+ShowDetails --> [*] : [End process]
+
+state AccountCreated
+AccountCreated --> [*] : [End process]
+
+state LoginSuccess
+LoginSuccess --> [*] : [End process]
+
+state EndProcess
+EndProcess --> [*] : [End process]
+
+state LoggedOut
+LoggedOut --> [*] : [End session]
+
+@enduml
+
+
+Validation issues to fix:
+- unreachable: CheckWeather, DetailsChosen, EndSession, LocationValid, LoggedOut, MainMenu, ShowDetails, ShowWeatherInfo, ViewDetails, WeatherInfoSelected
+- unreachable_states_detected
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.

@@ -1,0 +1,53 @@
+@startuml
+title State machine for Campaign
+
+state Commissioned
+state Active
+state Adjusting
+state Paused
+state Resuming
+state Completed
+state Paid
+state Cancelled
+
+[*] --> Commissioned : /assignManager;\nassignStaff\n/approvalReceived
+Commissioned --> Active : ContractSigned
+Active --> Adjusting : ExtendDuration(duration)\nChangeBudget(budget)
+Adjusting --> Active
+Paused --> Resuming
+Resuming --> Active
+Active --> Paused : /pauseCampaign
+Active --> Completed : AllAdvertsFinished
+Completed --> Paid : PaymentReceived
+Cancelled --> CancelledStatement : CalculateCosts\nPrepareFinalStatement
+Completed --> [*] : AllAdvertsFinished
+
+title State machine for Textile Process
+
+state CustomerRegistration
+state OrderPlaced
+state SampleRequested
+state MaterialChecking
+state Purchasing
+state Processing
+state ProductionStarted
+state DefectCheck
+state Delivery
+state Billing
+state Completed
+state ReportGenerated
+
+[*] --> CustomerRegistration : /fillDetails
+CustomerRegistration --> OrderPlaced
+OrderPlaced --> SampleRequested : NeedSampleMaterials
+SampleRequested --> MaterialChecking
+MaterialChecking --> Purchasing
+Purchasing --> Processing
+Processing --> ProductionStarted
+ProductionStarted --> DefectCheck
+DefectCheck --> Delivery : PassedChecks
+Delivery --> Billing
+Billing --> Completed
+Completed --> ReportGenerated
+Completed --> [*] : AllStepsFinished
+@enduml

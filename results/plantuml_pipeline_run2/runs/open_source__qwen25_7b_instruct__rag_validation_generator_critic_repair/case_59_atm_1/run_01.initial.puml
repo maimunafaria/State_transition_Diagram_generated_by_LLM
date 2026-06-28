@@ -1,0 +1,24 @@
+@startuml
+title ATM Control - Validate PIN and Withdraw Funds
+
+[*] --> Idle
+
+state Idle
+state "Waiting for PIN" as WaitingForPIN
+state "Validating PIN" as ValidatingPIN
+state "Withdrawal Options" as WithdrawalOptions
+state "Processing Withdrawal" as ProcessingWithdrawal
+state Confiscating
+state Ejecting
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+ValidatingPIN --> WithdrawalOptions : Correct PIN / Show Options
+
+WithdrawalOptions --> ProcessingWithdrawal : Choose Amount / Process Request
+ProcessingWithdrawal --> Confiscating : Rejected Transaction / Cancel Everything
+ProcessingWithdrawal --> Ejecting : Approved Transaction / Dispense Cash, Print Receipt
+
+@enduml

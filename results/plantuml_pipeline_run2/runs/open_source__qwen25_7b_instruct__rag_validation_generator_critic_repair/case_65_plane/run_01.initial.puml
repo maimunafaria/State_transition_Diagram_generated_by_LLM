@@ -1,0 +1,38 @@
+@startuml
+
+[*] --> Order
+
+state Order
+Order : entry / placePlane
+Order : exit / delivered
+
+state Arrival
+Arrival : entry / planeArrived
+Arrival : exit / transitionPreparation
+
+state Preparation
+Preparation : entry / assignPlane
+Preparation : exit / readyForOperationsOrMaintenance
+
+state Operations
+Operations : entry / hasScheduledFlights
+Operations : exit / noMoreScheduledFlights
+
+state Maintenance
+Maintenance : entry / checkAndServicePlane
+Maintenance : exit / planeReadyForOperations
+
+state OutOfService
+OutOfService : entry / planeNoLongerAvailable
+
+state WithdrawnFromService
+WithdrawnFromService : entry / permanentWithdrawal
+
+state Arrival --> Preparation : planeArrived
+Preparation --> Operations : hasScheduledFlights
+Operations --> Maintenance : noMoreScheduledFlightsOrMaintenanceRequired
+Maintenance --> Preparation : planeReadyForOperations
+Order --> OutOfService : planeNoLongerAvailable
+OutOfService --> WithdrawnFromService : permanentWithdrawal
+
+@enduml

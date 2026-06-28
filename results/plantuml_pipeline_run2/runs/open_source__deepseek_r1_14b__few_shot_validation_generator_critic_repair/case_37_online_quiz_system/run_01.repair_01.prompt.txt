@@ -1,0 +1,139 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram - Online Quiz System
+
+[*] --> Login
+
+state "Login" as Login
+Login : entry/User details
+Login : do/Authenticate user
+Login : exit/Authenticated
+
+Login --> PostLoginChoice
+
+state "Post-Login Choice (Teacher/Student)" as PostLoginChoice
+PostLoginChoice : entry/Logged in user
+PostLoginChoice : do/Choose role
+PostLoginChoice : exit/Role selected
+
+PostLoginChoice --> TeacherMainMenu
+PostLoginChoice --> StudentMainMenu
+
+state "Teacher Main Menu" as TeacherMainMenu
+TeacherMainMenu : entry/Teacher logged in
+TeacherMainMenu : do/Show options
+TeacherMainMenu : exit/Options displayed
+
+TeacherMainMenu --> CreateQuiz
+TeacherMainMenu --> EditQuiz
+TeacherMainMenu --> ViewResults
+
+state "Create Quiz" as CreateQuiz
+CreateQuiz : entry/Teacher chooses create
+CreateQuiz : do/Create new quiz
+CreateQuiz : exit/Quiz creation started
+
+CreateQuiz --> SaveDraft
+CreateQuiz --> PostQuiz
+
+state "Edit Quiz" as EditQuiz
+EditQuiz : entry/Teacher chooses edit
+EditQuiz : do/Edit existing quiz
+EditQuiz : exit/Editing started
+
+EditQuiz --> SaveDraft
+EditQuiz --> PostQuiz
+
+state "Save Draft" as SaveDraft
+SaveDraft : entry/Save action
+SaveDraft : do/Save progress
+SaveDraft : exit/Draft saved
+
+SaveDraft --> TeacherMainMenu
+
+state "Post Quiz" as PostQuiz
+PostQuiz : entry/Post action
+PostQuiz : do/Publish quiz
+PostQuiz : exit/Quiz posted
+
+PostQuiz --> ViewResults
+
+state "View Results" as ViewResults
+ViewResults : entry/Teacher views results
+ViewResults : do/Display results
+ViewResults : exit/Results viewed
+
+ViewResults --> TeacherMainMenu
+
+state "Student Main Menu" as StudentMainMenu
+StudentMainMenu : entry/Student logged in
+StudentMainMenu : do/Show options
+StudentMainMenu : exit/Options displayed
+
+StudentMainMenu --> SelectQuiz
+
+state "Select Quiz" as SelectQuiz
+SelectQuiz : entry/Student selects quiz
+SelectQuiz : do/List available quizzes
+SelectQuiz : exit/Quiz selected
+
+SelectQuiz --> AnswerQuiz
+
+state "Answer Quiz" as AnswerQuiz
+AnswerQuiz : entry/Student starts answering
+AnswerQuiz : do/Answer questions
+Answer
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+- orphan: Answer Quiz
+- orphan_states_detected
+- unreachable: Answer Quiz, AnswerQuiz, Create Quiz, CreateQuiz, Edit Quiz, EditQuiz, Post Quiz, Post-Login Choice (Teacher/Student), PostQuiz, Save Draft, SaveDraft, Select Quiz, SelectQuiz, Student Main Menu, StudentMainMenu, Teacher Main Menu, TeacherMainMenu, View Results, ViewResults
+- unreachable_states_detected
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.

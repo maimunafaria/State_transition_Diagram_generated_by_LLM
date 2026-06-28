@@ -1,0 +1,45 @@
+@startuml
+title UML State Machine Diagram - Digidoclocker
+
+state "Initial" as Initial
+state "Citizen Registration" as CitizenRegistration
+state "Citizen Login" as CitizenLogin
+state "Citizen Profile" as CitizenProfile
+state "Document Upload" as DocumentUpload
+state "Certificate Application" as CertificateApplication
+state "Reapply for Certificate" as ReapplyForCertificate
+state "Registrar Request" as RegistrarRequest
+state "Multiple Certificate Request" as MultipleCertificateRequest
+
+Initial --> CitizenRegistration : [New Citizen]
+
+CitizenRegistration --> CitizenLogin : [Registered Citizen]
+CitizenLogin --> CitizenProfile : [Logged In Citizen]
+CitizenLogin --> DocumentUpload : [Incorrect Login Details]
+
+DocumentUpload --> CitizenProfile : [Continue Uploading Documents]
+DocumentUpload --> CertificateApplication : [Finish Uploading Documents]
+
+CertificateApplication --> ReapplyForCertificate : [Apply for Multiple Certificates]
+ReapplyForCertificate --> CitizenProfile : [Reapply for Certificate]
+
+CitizenLogin --> RegistrarRequest : [Registered Registrar]
+RegistrarRequest --> MultipleCertificateRequest : [Request Multiple Certificates]
+MultipleCertificateRequest --> CitizenProfile : [Continue Requesting Certificates]
+
+CitizenProfile --> DocumentUpload : [View Profile and Upload Documents]
+DocumentUpload --> CertificateApplication : [Apply for Certificate from Viewed Profile]
+
+ReapplyForCertificate --> CertificateApplication : [Reapply for Certificate after Sending Request]
+CertificateApplication --> CitizenProfile : [Finish Applying for Certificate]
+
+MultipleCertificateRequest --> RegistrarRequest : [Continue Requesting Certificates]
+
+CitizenLogin --> EndSession : [End Session]
+
+endstate
+
+[*] --> Initial
+Initial --> CitizenRegistration
+EndSession --> [*]
+@enduml

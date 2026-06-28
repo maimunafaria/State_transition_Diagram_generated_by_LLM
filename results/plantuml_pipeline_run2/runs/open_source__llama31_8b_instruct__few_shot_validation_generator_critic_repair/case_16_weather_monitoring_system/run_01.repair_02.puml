@@ -1,0 +1,82 @@
+@startuml
+title UML State Machine Diagram - Weather Monitoring System
+
+state "Registration" as Registration {
+  [*] --> RegEnterDetails
+
+  state "Enter Details" as RegEnterDetails
+  state "Get Account Created" as GetAccountCreated
+  state "Failed Registration" as FailedRegistration
+
+  RegEnterDetails --> GetAccountCreated : [Valid]
+  RegEnterDetails --> FailedRegistration : [Invalid]
+}
+
+state "Authentication" as Authentication {
+  [*] --> AuthEnterMemberID
+
+  state "Enter Member_ID" as AuthEnterMemberID
+  state "Enter Password" as EnterPassword
+  state "Successful Login" as SuccessfulLogin
+  state "Invalid Member_ID or Password" as InvalidCreds
+
+  AuthEnterMemberID --> EnterPassword
+  EnterPassword --> SuccessfulLogin : [Valid]
+  EnterPassword --> InvalidCreds : [Invalid]
+}
+
+state "Check Weather" as CheckWeather {
+  [*] --> EnterLocation
+
+  state "Enter Location" as EnterLocation
+  state "Get Weather Info" as GetWeatherInfo
+  state "Invalid Location" as InvalidLocation
+
+  EnterLocation --> GetWeatherInfo : [Valid]
+  EnterLocation --> InvalidLocation : [Not Valid]
+}
+
+state "Select Weather Option" as SelectWeatherOption {
+  [*] --> SelectOption
+
+  state "Select Option" as SelectOption
+  state "Get Selected Info" as GetSelectedInfo
+
+  SelectOption --> GetSelectedInfo : [Valid]
+}
+
+state "View Additional Details" as ViewAdditionalDetails {
+  [*] --> ChooseDetail
+
+  state "Choose Detail" as ChooseDetail
+  state "Get Additional Info" as GetAdditionalInfo
+
+  ChooseDetail --> GetAdditionalInfo : [Valid]
+}
+
+state "Logout" as Logout {
+  [*] --> LogOut
+
+  state "Log Out" as LogOut
+  End <<choice>> as End
+
+  LogOut --> End
+}
+
+StartJoin <<choice>> as StartJoin
+
+[*] --> StartJoin
+StartJoin --> Registration : [Registration]
+StartJoin --> Authentication : [Authentication]
+StartJoin --> CheckWeather : [Check Weather]
+StartJoin --> SelectWeatherOption : [Select Weather Option]
+StartJoin --> ViewAdditionalDetails : [View Additional Details]
+StartJoin --> Logout : [Logout]
+
+SuccessfulLogin --> EnterLocation
+GetAccountCreated --> AuthEnterMemberID
+InvalidCreds --> FailedRegistration
+InvalidLocation --> End
+End --> [*]
+
+@enduml

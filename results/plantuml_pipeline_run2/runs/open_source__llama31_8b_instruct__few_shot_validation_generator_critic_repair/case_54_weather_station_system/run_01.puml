@@ -1,0 +1,51 @@
+@startuml
+title UML State Machine Diagram - Weather Station System
+
+[*] --> Restart
+
+state "Restart" as Restart
+Restart : entry / system restarts from shut down condition
+Restart : do / system begins running
+Restart : exit / system is in running state
+
+state "Running" as Running
+Running : entry / system collects data when triggered by clock
+Running : do / system runs normally
+Running : exit / system performs an activity (data collection, summary preparation, or status checking)
+
+state "Configuration Mode" as ConfigurationMode
+ConfigurationMode : entry / system enters configuration mode for changes or power-saving settings
+ConfigurationMode : do / user configures the system
+ConfigurationMode : exit / system returns to running state
+
+state "Data Collection" as DataCollection
+DataCollection : entry / system collects data when triggered by clock while in running state
+DataCollection : do / system collects data
+DataCollection : exit / system returns to running state
+
+state "Summary Preparation" as SummaryPreparation
+SummaryPreparation : entry / system prepares and sends out a weather summary upon request
+SummaryPreparation : do / system prepares summary
+SummaryPreparation : exit / system returns to running state
+
+state "Status Checking" as StatusChecking
+StatusChecking : entry / system checks its own status and transmits the result upon request
+StatusChecking : do / system checks status
+StatusChecking : exit / system returns to running state
+
+state "Controlled Mode" as ControlledMode
+ControlledMode : entry / system moves into controlled mode through remote control
+ControlledMode : do / user controls the system
+ControlledMode : exit / system returns to running state or shut down condition
+
+Restart --> Running
+Running --> DataCollection
+DataCollection --> SummaryPreparation
+SummaryPreparation --> StatusChecking
+StatusChecking --> Running
+Running --> ConfigurationMode
+ConfigurationMode --> Running
+Running --> ControlledMode
+ControlledMode --> Restart
+Restart --> [*]
+@enduml

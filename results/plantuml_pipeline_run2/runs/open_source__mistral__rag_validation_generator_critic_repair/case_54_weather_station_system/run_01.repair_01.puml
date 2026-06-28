@@ -1,0 +1,52 @@
+@startuml
+title Weather Station System States
+
+[*] --> Running : Shutdown
+state "Running" as Running
+state "Configuration Mode" as ConfigurationMode
+state "Collecting Data" as CollectingData
+state "Preparing Summary" as PreparingSummary
+state "Checking Status" as CheckingStatus
+state "Controlled Mode" as ControlledMode
+state "Shutdown Condition" as ShutdownCondition
+
+Running --> ConfigurationMode : Changes or Power-saving Settings [valid]
+Running --> CollectingData : Triggered by Clock [valid]
+PreparingSummary --> Running : Summary Prepared [valid]
+CheckingStatus --> Running : Status Check Completed [valid]
+ControlledMode --> Running : Remote Control [valid]
+ShutdownCondition --> [*] : Shutdown Command Given [invalid]
+
+title Alert Notifier Component States
+
+[*] --> InitializeComponent : Load Component
+state "Initialize\nComponent" as InitializeComponent
+state "Waiting for Update" as WaitingForUpdate
+state "Processing Update" as ProcessingUpdate
+state "Unloading Phase" as UnloadingPhase
+
+InitializeComponent --> WaitingForUpdate : Successful Initialization [valid]
+WaitingForUpdate --> ProcessingUpdate : Update Detected [valid]
+ProcessingUpdate --> WaitingForUpdate : Update Processed [valid]
+UnloadingPhase --> [*] : System Shutdown or Failure [invalid]
+
+title Equihealth States
+
+[*] --> J1 : [check user]
+state J1 <<choice>>
+state PatientDashboard : Patient [valid]
+state HealthWorkerDashboard : Health Worker [valid]
+state GovernmentOfficialDashboard : Government Official [invalid]
+J1 --> PatientDashboard : Patient [valid]
+J1 --> HealthWorkerDashboard : Health Worker [valid]
+
+title National Health Id States
+
+[*] --> Choice1
+state Choice1 <<choice>>
+state Verification : Indian [valid]
+state NotIndian : not Indian [invalid]
+Choice1 --> Verification : Indian Citizen [valid]
+Choice1 --> NotIndian : Non-Indian Citizen [valid]
+Verification --> [*] : Verify Details [valid]
+@enduml

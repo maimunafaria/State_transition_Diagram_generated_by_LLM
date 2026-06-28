@@ -1,0 +1,64 @@
+@startuml
+title Green Rides State Transition Diagram
+
+state InitialState {
+  [*] --> LoggedInState : User Login
+}
+
+state LoggedInState {
+  --> JourneyDetailsState : View Journey Details
+}
+
+state JourneyDetailsState {
+  --> DrivingModeState : Activate Driving Mode
+  --> OtherOptionsState : Choose Other Options
+  --> HungryState : I'm Hungry
+}
+
+state DrivingModeState {
+  --> JourneyDetailsState : Deactivate Driving Mode
+  AccidentDetected[Detect Accident] --> AccidentDetectedState
+}
+
+state OtherOptionsState {
+  --> JourneyDetailsState : Return to Menu
+}
+
+state HungryState {
+  --> RestaurantMenuState : Select Place to Eat
+}
+
+state RestaurantMenuState {
+  --> OrderPlacedState : Place Order
+  --> JourneyDetailsState : Cancel
+}
+
+state OrderPlacedState {
+  --> FeedbackState : Provide Feedback
+}
+
+state FeedbackState {
+  --> [*] : Complete Journey
+}
+
+state AccidentDetectedState {
+  --> AuthoritiesNotifiedState : Notify Authorities
+}
+
+state AuthoritiesNotifiedState {
+  --> JourneyDetailsState : Return to Menu
+}
+
+JourneyDetailsState --> DrivingModeState
+JourneyDetailsState --> OtherOptionsState
+JourneyDetailsState --> HungryState
+
+DrivingModeState --> JourneyDetailsState
+HungryState --> RestaurantMenuState
+RestaurantMenuState --> OrderPlacedState
+OrderPlacedState --> FeedbackState
+FeedbackState --> [*]
+
+AccidentDetectedState --> AuthoritiesNotifiedState
+AuthoritiesNotifiedState --> JourneyDetailsState
+@enduml

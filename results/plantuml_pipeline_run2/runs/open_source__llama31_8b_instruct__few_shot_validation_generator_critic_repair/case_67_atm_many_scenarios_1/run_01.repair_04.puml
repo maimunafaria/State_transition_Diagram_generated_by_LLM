@@ -1,0 +1,46 @@
+@startuml
+title ATM State Machine Diagram
+
+state InsertCard as InsertCard {
+  [*] --> EnterPIN : card inserted
+}
+
+state EnterPIN as EnterPin {
+  state "Enter PIN" as EnterPin
+  state "Verify PIN" as VerifyPin
+  state "Successful Login" as SuccessfulLogin
+  state "Invalid PIN" as InvalidPin
+
+  EnterPin --> VerifyPin : [Valid]
+  EnterPin --> InvalidPin : [Invalid]
+}
+
+state WithdrawalRequest as WithdrawalRequest {
+  [*] --> ApproveWithdrawal : ok
+}
+
+state DispenseCash as DispenseCash {
+  [*] --> PrintReceipt : cash dispensed
+}
+
+state ReturnCard as ReturnCard {
+  [*] --> ResetATM : card returned
+}
+
+state ResetATM as ResetATM {
+  state "Reset" as Reset
+  state "Ready for Next User" as Ready
+
+  Reset --> Ready
+}
+
+InsertCard --> EnterPin
+EnterPin --> SuccessfulLogin : [Valid]
+SuccessfulLogin --> ApproveWithdrawal
+ApproveWithdrawal --> DispenseCash
+DispenseCash --> PrintReceipt
+PrintReceipt --> ReturnCard
+ReturnCard --> ResetATM
+ResetATM --> [*]
+
+@enduml

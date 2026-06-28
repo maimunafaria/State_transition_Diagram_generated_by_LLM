@@ -1,0 +1,157 @@
+@startuml
+title Rate Management State Diagram
+
+[*] --> Active
+
+state Active
+state Expired <<final>>
+state Removed <<final>>
+
+Active:
+  [Start Date <= Current Date]
+  [Current Date < End Date]
+  --> MaintainActive
+
+MaintainActive:
+  [End Date >= Current Date]
+  --> Active
+
+Active:
+  [End Date > Current Date]
+  --> Expired
+
+Expired:
+  [Current Date + 1 year >= Finish Date]
+  --> Removed
+
+Removed:
+  [Current Date < Finish Date + 1 year]
+  --> Active
+
+title Traffic Management System State Diagram
+
+[*] --> Monitoring
+
+state Monitoring
+state ControllingStreetLights
+state ManagingSignals
+state CheckingDetails
+state VerifyingRules
+state ViolationIssued
+state FinePaid
+state WarningSent
+state Completed
+
+Monitoring:
+  [VehiclesOnRoad or PedestriansWaiting]
+  --> ControllingStreetLights
+
+ControllingStreetLights:
+  [TrafficConditions]
+  --> ManagingSignals
+
+ManagingSignals:
+  [DetectedSituation]
+  --> CheckingDetails
+
+CheckingDetails:
+  [NoViolation]
+  --> Completed
+
+CheckingDetails:
+  [Violation]
+  --> VerifyingRules
+
+VerifyingRules:
+  [FineNotPaid]
+  --> WarningSent
+
+VerifyingRules:
+  [FinePaid]
+  --> FinePaid
+
+title Information System State Diagram
+
+[*] --> Creation
+
+state Creation
+state AwaitingApproval
+state SearchForSession
+state WaitingEnrolment
+state Satisfied
+state Completed
+state Cancelled
+
+Creation:
+  --> AwaitingApproval
+
+AwaitingApproval:
+  [RequestRejected]
+  --> cancelled
+
+AwaitingApproval:
+  [RequestAccepted]
+  --> SearchForSession
+
+SearchForSession:
+  [SuitableSessionFound]
+  --> WaitingEnrolment
+
+WaitingEnrolment:
+  [EnrolmentConfirmed]
+  --> Satisfied
+
+WaitingEnrolment:
+  [Cancelled]
+  --> cancelled
+
+title Book Bank Management System State Diagram
+
+[*] --> Registration
+
+state Registration
+state MemberIDIssued
+state IncorrectDetails
+state Login
+state SearchForBook
+state GetBook
+state MembershipActive
+state FineAmountRequired
+state BookReceived
+
+Registration:
+  [CorrectEntryOfDetails]
+  --> MemberIDIssued
+
+Registration:
+  [IncorrectEntryOfDetails]
+  --> IncorrectDetails
+
+IncorrectDetails:
+  [CorrectEntryOfDetails]
+  --> Registration
+
+Login:
+  [MemberID and Password correct]
+  --> Continue
+
+Login:
+  [MemberID and Password incorrect]
+  --> Login
+
+SearchForBook:
+  [BookFound]
+  --> ShowSuggestions
+
+SearchForBook:
+  [NoBookFound]
+  --> ChooseAnotherOption
+
+GetBook:
+  [MembershipActive]
+  --> FineAmountRequired
+
+GetBook:
+  [FineAmountPaid]
+  --> BookReceived
+@enduml

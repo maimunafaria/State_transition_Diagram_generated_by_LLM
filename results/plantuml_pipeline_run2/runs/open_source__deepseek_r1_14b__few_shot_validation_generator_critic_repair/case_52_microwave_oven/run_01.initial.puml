@@ -1,0 +1,40 @@
+@startuml
+title Microwave Oven State Transition Diagram
+
+state Ready {
+    entry / Display current time
+    do / Waiting for user input
+}
+
+state SelectPowerLevel {
+    entry / Power level selection
+    do / Choose between full or half power
+}
+
+state SetCookingTime {
+    entry / Time setting
+    do / Enter cooking duration
+}
+
+state Cooking {
+    entry / Start cooking process
+    do / Cook at selected power level
+}
+
+state Stopped {
+    entry / Stop due to door open or cancellation
+    exit / Return to Ready state
+}
+
+Ready --> SelectPowerLevel : selectPowerCommand
+Ready --> SetCookingTime : setTimeCommand
+
+SelectPowerLevel --> Cooking : startCooking
+SetCookingTime --> Cooking : startCooking
+
+Cooking --> Stopped : doorOpenEvent
+Cooking --> Stopped : cancelCommand
+
+Stopped --> Ready : userInputCommand
+
+@enduml

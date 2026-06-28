@@ -1,0 +1,59 @@
+@startuml
+title Ott Based System Mini Reel State Diagram
+
+[*] --> InitialState
+
+state InitialState {
+  InitialState --> CreateAccount : createAccount
+  InitialState --> Login : login
+}
+
+state CreateAccount {
+  CreateAccount --> AccountCreated : accountCreated / advance
+}
+
+state AccountCreated {
+  AccountCreated --> LoggedIn :loggedIn / advance
+}
+
+state LoggedIn {
+  LoggedIn --> WatchingVideo : watchVideo
+  LoggedIn --> UploadingVideo : uploadVideo
+  LoggedIn --> LikesList : viewLikes
+  LoggedIn --> DiscussionOption : enterDiscussion
+}
+
+state WatchingVideo {
+  WatchingVideo --> ContinueWatching : continueWatching
+  WatchingVideo --> PauseVideo : pauseVideo
+  WatchingVideo --> AddToLikes : addToLikes / advance
+  WatchingVideo --> BackToMenu : backToMenu
+}
+
+state UploadingVideo {
+  UploadingVideo --> UploadComplete : uploadComplete / advance
+  UploadingVideo --> UploadFailed : uploadFailed / rollback
+}
+
+state LikesList {
+  LikesList --> ViewVideo : viewVideo / advance
+  LikesList --> RemoveFromLikes : removeFromLikes / advance
+  LikesList --> BackToListMenu : backToListMenu
+}
+
+state DiscussionOption {
+  DiscussionOption --> PostComment : postComment / advance
+  DiscussionOption --> ViewComments : viewComments / advance
+  DiscussionOption --> ExitDiscussion : exitDiscussion / advance
+}
+
+[state.gif?text=FinalState]
+
+LoggedIn --> FinalState : logout
+WatchingVideo --> FinalState : logout
+UploadingVideo --> FinalState : logout
+LikesList --> FinalState : logout
+DiscussionOption --> FinalState : logout
+
+FinalState --> [*]
+@enduml

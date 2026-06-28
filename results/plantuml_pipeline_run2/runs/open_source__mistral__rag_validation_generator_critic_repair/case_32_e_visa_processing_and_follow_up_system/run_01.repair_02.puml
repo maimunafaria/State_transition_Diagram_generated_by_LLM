@@ -1,0 +1,28 @@
+@startuml
+title E Visa Processing And Follow Up System - UML State Machine Diagram
+
+state AccountCreation <<choice>>
+state Login <<choice>>
+state ApplicationSubmission <<choice>>
+state PaymentConfirmation <<choice>>
+state ApplicationAcceptance <<choice>>
+state StatusView <<choice>>
+state StatusCheck <<choice>>
+state CancellationRequest <<choice>>
+state DetailsModification <<choice>>
+state FeedbackGiven <<choice>>
+state Logout <<choice>>
+
+AccountCreation:! [*] --> Login: CreateAccount
+Login: [CreateAccount] --> ApplicationSubmission: Login
+ApplicationSubmission: [Login] --> PaymentConfirmation: SubmitApplication
+PaymentConfirmation: [SubmitApplication] --> ApplicationAcceptance: AcceptApplication
+ApplicationAcceptance: [AcceptApplication] --> StatusView: ViewStatus
+StatusView: [ViewStatus] --> StatusCheck: CheckStatus
+CancellationRequest: Login --> CancellationRequest: RequestCancel
+DetailsModification: Login --> DetailsModification: ModifyDetails
+FeedbackGiven: StatusCheck --> FeedbackGiven: GiveFeedback
+Logout: DetailsModification | FeedbackGiven | ApplicationAcceptance | StatusView | CancellationRequest --> Logout: LogOut
+StatusCheck: [CheckStatus] --> (PaymentConfirmation): RejectApplication
+ApplicationAcceptance: [AcceptApplication] --> (CancellationRequest): CancelApplication
+@enduml

@@ -1,0 +1,40 @@
+@startuml
+title State machine for Online Quiz System
+
+state Registered
+state LoggedIn
+state TeacherMode
+state StudentMode
+state Draft
+state Published
+state Completed
+
+[*] --> Registered : /registerUser
+
+Registered --> LoggedIn : login(username, password)
+LoggedIn --> TeacherMode : selectTeacherMode
+LoggedIn --> StudentMode : selectStudentMode
+
+state "Create new quiz" as CreateQuiz {
+    state Draft <<choice>>
+    Draft --> SaveDraft : [Save as draft]
+    Draft --> PublishQuiz : [Publish for students]
+}
+
+TeacherMode --> CreateQuiz : createNewQuiz
+CreateQuiz --> Published : publishQuiz
+Published --> Completed : quizCompleted
+
+StudentMode --> SelectQuiz : selectQuiz
+state "Select a quiz" as SelectQuiz {
+    state Published <<choice>>
+    Published --> AnswerQuiz : [Answer the selected quiz]
+}
+
+SelectQuiz --> AnswerQuiz : answerSelectedQuiz
+AnswerQuiz --> Submitted : submitQuiz
+Submitted --> ViewResult : viewResult
+
+Completed --> [*] : archiveQuiz
+
+@enduml

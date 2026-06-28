@@ -1,0 +1,45 @@
+@startuml
+title ATM Control - Combined Scenarios
+
+[*] --> Idle
+
+state Idle
+Idle : entry / Display Welcome
+
+state "Enter PIN"
+"Enter PIN" : enterPin(pin)
+"Enter PIN" : verifyPin(pin, storedPIN)
+"Enter PIN" : checkPinValidity(pin, maxInvalidAttempts)
+"Enter PIN" : keepCard(pin, maxInvalidAttempts)
+"Enter PIN" --> "Check PIN Correctness" if (verifiedPin) else "Ask for PIN again" end
+"Check PIN Correctness" --> "Display Options" if (checkPinValidity) else "Keep Card" end
+
+state "Display Options"
+"Display Options" : displayOptions()
+"Display Options" : userChoice(choice)
+"Display Options" --> "Process Transaction" if (userChoice == "Withdrawal") else "Check Information" end
+
+state "Process Transaction"
+"Process Transaction" : processTransaction(request, cashAvailable)
+"Process Transaction" : printReceipt()
+"Process Transaction" : dispenseCash()
+"Process Transaction" : returnCard()
+"Process Transaction" --> "Ending Phase" if (processTransactionApproved) else "Cancel Operation and Return Card" end
+
+state "Ending Phase"
+"Ending Phase" : shortEndingPhase()
+"Ending Phase" : resetATM()
+"Ending Phase" : returnToIdle()
+
+state "Transfer Money"
+"Transfer Money" : userChoice(choice)
+"Transfer Money" : processTransferRequest(request, cashAvailable)
+"Transfer Money" : printReceipt()
+"Transfer Money" --> "Ending Phase" if (processTransferApproved) else "Cancel Operation and Return Card" end
+
+state "Check Information"
+"Check Information" : userChoice(choice)
+"Check Information" : processQueryRequest(request, cashAvailable)
+"Check Information" : printReceipt()
+"Check Information" --> "Ending Phase" if (processQueryApproved) else "Cancel Operation and Return Card" end
+@enduml

@@ -1,0 +1,104 @@
+@startuml
+title UML State Machine Diagram (Inventory Management)
+
+state "Initial" as Initial {
+    [*] --> AddGoods : [user = add goods]
+}
+
+state "Add Goods" as AddGoods {
+    AddGoods : entry / Add new goods to inventory
+    AddGoods : do / Update inventory details
+    AddGoods : exit / Inventory updated
+
+    state ChoiceUpdate <<choice>>
+    ChoiceUpdate --> UpdatePrice : [user = update price]
+    ChoiceUpdate --> RemoveGoods : [user = remove goods]
+
+    state "Update Price" as UpdatePrice {
+        UpdatePrice --> UpdateDB
+        state "Update database" as UpdateDB
+        UpdateDB --> [*]
+    }
+
+    state "Remove Goods" as RemoveGoods {
+        RemoveGoods --> IdentifyExpired : [identify expired goods]
+        state "Identify Expired" as IdentifyExpired
+        IdentifyExpired --> NotifyUser : [notify user about removal]
+        state "Notify User" as NotifyUser
+
+        NotifyUser --> [*]
+    }
+}
+
+state "Place Order" as PlaceOrder {
+    PlaceOrder : entry / Place order to supplier
+    PlaceOrder : do / Generate invoice
+    PlaceOrder : exit / Invoice generated
+
+    state ChoiceSearch <<choice>>
+    ChoiceSearch --> SearchItems : [user = search items]
+
+    state "Search Items" as SearchItems {
+        SearchItems --> SelectItems : [select items for purchase]
+        state "Select Items" as SelectItems
+        SelectItems --> CalculateDiscountTax : [calculate discount and tax]
+        state "Calculate Discount Tax" as CalculateDiscountTax
+
+        CalculateDiscountTax --> GenerateReceipt : [generate receipt]
+        state "Generate Receipt" as GenerateReceipt
+        GenerateReceipt --> [*]
+
+        state ChoiceReplaceCancel <<choice>>
+        ChoiceReplaceCancel --> ReplaceItem : [user = replace item]
+        ChoiceReplaceCancel --> CancelReceipt : [user = cancel receipt]
+
+        state "Replace Item" as ReplaceItem {
+            ReplaceItem --> UpdateInventory : [update inventory details]
+            state "Update Inventory" as UpdateInventory
+            UpdateInventory --> [*]
+        }
+
+        state "Cancel Receipt" as CancelReceipt {
+            CancelReceipt --> RemoveItem : [remove item from inventory]
+            state "Remove Item" as RemoveItem
+            RemoveItem --> [*]
+        }
+    }
+}
+
+state "Record Requests" as RecordRequests {
+    RecordRequests : entry / Record customer requests
+    RecordRequests : do / Update inventory details
+    RecordRequests : exit / Inventory updated
+
+    state ChoiceViewReport <<choice>>
+    ChoiceViewReport --> ViewSummaryReport : [user = view summary report]
+
+    state "View Summary Report" as ViewSummaryReport {
+        ViewSummaryReport --> [*]
+    }
+}
+
+Initial --> AddGoods
+AddGoods --> PlaceOrder
+PlaceOrder --> RecordRequests
+RecordRequests --> Initial
+
+AddGoods --> RemoveGoods
+RemoveGoods --> NotifyUser
+NotifyUser --> [*]
+
+PlaceOrder --> SearchItems
+SearchItems --> SelectItems
+SelectItems --> CalculateDiscountTax
+CalculateDiscountTax --> GenerateReceipt
+GenerateReceipt --> [*]
+
+PlaceOrder --> ReplaceItem
+ReplaceItem --> UpdateInventory
+UpdateInventory --> [*]
+
+PlaceOrder --> CancelReceipt
+CancelReceipt --> RemoveItem
+RemoveItem --> [*]
+@enduml

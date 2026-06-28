@@ -1,0 +1,41 @@
+@startuml
+title E Ticketing For Bus — Polished Requirement Specification
+
+state StartChoice <<choice>>
+state RegistrationChoice
+state LoginChoice
+state LoggedInChoice
+state TicketStatusChoice
+state BookTicketChoice
+state AccountManagementChoice
+state LogoutChoice
+state LoggedOut <<final>>
+
+[*] --> StartChoice : [create account or log in]
+StartChoice --> [valid: create new account] RegistrationChoice
+StartChoice --> [valid: log in] LoginChoice
+RegistrationChoice --> ValidationChoice
+ValidationChoice --> SuccessfulRegistrationChoice
+SuccessfulRegistrationChoice --> LoginChoice
+LoginChoice --> [valid: correct credentials] SuccessfulLoginChoice
+SuccessfulLoginChoice --> LoggedInChoice
+LoginChoice --> [invalid: incorrect credentials] LoginChoice
+LoggedInChoice --> TicketStatusChoice
+TicketStatusChoice --> CheckTicketStatusChoice
+CheckTicketStatusChoice --> [continue]
+
+LoggedInChoice --> BookTicketChoice
+BookTicketChoice --> ConfirmationChoice
+ConfirmationChoice --> PaymentChoice
+PaymentChoice --> SuccessfulPaymentChoice
+SuccessfulPaymentChoice --> LogoutChoice
+
+LoggedInChoice --> AccountManagementChoice
+AccountManagementChoice --> EditOrDeleteAccountChoice
+EditOrDeleteAccountChoice --> [continue]
+
+LogoutChoice --> SuccessfulLogoutChoice
+SuccessfulLogoutChoice --> LoggedOut
+
+LoggedOut --> [*] : end session
+@enduml

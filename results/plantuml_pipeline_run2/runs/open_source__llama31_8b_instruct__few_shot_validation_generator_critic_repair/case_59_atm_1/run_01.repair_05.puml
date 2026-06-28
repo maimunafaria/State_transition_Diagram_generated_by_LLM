@@ -1,0 +1,30 @@
+@startuml
+title ATM State Machine
+
+[*] --> ChooseAmount
+
+state "ChooseAmount" as ChooseAmount {
+  state "SelectPredefinedAmount" as SelectPredefinedAmount
+  state "InputCustomAmount" as InputCustomAmount
+  state "CancelTransaction" as CancelTransaction
+
+  SelectPredefinedAmount --> [*] : predefined amount selected
+  InputCustomAmount --> [*] : custom amount entered
+  CancelTransaction --> ReturnCard : transaction cancelled
+
+  ChooseAmount --> SelectPredefinedAmount : select predefined amount
+  ChooseAmount --> InputCustomAmount : input custom amount
+  ChooseAmount --> CancelTransaction : cancel transaction
+
+  InputCustomAmount --> VerifyTransaction : valid custom amount entered
+}
+
+state OutOfService
+state "VerifyTransaction <<final>>" as VerifyTransaction
+
+CancelTransaction --> ReturnCard : transaction cancelled
+ReturnCard --> [*] : card returned
+VerifyTransaction --> OutOfService : out of service / <<final>>
+ChooseAmount --> VerifyTransaction : verify transaction
+
+@enduml

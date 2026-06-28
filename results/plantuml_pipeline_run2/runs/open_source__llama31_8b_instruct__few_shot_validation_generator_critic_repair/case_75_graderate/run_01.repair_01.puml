@@ -1,0 +1,41 @@
+@startuml
+title UML State Machine Diagram - Graderate
+
+[*] --> WaitingState
+
+state "Waiting state" as WaitingState
+state "Active state" as ActiveState
+state "Expired state" as ExpiredState
+state "Archived state" as ArchivedState
+
+WaitingState --> ActivateRate : start date arrives
+ActivateRate : entry / current date equals or surpasses start date
+ActivateRate : do / activate rate
+ActivateRate : exit / rate activated
+
+ActivateRate --> ActiveState
+
+ActiveState --> MaintainActiveState : end of validity period not reached
+MaintainActiveState : entry / end of validity period not reached
+MaintainActiveState : do / maintain active state
+MaintainActiveState : exit / finish date reached
+
+MaintainActiveState --> ExpireRate : finish date reached
+
+ExpireRate : entry / finish date reached
+ExpireRate : do / mark rate as expired
+ExpireRate : exit / one year from expiration date not yet passed
+
+ExpireRate --> WaitingState : one year from expiration date not yet passed
+
+ActiveState --> RemoveRate : end of validity period reached
+RemoveRate : entry / end of validity period reached
+RemoveRate : do / remove or archive rate
+RemoveRate : exit / rate removed or archived
+
+[*] --> ArchivedState : rate removed or archived
+
+ExpiredState --> WaitingState : one year from expiration date not yet passed
+WaitingState --> RemoveRate : one year from expiration date passed
+
+@enduml

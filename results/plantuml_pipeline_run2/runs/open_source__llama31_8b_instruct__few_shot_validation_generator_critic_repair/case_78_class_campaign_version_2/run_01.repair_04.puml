@@ -1,0 +1,62 @@
+@startuml
+[*] --> AssignManagerStaff : [assign manager and staff]
+state "Assign Manager Staff" as AMS
+AMS : entry / assign manager and staff
+AMS : do / verify assignment
+AMS : exit / campaign pending approval
+
+AMS --> ApproveContract : contract approved
+state "Approve Contract" as AC
+AC : entry / contract approved
+AC : do / prepare adverts
+AC : exit / adverts prepared
+
+AC --> PrepareAdverts : adverts prepared
+state "Prepare Adverts" as PA
+PA : entry / adverts prepared
+PA : do / approve and schedule adverts
+PA : exit / adverts scheduled
+
+PA --> RunAdverts : adverts running
+state "Run Adverts" as RA
+RA : entry / adverts running
+RA : do / run adverts
+RA : exit / adverts finished
+
+RA --> ExtendAdjustCampaign : campaign extended or adjusted
+state "Extend/Adjust Campaign" as EAC
+EAC : entry / campaign extended or adjusted
+EAC : do / update campaign status
+EAC : exit / campaign updated
+
+EAC --> CompleteCampaign : campaign completed
+state "Complete Campaign" as CC
+CC : entry / campaign completed
+CC : do / prepare final statement
+CC : exit / final statement prepared
+
+CC --> HandlePayment : payment handled
+state "Handle Payment" as HP
+HP : entry / payment handled
+HP : do / generate refund if amount paid is less than required
+HP : do / wait for correct balance to be settled if amount paid exceeds required amount
+HP : exit / campaign marked as paid
+
+HP --> ArchiveCampaign : [campaign archived]
+state "Archive Campaign" as AC2
+AC2 : entry / campaign archived
+AC2 : do / release assigned staff and managers
+AC2 : exit / campaign archived
+
+[*] --> LJ
+LJ --> AMS
+AMS --> AC
+AC --> PA
+PA --> RA
+RA --> EAC
+EAC --> CC
+CC --> HP
+HP --> AC2
+
+AC2 --> [*]
+@enduml

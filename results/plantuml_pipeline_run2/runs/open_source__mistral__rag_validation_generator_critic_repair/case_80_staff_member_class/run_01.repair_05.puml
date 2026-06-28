@@ -1,0 +1,54 @@
+@startuml
+title Staff Member State Machine
+
+state Unemployed
+state AssignedToClient
+state AssignedToCampaign
+state SwitchingAssignments
+
+[*] --> Unemployed : /leaveJob/
+Unemployed --> AssignedToClient : Hired(hiringDocument)
+Unemployed --> AssignedToCampaign : CampaignActivated
+AssignedToClient --> AssignedToCampaign : SwitchedAssignment(reason)
+AssignedToCampaign --> SwitchingAssignments
+SwitchingAssignments --> AssignedToClient : SwitchedBack(reason)
+SwitchingAssignments --> AssignedToCampaign
+AssignedToClient --> Unemployed : Fired(terminationDocument)
+AssignedToCampaign --> Completed : CampaignCompleted
+Completed --> Archived : TimePassed(archivalTime)
+Unemployed --> Archived : TimePassed(archivalTime)
+
+title Campaign State Machine
+
+state Commissioned
+state Active
+state Paused
+state Completed
+state Paid
+state Cancelled
+[*] --> Commissioned : /assignManager;\nassignStaff;\n/approveContract;\n/signContract/
+Commissioned --> Active : /startCampaign/
+Active --> Paused : /pauseCampaign/
+Paused --> Active : /resumeCampaign/
+Active --> Completed : AllWorkFinished
+Completed --> Paid : PaymentReceived(paymentAmount)
+Paid --> Archived : TimePassed(archivalTime)
+Cancelled --> Archived : TimePassed(archivalTime)
+
+title Advocate Diary State Machine
+
+state Guest
+state Registered
+state LoggedIn
+state AddingCase
+state ReminderSet
+state DocumentUploaded
+[*] --> Guest : /exploreBlogsAndNews/
+Guest --> Registered : /createAccount/
+Registered --> LoggedIn : /validateCredentials/
+LoggedIn --> AddingCase : /addNewCase/
+AddingCase --> ReminderSet : /setReminders/
+ReminderSet --> DocumentUploaded : /uploadDocuments/
+DocumentUploaded --> Completed : CaseAdded
+Completed --> Guest : /logout/
+@enduml

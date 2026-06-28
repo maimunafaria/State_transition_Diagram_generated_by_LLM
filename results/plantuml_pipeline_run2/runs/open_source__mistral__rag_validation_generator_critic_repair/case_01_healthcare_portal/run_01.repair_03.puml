@@ -1,0 +1,51 @@
+@startuml
+title UML State Machine Diagram - Healthcare Portal
+
+state StartChoice <<choice>>
+state RegistrationChoice <<choice>>
+state SignInChoice <<choice>>
+state FacilityAccessChoice <<choice>>
+state NewsContentChoice <<choice>>
+state HealthInfoChoice <<choice>>
+state ResultChoice <<choice>>
+state InsuranceCheckChoice <<choice>>
+state PaymentChoice <<choice>>
+state FeedbackChoice <<choice>>
+state LogoutChoice <<choice>>
+
+[*] --> RegistrationChoice
+RegistrationChoice : exit / registrationFailed --> SignInChoice
+RegistrationChoice : exit / registrationSuccess --> SignInChoice
+
+SignInChoice : entry / getCredentials
+SignInChoice : do / validateCredentials
+SignInChoice : exit / signInFailed --> StartChoice
+SignInChoice : exit / signInSuccess --> FacilityAccessChoice
+
+FacilityAccessChoice : entry / checkLogin --> NewsContentChoice
+FacilityAccessChoice : exit / accessDenied --> SignInChoice
+
+NewsContentChoice : entry / readContent
+
+HealthInfoChoice : entry / checkSymptoms
+HealthInfoChoice : entry / fitnessChecking
+
+ResultChoice : entry / viewResult
+ResultChoice : do / continueOrFinishSession
+ResultChoice : exit / sessionEnded --> LogoutChoice
+
+InsuranceCheckChoice : entry / processInsurance
+InsuranceCheckChoice : do / validatePaymentWithInsurance
+InsuranceCheckChoice : exit / insuranceError --> PaymentChoice
+
+PaymentChoice : entry / selectPaymentMethod
+PaymentChoice : do / completePayment
+PaymentChoice : exit / paymentSuccess --> LogoutChoice
+PaymentChoice : exit / paymentFailed --> InsuranceCheckChoice
+
+FeedbackChoice : entry / provideFeedback
+FeedbackChoice : exit / feedbackSubmitted --> LogoutChoice
+
+LogoutChoice : entry / logOut
+LogoutChoice : exit / loggedOut --> [*]
+@enduml

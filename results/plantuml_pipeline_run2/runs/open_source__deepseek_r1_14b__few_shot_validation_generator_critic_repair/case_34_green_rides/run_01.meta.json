@@ -1,0 +1,461 @@
+{
+  "run_id": "open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair",
+  "case_id": "case_34_green_rides",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nAtm Many Scenarios Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the entered PIN is correct.\n2. The system shall ask the user to try again if the entered PIN is incorrect.\n3. The system shall keep the card for security reasons if the PIN is entered incorrectly too many times or if the card is invalid.\n4. The system shall show available options and wait for the user's choice if the entered PIN is correct.\n5. The system shall allow the user to cancel the operation at any point during this process.\n6. The system shall return the card when the user cancels the operation.\n\nExample 1 PlantUML:\n@startuml\ntitle Same Event and Action on Different Transitions\n\n[*] --> Idle\n\nstate Idle\nstate \"Waiting for PIN\" as WaitingForPIN\nstate \"Validating PIN\" as ValidatingPIN\nstate \"Waiting for Customer Choice\" as WaitingForChoice\nstate Confiscating\nstate Ejecting\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu\nValidatingPIN --> Confiscating : Third Invalid PIN,\\nCard Stolen, Card Expired /\\nConfiscate\n\nWaitingForPIN --> Ejecting : Cancel / Eject\nValidatingPIN --> Ejecting : Cancel / Eject\nWaitingForChoice --> Ejecting : Cancel / Eject\n\n@enduml\n\nExample 2 Requirement:\nMicrowave Oven Operation — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check for proper functioning before starting.\n2. The system shall alert the user and stop operation if an issue is detected.\n3. The system shall start cooking and run for the set time if no issues are detected.\n4. The system shall emit a sound to notify the user upon completion of cooking.\n5. The system shall stop operation and deactivate if the door is opened.\n6. The system shall return to a waiting state if the user cancels the operation.\n\nExample 2 PlantUML:\n@startuml\ntitle Microwave Oven Operation\n\nstate Operation {\n\n  state Checking\n  Checking : do / Check Status\n\n  state Cook\n  Cook : do / Run Generator\n\n  state Alarm\n  Alarm : do / Display Event\n\n  state Done\n  Done : do / Buzzer On for 5 Secs.\n\n  [*] --> Checking\n\n  Checking --> Cook : OK\n  Checking --> Alarm : Turntable Fault\n  Checking --> Alarm : Emitter Fault\n\n  Cook --> Done : Timeout\n  Cook --> Cook : Time\n}\n\nstate Disabled\nstate Waiting\n\nOperation --> Disabled : Door Open\nOperation --> Waiting : Cancel\n\nAlarm --> Disabled\nDone --> Waiting\n\n@enduml\n\nExample 3 Requirement:\nBook Bank Management System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to register by entering their details.\n2. The system shall issue a member ID and complete the registration upon correct entry of details.\n3. The system shall require the user to re-enter their details upon incorrect entry of details.\n4. The system shall allow a user to log in after successful registration using their member ID and password.\n5. The system shall allow the user to continue upon correct entry of member ID and password during login. Otherwise, they cannot log in.\n6. The system shall allow a user to search for a book by entering its details.\n7. The system shall show suggestions if a book is found during a search; otherwise, it shall allow the user to choose another option.\n8. The system shall allow a user to get a book by entering its ID and their member ID.\n9. The system shall allow the user to get the book if their membership is active; otherwise, it shall require them to pay the fine amount first.\n10. The system shall allow a user to buy a book by entering its ID and seeing the price.\n11. The system shall provide the book if the user pays; otherwise, it shall end the process there.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\nstate \"Registration\" as Registration {\n  [*] --> RegEnterDetails\n\n  state \"Enter Details\" as RegEnterDetails\n  state \"Get Member_ID\" as GetMemberID\n  state \"Successful Registration\" as SuccessfulRegistration\n  state \"Re-enter Details\" as ReEnterDetails\n\n  RegEnterDetails --> GetMemberID : [Valid]\n  RegEnterDetails --> ReEnterDetails : [Invalid]\n  ReEnterDetails --> RegEnterDetails\n  GetMemberID --> SuccessfulRegistration\n}\n\nstate \"Authentication\" as Authentication {\n  [*] --> AuthEnterMemberID\n\n  state \"Enter Member_ID\" as AuthEnterMemberID\n  state \"Enter Password\" as EnterPassword\n  state \"successful Login\" as SuccessfulLogin\n  state \"Invalid Member_ID or Password\" as InvalidCreds\n\n  AuthEnterMemberID --> EnterPassword\n  EnterPassword --> SuccessfulLogin : [Valid]\n  EnterPassword --> InvalidCreds : [Invalid]\n}\n\nstate \"Search Books\" as SearchBooks {\n  [*] --> EnterBookDetails\n\n  state \"Enter Book Details\" as EnterBookDetails\n  state \"Display Suggestion\" as DisplaySuggestion\n  state \"choose Alternate option\" as ChooseAlternate\n\n  EnterBookDetails --> DisplaySuggestion : [Found]\n  EnterBookDetails --> ChooseAlternate : [Not Found]\n}\n\nstate \"Get Books\" as GetBooksState {\n  [*] --> GetEnterBookID\n\n  state \"Enter Book_ID\" as GetEnterBookID\n  state \"Enter Member_ID\" as GetEnterMemberID\n  state \"Obtain Books\" as ObtainBooks\n  state \"Pay Fine Amount\" as PayFineAmount\n\n  GetEnterBookID --> GetEnterMemberID\n  GetEnterMemberID --> ObtainBooks : [Active Member]\n  GetEnterMemberID --> PayFineAmount : [Inactive Member]\n}\n\nstate \"Buy Books\" as BuyBooks {\n  [*] --> BuyEnterBookID\n\n  state \"Enter Book_ID\" as BuyEnterBookID\n  state \"Display Book Amount\" as DisplayBookAmount\n  state \"Get Books\" as BuyGetBooks\n  state BuyNotPaidEnd <<choice>>\n\n  BuyEnterBookID --> DisplayBookAmount\n  DisplayBookAmount --> BuyGetBooks : [Paid]\n  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]\n  BuyNotPaidEnd --> [*]\n}\n\nstate StartJoin <<choice>>\n\n[*] --> StartJoin\nStartJoin --> Registration\nStartJoin --> Authentication\nStartJoin --> SearchBooks\nStartJoin --> GetBooksState\nStartJoin --> BuyBooks\n\nSuccessfulRegistration --> AuthEnterMemberID\n\nSuccessfulLogin --> EnterBookDetails\nSuccessfulLogin --> GetEnterBookID\nSuccessfulLogin --> BuyEnterBookID\n\n\nObtainBooks --> [*]\nBuyGetBooks --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nGreen Rides — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall display journey details upon user login and destination selection.\n2. The system shall allow users to activate driving mode or choose other options after viewing journey details.\n3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.\n4. The system shall inform relevant authorities in the event of an accident.\n5. The system shall send notifications during driving or in case of an accident.\n6. The system shall allow users to provide feedback upon completion of their journey.\n",
+  "requirement_used": "Green Rides — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall display journey details upon user login and destination selection.\n2. The system shall allow users to activate driving mode or choose other options after viewing journey details.\n3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.\n4. The system shall inform relevant authorities in the event of an accident.\n5. The system shall send notifications during driving or in case of an accident.\n6. The system shall allow users to provide feedback upon completion of their journey.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run2\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_34_green_rides\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "JourneyDetailsState",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 9,
+    "transition_count": 9
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__deepseek_r1_14b__few_shot",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: AccidentDetectedState, AuthoritiesNotifiedState, DrivingModeState, FeedbackState, HungryState, InitialState, JourneyDetailsState, OrderPlacedState, OtherOptionsState, RestaurantMenuState",
+        "orphan_states_detected",
+        "orphan: AuthoritiesNotifiedState, InitialState"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: AccidentDetectedState, AuthoritiesNotifiedState, DrivingModeState, FeedbackState, HungryState, InitialState, JourneyDetailsState, OrderPlacedState, OtherOptionsState, RestaurantMenuState",
+        "orphan_states_detected",
+        "orphan: AuthoritiesNotifiedState, InitialState"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": false,
+      "repair_mode": "baseline",
+      "repair_model_name": "deepseek-r1:14b",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 4,
+      "repair_score": 4,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 11,
+        "repaired_state_count": 9,
+        "current_transition_count": 9,
+        "repaired_transition_count": 9,
+        "min_allowed_state_count": 8,
+        "min_allowed_transition_count": 6,
+        "dropped_states": [
+          "InitialState",
+          "LoggedInState"
+        ],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: AuthoritiesNotifiedState",
+        "orphan_states_detected",
+        "orphan: AuthoritiesNotifiedState"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: AuthoritiesNotifiedState",
+        "orphan_states_detected",
+        "orphan: AuthoritiesNotifiedState"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 1,
+      "reason": "repair_did_not_improve_validation_score",
+      "feedback_for_next_attempt": "",
+      "kept_previous_issues": [
+        "unreachable_states_detected",
+        "unreachable: AccidentDetectedState, AuthoritiesNotifiedState, DrivingModeState, FeedbackState, HungryState, InitialState, JourneyDetailsState, OrderPlacedState, OtherOptionsState, RestaurantMenuState",
+        "orphan_states_detected",
+        "orphan: AuthoritiesNotifiedState, InitialState"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "accepted": false,
+      "repair_mode": "baseline",
+      "repair_model_name": "deepseek-r1:14b",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 4,
+      "repair_score": 4,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 11,
+        "repaired_state_count": 11,
+        "current_transition_count": 9,
+        "repaired_transition_count": 11,
+        "min_allowed_state_count": 8,
+        "min_allowed_transition_count": 6,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: AccidentDetectedState, AuthoritiesNotifiedState, DrivingModeState, FeedbackState, HungryState, InitialState, JourneyDetailsState, OrderPlacedState, OtherOptionsState, RestaurantMenuState",
+        "orphan_states_detected",
+        "orphan: InitialState"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: AccidentDetectedState, AuthoritiesNotifiedState, DrivingModeState, FeedbackState, HungryState, InitialState, JourneyDetailsState, OrderPlacedState, OtherOptionsState, RestaurantMenuState",
+        "orphan_states_detected",
+        "orphan: InitialState"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 2,
+      "reason": "repair_did_not_improve_validation_score",
+      "feedback_for_next_attempt": "",
+      "kept_previous_issues": [
+        "unreachable_states_detected",
+        "unreachable: AccidentDetectedState, AuthoritiesNotifiedState, DrivingModeState, FeedbackState, HungryState, InitialState, JourneyDetailsState, OrderPlacedState, OtherOptionsState, RestaurantMenuState",
+        "orphan_states_detected",
+        "orphan: AuthoritiesNotifiedState, InitialState"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "accepted": true,
+      "repair_mode": "baseline",
+      "repair_model_name": "deepseek-r1:14b",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 4,
+      "repair_score": 0,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 11,
+        "repaired_state_count": 9,
+        "current_transition_count": 9,
+        "repaired_transition_count": 11,
+        "min_allowed_state_count": 8,
+        "min_allowed_transition_count": 6,
+        "dropped_states": [
+          "InitialState",
+          "LoggedInState"
+        ],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 3,
+      "strict_state_diagram_valid": true,
+      "remaining_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: AccidentDetectedState, AuthoritiesNotifiedState, DrivingModeState, FeedbackState, HungryState, InitialState, JourneyDetailsState, OrderPlacedState, OtherOptionsState, RestaurantMenuState",
+          "orphan_states_detected",
+          "orphan: AuthoritiesNotifiedState, InitialState"
+        ],
+        "initial_state": "LoggedInState",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "AccidentDetectedState",
+          "AuthoritiesNotifiedState",
+          "DrivingModeState",
+          "FeedbackState",
+          "HungryState",
+          "InitialState",
+          "JourneyDetailsState",
+          "OrderPlacedState",
+          "OtherOptionsState",
+          "RestaurantMenuState"
+        ],
+        "state_count": 11,
+        "transition_count": 7
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run2\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_34_green_rides\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "repair_mode": "baseline",
+      "repair_model_name": "deepseek-r1:14b",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "@startuml\ntitle Green Rides State Transition Diagram\n\n[*] --> JourneyDetailsState : User Login\n\nstate JourneyDetailsState {\n  --> DrivingModeState : Activate Driving Mode\n  --> OtherOptionsState : Choose Other Options\n  --> HungryState : I'm Hungry\n}\n\nstate DrivingModeState {\n  --> JourneyDetailsState : Deactivate Driving Mode\n  AccidentDetected[Detect Accident] --> AccidentDetectedState\n}\n\nstate OtherOptionsState {\n  --> JourneyDetailsState : Return to Menu\n}\n\nstate HungryState {\n  --> RestaurantMenuState : Select Place to Eat\n}\n\nstate RestaurantMenuState {\n  --> OrderPlacedState : Place Order\n  --> JourneyDetailsState : Cancel\n}\n\nstate OrderPlacedState {\n  --> FeedbackState : Continue Journey\n}\n\nstate AccidentDetectedState {\n  --> AuthoritiesNotifiedState : Notify Authorities\n}\n\nstate AuthoritiesNotifiedState {\n  --> JourneyDetailsState : Return to Menu\n}\n\nstate FeedbackState {\n  --> [*] : Complete Feedback\n}\n\nJourneyDetailsState --> DrivingModeState\nJourneyDetailsState --> OtherOptionsState\nJourneyDetailsState --> HungryState\n\nDrivingModeState --> AccidentDetectedState\nHungryState --> RestaurantMenuState\nRestaurantMenuState --> OrderPlacedState\nOrderPlacedState --> FeedbackState\nFeedbackState --> [*]\n@enduml",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: AuthoritiesNotifiedState",
+          "orphan_states_detected",
+          "orphan: AuthoritiesNotifiedState"
+        ],
+        "initial_state": "JourneyDetailsState",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "AuthoritiesNotifiedState"
+        ],
+        "state_count": 9,
+        "transition_count": 7
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 4,
+      "repair_score": 4,
+      "preservation": {
+        "current_state_count": 11,
+        "repaired_state_count": 9,
+        "current_transition_count": 9,
+        "repaired_transition_count": 9,
+        "min_allowed_state_count": 8,
+        "min_allowed_transition_count": 6,
+        "dropped_states": [
+          "InitialState",
+          "LoggedInState"
+        ],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "repair_did_not_improve_validation_score",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run2\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_34_green_rides\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run2\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_34_green_rides\\run_01.repair_01.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "repair_mode": "baseline",
+      "repair_model_name": "deepseek-r1:14b",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "@startuml\ntitle Green Rides State Transition Diagram\n\nstate InitialState {\n  [*] --> LoggedInState : User Login\n}\n\nstate LoggedInState {\n  --> JourneyDetailsState : View Journey Details\n}\n\nstate JourneyDetailsState {\n  --> DrivingModeState : Activate Driving Mode\n  --> OtherOptionsState : Choose Other Options\n  --> HungryState : I'm Hungry\n}\n\nstate DrivingModeState {\n  --> JourneyDetailsState : Deactivate Driving Mode\n  AccidentDetected[Detect Accident] --> AccidentDetectedState\n}\n\nstate OtherOptionsState {\n  --> JourneyDetailsState : Return to Menu\n}\n\nstate HungryState {\n  --> RestaurantMenuState : Select Place to Eat\n}\n\nstate RestaurantMenuState {\n  --> OrderPlacedState : Place Order\n  --> JourneyDetailsState : Cancel\n}\n\nstate OrderPlacedState {\n  --> FeedbackState : Provide Feedback\n}\n\nstate FeedbackState {\n  --> [*] : Complete Journey\n}\n\nstate AccidentDetectedState {\n  --> AuthoritiesNotifiedState : Notify Authorities\n}\n\nstate AuthoritiesNotifiedState {\n  --> JourneyDetailsState : Return to Menu\n}\n\nJourneyDetailsState --> DrivingModeState\nJourneyDetailsState --> OtherOptionsState\nJourneyDetailsState --> HungryState\n\nDrivingModeState --> JourneyDetailsState\nHungryState --> RestaurantMenuState\nRestaurantMenuState --> OrderPlacedState\nOrderPlacedState --> FeedbackState\nFeedbackState --> [*]\n\nAccidentDetectedState --> AuthoritiesNotifiedState\nAuthoritiesNotifiedState --> JourneyDetailsState\n@enduml",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: AccidentDetectedState, AuthoritiesNotifiedState, DrivingModeState, FeedbackState, HungryState, InitialState, JourneyDetailsState, OrderPlacedState, OtherOptionsState, RestaurantMenuState",
+          "orphan_states_detected",
+          "orphan: InitialState"
+        ],
+        "initial_state": "LoggedInState",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "AccidentDetectedState",
+          "AuthoritiesNotifiedState",
+          "DrivingModeState",
+          "FeedbackState",
+          "HungryState",
+          "InitialState",
+          "JourneyDetailsState",
+          "OrderPlacedState",
+          "OtherOptionsState",
+          "RestaurantMenuState"
+        ],
+        "state_count": 11,
+        "transition_count": 9
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 4,
+      "repair_score": 4,
+      "preservation": {
+        "current_state_count": 11,
+        "repaired_state_count": 11,
+        "current_transition_count": 9,
+        "repaired_transition_count": 11,
+        "min_allowed_state_count": 8,
+        "min_allowed_transition_count": 6,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "repair_did_not_improve_validation_score",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run2\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_34_green_rides\\run_01.repair_02.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run2\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_34_green_rides\\run_01.repair_02.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "repair_mode": "baseline",
+      "repair_model_name": "deepseek-r1:14b",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "@startuml\ntitle Green Rides State Transition Diagram\n\n[*] --> JourneyDetailsState : User Login and Select Destination\n\nstate JourneyDetailsState {\n  --> DrivingModeState : Activate Driving Mode\n  --> OtherOptionsState : Choose Other Options\n  --> HungryState : I'm Hungry\n}\n\nstate DrivingModeState {\n  --> JourneyDetailsState : Deactivate Driving Mode\n  AccidentDetected[Detect Accident] --> AccidentDetectedState\n}\n\nstate OtherOptionsState {\n  --> JourneyDetailsState : Return to Menu\n}\n\nstate HungryState {\n  --> RestaurantMenuState : Select Place to Eat\n}\n\nstate RestaurantMenuState {\n  --> OrderPlacedState : Place Order\n  --> JourneyDetailsState : Cancel\n}\n\nstate OrderPlacedState {\n  --> FeedbackState : Continue Journey\n}\n\nstate FeedbackState {\n  --> [*] : Complete Feedback\n}\n\nstate AccidentDetectedState {\n  --> AuthoritiesNotifiedState : Notify Authorities\n}\n\nstate AuthoritiesNotifiedState {\n  --> JourneyDetailsState : Return to Menu\n}\n\nJourneyDetailsState --> DrivingModeState\nJourneyDetailsState --> OtherOptionsState\nJourneyDetailsState --> HungryState\n\nDrivingModeState --> AccidentDetectedState\nHungryState --> RestaurantMenuState\nRestaurantMenuState --> OrderPlacedState\nOrderPlacedState --> FeedbackState\nFeedbackState --> [*]\n\nAccidentDetectedState --> AuthoritiesNotifiedState\nAuthoritiesNotifiedState --> JourneyDetailsState\n@enduml",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "JourneyDetailsState",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 9,
+        "transition_count": 9
+      },
+      "strict_state_diagram_valid": true,
+      "accepted": true,
+      "previous_score": 4,
+      "repair_score": 0,
+      "preservation": {
+        "current_state_count": 11,
+        "repaired_state_count": 9,
+        "current_transition_count": 9,
+        "repaired_transition_count": 11,
+        "min_allowed_state_count": 8,
+        "min_allowed_transition_count": 6,
+        "dropped_states": [
+          "InitialState",
+          "LoggedInState"
+        ],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run2\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_34_green_rides\\run_01.repair_03.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run2\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_34_green_rides\\run_01.repair_03.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 9,
+    "state_fn": 10,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 9,
+    "transition_fn": 10,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 9,
+    "state_fn_relaxed": 10,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 9,
+    "transition_fn_relaxed": 10,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 9,
+    "transition_fn_semantic": 10,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  },
+  "reused_base_run": {
+    "run_id": "open_source__deepseek_r1_14b__few_shot",
+    "strategy": "few_shot",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run2\\runs\\open_source__deepseek_r1_14b__few_shot\\case_34_green_rides\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run2\\runs\\open_source__deepseek_r1_14b__few_shot\\case_34_green_rides\\run_01.prompt.txt"
+  }
+}

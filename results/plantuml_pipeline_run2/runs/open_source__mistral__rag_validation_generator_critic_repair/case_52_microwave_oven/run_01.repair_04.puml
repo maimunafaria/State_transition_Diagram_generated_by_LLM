@@ -1,0 +1,51 @@
+@startuml
+Microwave Oven Operation and Control
+
+state MicrowaveOven {
+  state Checking
+  Checking : do / Check Status
+
+  state Cook
+  Cook : do / Run Generator
+
+  state Alarm
+  Alarm : do / Display Event
+
+  state Done
+  Done : do / Buzzer On for 5 Secs.
+
+  [*] --> Checking
+
+  Checking --> Cook : OK
+  Checking --> Alarm : Turntable Fault OR Emitter Fault
+
+  Cook --> Done : Timeout OR Time
+  Cook --> Cook : Continue Cooking
+
+  MicrowaveOven --> Disabled : Door Open OR Cancel
+  MicrowaveOven --> Oven : Door Closed and Ready
+
+  state Oven {
+    state DoorShut
+    DoorShut --> DoorOpen : Door Opened
+    DoorOpen --> DoorShut : Door Closed
+
+    state DoorOpenItem
+    DoorOpenItem --> DoorShutItem : Food Placed
+    DoorShutItem --> ReadyToCook : Door Closed
+
+    state ReadyToCook
+    ReadyToCook --> Cooking
+
+    state Cooking
+    Cooking --> Done : Time Ended OR Cancel
+    Cooking --> Cooking : Continue Cooking
+
+    state Done
+    Done --> DoorOpen : Food Removed
+  }
+}
+
+state Disabled
+state Waiting
+@enduml

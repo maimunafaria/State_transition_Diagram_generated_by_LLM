@@ -1,0 +1,66 @@
+@startuml
+title UML State Machine Diagram
+
+[*] --> Registration
+
+state Registration
+Registration : entry / startRegistration
+Registration : exit / registrationComplete
+
+state RegistrationFailure <<choice>>
+Registration --> RegistrationFailure : registrationFailed
+RegistrationFailure : exit / handleFailure
+
+state Login
+Login : entry / verifyCredentials
+Login : exit / loginSuccess
+
+state MainMenu <<choice>>
+Login --> MainMenu
+RegistrationFailure --> MainMenu
+
+state FacilityAccess
+MainMenu --> FacilityAccess : accessFacilities
+
+state NewsAndContent
+MainMenu --> NewsAndContent : readNewsOrContent
+
+state SymptomChecker
+NewsAndContent --> SymptomChecker : checkSymptomsOrFitness
+
+state SessionContinuation <<choice>>
+SymptomChecker --> SessionContinuation : continueSession
+SessionContinuation --> SymptomChecker : viewResult [invalid]
+
+state InsuranceProcessing
+RegistrationFailure --> InsuranceProcessing : processInsurance
+MainMenu --> InsuranceProcessing : validateInsuranceForFinanceServices
+
+state PaymentSelection
+InsuranceProcessing --> PaymentSelection : selectPaymentMethod
+
+state CashDetails
+PaymentSelection --> CashDetails : showCashDetails [invalid]
+
+state InsurancePayment
+PaymentSelection --> InsurancePayment : completeInsurancePayment
+
+state FeedbackCollection
+SessionContinuation --> FeedbackCollection : provideFeedback
+
+state Logout
+MainMenu --> Logout : endSession
+
+FacilityAccess --> [*] : endAccess
+FeedbackCollection --> [*] : endSession
+Login --> [*] : endAccess
+Logout --> [*] : endSession
+MainMenu --> [*] : endAccess
+NewsAndContent --> [*] : endAccess
+SymptomChecker --> [*] : endAccess
+InsuranceProcessing --> [*] : endAccess
+PaymentSelection --> [*] : endAccess
+CashDetails --> [*] : endAccess
+InsurancePayment --> [*] : endSession
+
+@enduml

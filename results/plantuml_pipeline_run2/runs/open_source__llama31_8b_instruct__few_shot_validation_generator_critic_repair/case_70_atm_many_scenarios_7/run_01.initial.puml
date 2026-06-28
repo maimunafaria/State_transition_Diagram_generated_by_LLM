@@ -1,0 +1,44 @@
+@startuml
+title ATM Control - Validate PIN and Process Request
+
+state "idle" as Idle
+Idle : entry / Display Welcome
+Idle : do / remain same
+Idle : exit / card inserted
+
+state "Waiting for PIN" as WaitingForPIN
+WaitingForPIN : entry / card inserted
+WaitingForPIN : do / validate PIN
+WaitingForPIN : exit / valid PIN / correct PIN
+WaitingForPIN : exit / invalid PIN / incorrect PIN
+
+state "Validating PIN" as ValidatingPIN
+ValidatingPIN : entry / invalid PIN
+ValidatingPIN : do / count attempts
+ValidatingPIN : exit / max attempts exceeded / confiscate card
+ValidatingPIN : exit / valid PIN / correct PIN
+
+state "Displaying options" as DisplayingOptions
+DisplayingOptions : entry / correct PIN
+DisplayingOptions : do / display menu
+DisplayingOptions : exit / user selects option
+
+state "Processing request" as ProcessingRequest
+ProcessingRequest : entry / user selects option
+ProcessingRequest : do / process request
+ProcessingRequest : exit / request completed
+
+state "Confiscating card" as ConfiscatingCard
+ConfiscatingCard : entry / max attempts exceeded
+ConfiscatingCard : do / confiscate card
+ConfiscatingCard : exit / card confiscated
+
+state J0 <<choice>>
+Idle --> WaitingForPIN : card inserted
+WaitingForPIN --> ValidatingPIN : PIN entered
+ValidatingPIN --> DisplayingOptions : valid PIN
+DisplayingOptions --> ProcessingRequest : user selects option
+ProcessingRequest --> ConfiscatingCard : max attempts exceeded
+ConfiscatingCard --> Idle : card confiscated
+
+@enduml

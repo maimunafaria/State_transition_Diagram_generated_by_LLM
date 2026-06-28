@@ -1,0 +1,59 @@
+@startuml
+title UML State Machine Diagram - Healthcare Portal
+
+state StartChoice <<choice>>
+state RegistrationChoice <<choice>>
+state SignInChoice <<choice>>
+state FacilityAccessChoice <<choice>>
+state NewsContentChoice <<choice>>
+state HealthInfoChoice <<choice>>
+state ResultChoice <<choice>>
+state InsuranceCheckChoice <<choice>>
+state PaymentChoice <<choice>>
+state FeedbackChoice <<choice>>
+state LogoutChoice <<choice>>
+
+[*] --> RegistrationChoice
+RegistrationChoice : exit / registrationFailed --> SignInChoice
+RegistrationChoice : exit / registrationSuccess --> SignInChoice
+
+SignInChoice : entry / getCredentials
+SignInChoice : do / validateCredentials
+SignInChoice : exit / signInFailed --> StartChoice
+SignInChoice : exit / signInSuccess --> FacilityAccessChoice
+
+FacilityAccessChoice : entry / checkLogin --> NewsContentChoice
+FacilityAccessChoice : exit / logoutFailed --> LogoutChoice
+FacilityAccessChoice : exit / logoutSuccess --> LoggedOut
+
+NewsContentChoice : entry / readContent
+NewsContentChoice : exit / backToFacilityAccess --> FacilityAccessChoice
+
+HealthInfoChoice : entry / checkSymptoms
+HealthInfoChoice : entry / fitnessChecking
+HealthInfoChoice : exit / resultReceived --> ResultChoice
+
+ResultChoice : entry / viewResult
+ResultChoice : do / continueOrFinishSession
+ResultChoice : exit / logoutFailed --> LogoutChoice
+ResultChoice : exit / logoutSuccess --> LoggedOut
+
+InsuranceCheckChoice : entry / processInsurance
+InsuranceCheckChoice : do / validatePaymentWithInsurance
+InsuranceCheckChoice : exit / paymentFailed --> PaymentChoice
+InsuranceCheckChoice : exit / paymentSuccess --> PaymentChoice
+
+PaymentChoice : entry / selectPaymentMethod
+PaymentChoice : do / completePayment
+PaymentChoice : exit / logoutFailed --> LogoutChoice
+PaymentChoice : exit / logoutSuccess --> LoggedOut
+
+FeedbackChoice : entry / provideFeedback
+FeedbackChoice : exit / logoutFailed --> LogoutChoice
+FeedbackChoice : exit / logoutSuccess --> LoggedOut
+
+LogoutChoice : entry / logOut --> LoggedOut
+
+LoggedOut : exit / continueSession --> StartChoice
+
+@enduml

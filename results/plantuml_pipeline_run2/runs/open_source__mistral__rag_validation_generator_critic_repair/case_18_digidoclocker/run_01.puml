@@ -1,0 +1,31 @@
+@startuml
+title UML State Machine Diagram (Digidoclocker)
+
+[*] --> UserType
+
+state UserType <<choice>>
+UserType --> Registration : [Citizen]
+UserType --> Login : [Registered Citizen]
+Login --> LoggedOut : [Incorrect details]
+Registration --> RegisteredCitizen
+LoggedOut --> [*]
+
+state RegisteredCitizen
+RegisteredCitizen : entry / Get the Registration Details
+RegisteredCitizen : validate / Check if details are accepted
+RegisteredCitizen : save / Save user's information after successful registration
+RegisteredCitizen : end / End the process if registration details are not accepted
+
+state Login
+Login : entry / Enter username and password
+Login : check / Continue if login is successful
+Login : attempt : [Multiple attempts if details are incorrect]
+
+state Citizen
+Citizen : uploadDocuments : [Upload documents, view profile, or apply for a certificate]
+Citizen : continueUploads : [Continue uploading documents if needed after initial uploads]
+Citizen : applyCertificates : [Apply for multiple certificates and reapply after sending a request to the issuer]
+Citizen : requestVerification : [Registrars can request certificates for verification]
+Citizen : endSession : [End the session once the user is done with their actions]
+LoggedOut --> Citizen : [Successful login]
+@enduml
