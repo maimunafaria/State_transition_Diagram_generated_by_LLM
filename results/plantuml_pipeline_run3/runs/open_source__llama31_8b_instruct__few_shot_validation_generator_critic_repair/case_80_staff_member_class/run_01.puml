@@ -1,0 +1,38 @@
+@startuml
+title Staff Member Class State Machine Diagram
+
+[*] --> Unassigned
+
+state "Unassigned" as Unassigned
+Unassigned : entry / nil
+Unassigned : do / remain in same state
+Unassigned : exit / assign to client or campaign / Assigned
+
+state "Assigned" as Assigned
+Assigned : entry / assign to client or campaign
+Assigned : do / switch between assignments during work period
+Assigned : exit / remove assignment / Unassigned
+
+state "Switching Assignments" as SwitchingAssignments
+SwitchingAssignments : entry / switch between assignments
+SwitchingAssignments : do / enable switching between assignments
+SwitchingAssignments : exit / return to assigned state / Assigned
+
+state "Unemployed" as Unemployed
+Unemployed : entry / mark staff member as unemployed
+Unemployed : do / remain in same state
+Unemployed : exit / archive record of former employee / Archived
+
+state "Archived" as Archived
+Archived : entry / archive record of former employee
+Archived : do / remain in same state
+Archived : exit / nil / [*]
+
+Assigned --> SwitchingAssignments : switch assignments during work period
+SwitchingAssignments --> Assigned : return to assigned state
+Unassigned --> Assigned : assign to client or campaign
+Assigned --> Unemployed : mark staff member as unemployed
+Unemployed --> Archived : archive record of former employee
+Archived --> [*] :
+
+@enduml

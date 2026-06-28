@@ -1,0 +1,69 @@
+@startuml
+title Inventory System State Machine
+
+[*] --> AddGoods
+
+state "Add Goods" as AddGoods {
+  [*] --> UpdatePrice
+  state "Update Price" as UpdatePrice
+
+  UpdatePrice --> RemoveGoods : removeGoodsSelected()
+}
+
+state "Remove Goods" as RemoveGoods {
+  [*] --> IdentifyExpiredGoods
+  state "Identify Expired Goods" as IdentifyExpiredGoods
+
+  IdentifyExpiredGoods --> NotifyUser : notifyUserAboutRemoval()
+}
+
+state "Notify User" as NotifyUser {
+  [*] --> PlaceOrder
+  state "Place Order" as PlaceOrder
+
+  PlaceOrder --> GenerateInvoice : generateInvoiceForOrder()
+}
+
+state "Generate Invoice" as GenerateInvoice {
+  [*] --> SearchItems
+  state "Search Items" as SearchItems
+
+  SearchItems --> SelectItemsForPurchase : selectItemsForPurchase()
+}
+
+state "Select Items for Purchase" as SelectItemsForPurchase {
+  [*] --> CalculateDiscountAndTax
+  state "Calculate Discount and Tax" as CalculateDiscountAndTax
+
+  CalculateDiscountAndTax --> GenerateReceipt : generateReceiptForCustomer()
+}
+
+state "Generate Receipt" as GenerateReceipt {
+  [*] --> ReplaceItemOrCancelReceipt
+  state "Replace Item or Cancel Receipt" as ReplaceItemOrCancelReceipt
+
+  ReplaceItemOrCancelReceipt --> RecordCustomerRequest : recordCustomerRequest()
+}
+
+state "Record Customer Request" as RecordCustomerRequest {
+  [*] --> ViewSummaryReport
+  state "View Summary Report" as ViewSummaryReport
+
+  ViewSummaryReport --> [*]
+}
+
+AddGoods --> UpdatePrice : addGoodsSelected()
+UpdatePrice --> RemoveGoods : removeGoodsSelected()
+RemoveGoods --> IdentifyExpiredGoods : identifyExpiredGoods()
+IdentifyExpiredGoods --> NotifyUser : notifyUserAboutRemoval()
+NotifyUser --> PlaceOrder : placeOrderSelected()
+PlaceOrder --> GenerateInvoice : generateInvoiceForOrder()
+GenerateInvoice --> SearchItems : searchItemsSelected()
+SearchItems --> SelectItemsForPurchase : selectItemsForPurchase()
+SelectItemsForPurchase --> CalculateDiscountAndTax : calculateDiscountAndTax()
+CalculateDiscountAndTax --> GenerateReceipt : generateReceiptForCustomer()
+GenerateReceipt --> ReplaceItemOrCancelReceipt : replaceItemOrCancelReceiptSelected()
+ReplaceItemOrCancelReceipt --> RecordCustomerRequest : recordCustomerRequest()
+RecordCustomerRequest --> ViewSummaryReport : viewSummaryReport()
+
+@enduml

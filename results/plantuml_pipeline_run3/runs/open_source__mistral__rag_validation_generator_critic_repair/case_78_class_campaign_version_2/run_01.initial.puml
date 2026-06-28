@@ -1,0 +1,28 @@
+@startuml
+title State machine for Campaign
+
+state Commissioned
+state Active
+state Completed
+state Paid
+state Cancelled
+state Adjusting
+
+[*] --> Commissioned : /assignManager;\nassignStaff\n/approveContract
+
+Commissioned --> Active : Approved(authorizationCode)\n[contract signed]\n/setCampaignActive
+
+Active --> Completed : AllWorkFinished
+Active --> Cancelled : CampaignCancelled
+Active --> Adjusting : /extendDuration;\n/changeBudget
+
+Completed --> Paid : CorrectPaymentReceived
+Completed --> Paid : PaymentAdjusted(refundOrWait)
+
+Paid --> Archived : FinalStatementPrepared\n/releaseStaffAndManager
+
+Cancelled --> Completed : CalculateCosts\nFinalStatementPrepared
+
+Adjusting --> Active : ResumeWork
+
+@enduml

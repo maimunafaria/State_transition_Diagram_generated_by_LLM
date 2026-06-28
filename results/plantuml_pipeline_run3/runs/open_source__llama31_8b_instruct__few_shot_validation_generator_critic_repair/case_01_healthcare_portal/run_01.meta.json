@@ -1,0 +1,633 @@
+{
+  "run_id": "open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair",
+  "case_id": "case_01_healthcare_portal",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nFirst Person Shooter Fps Games — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall keep the troll in a calm state with no actions if there is no detected threat.\n2. The system shall determine the troll's reaction based on the perceived strength of the detected opponent.\n3. The system shall make the troll aggressive and start an attack if the opponent appears weak enough to defeat.\n4. The system shall continue the troll's fight while it can see the opponent.\n5. The system shall calm the troll and return it to a normal state if it loses sight of the opponent.\n6. The system shall make the troll scared and panic if the opponent appears too strong.\n7. The system shall calm the troll and return it to a normal state if it gets away from or loses sight of a stronger opponent.\n8. The system shall remove the troll from the game if it takes a fatal hit and its health reaches zero.\n\nExample 1 PlantUML:\n@startuml\ntitle Troll State Diagram\n\n[*] --> Neutral\n\nstate Neutral\nstate Attack\nstate Panic\nstate Die\n\nNeutral --> Attack : see opponent [defeatable]\nAttack --> Neutral : lost opponent\n\nNeutral --> Panic : see opponent [undefeatable]\nPanic --> Neutral : lost opponent\n\nAttack --> Die : receive blow [health = 0] / pray\nPanic --> Die : receive blow [health = 0] / pray\n\nDie --> [*]\n\n@enduml\n\nExample 2 Requirement:\nDevice Handout — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall collect personal details from a donor during registration.\n2. The system shall check the entered personal details after registration.\n3. The system shall collect contact information from a donor after verifying their personal details.\n4. The system shall allow donors to share details about the device they want to donate.\n5. The system shall review the shared device details.\n6. The system shall support if a device meets the requirements, the system shall accept it.\n7. The system shall assign an executive to handle the accepted device.\n8. The system shall confirm the status of the accepted device by the executive.\n9. The system shall support if a device does not meet the requirements, the system shall inform the donor that it cannot be accepted.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Machine Diagram\n\n[*] --> DonorRegistration\n\nstate \"donor registration\" as DonorRegistration\nDonorRegistration : entry / enter personal details\nDonorRegistration : do / verify details\nDonorRegistration : exit / request contact details\n\nstate \"get contacts\" as GetContacts\nGetContacts : entry / registered donor\nGetContacts : do / receive contact details\nGetContacts : exit / donate a device\n\nstate \"device details\" as DeviceDetails\nDeviceDetails : entry / gave contacts\nDeviceDetails : do / receive details\nDeviceDetails : exit / request approval\n\nstate \"device verification\" as DeviceVerification\nDeviceVerification : entry / provided device details\nDeviceVerification : do / check details\nDeviceVerification : exit / acknowledge donor\n\nstate Decision <<choice>>\n\nstate approved\napproved : entry / device verified\napproved : do / choose an executive\napproved : exit / send details to executive\n\nstate rejected\nrejected : entry / fails verification\nrejected : do / notify donor\nrejected : exit / device not accepted\n\nstate \"picked up\" as PickedUp\nPickedUp : entry / executive receives details\nPickedUp : do / executive picks product\nPickedUp : exit / acknowledges status of product\n\nDonorRegistration --> GetContacts\nGetContacts --> DeviceDetails\nDeviceDetails --> DeviceVerification\nDeviceVerification --> Decision\n\nDecision --> approved : [passes verification]\nDecision --> rejected : [fails verification]\n\napproved --> PickedUp\n\nPickedUp --> [*]\nrejected --> [*]\n\n@enduml\n\nExample 3 Requirement:\nBook Bank Management System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to register by entering their details.\n2. The system shall issue a member ID and complete the registration upon correct entry of details.\n3. The system shall require the user to re-enter their details upon incorrect entry of details.\n4. The system shall allow a user to log in after successful registration using their member ID and password.\n5. The system shall allow the user to continue upon correct entry of member ID and password during login. Otherwise, they cannot log in.\n6. The system shall allow a user to search for a book by entering its details.\n7. The system shall show suggestions if a book is found during a search; otherwise, it shall allow the user to choose another option.\n8. The system shall allow a user to get a book by entering its ID and their member ID.\n9. The system shall allow the user to get the book if their membership is active; otherwise, it shall require them to pay the fine amount first.\n10. The system shall allow a user to buy a book by entering its ID and seeing the price.\n11. The system shall provide the book if the user pays; otherwise, it shall end the process there.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\nstate \"Registration\" as Registration {\n  [*] --> RegEnterDetails\n\n  state \"Enter Details\" as RegEnterDetails\n  state \"Get Member_ID\" as GetMemberID\n  state \"Successful Registration\" as SuccessfulRegistration\n  state \"Re-enter Details\" as ReEnterDetails\n\n  RegEnterDetails --> GetMemberID : [Valid]\n  RegEnterDetails --> ReEnterDetails : [Invalid]\n  ReEnterDetails --> RegEnterDetails\n  GetMemberID --> SuccessfulRegistration\n}\n\nstate \"Authentication\" as Authentication {\n  [*] --> AuthEnterMemberID\n\n  state \"Enter Member_ID\" as AuthEnterMemberID\n  state \"Enter Password\" as EnterPassword\n  state \"successful Login\" as SuccessfulLogin\n  state \"Invalid Member_ID or Password\" as InvalidCreds\n\n  AuthEnterMemberID --> EnterPassword\n  EnterPassword --> SuccessfulLogin : [Valid]\n  EnterPassword --> InvalidCreds : [Invalid]\n}\n\nstate \"Search Books\" as SearchBooks {\n  [*] --> EnterBookDetails\n\n  state \"Enter Book Details\" as EnterBookDetails\n  state \"Display Suggestion\" as DisplaySuggestion\n  state \"choose Alternate option\" as ChooseAlternate\n\n  EnterBookDetails --> DisplaySuggestion : [Found]\n  EnterBookDetails --> ChooseAlternate : [Not Found]\n}\n\nstate \"Get Books\" as GetBooksState {\n  [*] --> GetEnterBookID\n\n  state \"Enter Book_ID\" as GetEnterBookID\n  state \"Enter Member_ID\" as GetEnterMemberID\n  state \"Obtain Books\" as ObtainBooks\n  state \"Pay Fine Amount\" as PayFineAmount\n\n  GetEnterBookID --> GetEnterMemberID\n  GetEnterMemberID --> ObtainBooks : [Active Member]\n  GetEnterMemberID --> PayFineAmount : [Inactive Member]\n}\n\nstate \"Buy Books\" as BuyBooks {\n  [*] --> BuyEnterBookID\n\n  state \"Enter Book_ID\" as BuyEnterBookID\n  state \"Display Book Amount\" as DisplayBookAmount\n  state \"Get Books\" as BuyGetBooks\n  state BuyNotPaidEnd <<choice>>\n\n  BuyEnterBookID --> DisplayBookAmount\n  DisplayBookAmount --> BuyGetBooks : [Paid]\n  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]\n  BuyNotPaidEnd --> [*]\n}\n\nstate StartJoin <<choice>>\n\n[*] --> StartJoin\nStartJoin --> Registration\nStartJoin --> Authentication\nStartJoin --> SearchBooks\nStartJoin --> GetBooksState\nStartJoin --> BuyBooks\n\nSuccessfulRegistration --> AuthEnterMemberID\n\nSuccessfulLogin --> EnterBookDetails\nSuccessfulLogin --> GetEnterBookID\nSuccessfulLogin --> BuyEnterBookID\n\n\nObtainBooks --> [*]\nBuyGetBooks --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nHealthcare Portal — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow new users to complete registration.\n2. The system shall end access if registration fails.\n3. The system shall allow registered users to sign in.\n4. The system shall provide access to available facilities after signing in.\n5. The system shall allow users to read news and expert content.\n6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.\n7. The system shall allow users to continue using the system or finish the session after viewing a result.\n8. The system shall process and validate insurance for available finance-related services.\n9. The system shall check payment with insurance for doctor consultations and complete the payment process.\n10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.\n11. The system shall inform users about cash payment details if chosen as the payment method.\n12. The system shall complete the payment process for insurance-based payments.\n13. The system shall collect user feedback after service completion.\n14. The system shall log out users at the end of their session.\n",
+  "requirement_used": "Healthcare Portal — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow new users to complete registration.\n2. The system shall end access if registration fails.\n3. The system shall allow registered users to sign in.\n4. The system shall provide access to available facilities after signing in.\n5. The system shall allow users to read news and expert content.\n6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.\n7. The system shall allow users to continue using the system or finish the session after viewing a result.\n8. The system shall process and validate insurance for available finance-related services.\n9. The system shall check payment with insurance for doctor consultations and complete the payment process.\n10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.\n11. The system shall inform users about cash payment details if chosen as the payment method.\n12. The system shall complete the payment process for insurance-based payments.\n13. The system shall collect user feedback after service completion.\n14. The system shall log out users at the end of their session.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_01_healthcare_portal\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod, StartJoin)",
+      "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 24,
+    "transition_count": 19
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod, StartJoin)",
+      "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__llama31_8b_instruct__few_shot",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod, StartJoin)",
+        "orphan_states_detected",
+        "orphan: Collect User Feedback",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod, StartJoin)",
+        "orphan_states_detected",
+        "orphan: Collect User Feedback",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": true,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 4,
+      "repair_score": 2,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 24,
+        "repaired_state_count": 24,
+        "current_transition_count": 24,
+        "repaired_transition_count": 25,
+        "min_allowed_state_count": 18,
+        "min_allowed_transition_count": 16,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod, StartJoin)",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod, StartJoin)",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "accepted": false,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 2,
+      "repair_score": 2,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 24,
+        "repaired_state_count": 24,
+        "current_transition_count": 25,
+        "repaired_transition_count": 28,
+        "min_allowed_state_count": 18,
+        "min_allowed_transition_count": 17,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod)",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod)",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 2,
+      "reason": "repair_did_not_improve_validation_score",
+      "feedback_for_next_attempt": "",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod, StartJoin)",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "accepted": false,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 2,
+      "repair_score": 2,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 24,
+        "repaired_state_count": 24,
+        "current_transition_count": 25,
+        "repaired_transition_count": 28,
+        "min_allowed_state_count": 18,
+        "min_allowed_transition_count": 17,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod)",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod)",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 3,
+      "reason": "repair_did_not_improve_validation_score",
+      "feedback_for_next_attempt": "",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod, StartJoin)",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "accepted": false,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 2,
+      "repair_score": 2,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 24,
+        "repaired_state_count": 24,
+        "current_transition_count": 25,
+        "repaired_transition_count": 28,
+        "min_allowed_state_count": 18,
+        "min_allowed_transition_count": 17,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod)",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod)",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 4,
+      "reason": "repair_did_not_improve_validation_score",
+      "feedback_for_next_attempt": "",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod, StartJoin)",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "accepted": false,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 2,
+      "repair_score": 2,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 24,
+        "repaired_state_count": 24,
+        "current_transition_count": 25,
+        "repaired_transition_count": 28,
+        "min_allowed_state_count": 18,
+        "min_allowed_transition_count": 17,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod)",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod)",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 5,
+      "reason": "repair_did_not_improve_validation_score",
+      "feedback_for_next_attempt": "",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod, StartJoin)",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 5,
+      "strict_state_diagram_valid": false,
+      "remaining_issues": [
+        "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod, StartJoin)",
+        "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod, StartJoin)",
+          "orphan_states_detected",
+          "orphan: Collect User Feedback",
+          "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 24,
+        "transition_count": 18
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_01_healthcare_portal\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "```plantuml\n@startuml\ntitle UML State Chart Diagram\n\nstate \"Registration\" as Registration {\n  [*] --> RegEnterDetails\n\n  state \"Enter Details\" as RegEnterDetails\n  state \"Get Member_ID\" as GetMemberID\n  state \"Successful Registration\" as SuccessfulRegistration\n  state \"Re-enter Details\" as ReEnterDetails\n\n  RegEnterDetails --> GetMemberID : [Valid]\n  RegEnterDetails --> ReEnterDetails : [Invalid]\n  ReEnterDetails --> RegEnterDetails\n  GetMemberID --> SuccessfulRegistration\n}\n\nstate \"Authentication\" as Authentication {\n  [*] --> AuthEnterMemberID\n\n  state \"Enter Member_ID\" as AuthEnterMemberID\n  state \"Enter Password\" as EnterPassword\n  state \"successful Login\" as SuccessfulLogin\n  state \"Invalid Member_ID or Password\" as InvalidCreds\n\n  AuthEnterMemberID --> EnterPassword : [Valid]\n  EnterPassword --> SuccessfulLogin : [Valid]\n  EnterPassword --> InvalidCreds : [Invalid]\n}\n\nstate \"Access Facilities\" as AccessFacilities {\n  [*] --> ViewNewsContent\n\n  state \"View News and Expert Content\" as ViewNewsContent\n  state \"Check Symptoms or Fitness Options\" as CheckSymptomsFitness\n  state \"Continue Using System or Finish Session\" as ContinueFinishSession\n\n  ViewNewsContent --> CheckSymptomsFitness : [User Choice]\n  CheckSymptomsFitness --> ContinueFinishSession : [User Choice]\n}\n\nstate \"Payment Processing\" as PaymentProcessing {\n  [*] --> SelectPaymentMethod\n\n  state \"Select Payment Method (Cash or Insurance)\" as SelectPaymentMethod\n  state \"Inform Cash Payment Details\" as InformCashDetails\n  state \"Complete Insurance-Based Payment Process\" as CompleteInsurancePayment\n  state \"Collect User Feedback\" as CollectFeedback\n\n  SelectPaymentMethod --> InformCashDetails : [Cash]\n  SelectPaymentMethod --> CompleteInsurancePayment : [Insurance]\n}\n\nstate StartJoin <<choice>> {\n  [*] --> StartJoin\n  StartJoin --> Registration\n  StartJoin --> Authentication\n  StartJoin --> AccessFacilities\n  StartJoin --> PaymentProcessing\n}\n\nSuccessfulRegistration --> AuthEnterMemberID\n\nSuccessfulLogin --> ViewNewsContent\nSuccessfulLogin --> SelectPaymentMethod\n\n\nContinueFinishSession --> [*]\nCollectFeedback --> CompleteInsurancePayment : [User Choice]\n\n@enduml\n```",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod, StartJoin)",
+          "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 24,
+        "transition_count": 19
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": true,
+      "previous_score": 4,
+      "repair_score": 2,
+      "preservation": {
+        "current_state_count": 24,
+        "repaired_state_count": 24,
+        "current_transition_count": 24,
+        "repaired_transition_count": 25,
+        "min_allowed_state_count": 18,
+        "min_allowed_transition_count": 16,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_01_healthcare_portal\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_01_healthcare_portal\\run_01.repair_01.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "```plantuml\n@startuml\ntitle UML State Chart Diagram\n\nstate \"Registration\" as Registration {\n  [*] --> RegEnterDetails\n\n  state \"Enter Details\" as RegEnterDetails\n  state \"Get Member_ID\" as GetMemberID\n  state \"Successful Registration\" as SuccessfulRegistration\n  state \"Re-enter Details\" as ReEnterDetails\n\n  RegEnterDetails --> GetMemberID : [Valid]\n  RegEnterDetails --> ReEnterDetails : [Invalid]\n  ReEnterDetails --> RegEnterDetails\n  GetMemberID --> SuccessfulRegistration\n}\n\nstate \"Authentication\" as Authentication {\n  [*] --> AuthEnterMemberID\n\n  state \"Enter Member_ID\" as AuthEnterMemberID\n  state \"Enter Password\" as EnterPassword\n  state \"successful Login\" as SuccessfulLogin\n  state \"Invalid Member_ID or Password\" as InvalidCreds\n\n  AuthEnterMemberID --> EnterPassword : [Valid]\n  EnterPassword --> SuccessfulLogin : [Valid]\n  EnterPassword --> InvalidCreds : [Invalid]\n}\n\nstate \"Access Facilities\" as AccessFacilities {\n  [*] --> ViewNewsContent\n\n  state \"View News and Expert Content\" as ViewNewsContent\n  state \"Check Symptoms or Fitness Options\" as CheckSymptomsFitness\n  state \"Continue Using System or Finish Session\" as ContinueFinishSession\n\n  ViewNewsContent --> CheckSymptomsFitness : [User Choice]\n  CheckSymptomsFitness --> ContinueFinishSession : [User Choice]\n}\n\nstate \"Payment Processing\" as PaymentProcessing {\n  [*] --> SelectPaymentMethod\n\n  state \"Select Payment Method (Cash or Insurance)\" as SelectPaymentMethod\n  state \"Inform Cash Payment Details\" as InformCashDetails\n  state \"Complete Insurance-Based Payment Process\" as CompleteInsurancePayment\n  state \"Collect User Feedback\" as CollectFeedback\n\n  SelectPaymentMethod --> InformCashDetails : [Cash]\n  SelectPaymentMethod --> CompleteInsurancePayment : [Insurance]\n}\n\nstate StartJoin <<choice>> {\n  Registration --> StartJoin\n  Authentication --> StartJoin\n  AccessFacilities --> StartJoin\n  PaymentProcessing --> StartJoin\n  StartJoin --> Registration\n  StartJoin --> Authentication\n  StartJoin --> AccessFacilities\n  StartJoin --> PaymentProcessing\n}\n\nSuccessfulRegistration --> AuthEnterMemberID\n\nSuccessfulLogin --> ViewNewsContent\nSuccessfulLogin --> SelectPaymentMethod\n\n\nContinueFinishSession --> [*]\nCollectFeedback --> CompleteInsurancePayment : [User Choice]\n\n@enduml\n```",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod)",
+          "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 24,
+        "transition_count": 23
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "preservation": {
+        "current_state_count": 24,
+        "repaired_state_count": 24,
+        "current_transition_count": 25,
+        "repaired_transition_count": 28,
+        "min_allowed_state_count": 18,
+        "min_allowed_transition_count": 17,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "repair_did_not_improve_validation_score",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_01_healthcare_portal\\run_01.repair_02.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_01_healthcare_portal\\run_01.repair_02.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "```plantuml\n@startuml\ntitle UML State Chart Diagram\n\nstate \"Registration\" as Registration {\n  [*] --> RegEnterDetails\n\n  state \"Enter Details\" as RegEnterDetails\n  state \"Get Member_ID\" as GetMemberID\n  state \"Successful Registration\" as SuccessfulRegistration\n  state \"Re-enter Details\" as ReEnterDetails\n\n  RegEnterDetails --> GetMemberID : [Valid]\n  RegEnterDetails --> ReEnterDetails : [Invalid]\n  ReEnterDetails --> RegEnterDetails\n  GetMemberID --> SuccessfulRegistration\n}\n\nstate \"Authentication\" as Authentication {\n  [*] --> AuthEnterMemberID\n\n  state \"Enter Member_ID\" as AuthEnterMemberID\n  state \"Enter Password\" as EnterPassword\n  state \"successful Login\" as SuccessfulLogin\n  state \"Invalid Member_ID or Password\" as InvalidCreds\n\n  AuthEnterMemberID --> EnterPassword : [Valid]\n  EnterPassword --> SuccessfulLogin : [Valid]\n  EnterPassword --> InvalidCreds : [Invalid]\n}\n\nstate \"Access Facilities\" as AccessFacilities {\n  [*] --> ViewNewsContent\n\n  state \"View News and Expert Content\" as ViewNewsContent\n  state \"Check Symptoms or Fitness Options\" as CheckSymptomsFitness\n  state \"Continue Using System or Finish Session\" as ContinueFinishSession\n\n  ViewNewsContent --> CheckSymptomsFitness : [User Choice]\n  CheckSymptomsFitness --> ContinueFinishSession : [User Choice]\n}\n\nstate \"Payment Processing\" as PaymentProcessing {\n  [*] --> SelectPaymentMethod\n\n  state \"Select Payment Method (Cash or Insurance)\" as SelectPaymentMethod\n  state \"Inform Cash Payment Details\" as InformCashDetails\n  state \"Complete Insurance-Based Payment Process\" as CompleteInsurancePayment\n  state \"Collect User Feedback\" as CollectFeedback\n\n  SelectPaymentMethod --> InformCashDetails : [Cash]\n  SelectPaymentMethod --> CompleteInsurancePayment : [Insurance]\n}\n\nstate StartJoin <<choice>> {\n  Registration --> StartJoin\n  Authentication --> StartJoin\n  AccessFacilities --> StartJoin\n  PaymentProcessing --> StartJoin\n  StartJoin --> Registration\n  StartJoin --> Authentication\n  StartJoin --> AccessFacilities\n  StartJoin --> PaymentProcessing\n}\n\nSuccessfulRegistration --> AuthEnterMemberID\n\nSuccessfulLogin --> ViewNewsContent\nSuccessfulLogin --> SelectPaymentMethod\n\n\nContinueFinishSession --> [*]\nCollectFeedback --> CompleteInsurancePayment : [User Choice]\n\n@enduml\n```",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod)",
+          "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 24,
+        "transition_count": 23
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "preservation": {
+        "current_state_count": 24,
+        "repaired_state_count": 24,
+        "current_transition_count": 25,
+        "repaired_transition_count": 28,
+        "min_allowed_state_count": 18,
+        "min_allowed_transition_count": 17,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "repair_did_not_improve_validation_score",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_01_healthcare_portal\\run_01.repair_03.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_01_healthcare_portal\\run_01.repair_03.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "```plantuml\n@startuml\ntitle UML State Chart Diagram\n\nstate \"Registration\" as Registration {\n  [*] --> RegEnterDetails\n\n  state \"Enter Details\" as RegEnterDetails\n  state \"Get Member_ID\" as GetMemberID\n  state \"Successful Registration\" as SuccessfulRegistration\n  state \"Re-enter Details\" as ReEnterDetails\n\n  RegEnterDetails --> GetMemberID : [Valid]\n  RegEnterDetails --> ReEnterDetails : [Invalid]\n  ReEnterDetails --> RegEnterDetails\n  GetMemberID --> SuccessfulRegistration\n}\n\nstate \"Authentication\" as Authentication {\n  [*] --> AuthEnterMemberID\n\n  state \"Enter Member_ID\" as AuthEnterMemberID\n  state \"Enter Password\" as EnterPassword\n  state \"successful Login\" as SuccessfulLogin\n  state \"Invalid Member_ID or Password\" as InvalidCreds\n\n  AuthEnterMemberID --> EnterPassword : [Valid]\n  EnterPassword --> SuccessfulLogin : [Valid]\n  EnterPassword --> InvalidCreds : [Invalid]\n}\n\nstate \"Access Facilities\" as AccessFacilities {\n  [*] --> ViewNewsContent\n\n  state \"View News and Expert Content\" as ViewNewsContent\n  state \"Check Symptoms or Fitness Options\" as CheckSymptomsFitness\n  state \"Continue Using System or Finish Session\" as ContinueFinishSession\n\n  ViewNewsContent --> CheckSymptomsFitness : [User Choice]\n  CheckSymptomsFitness --> ContinueFinishSession : [User Choice]\n}\n\nstate \"Payment Processing\" as PaymentProcessing {\n  [*] --> SelectPaymentMethod\n\n  state \"Select Payment Method (Cash or Insurance)\" as SelectPaymentMethod\n  state \"Inform Cash Payment Details\" as InformCashDetails\n  state \"Complete Insurance-Based Payment Process\" as CompleteInsurancePayment\n  state \"Collect User Feedback\" as CollectFeedback\n\n  SelectPaymentMethod --> InformCashDetails : [Cash]\n  SelectPaymentMethod --> CompleteInsurancePayment : [Insurance]\n}\n\nstate StartJoin <<choice>> {\n  Registration --> StartJoin\n  Authentication --> StartJoin\n  AccessFacilities --> StartJoin\n  PaymentProcessing --> StartJoin\n  StartJoin --> Registration\n  StartJoin --> Authentication\n  StartJoin --> AccessFacilities\n  StartJoin --> PaymentProcessing\n}\n\nSuccessfulRegistration --> AuthEnterMemberID\n\nSuccessfulLogin --> ViewNewsContent\nSuccessfulLogin --> SelectPaymentMethod\n\n\nContinueFinishSession --> [*]\nCollectFeedback --> CompleteInsurancePayment : [User Choice]\n\n@enduml\n```",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod)",
+          "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 24,
+        "transition_count": 23
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "preservation": {
+        "current_state_count": 24,
+        "repaired_state_count": 24,
+        "current_transition_count": 25,
+        "repaired_transition_count": 28,
+        "min_allowed_state_count": 18,
+        "min_allowed_transition_count": 17,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "repair_did_not_improve_validation_score",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_01_healthcare_portal\\run_01.repair_04.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_01_healthcare_portal\\run_01.repair_04.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "```plantuml\n@startuml\ntitle UML State Chart Diagram\n\nstate \"Registration\" as Registration {\n  [*] --> RegEnterDetails\n\n  state \"Enter Details\" as RegEnterDetails\n  state \"Get Member_ID\" as GetMemberID\n  state \"Successful Registration\" as SuccessfulRegistration\n  state \"Re-enter Details\" as ReEnterDetails\n\n  RegEnterDetails --> GetMemberID : [Valid]\n  RegEnterDetails --> ReEnterDetails : [Invalid]\n  ReEnterDetails --> RegEnterDetails\n  GetMemberID --> SuccessfulRegistration\n}\n\nstate \"Authentication\" as Authentication {\n  [*] --> AuthEnterMemberID\n\n  state \"Enter Member_ID\" as AuthEnterMemberID\n  state \"Enter Password\" as EnterPassword\n  state \"successful Login\" as SuccessfulLogin\n  state \"Invalid Member_ID or Password\" as InvalidCreds\n\n  AuthEnterMemberID --> EnterPassword : [Valid]\n  EnterPassword --> SuccessfulLogin : [Valid]\n  EnterPassword --> InvalidCreds : [Invalid]\n}\n\nstate \"Access Facilities\" as AccessFacilities {\n  [*] --> ViewNewsContent\n\n  state \"View News and Expert Content\" as ViewNewsContent\n  state \"Check Symptoms or Fitness Options\" as CheckSymptomsFitness\n  state \"Continue Using System or Finish Session\" as ContinueFinishSession\n\n  ViewNewsContent --> CheckSymptomsFitness : [User Choice]\n  CheckSymptomsFitness --> ContinueFinishSession : [User Choice]\n}\n\nstate \"Payment Processing\" as PaymentProcessing {\n  [*] --> SelectPaymentMethod\n\n  state \"Select Payment Method (Cash or Insurance)\" as SelectPaymentMethod\n  state \"Inform Cash Payment Details\" as InformCashDetails\n  state \"Complete Insurance-Based Payment Process\" as CompleteInsurancePayment\n  state \"Collect User Feedback\" as CollectFeedback\n\n  SelectPaymentMethod --> InformCashDetails : [Cash]\n  SelectPaymentMethod --> CompleteInsurancePayment : [Insurance]\n}\n\nstate StartJoin <<choice>> {\n  Registration --> StartJoin\n  Authentication --> StartJoin\n  AccessFacilities --> StartJoin\n  PaymentProcessing --> StartJoin\n  StartJoin --> Registration\n  StartJoin --> Authentication\n  StartJoin --> AccessFacilities\n  StartJoin --> PaymentProcessing\n}\n\nSuccessfulRegistration --> AuthEnterMemberID\n\nSuccessfulLogin --> ViewNewsContent\nSuccessfulLogin --> SelectPaymentMethod\n\n\nContinueFinishSession --> [*]\nCollectFeedback --> CompleteInsurancePayment : [User Choice]\n\n@enduml\n```",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod)",
+          "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 24,
+        "transition_count": 23
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 2,
+      "preservation": {
+        "current_state_count": 24,
+        "repaired_state_count": 24,
+        "current_transition_count": 25,
+        "repaired_transition_count": 28,
+        "min_allowed_state_count": 18,
+        "min_allowed_transition_count": 17,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "repair_did_not_improve_validation_score",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_01_healthcare_portal\\run_01.repair_05.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_01_healthcare_portal\\run_01.repair_05.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 24,
+    "state_fn": 25,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 19,
+    "transition_fn": 30,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 24,
+    "state_fn_relaxed": 25,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 19,
+    "transition_fn_relaxed": 30,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 19,
+    "transition_fn_semantic": 30,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod, StartJoin)",
+      "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "multiple_initial_state_transitions (RegEnterDetails, AuthEnterMemberID, ViewNewsContent, SelectPaymentMethod, StartJoin)",
+      "choice_node_without_guarded_outgoing_transitions (StartJoin)"
+    ]
+  },
+  "reused_base_run": {
+    "run_id": "open_source__llama31_8b_instruct__few_shot",
+    "strategy": "few_shot",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot\\case_01_healthcare_portal\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot\\case_01_healthcare_portal\\run_01.prompt.txt"
+  }
+}

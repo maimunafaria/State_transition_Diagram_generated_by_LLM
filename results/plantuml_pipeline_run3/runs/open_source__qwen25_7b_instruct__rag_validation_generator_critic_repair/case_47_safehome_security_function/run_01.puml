@@ -1,0 +1,31 @@
+@startuml
+title Safehome Security System State Machine
+
+[*] --> PowerOnCheck
+
+state PowerOnCheck {
+    [*] --> StartupProblem : problem detected
+    [*] --> StartupReady : everything fine
+}
+
+state StartupProblem {
+    StartupProblem --> ReadyToUse : reset
+}
+
+state StartupReady {
+    [*] --> ReadyToUse : user action
+    ReadyToUse --> Monitoring : activate
+    ReadyToUse --> Off : turn off
+}
+
+state Monitoring {
+    Monitoring --> AlarmActivated : sensor triggered
+    Monitoring --> ContinueMonitoring : false alarm or time ends
+}
+
+state AlarmActivated {
+    AlarmActivated --> AlertsSent : send alerts
+    AlertsSent --> Monitoring : continue monitoring
+}
+
+@enduml

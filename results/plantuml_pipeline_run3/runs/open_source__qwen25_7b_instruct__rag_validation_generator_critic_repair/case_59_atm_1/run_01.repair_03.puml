@@ -1,0 +1,36 @@
+@startuml
+title ATM Control - Withdrawal Process
+
+[*] --> Idle
+
+state Idle
+state "Waiting for PIN" as WaitingForPIN
+state "Validating PIN" as ValidatingPIN
+state "Withdrawal Options" as WithdrawalOptions
+state "Custom Amount Entry" as CustomAmountEntry
+state "Transaction Approved" as TransactionApproved
+state "Transaction Rejected" as TransactionRejected
+state Confiscating
+state Ejecting
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+ValidatingPIN --> WithdrawalOptions : Correct PIN / Show Options
+
+WithdrawalOptions --> CustomAmountEntry : [Enter custom amount]
+CustomAmountEntry --> TransactionApproved : [Approve transaction] | --> TransactionRejected : [Reject transaction]
+
+TransactionApproved --> Ejecting : Dispense Cash, Print Receipt, Return Card
+TransactionRejected --> Confiscating : Keep Card for Security Reasons
+Confiscating --> Ejecting : Return Card
+
+WaitingForPIN --> Confiscating : Cancel Process / Keep Card
+CustomAmountEntry --> Confiscating : Cancel Process / Keep Card
+
+TransactionRejected --> [*] : Stop Transaction and Return Card
+
+ValidatingPIN --> [*] : Cancel Process / Keep Card
+
+@enduml

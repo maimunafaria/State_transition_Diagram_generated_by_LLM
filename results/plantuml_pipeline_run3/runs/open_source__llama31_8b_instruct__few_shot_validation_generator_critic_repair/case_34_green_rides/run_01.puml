@@ -1,0 +1,106 @@
+@startuml
+title State Diagram - Green Rides
+
+[*] --> Login : User logs in
+
+
+state "Login" as Login
+Login : do / Validate user credentials
+Login : exit / Successful login
+
+state "Journey Details" as JourneyDetails
+JourneyDetails : entry / Display journey details
+JourneyDetails : do / Show route and estimated time of arrival
+JourneyDetails : exit / User views journey details
+
+
+state "Driving Mode" as DrivingMode
+DrivingMode : entry / Activate driving mode
+DrivingMode : do / Enable navigation and alerts
+DrivingMode : exit / User chooses other options
+
+state "Other Options" as OtherOptions
+OtherOptions : entry / Choose other options
+OtherOptions : do / Show available options (e.g., music, podcasts)
+OtherOptions : exit / User activates driving mode
+
+
+state "Place to Eat" as PlaceToEat
+PlaceToEat : entry / Select a place to eat
+PlaceToEat : do / Display menu and allow order placement
+PlaceToEat : exit / User places an order or views menu
+
+state "Menu" as Menu
+Menu : entry / View menu
+Menu : do / Show available dishes and prices
+Menu : exit / User places an order
+
+
+state "Order Placement" as OrderPlacement
+OrderPlacement : entry / Place an order
+OrderPlacement : do / Confirm order details
+OrderPlacement : exit / Order is placed
+
+state "Accident Notification" as AccidentNotification
+AccidentNotification : entry / Inform authorities of accident
+AccidentNotification : do / Send notification to relevant authorities
+AccidentNotification : exit / Authorities notified
+
+
+state "Notifications" as Notifications
+Notifications : entry / Send notifications during driving or in case of an accident
+Notifications : do / Display notifications on screen
+Notifications : exit / User acknowledges notifications
+
+state "Feedback" as Feedback
+Feedback : entry / Provide feedback upon completion of journey
+Feedback : do / Collect user feedback and ratings
+Feedback : exit / Feedback is submitted
+
+
+state "Completed Journey" as CompletedJourney
+CompletedJourney : entry / Journey is completed
+CompletedJourney : do / Display completion message
+CompletedJourney : exit / User provides feedback
+
+state "Final State" as FinalState <<final>>
+FinalState : entry / System ends
+
+
+Login --> JourneyDetails : Successful login
+JourneyDetails --> DrivingMode : View journey details
+DrivingMode --> OtherOptions : Activate driving mode
+OtherOptions --> DrivingMode : Choose other options
+
+PlaceToEat --> Menu : Select a place to eat
+Menu --> PlaceToEat : View menu
+OrderPlacement --> PlaceToEat : Place an order
+
+AccidentNotification --> Notifications : Inform authorities of accident
+Notifications --> AccidentNotification : Send notifications during driving or in case of an accident
+
+Feedback --> CompletedJourney : Provide feedback upon completion of journey
+CompletedJourney --> FinalState : Journey is completed
+
+
+FinalState --> [*] : System ends
+PlaceToEat --> [*] : User places an order or views menu
+Menu --> [*] : User places an order
+OrderPlacement --> [*] : Order is placed
+Notifications --> [*] : User acknowledges notifications
+Feedback --> [*] : Feedback is submitted
+CompletedJourney --> FinalState : Journey is completed
+
+
+Login --> AccidentNotification : Inform authorities of accident
+AccidentNotification --> Notifications : Send notification to relevant authorities
+
+Login --> CompletedJourney : Journey is completed
+CompletedJourney --> Feedback : Provide feedback upon completion of journey
+
+Login --> PlaceToEat : Select a place to eat
+PlaceToEat --> Menu : View menu
+Menu --> OrderPlacement : Place an order
+
+
+@enduml

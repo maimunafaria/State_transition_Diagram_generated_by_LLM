@@ -1,0 +1,160 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Inventory — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to add new goods to the inventory.
+2. The system shall allow the user to update the price of existing items in the inventory.
+3. The system shall allow the user to remove goods from the inventory that are no longer required.
+4. The system shall identify expired goods and notify the user about their removal from the inventory.
+5. The system shall allow the user to place an order to a supplier for additional goods when required.
+6. The system shall generate an invoice for the order once it is placed.
+7. The system shall allow the user to search for items available in the inventory and select them for purchase.
+8. The system shall calculate the applicable discount and tax based on the selected items.
+9. The system shall generate a receipt for the customer after the purchase.
+10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.
+11. The system shall record customer requests for items that may not be currently available.
+12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.
+
+Candidate PlantUML:
+@startuml
+title Inventory Management State Diagram
+
+[*] --> Start : System initialization
+
+state Start {
+  entry / system ready for input
+  do / display main menu
+}
+
+state AddNewItem {
+  entry / user selects add new item
+  do / add new goods to inventory
+  exit / return to main menu
+}
+
+state UpdatePrice {
+  entry / user selects update price
+  do / modify existing item price
+  exit / return to main menu
+}
+
+state RemoveItem {
+  entry / user selects remove item
+  do / delete unwanted items
+  exit / return to main menu
+}
+
+state SearchInventory {
+  entry / user selects search items
+  do / find available goods
+  exit / display results or return to menu
+}
+
+state PlaceOrder {
+  entry / user places order request
+  do / send order to supplier
+  exit / generate invoice
+}
+
+state GenerateInvoice {
+  entry / order processing complete
+  do / create and display invoice
+  exit / return to main menu
+}
+
+state PurchaseSelectedItem {
+  entry / user selects purchase option
+  do / select items for buying
+  exit / proceed to billing
+}
+
+state CalculateDiscountTax {
+  entry / billing process starts
+  do / compute discounts and taxes
+  exit / show total amount
+}
+
+state GenerateReceipt {
+  entry / transaction completed
+  do / create receipt for customer
+  exit / return to main menu
+}
+
+state ReplaceOrCancelReceipt {
+  entry / user requests modification
+  do / adjust or cancel receipt
+  exit / update inventory accordingly
+}
+
+state RecordRequest {
+  entry / item not available
+  do / log request for unavailable item
+  exit / notify user and return
+}
+
+state ViewReport {
+  entry / user selects report option
+  do / display transaction summary
+  exit / return to main menu
+}
+
+Start --> AddNewItem : add new goods
+Start --> UpdatePrice : update price
+Start --> RemoveItem : remove items
+Start --> SearchInventory : search inventory
+Start --> PlaceOrder : place order
+Start --> PurchaseSelectedItem : purchase item
+Start --> CalculateDiscountTax : calculate discount/tax
+Start --> GenerateReceipt : generate receipt
+Start --> ReplaceOrCancelReceipt : replace/cancel receipt
+Start --> RecordRequest : record request
+Start --> ViewReport : view report
+
+AddNewItem --> Start : back to menu
+UpdatePrice --> Start : back to menu
+RemoveItem --> Start : back to menu
+SearchInventory --> Start : back to menu
+PlaceOrder --> GenerateInvoice : order processed
+GenerateInvoice --> Start : back to menu
+PurchaseSelectedItem --> CalculateDiscountTax : proceed to billing
+CalculateDiscountTax --> GenerateReceipt : show receipt
+GenerateReceipt --> Start : back to menu
+ReplaceOrCancelReceipt --> Start : back to menu
+RecordRequest --> Start : back to menu
+ViewReport --> Start : back to menu
+
+GenerateReceipt --> End : system shutdown
+Start --> End : exit application
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].

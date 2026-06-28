@@ -1,0 +1,680 @@
+{
+  "run_id": "open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair",
+  "case_id": "case_67_atm_many_scenarios_1",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nFirst Person Shooter Fps Games — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall keep the troll in a calm state with no actions if there is no detected threat.\n2. The system shall determine the troll's reaction based on the perceived strength of the detected opponent.\n3. The system shall make the troll aggressive and start an attack if the opponent appears weak enough to defeat.\n4. The system shall continue the troll's fight while it can see the opponent.\n5. The system shall calm the troll and return it to a normal state if it loses sight of the opponent.\n6. The system shall make the troll scared and panic if the opponent appears too strong.\n7. The system shall calm the troll and return it to a normal state if it gets away from or loses sight of a stronger opponent.\n8. The system shall remove the troll from the game if it takes a fatal hit and its health reaches zero.\n\nExample 1 PlantUML:\n@startuml\ntitle Troll State Diagram\n\n[*] --> Neutral\n\nstate Neutral\nstate Attack\nstate Panic\nstate Die\n\nNeutral --> Attack : see opponent [defeatable]\nAttack --> Neutral : lost opponent\n\nNeutral --> Panic : see opponent [undefeatable]\nPanic --> Neutral : lost opponent\n\nAttack --> Die : receive blow [health = 0] / pray\nPanic --> Die : receive blow [health = 0] / pray\n\nDie --> [*]\n\n@enduml\n\nExample 2 Requirement:\nUi — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to open a budget-checking window from the main screen.\n2. The system shall wait for the user to select a client before proceeding with the checking process.\n3. The system shall require users to select a campaign related to the chosen client before allowing them to check information.\n4. The system shall display results only after both a client and a campaign are selected.\n5. The system shall allow users to refresh or recheck information by pressing the check button again.\n6. The system shall prompt users with a confirmation message before closing the window.\n7. The system shall return to the main screen if the user confirms closing the window.\n8. The system shall keep the window open and allow further interaction if the user cancels the close action.\n\nExample 2 PlantUML:\n@startuml\ntitle Check Budget Window State Machine\n\nstate \"Main Window\" as MainWindow\nstate \"5 Alert Dialog\" as AlertDialog\n\nstate \"Check Budget Window\" as CBW {\n  [*] --> NoClientSelected\n\n  state \"1 No Client Selected\" as NoClientSelected\n\n  state \"Selection Flow\" as SelectionFlow {\n    [*] --> NoCampaignSelected\n\n    state \"2 No Campaign Selected\" as NoCampaignSelected\n\n    state \"Result Flow\" as ResultFlow {\n      [*] --> Blank\n      state \"3 Blank\" as Blank\n      state \"4 Display Result\" as DisplayResult\n\n      Blank --> DisplayResult : checkButtonClicked()\n      DisplayResult --> DisplayResult : checkButtonClicked()\n    }\n\n    NoCampaignSelected --> ResultFlow : campaignSelected()\n    ResultFlow --> ResultFlow : campaignSelected()\n  }\n\n  NoClientSelected --> SelectionFlow : clientSelected()\n  SelectionFlow --> SelectionFlow : clientSelected()\n  state H <<history*>>\n}\n\nMainWindow --> CBW : checkCampaignBudget\\nMenuSelected()\n\nCBW --> AlertDialog : closeButtonClicked()\n\nAlertDialog --> MainWindow : OK\nAlertDialog --> H : Cancel\n\n@enduml\n\nExample 3 Requirement:\nBusiness Process Outsourcing Bpo Management System Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to upload a new request.\n2. The system shall enable a BPO organization to save the details of a project.\n3. The system shall allow a client to search for a suitable project category.\n4. The system shall enable an BPO organization to accept or decline a request from a client.\n5. The system shall allow a client to decide whether to proceed with an accepted project or reject it.\n6. The system shall update the project status after acceptance by both parties.\n7. The system shall allow a client to track the progress of a project.\n8. The system shall enable an BPO organization to update the progress of a project.\n9. The system shall upload a final project once work is completed.\n10. The system shall perform a quality check on the final project.\n11. The system shall restart the process if a client is unsatisfied with the final project.\n12. The system shall make payment if the client is satisfied with the final project.\n13. The system shall deliver the project after payment.\n14. The system shall allow a client to provide a rating for the completed project.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Machine Diagram (Upload or Accept Request)\n\nstate \"Upload or Accept request\" as UAR {\n\n    [*] --> ChoiceUser\n\n\n    UAR : entry / Regarding request details\n    UAR : do / Project dealings\n    UAR : exit / After finishing rating\n\n\n    state ChoiceUser <<choice>>\n\n    ChoiceUser --> EnterDetails : [user = BPO organization]\n    ChoiceUser --> SearchCategory : [user = client]\n\n\n    state \"Enter project details\" as EnterDetails\n    state \"Update database\" as UpdateDB\n\n    EnterDetails --> UpdateDB\n    UpdateDB --> [*]\n\n\n    state \"Search project category\" as SearchCategory\n    state ChoiceBPO <<choice>>\n    state ChoiceClient <<choice>>\n\n    SearchCategory --> ChoiceBPO\n\n    ChoiceBPO --> EndDecline : [BPO org declines]\n    ChoiceBPO --> ChoiceClient : [BPO org accepts]\n\n    ChoiceClient --> EndReject : [client rejects]\n    ChoiceClient --> UpdateStatus : [client accepts]\n\n    state EndDecline <<choice>>\n    EndDecline --> [*]\n\n    state EndReject <<choice>>\n    EndReject --> [*]\n\n    state \"Update status of project\" as UpdateStatus\n\n    state ChoiceTracking <<choice>>\n\n    UpdateStatus --> ChoiceTracking\n\n    ChoiceTracking --> DisplayProgress : [client wishes to track]\n    ChoiceTracking --> UpdateProgress : [user = BPO org]\n\n    state \"Display progress\" as DisplayProgress\n    DisplayProgress --> [*]\n\n    state \"Update progress\" as UpdateProgress\n\n\n    UpdateProgress --> UploadFinal : [End of project]\n\n    state \"Upload final project\" as UploadFinal\n\n    state QualityCheck <<choice>>\n\n    UploadFinal --> QualityCheck : [Quality check]\n\n    QualityCheck --> Payment : [satisfied]\n    QualityCheck --> ChoiceTracking : [Not satisfied]\n\n    state Payment\n    state Shipment\n    state Rating\n\n    Payment --> Shipment\n    Shipment --> Rating\n\n    Rating --> [*]\n}\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nAtm Many Scenarios Scenario 1 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall prompt the user to enter their PIN after the card is inserted.\n2. The system shall verify the entered PIN against the stored information.\n3. The system shall ensure that if the PIN is verified successfully, the system shall provide options to the user.\n4. The system shall support upon user approval, the system shall process the withdrawal request.\n5. The system shall support after dispensing cash, the system shall print a receipt for the transaction.\n6. The system shall support after completing the transaction, the system shall return the user's card.\n7. The system shall support after a brief moment, the system shall reset itself and become ready for the next user.\n",
+  "requirement_used": "Atm Many Scenarios Scenario 1 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall prompt the user to enter their PIN after the card is inserted.\n2. The system shall verify the entered PIN against the stored information.\n3. The system shall ensure that if the PIN is verified successfully, the system shall provide options to the user.\n4. The system shall support upon user approval, the system shall process the withdrawal request.\n5. The system shall support after dispensing cash, the system shall print a receipt for the transaction.\n6. The system shall support after completing the transaction, the system shall return the user's card.\n7. The system shall support after a brief moment, the system shall reset itself and become ready for the next user.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_67_atm_many_scenarios_1\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "multiple_initial_state_transitions (PINEntry, PINVerification)",
+      "orphan_states_detected",
+      "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 17,
+    "transition_count": 6
+  },
+  "strict_validation": {
+    "valid": false,
+    "issues": [
+      "multiple_initial_state_transitions (PINEntry, PINVerification)",
+      "orphan_states_detected",
+      "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+    ]
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__llama31_8b_instruct__few_shot",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (PINEntry, PINVerification, Successful, Withdrawal, PINEntry, ReturnCard, ResetATM, ReadyForNextUser)",
+        "missing_final_state_transition (state --> [*])",
+        "orphan_states_detected",
+        "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (PINEntry, PINVerification, Successful, Withdrawal, PINEntry, ReturnCard, ResetATM, ReadyForNextUser)",
+        "missing_final_state_transition (state --> [*])",
+        "orphan_states_detected",
+        "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": false,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 4,
+      "repair_score": 4,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 17,
+        "repaired_state_count": 17,
+        "current_transition_count": 13,
+        "repaired_transition_count": 11,
+        "min_allowed_state_count": 12,
+        "min_allowed_transition_count": 9,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (PINEntry, PINVerification)",
+        "duplicate_transitions_detected (1)",
+        "orphan_states_detected",
+        "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (PINEntry, PINVerification)",
+        "duplicate_transitions_detected (1)",
+        "orphan_states_detected",
+        "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 1,
+      "reason": "repair_did_not_improve_validation_score",
+      "feedback_for_next_attempt": "",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (PINEntry, PINVerification, Successful, Withdrawal, PINEntry, ReturnCard, ResetATM, ReadyForNextUser)",
+        "missing_final_state_transition (state --> [*])",
+        "orphan_states_detected",
+        "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "accepted": true,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 4,
+      "repair_score": 3,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 17,
+        "repaired_state_count": 17,
+        "current_transition_count": 13,
+        "repaired_transition_count": 11,
+        "min_allowed_state_count": 12,
+        "min_allowed_transition_count": 9,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (PINEntry, PINVerification)",
+        "orphan_states_detected",
+        "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (PINEntry, PINVerification)",
+        "orphan_states_detected",
+        "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "accepted": false,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 3,
+      "repair_score": 4,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 17,
+        "repaired_state_count": 17,
+        "current_transition_count": 11,
+        "repaired_transition_count": 11,
+        "min_allowed_state_count": 12,
+        "min_allowed_transition_count": 7,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "unreachable_states_detected",
+        "unreachable: Card Inserted, DispenseCash, Failed, Options, PIN Entry, PIN Verification, PINVerification, PrintReceipt, ReadyForNextUser, Reset ATM, ResetATM, Return Card, ReturnCard, Successful, Withdrawal",
+        "orphan_states_detected",
+        "orphan: PIN Verification, Reset ATM, Return Card"
+      ],
+      "strict_issues": [
+        "unreachable_states_detected",
+        "unreachable: Card Inserted, DispenseCash, Failed, Options, PIN Entry, PIN Verification, PINVerification, PrintReceipt, ReadyForNextUser, Reset ATM, ResetATM, Return Card, ReturnCard, Successful, Withdrawal",
+        "orphan_states_detected",
+        "orphan: PIN Verification, Reset ATM, Return Card"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 3,
+      "reason": "repair_did_not_improve_validation_score",
+      "feedback_for_next_attempt": "",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (PINEntry, PINVerification)",
+        "orphan_states_detected",
+        "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "accepted": false,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 3,
+      "repair_score": 3,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 17,
+        "repaired_state_count": 17,
+        "current_transition_count": 11,
+        "repaired_transition_count": 11,
+        "min_allowed_state_count": 12,
+        "min_allowed_transition_count": 7,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (PINEntry, PINVerification)",
+        "orphan_states_detected",
+        "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (PINEntry, PINVerification)",
+        "orphan_states_detected",
+        "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 4,
+      "reason": "repair_did_not_improve_validation_score",
+      "feedback_for_next_attempt": "",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (PINEntry, PINVerification)",
+        "orphan_states_detected",
+        "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "accepted": false,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "previous_score": 3,
+      "repair_score": 3,
+      "preserves_graph_shape": true,
+      "preservation": {
+        "current_state_count": 17,
+        "repaired_state_count": 17,
+        "current_transition_count": 11,
+        "repaired_transition_count": 11,
+        "min_allowed_state_count": 12,
+        "min_allowed_transition_count": 7,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "multiple_initial_state_transitions (PINEntry, PINVerification)",
+        "orphan_states_detected",
+        "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+      ],
+      "strict_issues": [
+        "multiple_initial_state_transitions (PINEntry, PINVerification)",
+        "orphan_states_detected",
+        "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 5,
+      "reason": "repair_did_not_improve_validation_score",
+      "feedback_for_next_attempt": "",
+      "kept_previous_issues": [
+        "multiple_initial_state_transitions (PINEntry, PINVerification)",
+        "orphan_states_detected",
+        "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 5,
+      "strict_state_diagram_valid": false,
+      "remaining_issues": [
+        "multiple_initial_state_transitions (PINEntry, PINVerification)",
+        "orphan_states_detected",
+        "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+      ]
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (PINEntry, PINVerification, Successful, Withdrawal, PINEntry, ReturnCard, ResetATM, ReadyForNextUser)",
+          "missing_final_state_transition (state --> [*])",
+          "orphan_states_detected",
+          "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 17,
+        "transition_count": 5
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_67_atm_many_scenarios_1\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "```plantuml\n@startuml\ntitle ATM State Machine Diagram\n\nstate \"Card Inserted\" as CI {\n  [*] --> PINEntry\n}\n\nstate \"PIN Entry\" as PE {\n  [*] --> PINVerification\n}\n\nstate \"PIN Verification\" as PV {\n  Successful --> Options : pinVerified()\n  Failed --> Retry : invalidPinEntered()\n\n  state \"Options\" as Opt {\n    Withdrawal --> DispenseCash : withdrawalApproved()\n    Withdrawal --> PrintReceipt : cashDispensed()\n  }\n\n  state \"Retry\" as RT {\n    PINEntry --> RT\n  }\n}\n\nstate \"Successful\" as Suc {\n  ReturnCard --> [*]\n}\n\nstate \"Return Card\" as RC {\n  ResetATM --> [*]\n}\n\nstate \"Reset ATM\" as RA {\n  ReadyForNextUser --> CI : newCardInserted()\n}\n\nReadyForNextUser --> CI : newCardInserted()\n\n@enduml\n```",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (PINEntry, PINVerification)",
+          "duplicate_transitions_detected (1)",
+          "orphan_states_detected",
+          "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 1,
+        "unreachable_states": [],
+        "state_count": 17,
+        "transition_count": 6
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 4,
+      "repair_score": 4,
+      "preservation": {
+        "current_state_count": 17,
+        "repaired_state_count": 17,
+        "current_transition_count": 13,
+        "repaired_transition_count": 11,
+        "min_allowed_state_count": 12,
+        "min_allowed_transition_count": 9,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "repair_did_not_improve_validation_score",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_67_atm_many_scenarios_1\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_67_atm_many_scenarios_1\\run_01.repair_01.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "```plantuml\n@startuml\ntitle ATM State Machine Diagram\n\nstate \"Card Inserted\" as CI {\n  [*] --> PINEntry\n}\n\nstate \"PIN Entry\" as PE {\n  [*] --> PINVerification\n}\n\nstate \"PIN Verification\" as PV {\n  Successful --> Options : pinVerified()\n  Failed --> Retry : invalidPinEntered()\n\n  state \"Options\" as Opt {\n    Withdrawal --> DispenseCash : withdrawalApproved()\n    Withdrawal --> PrintReceipt : cashDispensed()\n  }\n\n  state \"Retry\" as RT {\n    PINEntry --> RT\n  }\n}\n\nstate \"Successful\" as Suc {\n  ReturnCard --> [*]\n}\n\nstate \"Return Card\" as RC {\n  ResetATM --> [*]\n}\n\nstate \"Reset ATM\" as RA {\n  ReadyForNextUser --> CI : newCardInserted()\n}\n\nReadyForNextUser --> [*]\n\n@enduml\n```",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (PINEntry, PINVerification)",
+          "orphan_states_detected",
+          "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 17,
+        "transition_count": 6
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": true,
+      "previous_score": 4,
+      "repair_score": 3,
+      "preservation": {
+        "current_state_count": 17,
+        "repaired_state_count": 17,
+        "current_transition_count": 13,
+        "repaired_transition_count": 11,
+        "min_allowed_state_count": 12,
+        "min_allowed_transition_count": 9,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_67_atm_many_scenarios_1\\run_01.repair_02.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_67_atm_many_scenarios_1\\run_01.repair_02.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "```plantuml\n@startuml\ntitle ATM State Machine Diagram\n\nstate \"Card Inserted\" as CI {\n  [*] --> PINEntry\n}\n\nstate \"PIN Entry\" as PE {\n  PINVerification --> PE\n}\n\nstate \"PIN Verification\" as PV {\n  Successful --> Options : pinVerified()\n  Failed --> Retry : invalidPinEntered()\n\n  state \"Options\" as Opt {\n    Withdrawal --> DispenseCash : withdrawalApproved()\n    Withdrawal --> PrintReceipt : cashDispensed()\n  }\n\n  state \"Retry\" as RT {\n    PINEntry --> RT\n  }\n}\n\nstate \"Successful\" as Suc {\n  ReturnCard --> [*]\n}\n\nstate \"Return Card\" as RC {\n  ResetATM --> [*]\n}\n\nstate \"Reset ATM\" as RA {\n  ReadyForNextUser --> CI : newCardInserted()\n}\n\nReadyForNextUser --> [*]\n\n@enduml\n```",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "unreachable_states_detected",
+          "unreachable: Card Inserted, DispenseCash, Failed, Options, PIN Entry, PIN Verification, PINVerification, PrintReceipt, ReadyForNextUser, Reset ATM, ResetATM, Return Card, ReturnCard, Successful, Withdrawal",
+          "orphan_states_detected",
+          "orphan: PIN Verification, Reset ATM, Return Card"
+        ],
+        "initial_state": "PINEntry",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "Card Inserted",
+          "DispenseCash",
+          "Failed",
+          "Options",
+          "PIN Entry",
+          "PIN Verification",
+          "PINVerification",
+          "PrintReceipt",
+          "ReadyForNextUser",
+          "Reset ATM",
+          "ResetATM",
+          "Return Card",
+          "ReturnCard",
+          "Successful",
+          "Withdrawal"
+        ],
+        "state_count": 17,
+        "transition_count": 7
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 4,
+      "preservation": {
+        "current_state_count": 17,
+        "repaired_state_count": 17,
+        "current_transition_count": 11,
+        "repaired_transition_count": 11,
+        "min_allowed_state_count": 12,
+        "min_allowed_transition_count": 7,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "repair_did_not_improve_validation_score",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_67_atm_many_scenarios_1\\run_01.repair_03.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_67_atm_many_scenarios_1\\run_01.repair_03.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "```plantuml\n@startuml\ntitle ATM State Machine Diagram\n\nstate \"Card Inserted\" as CI {\n  [*] --> PINEntry\n}\n\nstate \"PIN Entry\" as PE {\n  [*] --> PINVerification\n}\n\nstate \"PIN Verification\" as PV {\n  Successful --> Options : pinVerified()\n  Failed --> Retry : invalidPinEntered()\n\n  state \"Options\" as Opt {\n    Withdrawal --> DispenseCash : withdrawalApproved()\n    Withdrawal --> PrintReceipt : cashDispensed()\n  }\n\n  state \"Retry\" as RT {\n    PINEntry --> RT\n  }\n}\n\nstate \"Successful\" as Suc {\n  ReturnCard --> [*]\n}\n\nstate \"Return Card\" as RC {\n  ResetATM --> [*]\n}\n\nstate \"Reset ATM\" as RA {\n  ReadyForNextUser --> CI : newCardInserted()\n}\n\nReadyForNextUser --> [*]\n\n@enduml\n```",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (PINEntry, PINVerification)",
+          "orphan_states_detected",
+          "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 17,
+        "transition_count": 6
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "preservation": {
+        "current_state_count": 17,
+        "repaired_state_count": 17,
+        "current_transition_count": 11,
+        "repaired_transition_count": 11,
+        "min_allowed_state_count": 12,
+        "min_allowed_transition_count": 7,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "repair_did_not_improve_validation_score",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_67_atm_many_scenarios_1\\run_01.repair_04.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_67_atm_many_scenarios_1\\run_01.repair_04.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 5,
+      "repair_mode": "baseline",
+      "repair_model_name": "llama3.1:8b-instruct-q4_K_M",
+      "target_issue": "",
+      "target_issue_key": "",
+      "repair_route": "",
+      "transition_patch_lines": [],
+      "raw_model_response": "```plantuml\n@startuml\ntitle ATM State Machine Diagram\n\nstate \"Card Inserted\" as CI {\n  [*] --> PINEntry\n}\n\nstate \"PIN Entry\" as PE {\n  [*] --> PINVerification\n}\n\nstate \"PIN Verification\" as PV {\n  Successful --> Options : pinVerified()\n  Failed --> Retry : invalidPinEntered()\n\n  state \"Options\" as Opt {\n    Withdrawal --> DispenseCash : withdrawalApproved()\n    Withdrawal --> PrintReceipt : cashDispensed()\n  }\n\n  state \"Retry\" as RT {\n    PINEntry --> RT\n  }\n}\n\nstate \"Successful\" as Suc {\n  ReturnCard --> [*]\n}\n\nstate \"Return Card\" as RC {\n  ResetATM --> [*]\n}\n\nstate \"Reset ATM\" as RA {\n  ReadyForNextUser --> CI : newCardInserted()\n}\n\nReadyForNextUser --> [*]\n\n@enduml\n```",
+      "compiler_patch_edits": [],
+      "compiler_patch_error": "",
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "multiple_initial_state_transitions (PINEntry, PINVerification)",
+          "orphan_states_detected",
+          "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+        ],
+        "initial_state": null,
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 17,
+        "transition_count": 6
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 3,
+      "repair_score": 3,
+      "preservation": {
+        "current_state_count": 17,
+        "repaired_state_count": 17,
+        "current_transition_count": 11,
+        "repaired_transition_count": 11,
+        "min_allowed_state_count": 12,
+        "min_allowed_transition_count": 7,
+        "dropped_states": [],
+        "added_states": []
+      },
+      "syntax_content_preserved": true,
+      "syntax_preservation": {},
+      "syntax_diagnostic_progress": false,
+      "current_syntax_error_line": 0,
+      "repaired_syntax_error_line": 0,
+      "rejection_reason": "repair_did_not_improve_validation_score",
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_67_atm_many_scenarios_1\\run_01.repair_05.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot_validation_generator_critic_repair\\case_67_atm_many_scenarios_1\\run_01.repair_05.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 17,
+    "state_fn": 9,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 6,
+    "transition_fn": 9,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 13,
+    "state_fn_relaxed": 9,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 6,
+    "transition_fn_relaxed": 9,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 6,
+    "transition_fn_semantic": 9,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "multiple_initial_state_transitions (PINEntry, PINVerification)",
+      "orphan_states_detected",
+      "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": false,
+    "strict_state_diagram_issues": [
+      "multiple_initial_state_transitions (PINEntry, PINVerification)",
+      "orphan_states_detected",
+      "orphan: PIN Entry, PIN Verification, Reset ATM, Return Card"
+    ]
+  },
+  "reused_base_run": {
+    "run_id": "open_source__llama31_8b_instruct__few_shot",
+    "strategy": "few_shot",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot\\case_67_atm_many_scenarios_1\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline_run3\\runs\\open_source__llama31_8b_instruct__few_shot\\case_67_atm_many_scenarios_1\\run_01.prompt.txt"
+  }
+}

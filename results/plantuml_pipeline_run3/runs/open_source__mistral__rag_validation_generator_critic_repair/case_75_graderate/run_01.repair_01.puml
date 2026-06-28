@@ -1,0 +1,87 @@
+@startuml
+title Rate Management State Diagram
+
+[*] --> Active
+Active -- Expired
+
+state Active {
+    [Start Date <= Current Date] as StartDate
+    [Current Date < End Date] as ValidityPeriod
+    [Finish Date >= Current Date + 1 year] as ExpirationPeriod
+}
+
+state Expired {}
+
+title Traffic Management State Diagram
+
+[*] --> Monitoring
+Monitoring -- EndProcess
+
+state Monitoring {
+    [Traffic Condition Detected] as TrafficConditionDetected
+    StreetLightsControlled
+    TrafficSignalsManaged
+    VehicleNumberCaptured
+    DriverDetailsChecked
+    RuleBroken <<choice>>
+    NoRuleBroken
+    RuleBrokenContinue
+}
+
+state NoRuleBroken {
+    EndProcess
+}
+
+state RuleBroken {
+    ViolationRecorded
+    FineIssued
+    PaidFine
+    Completed
+    UnpaidFine
+    WarningSent
+}
+
+title Training Request State Diagram
+
+[*] --> Creation
+Creation -- Rejected
+Creation -- Accepted
+
+state Creation {
+    [Request Sent For Approval] as RequestAwaitingApproval
+    Satisfied <<final>>
+    Cancelled <<final>>
+}
+
+state Accepted {
+    SearchForSession
+    Enrolment
+    Satisfied <<final>>
+    Cancelled <<final>>
+}
+
+title Book Bank Management System State Diagram
+
+[*] --> Registration
+Registration -- Login
+
+state Registration {
+    CorrectDetailsEntered as CorrectEntry
+    IncorrectDetailsEntered
+    Re-entryRequired
+    Login
+    MemberIDAndPasswordCorrect as CorrectLogin
+    MemberIDAndPasswordIncorrect
+}
+
+state SearchBook {
+    BookFound as FoundBook
+    NoSuggestions
+    AnotherOption
+    GetBook
+    MembershipActive as ActiveMembership
+    FineAmountRequired
+    PayFine
+    GetBookConfirmed
+}
+@enduml

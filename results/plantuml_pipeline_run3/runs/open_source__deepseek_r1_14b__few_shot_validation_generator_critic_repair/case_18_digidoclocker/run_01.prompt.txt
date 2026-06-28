@@ -1,0 +1,296 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Atm Many Scenarios Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if the entered PIN is correct.
+2. The system shall ask the user to try again if the entered PIN is incorrect.
+3. The system shall keep the card for security reasons if the PIN is entered incorrectly too many times or if the card is invalid.
+4. The system shall show available options and wait for the user's choice if the entered PIN is correct.
+5. The system shall allow the user to cancel the operation at any point during this process.
+6. The system shall return the card when the user cancels the operation.
+
+Example 1 PlantUML:
+@startuml
+title Same Event and Action on Different Transitions
+
+[*] --> Idle
+
+state Idle
+state "Waiting for PIN" as WaitingForPIN
+state "Validating PIN" as ValidatingPIN
+state "Waiting for Customer Choice" as WaitingForChoice
+state Confiscating
+state Ejecting
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt
+
+ValidatingPIN --> WaitingForChoice : Valid PIN / Display Menu
+ValidatingPIN --> Confiscating : Third Invalid PIN,\nCard Stolen, Card Expired /\nConfiscate
+
+WaitingForPIN --> Ejecting : Cancel / Eject
+ValidatingPIN --> Ejecting : Cancel / Eject
+WaitingForChoice --> Ejecting : Cancel / Eject
+
+@enduml
+
+Example 2 Requirement:
+National Health Id — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if a person is an Indian citizen.
+2. The system shall verify the details of an Indian citizen.
+3. The system shall generate a unique health ID for registered Indian citizens.
+4. The system shall activate an account upon successful login.
+5. The system shall support after activation, the system shall allow users to either add old files or set permissions.
+6. The system shall store added old files.
+7. The system shall provide access to relevant authorities based on set permissions.
+8. The system shall allow adding new files when permission is granted.
+9. The system shall store all the information provided by users.
+10. The system shall allow the government to access stored data to view details and prepare reports.
+
+Example 2 PlantUML:
+@startuml
+
+[*] --> Choice1
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+state Choice3 <<choice>>
+Choice1 --> Verification : Indian
+Choice1 --> [*] : not Indian
+
+Verification : entry / Citizenship status
+Verification : do / Verify details
+Verification : exit / Verified status
+
+Verification --> Registration : verified
+
+Registration : entry / Citizenship status
+Registration : do / Register with ID
+Registration : exit / Unique National Health ID
+
+Registration --> Login : registered
+
+Login : entry / National Health ID
+Login : do / Login with the ID
+Login : exit / Logged in to the account
+
+Login --> Choice2
+Choice2 --> Activation : login success
+Choice2 --> [*]
+Activation : entry / Logged in the account
+Activation : do / Activate the account
+Activation : exit / Activated account
+
+Activation --> AddFiles : add old files
+Activation --> Permission : proceed to permissions
+
+AddFiles : entry / Activated account
+AddFiles : do / Add the files
+AddFiles : exit / Added old files
+
+AddFiles --> Repository
+
+Permission : entry / Activated account
+Permission : do / Providing permissions
+Permission : exit / Access of authorities
+
+Permission --> Access : permission granted
+Permission --> Repository : saving permissions
+
+Access : entry / Checking for permission
+Access : do / Accessing the files
+Access : exit / Adding new files
+
+Access --> Choice3
+Choice3 --> Repository : given permission
+Choice3 --> [*]
+Access --> [*] : no permission
+
+Government : entry / Having repository
+Government : do / Accessing the details
+Government : exit / Analysis report
+
+Government --> Repository
+
+Repository : entry / Government repository
+Repository : do / Saving the details
+Repository : exit / Logged out
+
+Repository --> [*]
+
+@enduml
+
+Example 3 Requirement:
+For Online College Magazine System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall require a person to either create an account or log in.
+2. The system shall allow admins to add, edit, or remove user profiles.
+3. The system shall enable admins to review articles and decide on their publication or rejection.
+4. The system shall permit content creators to write articles and send them for editing.
+5. The system shall have editors review articles from content creators and pass them for approval.
+6. The system shall restrict access if a login attempt is invalid.
+7. The system shall make published articles available for user reading.
+8. The system shall allow users to search for more articles during their reading session.
+9. The system shall enable users to provide feedback after reading articles.
+10. The system shall end when users complete their search or provide feedback.
+
+Example 3 PlantUML:
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>>
+state EditorChoice <<choice>>
+state ReadFeedbackChoice <<choice>>
+state EndJoin <<choice>>
+
+[*] --> StartChoice
+
+state Register
+Register : do / Fill details
+Register : exit / Registration successful
+
+state Login
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+state "Manage profiles" as ManageProfiles
+ManageProfiles : entry / Admin logged in
+ManageProfiles : do / Manage profile in database
+ManageProfiles : do / Add, delete or edit profiles if necessary
+ManageProfiles : exit / Action completed
+
+state "Invalid user" as InvalidUser
+InvalidUser : entry / Invalid login or invalid registration
+InvalidUser : do / Block entry to system
+InvalidUser : exit / Abnormal termination
+
+state Writing
+Writing : entry / Writer logged in
+Writing : do / Write article
+Writing : exit / Send to editor
+
+state Editing
+Editing : entry / Editor logged in and article to be edited
+Editing : do / Edit article
+Editing : exit / Send to moderator/admin
+
+state Publishing
+Publishing : entry / Admin logged in and article to be approved
+Publishing : do / Choose to approve and publish or reject article
+Publishing : do / Add article to database if approved
+Publishing : exit / Publish article
+
+state Search
+Search : entry / Choose to search for articles
+Search : do / Read searched articles
+Search : exit / Completed reading
+
+state Reading
+Reading : entry / Published article
+Reading : do / Read article
+Reading : exit / Completed reading
+
+state Feedback
+Feedback : entry / Reader chosen to give feedback
+Feedback : do / Get feedback
+Feedback : exit / Feedback entry successful
+
+StartChoice --> Register
+StartChoice --> Login
+
+Register --> AdminChoice
+Login --> EditorChoice
+
+AdminChoice --> ManageProfiles
+AdminChoice --> InvalidUser
+
+EditorChoice --> Writing
+EditorChoice --> Editing
+EditorChoice --> InvalidUser
+
+Writing --> Editing
+Editing --> Publishing
+ManageProfiles --> Publishing
+
+InvalidUser --> [*]
+
+Publishing --> Reading
+Reading --> Reading
+
+Search --> Search
+Reading --> ReadFeedbackChoice
+
+ReadFeedbackChoice --> Search
+ReadFeedbackChoice --> Feedback
+
+Feedback --> EndJoin
+Search --> EndJoin
+
+EndJoin --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.

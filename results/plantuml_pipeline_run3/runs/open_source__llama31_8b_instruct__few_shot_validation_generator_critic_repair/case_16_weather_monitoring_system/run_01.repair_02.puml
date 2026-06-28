@@ -1,0 +1,70 @@
+@startuml
+title UML State Chart Diagram
+
+[*] --> CreateAccount
+
+state "Create Account" as CreateAccount
+state Login <<[valid]>>
+state RegistrationDecision <<choice>>
+state InvalidRegistration as InvalidRegistration
+state ValidLogin as ValidLogin
+state LocationChoice <<[valid]>>
+state InvalidLocation as InvalidLocation
+state ValidLocation as ValidLocation
+state CheckWeather <<choice>>
+state WeatherDetails <<choice>>
+state Logout
+
+CreateAccount : entry / To Action
+CreateAccount : do / Create account
+CreateAccount : exit / Account created or not
+
+InvalidRegistration : entry / Registration failed
+InvalidRegistration : do / Show error message
+InvalidRegistration : exit / Abnormal termination
+
+ValidLogin : entry / User logged in
+ValidLogin : do / Location selection
+ValidLogin : exit / Location selected
+
+LocationChoice : entry / To Action
+LocationChoice : do / Select location
+LocationChoice : exit / Location entered or not
+
+InvalidLocation : entry / Invalid location
+InvalidLocation : do / Show error message
+InvalidLocation : exit / Abnormal termination
+
+ValidLocation : entry / Valid location
+ValidLocation : do / Check weather
+ValidLocation --> CheckWeather
+
+CheckWeather : entry / To Action
+CheckWeather : do / Select what to check (temperature, humidity, rainfall, pressure, or dew point)
+CheckWeather : exit / What to check selected
+
+WeatherDetails : entry / To Action
+WeatherDetails : do / View additional weather details (alerts, a weekly analysis, a future prediction, or a graph)
+WeatherDetails : exit / Details viewed
+
+Logout : entry / User logged out
+Logout : do / End session
+Logout --> [*]
+
+CreateAccount --> Login
+Login --> RegistrationDecision
+RegistrationDecision --> InvalidRegistration [invalid]
+RegistrationDecision --> ValidLogin [valid]
+
+ValidLogin --> LocationChoice
+LocationChoice --> InvalidLocation [invalid]
+LocationChoice --> ValidLocation [valid]
+
+ValidLocation --> CheckWeather
+CheckWeather --> WeatherDetails
+WeatherDetails --> Logout
+
+InvalidRegistration --> [*]
+InvalidLocation --> [*]
+
+@enduml

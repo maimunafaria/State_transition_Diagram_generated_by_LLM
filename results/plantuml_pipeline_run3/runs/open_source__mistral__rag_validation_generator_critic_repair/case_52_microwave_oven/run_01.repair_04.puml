@@ -1,0 +1,106 @@
+@startuml
+title Microwave Oven Control - State Diagram
+
+state "Door Shut" as DoorShut
+state "Door Open" as DoorOpen
+state "Door Open With Item" as DoorOpenItem
+state "Door Shut With Item" as DoorShutItem
+state "Ready To Cook" as ReadyToCook
+state Cooking
+state Checking
+state Alarm
+state Done
+state LoggedOut
+
+DoorShut --> DoorOpen : Door Opened
+DoorOpen --> DoorShut : Door Closed
+DoorOpen --> DoorShutItem : Food Placed
+DoorShutItem --> ReadyToCook : Door Closed
+ReadyToCook --> Cooking : Start Cooking
+Cooking --> Done : Timeout or Cancel
+Done --> LoggedOut : Completed
+
+Checking --> Cook : OK
+Checking --> Alarm : Turntable Fault
+Checking --> Alarm : Emitter Fault
+Alarm --> Disabled : Issue Detected
+
+state Disabled
+state Waiting
+
+Operation --> Disabled : Door Open
+Operation --> Waiting : Cancel
+Disabled --> Checking : Reset
+Waiting --> DoorShut : User Input
+
+DoorOpen --> FoodPlaced : Food Placed
+FoodPlaced --> ReadyToCook : Door Closed
+
+Case ID: case_73_oven
+Complexity: medium
+
+Requirement:
+Oven — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to open the door whenever it is closed.
+2. The system shall allow the user to place food inside or remove it from the microwave when the door is open.
+3. The system shall require the user to close the door after placing food inside.
+4. The system shall require the user to enter cooking time after the door is closed.
+5. The system shall start cooking the food when the user initiates the microwave and continue until the set time is completed.
+6. The system shall stop immediately if the door is opened during cooking for safety reasons.
+7. The system shall stop when the cooking time ends and allow the user to open the door to remove the food.
+
+state "Door Open" as DoorOpen
+state "Door Closed" as DoorClosed
+state "Food Placed" as FoodPlaced
+state "Ready To Cook" as ReadyToCook
+state Cooking
+state Done
+
+DoorClosed --> FoodPlaced : Food Placed
+FoodPlaced --> ReadyToCook : Door Closed
+ReadyToCook --> Cooking : Start Cooking
+Cooking --> Done : Timeout or Cancel
+Done --> DoorOpen : Completed
+
+DoorOpen --> DoorClosed : Door Closed
+DoorOpen --> FoodPlaced : Food Placed
+
+Case ID: case_69_atm_many_scenarios_6
+Complexity: medium
+
+Requirement:
+Atm Many Scenarios Scenario 6 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if the entered PIN is correct.
+2. The system shall ask for the PIN again if it is incorrect.
+3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.
+4. The system shall return the card if the user cancels the process at any moment during this stage.
+5. The system shall display options for the user to choose from if the PIN is correct.
+6. The system shall process the withdrawal request and check if it can approve the transaction.
+7. The system shall cancel everything and return the card if the withdrawal request is rejected.
+8. The system shall dispense cash, print a receipt, and return the card if the withdrawal request is approved.
+9. The system shall stop the operation if it runs out of cash during the process.
+10. The system shall reset itself to be ready for the next user after completing or ending the session.
+
+state Idle
+state PINEntered
+state InvalidPIN
+state CardRetained
+state Options
+state WithdrawalRequest
+state RejectedTransaction
+state ApprovedTransaction
+state DispenseCash
+state PrintReceipt
+state ReturnCard
+state OutOfCash
+state Reset
+
+Idle --> PINEntered : PIN Entered
+PINEntered --> InvalidPIN : Incorrect PIN
+InvalidPIN --> Idle : Retry or Cancel
+InvalidPIN --> CardRetained : Multiple Incorrect PINs
+@enduml

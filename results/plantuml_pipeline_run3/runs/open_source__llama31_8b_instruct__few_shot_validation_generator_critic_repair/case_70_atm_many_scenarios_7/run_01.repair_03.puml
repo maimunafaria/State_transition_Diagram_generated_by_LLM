@@ -1,0 +1,65 @@
+@startuml
+title ATM State Machine Diagram
+
+[*] --> Greeting : Initial Transition
+
+state Greeting {
+  state "Greet User" as GreetUser
+}
+
+GreetUser --> InsertCard : Card Inserted
+
+state InsertCard {
+  state "Check PIN" as CheckPIN
+}
+
+CheckPIN --> ValidatePIN : PIN Entered / Validate PIN
+
+state ValidatePIN {
+  state "Invalid PIN" as InvalidPIN
+  state "Valid PIN" as ValidPIN
+}
+
+InvalidPIN --> Confiscate : Third Invalid PIN, Card Stolen, Card Expired
+Confiscate --> [*] : Card Confiscated
+
+ValidPIN --> DisplayOptions : Correct PIN / Display Options
+
+state DisplayOptions {
+  state "Withdraw Money" as WithdrawMoney
+  state "Check Information" as CheckInformation
+  state "Make Transfer" as MakeTransfer
+}
+
+DisplayOptions --> ProcessRequest : User Selected Option
+
+state ProcessRequest {
+  state "Process Request" as ProcessRequest
+}
+
+ProcessRequest --> [*] : Operation Completed
+
+GreetUser --> Cancel : User Cancels Operation
+Cancel --> ReturnCard : Card Returned to User
+CheckPIN --> InvalidPIN : PIN Entered Incorrectly
+ValidPIN --> WithdrawMoney : User Selected Option / Withdraw Money
+ValidPIN --> CheckInformation : User Selected Option / Check Information
+ValidPIN --> MakeTransfer : User Selected Option / Make Transfer
+
+ReturnCard --> [*] : Operation Completed
+
+GreetUser --> CheckPIN : Card Inserted / Check PIN
+CheckPIN --> InvalidPIN : PIN Entered Incorrectly
+ValidPIN --> DisplayOptions : Correct PIN / Display Options
+
+InvalidPIN --> Confiscate : Third Invalid PIN, Card Stolen, Card Expired
+
+DisplayOptions --> WithdrawMoney : User Selected Option / Withdraw Money
+DisplayOptions --> CheckInformation : User Selected Option / Check Information
+DisplayOptions --> MakeTransfer : User Selected Option / Make Transfer
+
+ProcessRequest --> [*] : Operation Completed
+
+end state
+
+@enduml

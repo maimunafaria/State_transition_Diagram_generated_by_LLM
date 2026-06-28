@@ -1,0 +1,71 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Atm Many Scenarios Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall prompt the user to enter their PIN after the card is inserted.
+2. The system shall verify the entered PIN against the stored information.
+3. The system shall ensure that if the PIN is verified successfully, the system shall provide options to the user.
+4. The system shall support upon user approval, the system shall process the withdrawal request.
+5. The system shall support after dispensing cash, the system shall print a receipt for the transaction.
+6. The system shall support after completing the transaction, the system shall return the user's card.
+7. The system shall support after a brief moment, the system shall reset itself and become ready for the next user.
+
+Candidate PlantUML:
+@startuml
+title ATM State Transition Diagram
+
+[*] --> Ready
+
+state "Ready" as Ready
+state "Waiting for PIN" as WaitingForPIN
+state "PIN Verified" as PINVerified
+state "User Options" as UserOptions
+state "Processing Withdrawal" as ProcessingWithdrawal
+state "Dispensing Cash" as DispensingCash
+state "Printing Receipt" as PrintingReceipt
+state "Returning Card" as ReturningCard
+state "Resetting" as Resetting
+
+Ready --> WaitingForPIN : Insert card
+WaitingForPIN --> PINVerified : Enter PIN
+PINVerified --> UserOptions : Options provided
+UserOptions --> ProcessingWithdrawal : Approve withdrawal
+ProcessingWithdrawal --> DispensingCash : Process completed
+DispensingCash --> PrintingReceipt : Cash dispensed
+PrintingReceipt --> ReturningCard : Receipt printed
+ReturningCard --> Resetting : Card returned
+Resetting --> Ready : System reset
+
+@enduml
+
+
+Validation issues to fix:
+- missing_final_state_transition (state --> [*])
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].

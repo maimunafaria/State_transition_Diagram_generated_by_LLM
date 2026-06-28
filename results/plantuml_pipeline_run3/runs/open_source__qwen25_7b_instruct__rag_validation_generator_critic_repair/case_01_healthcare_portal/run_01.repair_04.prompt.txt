@@ -1,0 +1,137 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram
+
+[*] --> Registration : startRegistration
+
+state Registration
+Registration : entry / startRegistration
+Registration : exit / registrationComplete
+
+state RegistrationFailure <<choice>>
+Registration --> RegistrationFailure : registrationFailed
+RegistrationFailure --> RegistrationFailure : [retry]
+
+state Login
+Login : entry / verifyCredentials
+Login : exit / loginSuccess
+
+state MainMenu <<choice>>
+Login --> MainMenu : verifyCredentialsSuccess
+MainMenu --> FacilityAccess : accessFacilities [valid]
+MainMenu --> NewsAndContent : readNewsOrContent [invalid]
+
+state FacilityAccess
+FacilityAccess : entry / accessFacilities
+FacilityAccess : exit / facilityAccessComplete
+
+state NewsAndContent
+NewsAndContent : entry / readNewsOrContent
+NewsAndContent : exit / contentRead
+
+state SymptomChecker <<choice>>
+NewsAndContent --> SymptomChecker : checkSymptomsOrFitness [valid]
+SymptomChecker --> SessionEnd : continueSession [valid]
+SymptomChecker --> SessionEnd : finishSession [invalid]
+
+state InsuranceProcessing
+RegistrationFailure --> InsuranceProcessing : processInsurance
+
+state PaymentProcess
+InsuranceProcessing --> PaymentProcess : validatePayment
+
+state FeedbackCollection
+PaymentProcess --> FeedbackCollection : collectFeedback
+
+state Logout
+FeedbackCollection --> Logout : logoutUser
+
+FacilityAccess --> [*] : endAccess
+
+Login --> RegistrationFailure : registrationFailed
+
+SessionEnd --> [*] : sessionEnded
+
+[*] --> InsuranceProcessing : processInsurance
+
+InsuranceProcessing --> PaymentProcess : validatePayment
+
+PaymentProcess --> FeedbackCollection : completePayment
+
+FeedbackCollection --> Logout : logoutUser
+
+@enduml
+
+
+Validation issues:
+- multiple_initial_state_transitions (Registration, InsuranceProcessing)
+- duplicate_transitions_detected (2)
+- choice_node_without_guarded_outgoing_transitions (MainMenu)
+- choice_node_without_guarded_outgoing_transitions (RegistrationFailure)
+- choice_node_without_guarded_outgoing_transitions (SymptomChecker)
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 12
+- Transition count: 14
+- Duplicate transition count: 2
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Valid PlantUML repair patterns:
+Pattern 1: exactly one top-level initial transition
+[*] --> INITIAL_STATE
+
+' Replace every additional [*] --> OTHER_STATE with a normal supported transition
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Pattern 2: merge duplicate transitions
+' Keep one transition for the same source and target
+SOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT
+
+Pattern 3: valid guarded choice node
+state DECISION_NODE <<choice>>
+SOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]

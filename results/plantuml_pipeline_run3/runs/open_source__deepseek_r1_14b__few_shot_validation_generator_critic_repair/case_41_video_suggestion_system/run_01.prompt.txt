@@ -1,0 +1,295 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Class Campaign — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall begin a campaign once a manager and staff are assigned.
+2. The system shall activate and start running a campaign upon approval and signing of the contract.
+3. The system shall prepare a final statement when the campaign is finished and move the process toward completion.
+4. The system shall handle payment after the final statement is prepared.
+5. The system shall generate a refund if the payment is less than what is due.
+6. The system shall wait for the correct amount to be settled if the payment exceeds the due amount.
+7. The system shall mark the campaign as fully paid when the payment matches exactly.
+8. The system shall archive the campaign and release the assigned staff and manager after everything is settled.
+
+Example 1 PlantUML:
+@startuml
+title State machine for Campaign
+
+state Commissioned
+state Active
+state Completed
+state Paid
+
+[*] --> Commissioned : /assignManager;\nassignStaff
+
+Commissioned --> Active : Authorized(authorizationCode)\n[contract signed]\n/setCampaignActive
+
+Active --> Completed : campaignCompleted\n/prepareFinalStatement
+
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment = zero]
+Completed --> Completed : paymentReceived(payment)\n[paymentDue - payment > zero]
+Completed --> Paid : paymentReceived(payment)\n[paymentDue - payment < zero]\n/generateRefund
+
+Paid --> [*] : archiveCampaign\n/unassignStaff;\nunassignManager
+
+@enduml
+
+Example 2 Requirement:
+Ui — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to open a budget-checking window from the main screen.
+2. The system shall wait for the user to select a client before proceeding with the checking process.
+3. The system shall require users to select a campaign related to the chosen client before allowing them to check information.
+4. The system shall display results only after both a client and a campaign are selected.
+5. The system shall allow users to refresh or recheck information by pressing the check button again.
+6. The system shall prompt users with a confirmation message before closing the window.
+7. The system shall return to the main screen if the user confirms closing the window.
+8. The system shall keep the window open and allow further interaction if the user cancels the close action.
+
+Example 2 PlantUML:
+@startuml
+title Check Budget Window State Machine
+
+state "Main Window" as MainWindow
+state "5 Alert Dialog" as AlertDialog
+
+state "Check Budget Window" as CBW {
+  [*] --> NoClientSelected
+
+  state "1 No Client Selected" as NoClientSelected
+
+  state "Selection Flow" as SelectionFlow {
+    [*] --> NoCampaignSelected
+
+    state "2 No Campaign Selected" as NoCampaignSelected
+
+    state "Result Flow" as ResultFlow {
+      [*] --> Blank
+      state "3 Blank" as Blank
+      state "4 Display Result" as DisplayResult
+
+      Blank --> DisplayResult : checkButtonClicked()
+      DisplayResult --> DisplayResult : checkButtonClicked()
+    }
+
+    NoCampaignSelected --> ResultFlow : campaignSelected()
+    ResultFlow --> ResultFlow : campaignSelected()
+  }
+
+  NoClientSelected --> SelectionFlow : clientSelected()
+  SelectionFlow --> SelectionFlow : clientSelected()
+  state H <<history*>>
+}
+
+MainWindow --> CBW : checkCampaignBudget\nMenuSelected()
+
+CBW --> AlertDialog : closeButtonClicked()
+
+AlertDialog --> MainWindow : OK
+AlertDialog --> H : Cancel
+
+@enduml
+
+Example 3 Requirement:
+Smart Traffic Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall monitor traffic conditions whenever vehicles are on the road or pedestrians are waiting to cross.
+2. The system shall control street lights according to traffic conditions.
+3. The system shall manage traffic signals in response to detected situations.
+4. The system shall capture vehicle numbers and check driver details when a vehicle passes through a signal or an emergency is identified.
+5. The system shall verify if traffic rules (overspeeding, not wearing a seat belt, or not wearing a helmet) have been broken after capturing vehicle numbers and checking driver details.
+6. The system shall support if no traffic rule has been broken, the system shall end the process.
+7. The system shall ensure that if a traffic rule is broken, the system shall record the violation and issue a fine.
+8. The system shall ensure that if the fine is paid, the system shall complete the process.
+9. The system shall ensure that if the fine is not paid, the system shall send a warning.
+10. The system shall ensure that if the number of violations exceeds the allowed limit, the system shall temporarily hold the driver's license until the fine is cleared or the probation period is over.
+
+Example 3 PlantUML:
+@startuml
+title UML state chart diagram
+
+state "idle" as Idle
+Idle : entry/road empty
+Idle : do/remain same
+Idle : exit/encounter a vehicle
+Idle : exit/people waiting to cross road
+
+state "Analyse traffic flow" as AnalyseTrafficFlow
+AnalyseTrafficFlow : entry/encounter a vehicle
+AnalyseTrafficFlow : entry/people waiting to cross road
+AnalyseTrafficFlow : do/analyse traffic density
+AnalyseTrafficFlow : exit/set signal
+AnalyseTrafficFlow : exit/emergency situation
+
+state "smart lights" as SmartLights
+SmartLights : entry/population density
+SmartLights : do/turn on/off street lights
+SmartLights : exit/population density is zero
+
+state "Pedestrians detection" as PedestriansDetection
+PedestriansDetection : entry/pedestrians waiting to cross
+PedestriansDetection : do/change signal to red
+PedestriansDetection : exit/pedestrians crossed
+
+state "Traffic signal" as TrafficSignal
+TrafficSignal : entry/vehicles at signal
+TrafficSignal : do/read number plate
+TrafficSignal : exit/signal empty
+TrafficSignal : exit/vehicle crossed the signal
+TrafficSignal : exit/number plate captured
+
+state "Medical Emergency" as MedicalEmergency
+MedicalEmergency : entry/emergency situation
+MedicalEmergency : do/call medical assistance
+MedicalEmergency : exit/number plate captured
+
+state "Number plate recognition" as NumberPlateRecognition
+NumberPlateRecognition : entry/number plate captured
+NumberPlateRecognition : do/get details about driver
+NumberPlateRecognition : exit/penalty check
+
+state "penalty check" as PenaltyCheck
+PenaltyCheck : entry/law violation
+PenaltyCheck : do/check violation count
+PenaltyCheck : exit/no violation committed
+PenaltyCheck : exit/exceeding speed limit
+PenaltyCheck : exit/seat belt violation
+PenaltyCheck : exit/helmet violation
+
+state "speeding" as Speeding
+Speeding : entry/exceeding speed limit
+Speeding : do/violation count+1
+Speeding : exit/impose penalty
+
+state "seat belt violation" as SeatBeltViolation
+SeatBeltViolation : entry/not wearing seat belt
+SeatBeltViolation : do/violation count +1
+SeatBeltViolation : exit/impose penalty
+
+state "helmet violation" as HelmetViolation
+HelmetViolation : entry/not wearing a helmet
+HelmetViolation : do/violation count +1
+HelmetViolation : exit/impose penalty
+
+state "fine payment" as FinePayment
+FinePayment : entry/impose penalty
+FinePayment : exit/paid
+FinePayment : exit/not paid
+FinePayment : exit/violation count>3
+
+state "warning" as Warning
+Warning : entry/not paid
+Warning : do/send court notice to driver
+Warning : exit/abnormal termination
+
+state "Hold license" as HoldLicense
+HoldLicense : entry/violation count>3
+HoldLicense : do/temporary license cancellation
+HoldLicense : exit/repayment of fine
+HoldLicense : exit/after the probation period
+
+state J0 <<choice>>
+state J1 <<choice>>
+state J2 <<choice>>
+state Merge1 <<choice>>
+state Merge2 <<choice>>
+
+[*] --> J0
+
+J0 --> Idle
+SmartLights --> J0
+PedestriansDetection --> J0
+TrafficSignal --> J0
+
+Idle --> AnalyseTrafficFlow
+AnalyseTrafficFlow --> J1 : [possible activities]
+
+J1 --> SmartLights
+J1 --> PedestriansDetection
+AnalyseTrafficFlow --> TrafficSignal : [signal empty]
+AnalyseTrafficFlow --> MedicalEmergency : [emergency situation]
+
+TrafficSignal --> NumberPlateRecognition
+MedicalEmergency --> NumberPlateRecognition
+NumberPlateRecognition --> PenaltyCheck
+
+PenaltyCheck --> J2 : [possibilities]
+J2 --> Speeding
+J2 --> SeatBeltViolation
+J2 --> HelmetViolation
+PenaltyCheck --> Merge2 : [no violations]
+
+Speeding --> Merge1
+SeatBeltViolation --> Merge1
+HelmetViolation --> Merge1
+
+Merge1 --> FinePayment : [total fine amount calculation]
+
+FinePayment --> Warning : [fine not paid]
+FinePayment --> HoldLicense : [violation count>3]
+FinePayment --> Merge2 : [paid]
+
+HoldLicense --> Merge2 : [repayment of fine]
+
+Merge2 --> [*] : [any one of the three possibilities]
+
+Warning --> [*]
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Video Suggestion System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall receive a video suggestion request from a user.
+2. The system shall identify the user who made the video suggestion request.
+3. The system shall gather different types of videos simultaneously based on the user's profile or preferences, trending videos from the user’s area, videos with similar tags, videos from similar genres, and promoted videos .
+4. The system shall add additional details such as thumbnails and view counts to the suggested videos.
+5. The system shall send the suggested videos to the user.

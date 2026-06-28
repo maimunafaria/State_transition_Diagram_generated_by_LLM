@@ -1,0 +1,62 @@
+@startuml
+title UML State Machine Diagram
+
+[*] --> Registration : startRegistration
+
+state Registration
+Registration : entry / startRegistration
+Registration : exit / registrationComplete
+
+state RegistrationFailure <<choice>>
+Registration --> RegistrationFailure : registrationFailed
+RegistrationFailure --> RegistrationFailure : [retry]
+
+state Login
+Login : entry / verifyCredentials
+Login : exit / loginSuccess
+
+state MainMenu <<choice>>
+Login --> MainMenu : verifyCredentialsSuccess
+MainMenu --> FacilityAccess : accessFacilities [valid]
+MainMenu --> NewsAndContent : readNewsOrContent [invalid]
+
+state FacilityAccess
+FacilityAccess : entry / accessFacilities
+FacilityAccess : exit / facilityAccessComplete
+
+state NewsAndContent
+NewsAndContent : entry / readNewsOrContent
+NewsAndContent : exit / contentRead
+
+state SymptomChecker <<choice>>
+NewsAndContent --> SymptomChecker : checkSymptomsOrFitness [valid]
+SymptomChecker --> SessionEnd : continueSession [valid]
+SymptomChecker --> SessionEnd : finishSession [invalid]
+
+state InsuranceProcessing
+RegistrationFailure --> InsuranceProcessing : processInsurance
+
+state PaymentProcess
+InsuranceProcessing --> PaymentProcess : validatePayment
+
+state FeedbackCollection
+PaymentProcess --> FeedbackCollection : collectFeedback
+
+state Logout
+FeedbackCollection --> Logout : logoutUser
+
+FacilityAccess --> [*] : endAccess
+
+Login --> RegistrationFailure : registrationFailed
+
+SessionEnd --> [*] : sessionEnded
+
+[*] --> InsuranceProcessing : processInsurance
+
+InsuranceProcessing --> PaymentProcess : validatePayment
+
+PaymentProcess --> FeedbackCollection : completePayment
+
+FeedbackCollection --> Logout : logoutUser
+
+@enduml

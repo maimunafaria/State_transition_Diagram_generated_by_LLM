@@ -1,0 +1,25 @@
+@startuml
+title State diagram of the system operations of "Process Sale"
+
+[*] --> WaitingCustomer
+
+state "Waiting for customer" as WaitingCustomer
+state "Record items" as RecordItems
+state "Waiting for payment" as WaitingPayment
+state "Cash Payment" as CashPayment
+state "Card or Check Payment" as CardOrCheckPayment
+state "Payment Verification" as PaymentVerification
+state "Approved Payment" as ApprovedPayment
+state "Completed Sale" as CompletedSale
+
+WaitingCustomer --> RecordItems : enter item
+RecordItems --> WaitingPayment : end of sale
+WaitingPayment --> CashPayment : [if: cash payment] cash payment
+WaitingPayment --> CardOrCheckPayment : [else if: card or check payment] card or check payment
+CardOrCheckPayment --> PaymentVerification : verify payment
+PaymentVerification --> ApprovedPayment : [if: approved payment] approved payment
+ApprovedPayment --> CompletedSale : complete sale
+CompletedSale --> WaitingCustomer : finish payment
+WaitingCustomer --> [*] : wait for next customer
+
+@enduml

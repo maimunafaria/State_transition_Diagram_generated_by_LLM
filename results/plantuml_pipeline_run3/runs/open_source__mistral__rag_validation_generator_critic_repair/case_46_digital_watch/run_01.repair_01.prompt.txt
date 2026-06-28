@@ -1,0 +1,145 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.
+
+Candidate PlantUML:
+@startuml
+title UML State Machine Diagram - Digital Watch
+
+state StartWatch
+state HourAdjustment
+state MinuteAdjustment
+state AlarmHourAdjustment
+state AlarmMinuteAdjustment
+state AlarmOn
+state AlarmOff
+state LightOn
+state LightOff
+
+StartWatch:!
+HourAdjustment:!
+MinuteAdjustment:!
+AlarmHourAdjustment:!
+AlarmMinuteAdjustment:!
+AlarmOn[*]: HourAdjustment: Adjust Hour: HourAdjustment: AlarmOn
+AlarmOff: AlarmOn: Adjust Alarm Off: AlarmOff
+LightOn[*]: StartWatch: Light On: LightOn
+LightOff: LightOn: Light Off: LightOff
+
+
+title UML State Machine Diagram - Online College Magazine System
+
+state LoginChoice
+state AdminProfileManagement
+state ArticleReview
+state ContentCreation
+state Editing
+state AccessDenied
+state PublishedArticles
+state SearchArticle
+state FeedbackProvided
+
+LoginChoice:!
+AdminProfileManagement: LoginChoice: Admin Profile Management
+ContentCreation: AdminProfileManagement: Create/Edit User Profile
+ArticleReview: AdminProfileManagement: Review Articles
+Editing: ArticleReview: Edit Articles
+AccessDenied: LoginChoice: Access Denied
+PublishedArticles: ArticleReview: Publish Articles
+SearchArticle: PublishedArticles: Search for More Articles
+FeedbackProvided: SearchArticle: Provide Feedback
+
+
+title UML State Machine Diagram - Smart Traffic Management System
+
+state TrafficMonitoring
+state StreetLightControl
+state TrafficSignalManagement
+state VehicleNumberCapture
+state RuleVerification
+state NoViolation
+state ViolationRecorded
+state FinePaid
+state WarningSent
+
+TrafficMonitoring:!
+StreetLightControl: TrafficMonitoring: Control Street Lights
+TrafficSignalManagement: TrafficMonitoring: Manage Traffic Signals
+VehicleNumberCapture: TrafficSignalManagement: Capture Vehicle Numbers
+RuleVerification: VehicleNumberCapture: Verify Traffic Rules
+NoViolation: RuleVerification: No Violation: NoViolation
+ViolationRecorded: RuleVerification: Record Violation: ViolationRecorded
+FinePaid[*]: ViolationRecorded: Fine Paid: FinePaid
+WarningSent[*]: ViolationRecorded: Warning Sent: WarningSent
+
+
+title UML State Machine Diagram - Online Marketplace
+
+state Registration
+state Verification
+state SellerWorkspace
+state ProductAddition
+state ProductPromotion
+state CustomerDashboard
+state ProductExploration
+state ProductViewing
+state PurchaseDecision
+state Logout
+
+Registration:!
+Verification: Registration: Verify Account
+SellerWorkspace[*]: Verification: Access Workspace: SellerWorkspace
+ProductAddition: SellerWorkspace: Add New Products
+ProductPromotion: SellerWorkspace: Promote Existing Products
+CustomerDashboard[*]: Verification: Access Dashboard: CustomerDashboard
+ProductExploration: CustomerDashboard: Explore Products
+ProductViewing: ProductExploration: View Available Products
+PurchaseDecision: ProductViewing: Proceed with Purchase or Stop Browsing
+Logout: SellerWorkspace: Log Out: Logout
+
+@enduml
+
+
+Validation issues to fix:
+- missing_initial_state_transition ([*] --> state)
+- missing_final_state_transition (state --> [*])
+- orphan: AccessDenied, AdminProfileManagement, AlarmHourAdjustment, AlarmMinuteAdjustment, AlarmOff, AlarmOn, AlarmOn[*], ArticleReview, ContentCreation, CustomerDashboard, CustomerDashboard[*], Editing, FeedbackProvided, FinePaid, FinePaid[*], HourAdjustment, LightOff, LightOn, LightOn[*], LoginChoice, Logout, MinuteAdjustment, NoViolation, ProductAddition, ProductExploration, ProductPromotion, ProductViewing, PublishedArticles, PurchaseDecision, Registration, RuleVerification, SearchArticle, SellerWorkspace, SellerWorkspace[*], StartWatch, StreetLightControl, TrafficMonitoring, TrafficSignalManagement, VehicleNumberCapture, Verification, ViolationRecorded, WarningSent, WarningSent[*]
+- orphan_states_detected
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Repair guidance for these issues:
+- Add one clear initial transition from [*] to the first lifecycle state.
+- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.

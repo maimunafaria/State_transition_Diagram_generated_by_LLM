@@ -1,0 +1,57 @@
+@startuml
+title Digidoclocker State Transition Diagram
+
+[*] --> Initial
+
+state Initial <<choice>>
+Initial --> Citizen : Identify as citizen
+Initial --> Registrar : Identify as registrar
+
+state Citizen
+Citizen --> Register : Not registered
+Citizen --> Login : Already registered
+
+state Registrar
+Registrar --> Login : Proceed to login
+
+state Register
+Register --> Login : Registration successful
+
+state Login
+Login --> MainMenu : Login successful
+
+state MainMenu <<choice>>
+MainMenu --> UploadDocuments : Upload documents
+MainMenu --> ViewProfile : View profile
+MainMenu --> ApplyCertificate : Apply for certificate
+MainMenu --> ContinueActions : Continue previous action
+MainMenu --> EndSession : Logout
+
+state UploadDocuments
+UploadDocuments --> MainMenu : Back to main menu
+UploadDocuments --> ContinueUploading : Continue uploading
+ContinueUploading --> UploadDocuments : More documents to upload
+ContinueUploading --> MainMenu : Done uploading
+
+state ViewProfile
+ViewProfile --> MainMenu : Back to main menu
+
+state ApplyCertificate
+ApplyCertificate --> RequestSent : Certificate request sent
+RequestSent --> MainMenu : Back to main menu
+RequestSent --> Reapply : Reapply for certificate
+
+state ContinueActions <<choice>>
+ContinueActions --> UploadDocuments : Continue uploading
+ContinueActions --> ViewProfile : Continue viewing profile
+ContinueActions --> ApplyCertificate : Continue applying
+ContinueActions --> EndSession : Logout
+
+state EndSession
+EndSession --> [*] : Session ended
+
+state RequestVerification
+RequestVerification --> MainMenu : Back to main menu
+RequestVerification --> RequestMore : Request additional certificates
+
+@enduml

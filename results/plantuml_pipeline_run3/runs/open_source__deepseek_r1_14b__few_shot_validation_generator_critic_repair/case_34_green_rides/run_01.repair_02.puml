@@ -1,0 +1,57 @@
+@startuml
+title UML State Chart Diagram - Green Rides
+
+[*] --> InitialState
+
+state InitialState <<entry point>>
+InitialState : entry / User logs in and selects destination
+InitialState : exit / Journey details displayed
+
+InitialState --> DrivingOptions : select driving mode or other options
+
+state DrivingOptions <<choice>>
+DrivingOptions --> DrivingMode [driving mode selected] : activate driving mode
+DrivingOptions --> OtherOptions [other option selected] : choose other options
+
+state DrivingMode
+DrivingMode : entry / activated driving mode
+DrivingMode : do / navigate and drive
+DrivingMode : exit / continue driving
+
+DrivingMode --> Notifications : accident detected
+DrivingMode --> JourneyCompletion : journey completed
+
+state Notifications <<entry point>>
+Notifications : entry / send notifications during driving or accident
+Notifications : do / inform relevant authorities and user
+Notifications : exit / notifications sent
+
+Notifications --> DrivingMode [continue] : continue driving
+Notifications --> AccidentHandling : handle accident details
+
+state AccidentHandling <<entry point>>
+AccidentHandling : entry / process accident information
+AccidentHandling : do / coordinate response
+AccidentHandling : exit / handled
+
+AccidentHandling --> [*] : proceed to completion
+
+state OtherOptions <<choice>>
+OtherOptions --> HungryOption [hungry] : select place to eat
+OtherOptions --> JourneyCompletion [not hungry] : continue journey
+
+state HungryOption <<entry point>>
+HungryOption : entry / search for places to eat
+HungryOption : do / view menu and order if hungry
+HungryOption : exit / order placed or declined
+
+HungryOption --> OtherOptions : back to options
+HungryOption --> JourneyCompletion : continue journey
+
+state JourneyCompletion <<entry point>>
+JourneyCompletion : entry / end of journey
+JourneyCompletion : do / provide feedback
+JourneyCompletion : exit / feedback recorded
+
+JourneyCompletion --> [*] : journey complete
+@enduml

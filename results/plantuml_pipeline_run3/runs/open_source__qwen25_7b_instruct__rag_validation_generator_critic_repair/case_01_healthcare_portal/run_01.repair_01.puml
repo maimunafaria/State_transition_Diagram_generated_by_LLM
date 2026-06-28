@@ -1,0 +1,61 @@
+@startuml
+title UML State Machine Diagram
+
+[*] --> Registration
+
+state Registration
+Registration : entry / startRegistration
+Registration : exit / registrationComplete
+
+state RegistrationFailure <<choice>>
+Registration --> RegistrationFailure : registrationFailed
+RegistrationFailure : entry / handleFailure
+RegistrationFailure : exit / cleanUp
+
+state Login
+Login : entry / verifyCredentials
+Login : exit / loginSuccess
+
+state MainMenu <<choice>>
+RegistrationFailure --> MainMenu : retryLogin
+Login --> MainMenu : accessMainMenu
+
+state FacilityAccess
+MainMenu --> FacilityAccess : accessFacilities
+
+state NewsAndContent
+MainMenu --> NewsAndContent : readNewsOrContent
+
+state SymptomChecker
+NewsAndContent --> SymptomChecker : checkSymptomsOrFitness
+
+state SessionEnd <<choice>>
+SymptomChecker --> SessionEnd : continueSession [valid]
+SymptomChecker --> SessionEnd : finishSession [invalid]
+
+state InsuranceProcessing
+RegistrationFailure --> InsuranceProcessing : processInsurance
+
+state PaymentProcess
+InsuranceProcessing --> PaymentProcess : validatePayment
+
+state FeedbackCollection
+PaymentProcess --> FeedbackCollection : collectFeedback
+
+state Logout
+FeedbackCollection --> Logout : logoutUser
+
+FacilityAccess --> [*] : endSession
+
+Login --> RegistrationFailure : registrationFailed
+
+NewsAndContent --> SymptomChecker : checkSymptomsOrFitness
+
+SessionEnd --> [*] : sessionCompleted
+
+InsuranceProcessing --> PaymentProcess : validatePayment
+
+PaymentProcess --> FeedbackCollection : processFeedback
+PaymentProcess --> Logout : completePayment
+
+@enduml

@@ -1,0 +1,62 @@
+@startuml
+title Inventory System State Machine
+
+[*] --> AddGoods
+
+state "Add Goods" as AddGoods {
+  [*] --> UpdatePrice
+  state "Update Price" as UpdatePrice
+
+  UpdatePrice --> RemoveGoods : removeGoodsSelected()
+}
+
+state "Remove Goods" as RemoveGoods {
+  Login --> IdentifyExpiredGoods : identifyExpiredGoods() # inside composite state block, replace with normal arrow
+  state "Identify Expired Goods" as IdentifyExpiredGoods
+
+  IdentifyExpiredGoods --> NotifyUser : notifyUserAboutRemoval()
+}
+
+state "Notify User" as NotifyUser {
+  [*] --> PlaceOrder
+  state "Place Order" as PlaceOrder
+
+  PlaceOrder --> GenerateInvoice : generateInvoiceForOrder()
+}
+
+state "Generate Invoice" as GenerateInvoice {
+  SearchItems --> SelectItemsForPurchase : selectItemsForPurchase() # remove extra initial transition
+  state "Search Items" as SearchItems
+
+  SelectItemsForPurchase --> CalculateDiscountAndTax : calculateDiscountAndTax()
+  CalculateDiscountAndTax --> GenerateReceipt : generateReceiptForCustomer()
+}
+
+state "Generate Receipt" as GenerateReceipt {
+  ReplaceItemOrCancelReceipt --> RecordCustomerRequest : recordCustomerRequest() # remove extra initial transition
+  state "Replace Item or Cancel Receipt" as ReplaceItemOrCancelReceipt
+
+  RecordCustomerRequest --> ViewSummaryReport : viewSummaryReport()
+}
+
+state "Record Customer Request" as RecordCustomerRequest {
+  [*] --> ViewSummaryReport
+  state "View Summary Report" as ViewSummaryReport
+
+  ViewSummaryReport --> [*]
+}
+
+AddGoods --> UpdatePrice : addGoodsSelected()
+UpdatePrice --> RemoveGoods : removeGoodsSelected()
+RemoveGoods --> IdentifyExpiredGoods : identifyExpiredGoods()
+IdentifyExpiredGoods --> NotifyUser : notifyUserAboutRemoval()
+NotifyUser --> PlaceOrder : placeOrderSelected()
+PlaceOrder --> GenerateInvoice : generateInvoiceForOrder()
+GenerateInvoice --> SearchItems : searchItemsSelected()
+SearchItems --> SelectItemsForPurchase : selectItemsForPurchase()
+SelectItemsForPurchase --> CalculateDiscountAndTax : calculateDiscountAndTax()
+CalculateDiscountAndTax --> GenerateReceipt : generateReceiptForCustomer()
+GenerateReceipt --> RecordCustomerRequest : recordCustomerRequest()
+RecordCustomerRequest --> ViewSummaryReport : viewSummaryReport()
+
+@enduml

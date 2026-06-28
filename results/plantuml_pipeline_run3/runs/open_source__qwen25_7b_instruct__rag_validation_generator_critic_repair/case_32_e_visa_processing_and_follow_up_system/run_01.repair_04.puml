@@ -1,0 +1,39 @@
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state LoginChoice <<choice>>
+state ApplyForVisa
+state ViewStatusChoice <<choice>>
+state CancelChoice <<choice>>
+state ModifyDetailsChoice <<choice>>
+state ViewDetailsChoice <<choice>>
+state CheckStatusChoice <<choice>>
+state FeedbackChoice <<choice>>
+state LogoutChoice <<choice>>
+
+[*] --> CreateAccount
+CreateAccount --> LoggedIn : "User creates an account"
+LoggedIn --> ApplyForVisa : "User logs in, applies for visa, makes payment and application is accepted"
+ApplyForVisa --> ViewStatus : "User views the status after applying for a visa"
+ViewStatus --> CheckStatus : "User checks the status after viewing it"
+CheckStatus --> CancelApplication : "User cancels an application after logging in"
+CancelApplication --> ModifyDetails : "User modifies their details after logging in"
+ModifyDetails --> ViewDetails : "User views their details after modifying them"
+ViewDetails --> CheckStatusChoice [valid] : "User checks the status after viewing details" [invalid] : "User logs out"
+CheckStatusChoice [valid] : "User gives feedback after checking the status" [invalid] : "User logs out"
+FeedbackChoice [valid] : "User gives feedback after checking the status" [invalid] : "User logs out"
+LoginChoice [valid] : "User logs in" [invalid] : "User logs out"
+LogoutChoice --> [*] : "User logs out"
+ModifyDetailsChoice [valid] : "User modifies their details after logging in" [invalid] : "User logs out"
+StartChoice [valid] : "User starts the process" [invalid] : "User logs out"
+ViewStatusChoice [valid] : "User views the status after applying for a visa" [invalid] : "User logs out"
+
+ApplyForVisa --> [*] : "LoggedOut"
+CancelApplication --> [*] : "LoggedOut"
+CheckStatusChoice --> ViewStatus
+FeedbackChoice --> CheckStatus
+LoginChoice --> ApplyForVisa
+StartChoice --> CreateAccount
+
+@enduml

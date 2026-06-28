@@ -1,0 +1,131 @@
+@startuml
+plane_state_machine
+[*] --> Order
+Order : entry / acquirePlane
+
+state Arrival
+Arrival : entry / planeArrives
+Arrival : do / transitionToPreparation
+
+state Preparation
+Preparation : entry / preparePlane
+Preparation : choice / checkConditionAndSchedule
+Preparation --> Operations [Operations]
+Preparation --> Maintenance [Maintenance]
+
+state Operations
+Operations : entry / assignToOperations
+Operations : condition / hasScheduledFlights
+Operations : do / flyIfHasFlights
+Operations : exit / fly
+Operations : choice / checkRequirements
+Operations --> OutOfService [Out of Service]
+Operations --> PermanentlyWithdrawn [Permanently Withdrawn]
+
+state Maintenance
+Maintenance : entry / sendToMaintenance
+Maintenance : condition / checkRequirements
+Maintenance : do / servicePlane
+Maintenance : exit / serviced
+Maintenance --> Preparation [Prepare]
+
+state OutOfService
+OutOfService : entry / takeOutOfService
+
+state PermanentlyWithdrawn
+PermanentlyWithdrawn : entry / removeFromOperations
+
+plane_state_machine @enduml
+
+garment_state_machine
+[*] --> CustomerRegistration
+CustomerRegistration : entry / registerCustomer
+
+state OrderPlacement
+OrderPlacement : entry / placeOrder
+OrderPlacement : do / sendSampleMaterialsIfNeeded
+OrderPlacement : choice / checkStock
+OrderPlacement --> Purchase [Purchase]
+OrderPlacement --> Process [Process]
+
+state Production
+Production : entry / processRawMaterials
+Production : condition / passDefectCheck
+Production : do / produceGarmentsIfPassed
+Production : exit / produced
+Production : choice / checkDeliveryRequirements
+Production --> Delivery [Deliver]
+Production --> LoginError [Login Error]
+
+state Delivery
+Delivery : entry / deliverGarments
+Delivery : do / completeBillingAndPayment
+Delivery : exit / delivered
+Delivery : choice / checkDeliveryStatus
+Delivery --> Purchase [Purchase Again]
+Delivery --> LoginError [Login Error]
+
+garment_state_machine @enduml
+
+art_gallery_management_system
+[*] --> Login
+Login : entry / getCredentials
+Login : choice / verifyData
+Login : exit / verified
+
+state LoginError
+LoginError : entry / incorrectDetails
+LoginError : do / displayErrorMessage
+LoginError : exit / preventInteraction
+
+state UserDashboard
+UserDashboard : entry / showDashboard
+UserDashboard : condition / userType
+UserDashboard --> PatientDashboard [Patient]
+UserDashboard --> UpdateInfo [Update Info]
+
+state ProductSelection
+ProductSelection : entry / selectItems
+ProductSelection : do / addToOrder
+ProductSelection : exit / orderPlaced
+
+state PaymentSelection
+PaymentSelection : entry / choosePaymentMethod
+PaymentSelection : do / processPayment
+PaymentSelection : condition / paymentSuccessful
+PaymentSelection --> Delivery [Deliver]
+PaymentSelection --> LoginError [Login Error]
+
+art_gallery_management_system @enduml
+
+equihealth
+[*] --> NewUserRegistration
+NewUserRegistration : entry / registerUser
+NewUserRegistration : condition / registrationCompleted
+NewUserRegistration --> Login [Login]
+
+state UserSignIn
+UserSignIn : entry / signIn
+UserSignIn : do / checkRegistration
+UserSignIn : exit / notRegistered
+UserSignIn : choice / userType
+UserSignIn --> PatientDashboard [Patient]
+UserSignIn --> HealthWorkerDashboard [Health Worker]
+UserSignIn --> GovernmentOfficialDashboard [Government Official]
+
+state PatientDashboard
+PatientDashboard : entry / showMedicalInfo
+
+state HealthWorkerDashboard
+HealthWorkerDashboard : entry / checkAndAnalyzeData
+HealthWorkerDashboard : do / prepareAlerts
+HealthWorkerDashboard : choice / sendToPatientOrHealthWorker
+HealthWorkerDashboard --> PatientDashboard [Alert to patient]
+HealthWorkerDashboard --> HealthWorkerDashboard [Alert to health worker]
+
+state GovernmentOfficialDashboard
+GovernmentOfficialDashboard : entry / showPlannedActivities
+GovernmentOfficialDashboard : exit / viewResults
+
+equihealth @enduml
+@enduml

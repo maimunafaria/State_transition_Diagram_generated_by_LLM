@@ -1,0 +1,55 @@
+@startuml
+title Microwave Oven State Diagram
+
+state Start <<entry>> {
+  entry / Initial state
+}
+
+state Waiting {
+  entry / Display current time
+}
+
+state UserInput {
+  entry / Ready for input (power selection or time input)
+}
+
+state Cooking {
+  do / Operate at selected power level
+}
+
+state DoorOpenInactive {
+  entry / Deactivate due to open door
+}
+
+state Stopped <<exit>> {
+  entry / Stop operation and reset
+}
+
+[*] --> Start
+
+Start --> Waiting
+
+Waiting --> UserInput : User interaction (power selection or time input)
+
+UserInput --> Cooking : Start cooking process
+
+Cooking -->
+| Door opened | DoorOpenInactive
+
+Cooking -->
+| Cancel | Stopped
+
+DoorOpenInactive -->
+| Resumed | Waiting  # This transition isn't explicitly mentioned but implied by returning to waiting after door is closed.
+
+Waiting -->
+| User interaction | UserInput
+
+UserInput -->
+| Cancel | Stopped
+
+DoorOpenInactive --> Stopped : Power off or system reset
+
+Stopped --> [*]
+
+@enduml
