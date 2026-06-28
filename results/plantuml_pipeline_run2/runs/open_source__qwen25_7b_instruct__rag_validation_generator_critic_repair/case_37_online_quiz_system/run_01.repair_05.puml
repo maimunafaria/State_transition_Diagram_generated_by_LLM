@@ -1,28 +1,37 @@
 @startuml
 title UML State Machine Diagram
 
-state RegisterLogin <<choice>>
+[*] --> RegisterLogin : register or log in with details
+
+state RegisterLogin <<choice>> as initial_state
+state LoginDetails
+state ContinueAs <<choice>>
 state TeacherChoice <<choice>>
 state StudentChoice <<choice>>
+state CreateQuiz
+state EditQuiz
+state SaveDraftOrPost
+state ViewResults
+state SelectQuiz
+state AnswerQuiz
+state SubmitQuiz
+state ViewResult
 
-[*] --> RegisterLogin
-
+initial_state --> RegisterLogin : register or log in with details
 RegisterLogin --> LoginDetails : register or log in with details
-LoginDetails --> ContinueAs : continue as a teacher or student [valid]
-
+LoginDetails --> ContinueAs : continue as a teacher or student
+ContinueAs --> TeacherChoice : continue as a teacher [valid]
+ContinueAs --> StudentChoice : continue as a student [invalid]
 TeacherChoice --> CreateQuiz : create a new quiz [valid]
-CreateQuiz --> SaveDraftOrPost : save as draft or post for students [valid]
+TeacherChoice --> EditQuiz : edit an existing quiz [invalid]
+CreateQuiz --> SaveDraftOrPost : save as draft or post for students
 SaveDraftOrPost --> ViewResults : view quiz results once over [valid]
-TeacherChoice --> [*] : logout [invalid]
-
 StudentChoice --> SelectQuiz : select a quiz after notification [valid]
 SelectQuiz --> AnswerQuiz : answer the selected quiz [valid]
 AnswerQuiz --> SubmitQuiz : submit their quiz [valid]
 SubmitQuiz --> ViewResult : view result after submitting [valid]
-StudentChoice --> [*] : logout [invalid]
 
-[*] : initial
-
-ViewResults --> [*] : logout [invalid]
+ViewResults --> [*] : completion event
+ViewResult --> [*] : completion event
 
 @enduml

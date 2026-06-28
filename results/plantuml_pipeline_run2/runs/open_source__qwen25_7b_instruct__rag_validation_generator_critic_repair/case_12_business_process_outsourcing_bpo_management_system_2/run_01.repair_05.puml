@@ -9,13 +9,13 @@ state "SearchFilterCategory" as SearchFilterCategory {
     exit / Display matching users
 }
 
-state "SearchPriceRange" {
+state "SearchPriceRange" as SearchPriceRange {
     entry / Select price range filter
     do / Apply price range filter
     exit / Display matching users
 }
 
-state "DisplayMatchingUsers"
+state "DisplayMatchingUsers" as DisplayMatchingUsers
 
 [*] --> UploadRequest
 
@@ -39,7 +39,11 @@ state "SearchProjectCategory" as SearchProjectCategory {
     exit / Display matching projects
 }
 
-state "AcceptOrDeclineRequest"
+state "AcceptOrDeclineRequest" as AcceptOrDeclineRequest {
+    entry / Accept or decline request
+    do / Update request status
+    exit / Request accepted/declined
+}
 
 [*] --> ClientDecision
 
@@ -48,8 +52,6 @@ state "ClientDecision" as ClientDecision {
     do / Update project status
     exit / Project status updated
 }
-
-[*] --> TrackProjectProgress
 
 state "TrackProjectProgress" as TrackProjectProgress {
     entry / Track project progress
@@ -89,10 +91,23 @@ state "MakePayment" as MakePayment {
     exit / Payment made
 }
 
-SearchFilterCategory --> DisplayMatchingUsers
-SaveProjectDetails --> [*]
-ClientDecision --> TrackProjectProgress
-BPOUpdateProgress --> UploadFinalProject
-UploadFinalProject --> RestartProcess
+SearchFilterCategory --> DisplayMatchingUsers : do
+SearchPriceRange --> DisplayMatchingUsers : do
+UploadRequest --> SaveProjectDetails : do
+SearchProjectCategory --> DisplayMatchingProjects : do
+AcceptOrDeclineRequest --> ClientDecision : do
+BPOUpdateProgress --> TrackProjectProgress : do
+UploadFinalProject --> RestartProcess : do
+RestartProcess --> UploadFinalProject : do
+
+DisplayMatchingUsers --> [*] : exit
+SaveProjectDetails --> [*] : exit
+DisplayMatchingProjects --> [*] : exit
+ClientDecision --> [*] : exit
+TrackProjectProgress --> [*] : exit
+BPOUpdateProgress --> [*] : exit
+UploadFinalProject --> [*] : exit
+RestartProcess --> [*] : exit
+MakePayment --> [*] : exit
 
 @enduml

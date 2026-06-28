@@ -1,28 +1,37 @@
 @startuml
 title UML State Machine Diagram
 
-state RegisterLogin <<choice>>
+[*] --> RegisterLogin : register or log in with details
+
+state RegisterLogin <<choice>> as initial_state
+state LoginDetails
+state ContinueAs <<choice>>
 state TeacherChoice <<choice>>
 state StudentChoice <<choice>>
+state CreateQuiz
+state EditQuiz
+state SaveDraftOrPost
+state ViewResults
+state SelectQuiz
+state AnswerQuiz
+state SubmitQuiz
+state ViewResult
 
-[*] --> RegisterLogin
-
+initial_state --> RegisterLogin : register or log in with details
 RegisterLogin --> LoginDetails : register or log in with details
-LoginDetails --> ContinueAs : continue as a teacher or student [valid]
+LoginDetails --> ContinueAs : continue as a teacher or student
+ContinueAs --> TeacherChoice : [valid] continue as a teacher
+ContinueAs --> StudentChoice : [invalid] continue as a student
+TeacherChoice --> CreateQuiz : create a new quiz
+TeacherChoice --> EditQuiz : edit an existing quiz
+CreateQuiz --> SaveDraftOrPost : save as draft or post for students
+SaveDraftOrPost --> ViewResults : view quiz results once over
+StudentChoice --> SelectQuiz : select a quiz after notification
+SelectQuiz --> AnswerQuiz : answer the selected quiz
+AnswerQuiz --> SubmitQuiz : submit their quiz
+SubmitQuiz --> ViewResult : view result after submitting
 
-TeacherChoice --> CreateQuiz : create a new quiz [valid]
-CreateQuiz --> SaveDraftOrPost : save as draft or post for students [valid]
-SaveDraftOrPost --> ViewResults : view quiz results once over [valid]
-TeacherChoice --> [*] : logout [invalid]
-
-StudentChoice --> SelectQuiz : select a quiz after notification [valid]
-SelectQuiz --> AnswerQuiz : answer the selected quiz [valid]
-AnswerQuiz --> SubmitQuiz : submit their quiz [valid]
-SubmitQuiz --> ViewResult : view result after submitting [valid]
-StudentChoice --> [*] : logout [invalid]
-
-[*] : initial transition
-
-ViewResults --> [*] : logout [invalid]
+ViewResults --> [*] : completion event
+ViewResult --> [*] : completion event
 
 @enduml

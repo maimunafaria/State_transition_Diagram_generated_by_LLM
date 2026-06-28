@@ -1,12 +1,11 @@
-You are a UML repair assistant.
-Fix the candidate PlantUML using only the validation issues and repair guidance below.
-Make the smallest possible edit.
-Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
-Do not remove or rename unaffected states.
-Do not change unaffected transition labels.
-Do not redesign or simplify the diagram.
-Only change the lines needed to fix the listed validation issues.
-Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
 
 Requirement:
 Business Process Outsourcing Bpo Management System Scenario 2 — Polished Requirement Specification
@@ -23,104 +22,122 @@ title UML State Machine Diagram (BPO Management System)
 [*] --> SearchFilterCategory
 
 state "SearchFilterCategory" as SearchFilterCategory {
-    SearchFilterCategory : entry / Select category filter
-    SearchFilterCategory : do / Apply category filter
-    SearchFilterCategory : exit / Display matching users
+    entry / Select category filter
+    do / Apply category filter
+    exit / Display matching users
 }
 
 state "SearchPriceRange" as SearchPriceRange {
-    SearchPriceRange : entry / Select price range filter
-    SearchPriceRange : do / Apply price range filter
-    SearchPriceRange : exit / Display matching users
+    entry / Select price range filter
+    do / Apply price range filter
+    exit / Display matching users
 }
 
-state "DisplayMatchingUsers"
+state "DisplayMatchingUsers" as DisplayMatchingUsers
 
 [*] --> UploadRequest
 
 state "UploadRequest" as UploadRequest {
-    UploadRequest : entry / Upload new request
-    UploadRequest : do / Save project details
-    UploadRequest : exit / Request uploaded successfully
+    entry / Upload new request
+    do / Save project details
+    exit / Request uploaded successfully
 }
 
 state "SaveProjectDetails" as SaveProjectDetails {
-    SaveProjectDetails : entry / Enter project details
-    SaveProjectDetails : do / Save project
-    SaveProjectDetails : exit / Project saved
+    entry / Enter project details
+    do / Save project
+    exit / Project saved
 }
 
 [*] --> SearchProjectCategory
 
 state "SearchProjectCategory" as SearchProjectCategory {
-    SearchProjectCategory : entry / Select project category filter
-    SearchProjectCategory : do / Apply project category filter
-    SearchProjectCategory : exit / Display matching projects
+    entry / Select project category filter
+    do / Apply project category filter
+    exit / Display matching projects
 }
 
-state "AcceptOrDeclineRequest"
+state "AcceptOrDeclineRequest" as AcceptOrDeclineRequest {
+    entry / Accept or decline request
+    do / Update request status
+    exit / Request accepted/declined
+}
 
 [*] --> ClientDecision
 
 state "ClientDecision" as ClientDecision {
-    ClientDecision : entry / Decide on project acceptance
-    ClientDecision : do / Update project status
-    ClientDecision : exit / Project status updated
+    entry / Decide on project acceptance
+    do / Update project status
+    exit / Project status updated
 }
 
-[*] --> TrackProjectProgress
-
 state "TrackProjectProgress" as TrackProjectProgress {
-    TrackProjectProgress : entry / Track project progress
-    TrackProjectProgress : do / View progress
-    TrackProjectProgress : exit / Progress viewed
+    entry / Track project progress
+    do / View progress
+    exit / Progress viewed
 }
 
 [*] --> BPOUpdateProgress
 
 state "BPOUpdateProgress" as BPOUpdateProgress {
-    BPOUpdateProgress : entry / Update project progress
-    BPOUpdateProgress : do / Save progress update
-    BPOUpdateProgress : exit / Progress updated
+    entry / Update project progress
+    do / Save progress update
+    exit / Progress updated
 }
 
 [*] --> UploadFinalProject
 
 state "UploadFinalProject" as UploadFinalProject {
-    UploadFinalProject : entry / Upload final project
-    UploadFinalProject : do / Perform quality check
-    UploadFinalProject : exit / Final project uploaded and checked
+    entry / Upload final project
+    do / Perform quality check
+    exit / Final project uploaded and checked
 }
 
 [*] --> RestartProcess
 
 state "RestartProcess" as RestartProcess {
-    RestartProcess : entry / Restart process
-    RestartProcess : do / Re-upload final project
-    RestartProcess : exit / Process restarted
+    entry / Restart process
+    do / Re-upload final project
+    exit / Process restarted
 }
 
 [*] --> MakePayment
 
 state "MakePayment" as MakePayment {
-    MakePayment : entry / Confirm payment
-    MakePayment : do / Perform payment
-    MakePayment : exit / Payment made
+    entry / Confirm payment
+    do / Perform payment
+    exit / Payment made
 }
 
-SearchFilterCategory --> DisplayMatchingUsers
-SaveProjectDetails --> [*]
-ClientDecision --> TrackProjectProgress
-BPOUpdateProgress --> UploadFinalProject
-UploadFinalProject --> RestartProcess
+SearchFilterCategory --> DisplayMatchingUsers : do
+SearchPriceRange --> DisplayMatchingUsers : do
+UploadRequest --> SaveProjectDetails : do
+SearchProjectCategory --> DisplayMatchingProjects : do
+AcceptOrDeclineRequest --> ClientDecision : do
+BPOUpdateProgress --> TrackProjectProgress : do
+UploadFinalProject --> RestartProcess : do
+RestartProcess --> UploadFinalProject : do
+
+DisplayMatchingUsers --> [*] : exit
+SaveProjectDetails --> [*] : exit
+DisplayMatchingProjects --> [*] : exit
+ClientDecision --> [*] : exit
+TrackProjectProgress --> [*] : exit
+BPOUpdateProgress --> [*] : exit
+UploadFinalProject --> [*] : exit
+RestartProcess --> [*] : exit
+MakePayment --> [*] : exit
 
 @enduml
 
 
-Validation issues to fix:
-- multiple_initial_state_transitions (SearchFilterCategory, UploadRequest, SearchProjectCategory, ClientDecision, TrackProjectProgress, BPOUpdateProgress, UploadFinalProject, RestartProcess, MakePayment)
-- orphan: AcceptOrDeclineRequest, SearchPriceRange
-- orphan_states_detected
+Validation issues:
+- multiple_initial_state_transitions (SearchFilterCategory, UploadRequest, SearchProjectCategory, ClientDecision, BPOUpdateProgress, UploadFinalProject, RestartProcess, MakePayment)
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 14
+- Transition count: 8
 
 --- Structural Validation Rules ---
 - Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
@@ -137,8 +154,9 @@ Validation issues to fix:
 - Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
 - If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
 
-Repair guidance for these issues:
-- For multiple initial transitions, keep only the one top-level [*] --> State transition.
-- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
-- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
-- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
+Valid PlantUML repair patterns:
+Pattern 1: exactly one top-level initial transition
+[*] --> INITIAL_STATE
+
+' Replace every additional [*] --> OTHER_STATE with a normal supported transition
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT

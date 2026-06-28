@@ -1,12 +1,11 @@
-You are a UML repair assistant.
-Fix the candidate PlantUML using only the validation issues and repair guidance below.
-Make the smallest possible edit.
-Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
-Do not remove or rename unaffected states.
-Do not change unaffected transition labels.
-Do not redesign or simplify the diagram.
-Only change the lines needed to fix the listed validation issues.
-Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
 
 Requirement:
 Green Rides — Polished Requirement Specification
@@ -35,38 +34,47 @@ state "Activate Mode" as ActivateMode
 ActivateMode : entry / user activates driving mode
 ActivateMode : do / activate driving mode
 ActivateMode : exit / transition to next state
-[*] --> ActivateMode
 
 state "Choose Option" as ChooseOption
 ChooseOption : entry / user chooses other options
 ChooseOption : do / choose option
 ChooseOption : exit / transition to next state
-[*] --> ChooseOption
 
 state EatPlace
 EatPlace : entry / select place to eat
 EatPlace : do / view menu and order if hungry
 EatPlace : exit / transition to next state or back to Login
-Login --> EatPlace
 
 state AccidentNotification
 AccidentNotification : entry / inform relevant authorities in case of accident
 AccidentNotification : do / send notifications during driving or in case of an accident
 AccidentNotification : exit / transition to next state
-[*] --> AccidentNotification
 
 state Feedback
 Feedback : entry / provide feedback upon journey completion
 Feedback : do / give feedback
 Feedback : exit / end journey
-Login --> Feedback
+
+Login --> ActivateMode : activate driving mode
+Login --> ChooseOption : choose other options
+ActivateMode --> NextState : user completes action
+ChooseOption --> EatPlace : select place to eat
+EatPlace --> Login : back to login or next state
+AccidentNotification --> Feedback : accident resolved
+Feedback --> [*] : end journey
 
 @enduml
 
 
-Validation issues to fix:
-- multiple_initial_state_transitions (Login, Activate Mode, Choose Option, AccidentNotification)
-- missing_final_state_transition (state --> [*])
+Validation issues:
+- unreachable: AccidentNotification, Feedback
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: Login
+- Unreachable states: AccidentNotification, Feedback
+- State count: 7
+- Transition count: 6
 
 --- Structural Validation Rules ---
 - Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
@@ -83,8 +91,7 @@ Validation issues to fix:
 - Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
 - If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
 
-Repair guidance for these issues:
-- For multiple initial transitions, keep only the one top-level [*] --> State transition.
-- If an extra [*] --> Child transition appears inside a composite state block, do not create a choice node. Replace only that line with Parent --> Child, where Parent is the enclosing state name. Example: inside state Login { [*] --> Checking } change it to Login --> Checking.
-- Do not add new states to fix multiple initial transitions. Do not redesign the diagram. Usually this fix should only replace nested [*] arrows with normal arrows.
-- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
+Valid PlantUML repair patterns:
+Pattern 1: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
