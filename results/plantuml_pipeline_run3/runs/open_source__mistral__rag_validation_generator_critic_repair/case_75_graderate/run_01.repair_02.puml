@@ -1,24 +1,20 @@
 @startuml
 title Rate Management State Diagram
-
-[*] --> Active
-Active -- Expired
+[*] --> Active : StartDate
 
 state Active {
     [Start Date <= Current Date] as StartDate
     [Current Date < End Date] as ValidityPeriod
     [Finish Date >= Current Date + 1 year] as ExpirationPeriod
+    Expired <<final>>
 }
 
-state Expired {}
+state Expired --> [*] : CompletionEvent
 
 title Traffic Management State Diagram
-
-[*] --> Monitoring
-Monitoring -- EndProcess
+Monitoring --> [*] : TrafficConditionDetected
 
 state Monitoring {
-    [Traffic Condition Detected] as TrafficConditionDetected
     StreetLightsControlled
     TrafficSignalsManaged
     VehicleNumberCaptured
@@ -28,9 +24,7 @@ state Monitoring {
     RuleBrokenContinue
 }
 
-state NoRuleBroken {
-    EndProcess
-}
+state NoRuleBroken --> EndProcess
 
 state RuleBroken {
     ViolationRecorded
@@ -42,15 +36,10 @@ state RuleBroken {
 }
 
 title Training Request State Diagram
-
-[*] --> Creation
-Creation -- Rejected
-Creation -- Accepted
+[*] --> Creation : RequestAwaitingApproval
 
 state Creation {
-    [Request Sent For Approval] as RequestAwaitingApproval
-    Satisfied <<final>>
-    Cancelled <<final>>
+    Rejected <<final>>
 }
 
 state Accepted {
@@ -61,12 +50,9 @@ state Accepted {
 }
 
 title Book Bank Management System State Diagram
-
-[*] --> Registration
-Registration -- Login
+[*] --> Registration : CorrectEntry
 
 state Registration {
-    CorrectDetailsEntered as CorrectEntry
     IncorrectDetailsEntered
     Re-entryRequired
     Login

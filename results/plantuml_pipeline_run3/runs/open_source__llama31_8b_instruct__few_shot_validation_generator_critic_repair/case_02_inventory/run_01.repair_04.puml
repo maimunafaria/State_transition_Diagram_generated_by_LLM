@@ -10,36 +10,54 @@ state "Add Goods" as AddGoods {
   UpdatePrice --> RemoveGoods : removeGoodsSelected()
 
   RemoveGoods --> IdentifyExpiredGoods : identifyExpiredGoods()
-  state "Identify Expired Goods" as IdentifyExpiredGoods
+}
 
+state "Remove Goods" as RemoveGoods {
   IdentifyExpiredGoods --> NotifyUser : notifyUserAboutRemoval()
-  state "Notify User" as NotifyUser
+  state "Identify Expired Goods" as IdentifyExpiredGoods
+}
 
+state "Notify User" as NotifyUser {
   NotifyUser --> PlaceOrder : placeOrderSelected()
   state "Place Order" as PlaceOrder
 
   PlaceOrder --> GenerateInvoice : generateInvoiceForOrder()
 
   GenerateInvoice --> SearchItems : searchItemsSelected()
-  state "Search Items" as SearchItems
+}
 
+state "Search Items" as SearchItems {
   SearchItems --> SelectItemsForPurchase : selectItemsForPurchase()
-  state "Select Items for Purchase" as SelectItemsForPurchase
+}
 
+state "Select Items for Purchase" as SelectItemsForPurchase {
   SelectItemsForPurchase --> CalculateDiscountAndTax : calculateDiscountAndTax()
 
   CalculateDiscountAndTax --> GenerateReceipt : generateReceiptForCustomer()
-  state "Generate Receipt" as GenerateReceipt
+}
 
+state "Generate Receipt" as GenerateReceipt {
   GenerateReceipt --> ReplaceItemOrCancelReceipt : replaceItemOrCancelReceiptSelected()
   state "Replace Item or Cancel Receipt" as ReplaceItemOrCancelReceipt
 
   ReplaceItemOrCancelReceipt --> RecordCustomerRequest : recordCustomerRequest()
 
   RecordCustomerRequest --> ViewSummaryReport : viewSummaryReport()
-  state "View Summary Report" as ViewSummaryReport
+}
 
+state "Record Customer Request" as RecordCustomerRequest {
   ViewSummaryReport --> [*]
 }
+
+AddGoods --> RemoveGoods
+RemoveGoods --> NotifyUser
+NotifyUser --> PlaceOrder
+PlaceOrder --> GenerateInvoice
+GenerateInvoice --> SearchItems
+SearchItems --> SelectItemsForPurchase
+SelectItemsForPurchase --> CalculateDiscountAndTax
+CalculateDiscountAndTax --> GenerateReceipt
+GenerateReceipt --> ReplaceItemOrCancelReceipt
+ReplaceItemOrCancelReceipt --> RecordCustomerRequest
 
 @enduml

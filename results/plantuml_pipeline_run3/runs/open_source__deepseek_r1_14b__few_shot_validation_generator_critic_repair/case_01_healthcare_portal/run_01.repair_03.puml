@@ -1,0 +1,66 @@
+@startuml
+title State machine for Healthcare Portal
+
+[*] --> Idle : Start
+
+state "Idle" as Idle
+Idle : entry/Waiting for action
+Idle --> Registering : Register
+Idle --> SignIn : SignIn
+
+state "Registering" as Registering
+Registering : do/Register process
+Registering --> Registered : Success
+Registering --> RegistrationFailed : Failure
+
+state "Registered" as Registered
+Registered : entry/Successful registration
+Registered --> SignIn : Proceed to Login
+
+state "SignIn" as SignIn
+SignIn : do/User sign-in attempt
+SignIn --> LoggedIn : Valid
+SignIn --> Idle : Invalid
+
+state "LoggedIn" as LoggedIn
+LoggedIn : entry/Access granted
+LoggedIn --> FacilityAccess : Access facility
+LoggedIn --> ReadingContent : Read content
+LoggedIn --> HealthInfo : Check symptoms
+LoggedIn --> SelectPaymentMethod : Choose payment
+LoggedIn --> Logout : Logout
+
+state "FacilityAccess" as FacilityAccess
+FacilityAccess : do/Access facilities
+FacilityAccess --> LoggedIn : Continue
+
+state "ReadingContent" as ReadingContent
+ReadingContent : do/Read news/expert content
+ReadingContent --> LoggedIn : Back
+
+state "HealthInfo" as HealthInfo
+HealthInfo : do/Check symptoms or fitness
+HealthInfo --> ViewingResult : View result
+HealthInfo --> LoggedIn : Continue
+
+state "ViewingResult" as ViewingResult
+ViewingResult : do/View result
+ViewingResult --> LoggedIn : Finish viewing
+
+state "SelectPaymentMethod" as SelectPaymentMethod
+SelectPaymentMethod : do/Choose payment method
+SelectPaymentMethod --> CashPayment : Cash
+SelectPaymentMethod --> InsurancePayment : Insurance
+
+state "CashPayment" as CashPayment
+CashPayment : do/Cash payment details
+CashPayment --> LoggedIn : Processed
+
+state "Insurance" as InsurancePayment
+InsurancePayment : do/Insurance payment processing
+InsurancePayment --> LoggedIn : Processed
+
+state "Logout" as LoggingOut
+LoggingOut : do/Log out process
+LoggingOut --> [*] : Session ended
+@enduml

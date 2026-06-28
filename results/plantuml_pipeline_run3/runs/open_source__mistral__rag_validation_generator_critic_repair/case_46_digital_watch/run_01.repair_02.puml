@@ -11,20 +11,70 @@ state AlarmOff
 state LightOn[*]
 state LightOff
 
-StartWatch:! --> HourAdjustment: Start Adjusting Time
-HourAdjustment:! --> AlarmHourAdjustment: Switch to Alarm Hour Adjustment
-AlarmHourAdjustment:! --> AlarmMinuteAdjustment: Switch to Alarm Minute Adjustment
-AlarmMinuteAdjustment:! --> LightOn[*]: Turn on Light and Continue Adjusting Time
-LightOn[*] --> AlarmOff: Alarm Off
-LightOn[*] --> LightOff: Alarm On
-LightOff:! --> HourAdjustment: Switch to Hour Adjustment
-HourAdjustment:! --> MinuteAdjustment: Switch to Minute Adjustment
-MinuteAdjustment:! --> StartWatch: Return to Starting State
+StartWatch --> HourAdjustment : ViewTime
+HourAdjustment --> AlarmHourAdjustment : SwitchAlarmHour
+AlarmHourAdjustment --> AlarmOn[*] : AdjustAlarmHour
+AlarmOn[*] --> AlarmOff : AdjustAlarmOff
+AlarmOff --> HourAdjustment : SwitchHour
 
-AlarmOn[*] --> AlarmOn[*]: Continue Adjusting Alarm Time if Necessary
-AlarmOff:! --> AlarmOn[*]: Turn on Alarm and Switch to Alarm Hour Adjustment
+LightOff --> LightOn[*] : TurnLightOn
+LightOn[*] --> LightOff : TurnLightOff
 
-LightOn[*] --> LightOn[*]: Continue Light On if Necessary
-LightOff:! --> LightOff: Continue Light Off
+state StartWatch_AdminProfileManagement
+state AdminProfileManagement_LoginChoice
+state ContentCreation
+state ArticleReview
+state Editing
+state AccessDenied
+state PublishedArticles
+state SearchArticle
+state FeedbackProvided
 
+AdminProfileManagement_LoginChoice --> ContentCreation : Login
+ContentCreation --> AdminProfileManagement : Logout
+AdminProfileManagement --> ArticleReview : ReviewArticles
+ArticleReview --> Editing : EditArticle
+Editing --> AccessDenied : AccessDenied
+PublishedArticles --> SearchArticle : PublishedArticles
+SearchArticle --> FeedbackProvided : ProvideFeedback
+
+state StartWatch_TrafficMonitoring
+state StreetLightControl
+state TrafficSignalManagement
+state VehicleNumberCapture
+state RuleVerification
+state NoViolation
+state ViolationRecorded
+state FinePaid[*]
+state WarningSent[*]
+
+StartWatch_TrafficMonitoring --> StreetLightControl : MonitorTraffic
+StreetLightControl --> TrafficSignalManagement : ControlStreetLights
+TrafficSignalManagement --> VehicleNumberCapture : CaptureVehicleNumbers
+VehicleNumberCapture --> RuleVerification : VerifyRules
+RuleVerification --> NoViolation : NoViolation
+RuleVerification --> ViolationRecorded : RecordViolation
+FinePaid[*] --> WarningSent[*] : FinePaid
+WarningSent[*] --> FinePaid[*] : WarningSent
+
+state StartWatch_OnlineMarketplace
+state Registration
+state Verification
+state SellerWorkspace
+state ProductAddition
+state ProductPromotion
+state CustomerDashboard
+state ProductExploration
+state ProductViewing
+state PurchaseDecision
+state Logout
+
+Registration --> Verification : Register
+Verification --> SellerWorkspace[*] : VerifyAccount
+SellerWorkspace[*] --> Logout : LogOut
+ProductAddition --> ProductPromotion : AddNewProducts
+ProductPromotion --> CustomerDashboard[*] : PromoteExistingProducts
+CustomerDashboard[*] --> ProductExploration : AccessDashboard
+ProductExploration --> ProductViewing : ExploreProducts
+ProductViewing --> PurchaseDecision : ProceedWithPurchase
 @enduml

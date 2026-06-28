@@ -1,40 +1,76 @@
 @startuml
 title ATM State Machine Diagram
 
+[*] --> CI : newCardInserted()
+
 state "Card Inserted" as CI {
-  [*] --> PINEntry
+  CI --> PE : cardInserted()
 }
 
 state "PIN Entry" as PE {
-  PINVerification --> PE
+  PE --> PV : pinEntered()
 }
 
 state "PIN Verification" as PV {
-  Successful --> Options : pinVerified()
-  Failed --> Retry : invalidPinEntered()
+  PV --> Suc : pinVerified()
+  state "Failed" as Failed
 
-  state "Options" as Opt {
-    Withdrawal --> DispenseCash : withdrawalApproved()
-    Withdrawal --> PrintReceipt : cashDispensed()
-  }
+  Failed --> RT : invalidPinEntered()
 
   state "Retry" as RT {
-    PINEntry --> RT
+    RT --> PE : retryPinEntry()
   }
 }
 
 state "Successful" as Suc {
-  ReturnCard --> [*]
-}
+  Suc --> Opt : successfulVerification()
+  state "Options" as Opt {
+    Opt --> WD : withdrawalOptionSelected()
+    state "Withdrawal" as WD
 
-state "Return Card" as RC {
-  ResetATM --> [*]
+    WD --> CI : cashDispensed()
+    WD --> RC : transactionCompleted()
+  }
+
+  state "Return Card" as RC {
+    RC --> RA : cardReturned()
+  }
 }
 
 state "Reset ATM" as RA {
-  ReadyForNextUser --> CI : newCardInserted()
+  RA --> RFN : resetATM()
 }
 
-ReadyForNextUser --> [*]
+ReadyForNextUser --> CI : newCardInserted()
+
+Suc --> [*] : successfulTransaction()
+
+Opt --> [*] : noFurtherAction()
+
+WD --> [*] : cashDispensed()
+
+RC --> [*] : cardReturned()
+
+RA --> [*] : ATMReset()
+
+Failed --> RT : invalidPinEntered()
+
+RT --> PE : retryLimitExceeded()
+
+CI --> PV : pinEntryRequired()
+PV --> Suc : validPinEntered()
+PV --> Failed : invalidPinEntered()
+
+Opt --> WD : withdrawalOptionSelected()
+WD --> CI : cashDispensed()
+WD --> RC : transactionCompleted()
+
+RC --> RA : cardReturned()
+
+RA --> [*] : ATMReset()
+
+Failed --> [*] : invalidTransaction()
+
+RT --> [*] : retryLimitExceeded()
 
 @enduml

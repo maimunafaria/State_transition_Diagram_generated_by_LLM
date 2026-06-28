@@ -1,32 +1,26 @@
 @startuml
 title Rate Management State Diagram
-
-[*] --> Active
-Active --> Expired [Finish Date >= Current Date + 1 year]
-
-state Active {
-    [Start Date <= Current Date] as StartDate
-    [Current Date < End Date] as ValidityPeriod
-}
-
-state Expired {}
-Active -- StartDate
-Active -- ValidityPeriod
-Expired -- Expired
+[*] --> Active : StartDate
+Active [Start Date <= Current Date] as StartDate
+Active [Current Date < End Date] as ValidityPeriod
+Active [Finish Date >= Current Date + 1 year] as ExpirationPeriod
+Active Expired : ExpiredEvent
+Expired --> [*] : CompletionEvent
 
 title Traffic Management State Diagram
+Monitoring --> [*] : TrafficConditionDetected
 
-Monitoring --> [*]
-[Traffic Condition Detected] --> StreetLightsControlled
-StreetLightsControlled --> TrafficSignalsManaged
-TrafficSignalsManaged --> VehicleNumberCaptured
-VehicleNumberCaptured --> DriverDetailsChecked
-DriverDetailsChecked --> RuleBroken <<choice>>
-DriverDetailsChecked --> NoRuleBroken
-
-state NoRuleBroken {
-    EndProcess
+state Monitoring {
+    StreetLightsControlled
+    TrafficSignalsManaged
+    VehicleNumberCaptured
+    DriverDetailsChecked
+    RuleBroken <<choice>>
+    NoRuleBroken
+    RuleBrokenContinue
 }
+
+state NoRuleBroken --> EndProcess
 
 state RuleBroken {
     ViolationRecorded
@@ -38,23 +32,22 @@ state RuleBroken {
 }
 
 title Training Request State Diagram
+[*] --> Creation : RequestAwaitingApproval
+Creation Rejected : RejectionEvent
+Creation Accepted SearchForSession : SessionSearchEvent
 
-[*] --> Creation
-Creation --> Accepted [Request Sent For Approval]
-Accepted --> Rejected <<final>>
-Accepted --> Satisfied <<final>>
-Accepted --> Cancelled <<final>>
+state Accepted {
+    SearchForSession
+    Enrolment
+    Satisfied <<final>>
+    Cancelled <<final>>
+}
 
 title Book Bank Management System State Diagram
-
-[*] --> Registration
-Registration --> SearchBook
-
-state Registration {
-    CorrectDetailsEntered as CorrectEntry
-    IncorrectDetailsEntered
-    Re-entryRequired
-}
+[*] --> Registration : CorrectEntry
+Registration IncorrectDetailsEntered Re_entryRequired : ErrorEvent
+Registration Login MemberIDAndPasswordCorrect as CorrectLogin
+Registration Login MemberIDAndPasswordIncorrect : InvalidCredentialsEvent
 
 state SearchBook {
     BookFound as FoundBook

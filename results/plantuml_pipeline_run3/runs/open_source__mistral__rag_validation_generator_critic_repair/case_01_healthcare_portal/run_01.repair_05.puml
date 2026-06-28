@@ -2,6 +2,8 @@
 title UML State Machine Diagram
 
 state StartChoice <<choice>>
+state RegistrationFailed <<state>>
+state SignInFailed <<state>>
 state RegisteredUser <<state>>
 state FacilityAccess <<state>>
 state NewsContent <<state>>
@@ -13,45 +15,61 @@ state FeedbackCollection <<state>>
 state Logout <<state>>
 
 [*] --> StartChoice
-StartChoice : do / checkUserStatus
 
+StartChoice : entry / start
+StartChoice : do / checkUserStatus
 StartChoice : exit / newUser
+
 newUser : entry / createAccount
 newUser : do / register
 newUser : exit / RegistrationFailed
+
 RegistrationFailed : entry / showError
 RegistrationFailed : do / waitForRetry
-RegistrationFailed : exit / StartChoice --> RegisteredUser
+RegistrationFailed --> RegisteredUser : SUPPORTED_EVENT
+
 SignInFailed : entry / showError
 SignInFailed : do / waitForRetry
-SignInFailed : exit / StartChoice
+SignInFailed --> RegisteredUser : SUPPORTED_EVENT
+
 RegisteredUser : entry / signIn
 RegisteredUser : do / validateCredentials
 RegisteredUser : exit / SignInFailed
-RegisteredUser --> FacilityAccess
+
+RegisteredUser --> FacilityAccess : SUPPORTED_EVENT
 RegisteredUser : exit / Logout
+
 FacilityAccess : entry / accessFacilities
 FacilityAccess : do / checkPermissions
-FacilityAccess : exit / NewsContent
+FacilityAccess --> NewsContent : SUPPORTED_EVENT
+
 NewsContent : entry / readNews
 NewsContent : do / showContent
-NewsContent : exit / HealthInfo
+NewsContent --> HealthInfo : SUPPORTED_EVENT
+
 HealthInfo : entry / checkSymptoms
 HealthInfo : do / provideOptions
-HealthInfo : exit / PaymentSelection
+HealthInfo --> PaymentSelection : SUPPORTED_EVENT
+
 PaymentSelection : entry / selectMethod
 PaymentSelection : do / showMethods
-PaymentSelection : exit / CashPaymentDetails
+PaymentSelection --> CashPaymentDetails : [cashSelected]
+PaymentSelection --> InsurancePayment : [insuranceSelected]
+
 CashPaymentDetails : entry / displayDetails
 CashPaymentDetails : do / collectCash
-CashPaymentDetails : exit / InsurancePayment
+CashPaymentDetails --> [*] : COMPLETION_EVENT
+
 InsurancePayment : entry / processInsurance
 InsurancePayment : do / checkCoverage
-InsurancePayment : exit / PaymentCompleted
+InsurancePayment --> PaymentCompleted : SUPPORTED_EVENT
+
 FeedbackCollection : entry / collectFeedback
 FeedbackCollection : do / saveFeedback
-FeedbackCollection : exit / Logout
+FeedbackCollection --> Logout : SUPPORTED_EVENT
+Logout : exit / StartChoice
+
 Logout : entry / logOut
 Logout : do / endSession
-Logout --> [*]
+Logout --> [*] : SUPPORTED_EVENT
 @enduml

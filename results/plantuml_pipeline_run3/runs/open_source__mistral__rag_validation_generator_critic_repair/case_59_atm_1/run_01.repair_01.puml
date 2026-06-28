@@ -16,7 +16,7 @@ state "Printing Receipt" as PrintingReceipt
 state "Returning Card" as ReturningCard
 state "Out of Cash" as OutOfCash
 state "Resetting" as Resetting
-state LoggedOut
+state FinalState
 
 Idle --> WaitingForPIN : Card Inserted / Get PIN
 
@@ -29,16 +29,16 @@ InputtingAmount --> CheckingAmount : Valid Amount
 CheckingAmount --> DispensingCash : Approve Transaction
 DispensingCash --> PrintingReceipt : Cash Dispensed
 PrintingReceipt --> ReturningCard : Receipt Printed
-ReturningCard --> LoggedOut : Card Returned
+ReturningCard --> FinalState : Transaction Completed / Card Returned
 
 InputtingAmount --> CheckingAmount : Invalid Amount
 CheckingAmount --> Confiscating : Reject Transaction / Keep Card
 Confiscating --> Ejecting : Card Ejected
-Ejecting --> LoggedOut : Ready for Next User
+Ejecting --> Idle : Ready for Next User
 
 CheckingAmount --> OutOfCash : No Cash Available
 OutOfCash --> Resetting : System Reset
-Resetting --> LoggedOut : Ready for Next User
+Resetting --> FinalState : System Reset Completed / Ready for Next User
 
-LoggedOut --> [*] : Idle
+FinalState --> [*] : COMPLETION_EVENT
 @enduml

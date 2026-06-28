@@ -1,12 +1,11 @@
-You are a UML repair assistant.
-Fix the candidate PlantUML using only the validation issues and repair guidance below.
-Make the smallest possible edit.
-Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
-Do not remove or rename unaffected states.
-Do not change unaffected transition labels.
-Do not redesign or simplify the diagram.
-Only change the lines needed to fix the listed validation issues.
-Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
 
 Requirement:
 Ott Based System Mini Reel — Polished Requirement Specification
@@ -25,66 +24,71 @@ title UML State Machine Diagram for Ott Based System Mini Reel
 
 state Start
 state LoggedOut
+state AccountCreation
+state IncorrectDetails
+state SignIn
+state LoginAttemptInvalid
+state UserProfileManagement
 state WatchVideos
 state UploadVideo
 state SaveVideo
 state ViewSavedVideos
 state EnterDiscussion
-state AccountCreation
-state IncorrectDetails
-state SignIn
+state BlogsNewsUpdates
+state ProvideFeedback
+state PublishedArticles
+state SearchArticles
+state ReadArticle
 state NewCase
 state CaseCategorySelection
 state CaseDetailsEntry
 state SetReminder
 state UploadDocuments
-state LoginAttemptInvalid
-state PublishedArticles
-state SearchArticles
-state ReadArticle
-state ProvideFeedback
-state BlogsNewsUpdates
-state UserProfileManagement
+state AccountCreation_Admin
 state ArticleReview
 state ArticleApproval
 state ArticleRejection
 
-AccountCreation --> IncorrectDetails: Incorrect Details
-IncorrectDetails --> AccountCreation: Retry
-
 Start --> LoggedOut: Login/SignUp
 LoggedOut --> AccountCreation: New Account
 LoggedOut --> SignIn: Existing Account
-
+AccountCreation --> IncorrectDetails: Incorrect Details
+IncorrectDetails --> AccountCreation: Retry
+AccountCreation --> AccountCreation_Admin: Admin Account
+AccountCreation_Admin --> UserProfileManagement: Successful Registration
+UserProfileManagement --> ArticleReview: Review Articles
+ArticleReview --> ArticleApproval: Approve Article
+ArticleReview --> ArticleRejection: Reject Article
 SignIn --> WatchVideos: Successful Login
 WatchVideos --> UploadVideo: Upload Video
 UploadVideo --> SaveVideo: Save to Likes List
 SaveVideo --> ViewSavedVideos: View Saved Videos
 ViewSavedVideos --> EnterDiscussion: Enter Discussion Option
 EnterDiscussion --> WatchVideos: Continue Watching
-
-WatchVideos --> UploadVideo: Upload Video
-UploadVideo --> SaveVideo: Save to Likes List
-SaveVideo --> ViewSavedVideos: View Saved Videos
-ViewSavedVideos --> EnterDiscussion: Enter Discussion Option
-EnterDiscussion --> WatchVideos: Continue Watching
-
 WatchVideos --> NewCase: Add a New Case
 NewCase --> CaseCategorySelection: Select Category
 CaseCategorySelection --> CaseDetailsEntry: Enter Details
 CaseDetailsEntry --> SetReminder: Set Reminders
 SetReminder --> UploadDocuments: Upload Related Documents
 UploadDocuments --> WatchVideos: Continue Watching
-
-LoggedOut --> [*]: End of Session
+BlogsNewsUpdates --> ProvideFeedback: Give Feedback
+ProvideFeedback --> BlogsNewsUpdates: Await Response
+PublishedArticles --> SearchArticles: Browse Articles
+SearchArticles --> ReadArticle: Select Article
+ReadArticle --> PublishedArticles: Finish Reading
 @enduml
 
 
-Validation issues to fix:
+Validation issues:
 - missing_initial_state_transition ([*] --> state)
-- duplicate_transitions_detected (5)
-- orphan: ArticleApproval, ArticleRejection, ArticleReview, BlogsNewsUpdates, LoginAttemptInvalid, ProvideFeedback, PublishedArticles, ReadArticle, SearchArticles, UserProfileManagement
+- missing_final_state_transition (state --> [*])
+- orphan: LoginAttemptInvalid
 - orphan_states_detected
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 26
+- Transition count: 27
 
 --- Structural Validation Rules ---
 - Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
@@ -101,7 +105,13 @@ Validation issues to fix:
 - Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
 - If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
 
-Repair guidance for these issues:
-- Add one clear initial transition from [*] to the first lifecycle state.
-- Remove duplicate transitions or merge their labels into one transition.
-- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
+Valid PlantUML repair patterns:
+Pattern 1: missing initial transition
+[*] --> INITIAL_STATE
+
+Pattern 2: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+Pattern 3: connect a requirement-supported orphan state
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT

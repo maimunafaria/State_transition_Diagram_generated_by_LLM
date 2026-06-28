@@ -1,29 +1,30 @@
 @startuml
 title Rate Management State Diagram
-
-[*] --> Active
-Active --> Expired [Finish Date >= Current Date + 1 year]
+[*] --> Active : StartDate
 
 state Active {
     [Start Date <= Current Date] as StartDate
     [Current Date < End Date] as ValidityPeriod
+    [Finish Date >= Current Date + 1 year] as ExpirationPeriod
+    Expired <<final>>
 }
 
-state Expired {}
+state Expired --> [*] : CompletionEvent
 
 title Traffic Management State Diagram
+Monitoring --> [*] : TrafficConditionDetected
 
-Monitoring --> [*]
-[Traffic Condition Detected] --> StreetLightsControlled
-StreetLightsControlled --> TrafficSignalsManaged
-TrafficSignalsManaged --> VehicleNumberCaptured
-VehicleNumberCaptured --> DriverDetailsChecked
-DriverDetailsChecked --> RuleBroken <<choice>>
-DriverDetailsChecked --> NoRuleBroken
-
-state NoRuleBroken {
-    EndProcess
+state Monitoring {
+    StreetLightsControlled
+    TrafficSignalsManaged
+    VehicleNumberCaptured
+    DriverDetailsChecked
+    RuleBroken <<choice>>
+    NoRuleBroken
+    RuleBrokenContinue
 }
+
+state NoRuleBroken --> EndProcess
 
 state RuleBroken {
     ViolationRecorded
@@ -35,22 +36,28 @@ state RuleBroken {
 }
 
 title Training Request State Diagram
+[*] --> Creation : RequestAwaitingApproval
 
-[*] --> Creation
-Creation --> Accepted [Request Sent For Approval]
-Accepted --> Rejected <<final>>
-Accepted --> Satisfied <<final>>
-Accepted --> Cancelled <<final>>
+state Creation {
+    Rejected <<final>>
+}
+
+state Accepted {
+    SearchForSession
+    Enrolment
+    Satisfied <<final>>
+    Cancelled <<final>>
+}
 
 title Book Bank Management System State Diagram
-
-[*] --> Registration
-Registration --> SearchBook
+[*] --> Registration : CorrectEntry
 
 state Registration {
-    CorrectDetailsEntered as CorrectEntry
     IncorrectDetailsEntered
     Re-entryRequired
+    Login
+    MemberIDAndPasswordCorrect as CorrectLogin
+    MemberIDAndPasswordIncorrect
 }
 
 state SearchBook {

@@ -1,42 +1,37 @@
 @startuml
 title Microwave Oven Control - State Diagram
 
-state "Initial" as Initial
-state "Door Shut" as DoorShut
-state "Door Open" as DoorOpen
-state "Door Open With Item" as DoorOpenItem
-state "Door Shut With Item" as DoorShutItem
-state "Ready To Cook" as ReadyToCook
+state "Door Closed" as InitialState
+state "Door Open"
+state "Door Open With Item"
+state "Door Shut"
+state "Door Shut With Item"
+state "Ready To Cook"
 state Cooking
 state Checking
 state Alarm
 state Done
-state LoggedOut
-
-Initial --> DoorShut : Start
-DoorShut --> DoorOpen : Door Opened
-DoorOpen --> DoorShut : Door Closed
-DoorOpen --> DoorShutItem : Food Placed
-DoorShutItem --> ReadyToCook : Door Closed
-ReadyToCook --> Cooking : Start Cooking
-Cooking --> Done : Timeout or Cancel
-Done --> LoggedOut : Completed
-
-Checking --> Cook : OK
-Checking --> Alarm : Turntable Fault
-Checking --> Alarm : Emitter Fault
-Alarm --> Disabled : Issue Detected
-
-state Disabled
 state Waiting
 
-Operation --> Disabled : Door Open
-Operation --> Waiting : Cancel
-Disabled --> Checking : Reset
-Waiting --> DoorShut : User Input
+InitialState --> DoorOpen : Door Opened
+DoorOpen --> DoorShut : Door Closed or Food Placed
+DoorOpen --> DoorShutWithItem : Food Placed
+DoorShut --> DoorShutWithItem : Food Placed
+DoorShutWithItem --> ReadyToCook : Door Closed
+ReadyToCook --> Cooking : Start Cooking
+Cooking --> Done : Timeout or Cancel
+Done --> DoorOpen : Completed
+DoorOpen --> Waiting : User Input
+Waiting --> InitialState : Cancel or User Input
 
-DoorOpen --> DoorClosed : Door Closed
-DoorOpen --> FoodPlaced : Food Placed
+Checking --> Cook : OK
+Checking --> Alarm : Turntable Fault or Emitter Fault
+Alarm --> Disabled : Issue Detected
+Disabled --> Checking : Reset
+
+state Disabled
+state FoodPlaced
+FoodPlaced --> ReadyToCook : Door Closed
 
 Case ID: case_73_oven
 Complexity: medium
@@ -53,22 +48,21 @@ Functional Requirements
 6. The system shall stop immediately if the door is opened during cooking for safety reasons.
 7. The system shall stop when the cooking time ends and allow the user to open the door to remove the food.
 
-state "Initial" as InitialOven
+state "Door Open" as DoorOpen
 state "Door Closed" as DoorClosed
 state "Food Placed" as FoodPlaced
 state "Ready To Cook" as ReadyToCook
 state Cooking
 state Done
 
-InitialOven --> DoorClosed : Start
 DoorClosed --> FoodPlaced : Food Placed
 FoodPlaced --> ReadyToCook : Door Closed
 ReadyToCook --> Cooking : Start Cooking
 Cooking --> Done : Timeout or Cancel
-Done --> InitialOven : Completed
+Done --> DoorOpen : Completed
 
-DoorClosed --> FoodPlaced : Food Placed
 DoorOpen --> DoorClosed : Door Closed
+DoorOpen --> FoodPlaced : Food Placed
 
 Case ID: case_69_atm_many_scenarios_6
 Complexity: medium
@@ -104,5 +98,9 @@ state Reset
 
 Idle --> PINEntered : PIN Entered
 PINEntered --> InvalidPIN : Incorrect PIN
-InvalidPIN --> Id
+InvalidPIN --> Idle : Retry or Cancel
+InvalidPIN --> CardRetained : Multiple Incorrect PINs
+CardRetained --> Idle : User Returns Card
+
+PINEntered --> Options
 @enduml

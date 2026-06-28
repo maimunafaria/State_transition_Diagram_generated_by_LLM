@@ -1,26 +1,33 @@
 @startuml
 title UML State Machine Diagram
 
-state StartChoice <<choice>>
-state UserChoice <<choice>>
-
 [*] --> AccountCreation : Create an account
+
+state StartChoice <<choice>>
 StartChoice --> AccountCreation : Create an account
 StartChoice --> VideoWatching : Watch videos (after account creation)
 
-AccountCreation --> AccountCreated [valid] : Account created successfully
-AccountCreation --> VideoWatching [invalid] : Watch videos (without creating account)
+state AccountCreation
+AccountCreation --> AccountCreated : Account created successfully
+AccountCreation --> VideoWatching : Watch videos (without creating account)
 
+state AccountCreated
 AccountCreated --> VideoWatching : Watch videos
 
+state VideoWatching
 VideoWatching --> SaveVideo : Save video in likes list
 VideoWatching --> DiscussionOption : Enter discussion option
 
+state SaveVideo
 SaveVideo --> SavedVideosList : View saved videos from likes list
 
+state DiscussionOption
 DiscussionOption --> DiscussionEntry : Enter the discussion
 
-AccountCreated --> LoggedOut [invalid] : [*]
-LoggedOut [*]
+SavedVideosList --> VideoWatching : Back to watching videos
+
+DiscussionEntry --> VideoWatching : Back to main menu
+
+[*] --> [*] : Completion event
 
 @enduml

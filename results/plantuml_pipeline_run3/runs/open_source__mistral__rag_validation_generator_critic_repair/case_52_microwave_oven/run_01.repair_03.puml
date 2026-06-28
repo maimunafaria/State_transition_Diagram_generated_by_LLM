@@ -1,40 +1,63 @@
 @startuml
 title Microwave Oven Control - State Diagram
 
-state "Initial" as Initial
-state "Door Shut" as DoorShut
-state "Door Open" as DoorOpen
-state "Door Open With Item" as DoorOpenItem
-state "Door Shut With Item" as DoorShutItem
-state "Ready To Cook" as ReadyToCook
+state "Door Closed" as InitialState
+state "Door Open"
+state "Door Open With Item"
+state "Door Shut"
+state "Door Shut With Item"
+state "Ready To Cook"
 state Cooking
 state Checking
 state Alarm
 state Done
 state Waiting
 
-Initial --> DoorShut : System Started
-DoorShut --> DoorOpen : Door Opened
+InitialState --> DoorOpen : Door Opened
 DoorOpen --> DoorShut : Door Closed
 DoorOpen --> DoorShutItem : Food Placed
 DoorShutItem --> ReadyToCook : Door Closed
 ReadyToCook --> Cooking : Start Cooking
 Cooking --> Done : Timeout or Cancel
 Done --> DoorShut : Completed
-DoorOpen --> DoorShut : User Closes Door
-DoorOpen --> FoodPlaced : Food Placed
-FoodPlaced --> ReadyToCook : Door Closed
 
 Checking --> Cook : OK
 Checking --> Alarm : Turntable Fault
 Checking --> Alarm : Emitter Fault
 Alarm --> Disabled : Issue Detected
-Disabled --> Checking : Reset
 
-Waiting --> DoorShut : User Input
-Waiting --> Initial : Cancel
+DoorOpen --> FoodPlaced : Food Placed
+FoodPlaced --> ReadyToCook : Door Closed
+ReadyToCook --> Cooking : Start Cooking
+Cooking --> Done : Timeout or Cancel
+Done --> DoorOpen : Completed
+
+DoorOpen --> DoorClosed : Door Closed
+DoorOpen --> FoodPlaced : Food Placed
 
 state Disabled
+state Idle
+
+Disabled --> Checking : Reset
+Idle --> PINEntered : PIN Entered
+PINEntered --> InvalidPIN : Incorrect PIN
+InvalidPIN --> Idle : Retry or Cancel
+InvalidPIN --> CardRetained : Multiple Incorrect PINs
+CardRetained --> Idle : User Returns Card
+
+PINEntered --> Options : Correct PIN
+Options --> WithdrawalRequest : User
+WithdrawalRequest --> RejectedTransaction : Rejected
+RejectedTransaction --> Idle : Return Card
+WithdrawalRequest --> ApprovedTransaction : Approved
+ApprovedTransaction --> DispenseCash : Dispense Cash
+DispenseCash --> PrintReceipt : Print Receipt
+PrintReceipt --> ReturnCard : Return Card
+
+state OutOfCash
+OutOfCash --> Idle : Reset
+
+Idle --> Reset : Cancel
 
 Case ID: case_73_oven
 Complexity: medium
@@ -43,30 +66,46 @@ Requirement:
 Oven — Polished Requirement Specification
 
 Functional Requirements
-1. The system shall allow the user to open the door whenever it is closed.
-2. The system shall allow the user to place food inside or remove it from the microwave when the door is open.
-3. The system shall require the user to close the door after placing food inside.
-4. The system shall require the user to enter cooking time after the door is closed.
-5. The system shall start cooking the food when the user initiates the microwave and continue until the set time is completed.
-6. The system shall stop immediately if the door is opened during cooking for safety reasons.
-7. The system shall stop when the cooking time ends and allow the user to open the door to remove the food.
+1. The system shall display the current time when it is waiting for user input.
+2. The system shall allow the user to choose between full power and half power levels.
+3. The system shall enable the user to set cooking time by entering a number.
+4. The system shall remain inactive if the door is open during operation.
+5. The system shall stop immediately when the door is opened during the cooking process.
+6. The system shall allow the user to cancel the cooking process.
+7. The system shall return to displaying the current time after stopping or cancelling and wait for the next use.
 
-state "Initial" as InitialOven
-state "Door Closed" as DoorClosed
-state "Food Placed" as FoodPlaced
-state "Ready To Cook" as ReadyToCook
+state "Door Closed" as InitialState
+state "Door Open"
+state "Door Shut"
+state "Door Shut With Item"
+state "Ready To Cook"
 state Cooking
+state Checking
+state Alarm
 state Done
+state Waiting
 
-InitialOven --> DoorClosed : System Started
-DoorClosed --> FoodPlaced : Food Placed
+InitialState --> DoorOpen : Door Opened
+DoorOpen --> DoorShut : Door Closed
+DoorOpen --> DoorShutItem : Food Placed
+DoorShutItem --> ReadyToCook : Door Closed
+ReadyToCook --> Cooking : Start Cooking
+Cooking --> Done : Timeout or Cancel
+Done --> DoorShut : Completed
+
+Checking --> Cook : OK
+Checking --> Alarm : Turntable Fault
+Checking --> Alarm : Emitter Fault
+Alarm --> Disabled : Issue Detected
+
+DoorOpen --> FoodPlaced : Food Placed
 FoodPlaced --> ReadyToCook : Door Closed
 ReadyToCook --> Cooking : Start Cooking
 Cooking --> Done : Timeout or Cancel
-Done --> InitialOven : Completed
-DoorClosed --> DoorOpen : Door Opened
+Done --> DoorOpen : Completed
+
+DoorOpen --> DoorClosed : Door Closed
 DoorOpen --> FoodPlaced : Food Placed
-DoorOpen --> InitialOven : User Closes Door
 
 Case ID: case_69_atm_many_scenarios_6
 Complexity: medium
@@ -75,30 +114,5 @@ Requirement:
 Atm Many Scenarios Scenario 6 — Polished Requirement Specification
 
 Functional Requirements
-1. The system shall check if the entered PIN is correct.
-2. The system shall ask for the PIN again if it is incorrect.
-3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.
-4. The system shall return the card if the user cancels the process at any moment during this stage.
-5. The system shall display options for the user to choose from if the PIN is correct.
-6. The system shall process the withdrawal request and check if it can approve the transaction.
-7. The system shall cancel everything and return the card if the withdrawal request is rejected.
-8. The system shall dispense cash, print a receipt, and return the card if the withdrawal request is approved.
-9. The system shall stop the operation if it runs out of cash during the process.
-10. The system shall reset itself to be ready for the next user after completing or ending the session.
-
-state Idle
-state PINEntered
-state InvalidPIN
-state CardRetained
-state Options
-state WithdrawalRequest
-state RejectedTransaction
-state ApprovedTransaction
-state DispenseCash
-state PrintReceipt
-state ReturnCard
-state OutOfCash
-state Reset
-
-Idle --> PINEntered : PIN Entered
+1. The system shall check if the entered PIN is
 @enduml

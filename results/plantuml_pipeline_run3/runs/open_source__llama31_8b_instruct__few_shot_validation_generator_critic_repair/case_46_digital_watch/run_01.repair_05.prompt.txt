@@ -1,0 +1,120 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Digital Watch — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow the user to view and adjust the time.
+2. The system shall enable the user to switch between changing hour, minutes, alarm hour, and alarm minutes by pressing a button.
+3. The system shall allow the user to increase values while adjusting time settings.
+4. The system shall provide an alarm feature that can be turned on or off by the user.
+5. The system shall support when the set alarm time matches the current time, the system shall trigger the alarm to ring.
+6. The system shall allow the user to stop the alarm by pressing a specific button.
+7. The system shall have a light feature that turns on when the user presses a button and turns off when the button is released.
+
+Candidate PlantUML:
+@startuml
+title UML State Chart Diagram
+
+[*] --> Idle
+
+state Idle
+Idle : entry / Initial state
+
+state AdjustingTime <<choice>>
+Idle --> AdjustingTime : press button
+
+state "Adjust Hour" as AdjustHour
+AdjustHour : entry / Press hour button
+AdjustHour : do / increase hour value
+AdjustHour : exit / Exit adjusting time mode
+
+state "Adjust Minute" as AdjustMinute
+AdjustMinute : entry / Press minute button
+AdjustMinute : do / increase minute value
+AdjustMinute : exit / Exit adjusting time mode
+
+state "Alarm Hour" as AlarmHour
+AlarmHour : entry / Press alarm hour button
+AlarmHour : do / set alarm hour value
+AlarmHour : exit / Exit adjusting time mode
+
+state "Alarm Minute" as AlarmMinute
+AlarmMinute : entry / Press alarm minute button
+AlarmMinute : do / set alarm minute value
+AlarmMinute : exit / Exit adjusting time mode
+
+AdjustingTime --> AdjustHour : press hour button
+AdjustingTime --> AdjustMinute : press minute button
+AdjustingTime --> AlarmHour : press alarm hour button
+AdjustingTime --> AlarmMinute : press alarm minute button
+
+state "Alarm On" as AlarmOn
+AlarmOn : entry / Turn on alarm feature
+AlarmOn : do / Set alarm time
+AlarmOn : exit / Exit alarm mode
+
+state "Alarm Off" as AlarmOff
+AlarmOff : entry / Turn off alarm feature
+AlarmOff : do / Reset alarm time
+AlarmOff : exit / Exit alarm mode
+
+state "Light On" as LightOn
+LightOn : entry / Press light button
+LightOn : do / Turn on light
+LightOn : exit / Exit light mode
+
+state "Light Off" as LightOff
+LightOff : entry / Release light button
+LightOff : do / Turn off light
+LightOff : exit / Exit light mode
+
+AlarmHour --> AlarmOn : set alarm hour value
+AlarmMinute --> AlarmOn : set alarm minute value
+AlarmOn --> Idle : alarm triggered
+Idle --> AlarmOff : turn off alarm feature
+AlarmOff --> LightOn : press light button
+LightOn --> LightOff : release light button
+LightOff --> Idle : exit light mode
+
+AdjustingTime --> [*] : completion_event
+
+@enduml
+
+
+Validation issues:
+- choice_node_without_guarded_outgoing_transitions (AdjustingTime)
+
+Validator details:
+- Current initial state: Idle
+- State count: 10
+- Transition count: 12
+
+--- Structural Validation Rules ---
+- Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
+- Avoid multiple_initial_state_transitions: use exactly one clear top-level initial transition from [*] to the first lifecycle state.
+- Avoid missing_initial_state_transition: always include one initial transition from [*] to the first lifecycle state.
+- Avoid missing_final_state_transition: include at least one final transition from a natural terminal state to [*].
+- Avoid orphan states: connect every supported state with reasonable incoming or outgoing transitions, or omit unsupported states.
+- Avoid unreachable states: make sure every modeled state can be reached from the initial lifecycle path.
+- Avoid duplicate transitions: remove duplicates or merge their labels into one transition.
+- Avoid choice nodes without outgoing transitions: every choice node must have outgoing alternatives.
+- Avoid choice nodes without guarded transitions: label choice-node outgoing transitions with guards such as [valid] and [invalid].
+- Avoid fork nodes without multiple outgoing branches: use fork nodes only when splitting into multiple outgoing branches.
+- Avoid join nodes without multiple incoming branches: use join nodes only when merging multiple incoming branches.
+- Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
+- If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
+
+Valid PlantUML repair patterns:
+Pattern 1: valid guarded choice node
+state DECISION_NODE <<choice>>
+SOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]

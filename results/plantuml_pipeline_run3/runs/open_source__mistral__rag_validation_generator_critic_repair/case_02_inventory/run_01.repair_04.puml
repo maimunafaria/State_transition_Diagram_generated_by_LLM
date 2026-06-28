@@ -5,14 +5,14 @@ title UML State Chart Diagram
 CustomerRegistration : entry / register
 CustomerRegistration : do / createAccount
 CustomerRegistration : exit / accountCreated
+CustomerRegistration --> CustomerDashboard : accountCreated
 
 state CustomerDashboard
 CustomerDashboard : entry / login
 CustomerDashboard : do / checkCredentials
 CustomerDashboard : exit / incorrectCredentials
-CustomerDashboard : exit / successfulLogin --> InventoryManagement
-
-state InventoryManagement
+CustomerDashboard : exit / successfulLogin
+CustomerDashboard --> InventoryManagement : successfulLogin
 InventoryManagement : entry / successfulLogin
 InventoryManagement : do / addGoods
 InventoryManagement : do / updatePrice
@@ -26,17 +26,19 @@ InventoryManagement : do / generateReceipt
 InventoryManagement : do / replaceItemOrCancelReceipt
 InventoryManagement : do / recordCustomerRequests
 InventoryManagement : do / viewTransactionsSummary
-InventoryManagement : exit / anyAction --> [*]
+InventoryManagement : exit / anyAction
+InventoryManagement --> MarketplaceManagement : COMPLETION_EVENT
 
 state MarketplaceManagement
 MarketplaceManagement : entry / successfulLogin
 MarketplaceManagement : do / addProducts
 MarketplaceManagement : do / promoteProducts
 MarketplaceManagement : do / communicateWithCustomers
-MarketplaceManagement : do / logout --> [*]
+MarketplaceManagement : do / logout
+MarketplaceManagement --> [*] : COMPLETION_EVENT
 
 state TextileProduction
-TextileProduction : entry / placeOrder
+TextileProduction : entry / placeOrderToSupplier
 TextileProduction : do / sendSampleMaterials
 TextileProduction : do / checkStock
 TextileProduction : do / purchaseRawMaterials
@@ -45,7 +47,9 @@ TextileProduction : do / defectCheck
 TextileProduction : do / deliverGarments
 TextileProduction : do / completeBillingAndPayment
 TextileProduction : do / generateReport
-TextileProduction : exit / anyAction --> [*]
+TextileProduction : exit / anyAction
+InventoryManagement --> TextileProduction : placeOrderToSupplier
+TextileProduction --> [*] : COMPLETION_EVENT
 
 state ArtGalleryManagement
 ArtGalleryManagement : entry / login
@@ -57,5 +61,5 @@ ArtGalleryManagement : do / choosePaymentMethod
 ArtGalleryManagement : do / processOrder
 ArtGalleryManagement : do / endProcessIfPaymentFails
 ArtGalleryManagement : do / saveUpdatedInfo
-ArtGalleryManagement : exit / anyAction --> [*]
+ArtGalleryManagement --> [*] : COMPLETION_EVENT
 @enduml

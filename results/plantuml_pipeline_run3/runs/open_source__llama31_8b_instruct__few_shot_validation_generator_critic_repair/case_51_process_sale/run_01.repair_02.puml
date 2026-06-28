@@ -1,7 +1,7 @@
 @startuml
 title UML State Machine Diagram - Sale Process
 
-[*] --> WaitForSale : new sale detected
+[*] --> WaitForSale
 
 state "Wait for sale" as WaitForSale
 state "Add item" as AddItem
@@ -9,28 +9,23 @@ state "Payment" as Payment
 state "Verify payment" as VerifyPayment
 state "Complete sale" as CompleteSale
 
-WaitForSale --> AddItem
-AddItem --> AddItem
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
+
+WaitForSale --> AddItem : new sale detected
+AddItem --> AddItem : item added
 AddItem --> Payment : all items added
 Payment --> VerifyPayment : customer chooses to pay by card or check
 VerifyPayment --> CompleteSale : payment approved
 CompleteSale --> WaitForSale : payment finished
+
+// connect unreachable states
+WaitForSale --> AddItem : new sale detected
+AddItem --> WaitForSale : item added
+Payment --> WaitForSale : all items added
+VerifyPayment --> WaitForSale : customer chooses to pay by card or check
 CompleteSale --> WaitForSale : cash payment
 
 VerifyPayment --> WaitForSale : payment declined
 VerifyPayment --> WaitForSale : invalid payment method
-VerifyPayment --> [*] : payment failed
-
-WaitForSale --> AddItem : no sale detected
-
-AddItem --> Payment : all items added
-Payment --> VerifyPayment : customer chooses to pay by card or check
-VerifyPayment --> CompleteSale : payment approved
-CompleteSale --> WaitForSale : payment finished
-CompleteSale --> WaitForSale : cash payment
-
-VerifyPayment --> WaitForSale : payment declined
-VerifyPayment --> WaitForSale : invalid payment method
-VerifyPayment --> [*] : payment failed
 
 @enduml

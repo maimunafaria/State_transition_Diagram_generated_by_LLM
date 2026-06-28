@@ -1,12 +1,11 @@
-You are a UML repair assistant.
-Fix the candidate PlantUML using only the validation issues and repair guidance below.
-Make the smallest possible edit.
-Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
-Do not remove or rename unaffected states.
-Do not change unaffected transition labels.
-Do not redesign or simplify the diagram.
-Only change the lines needed to fix the listed validation issues.
-Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
 
 Requirement:
 Green Rides — Polished Requirement Specification
@@ -24,25 +23,24 @@ Candidate PlantUML:
 title Green Rides UML State Machine Diagram
 
 [*] --> Login
-
-state Login
 Login : entry / getInfo
 Login : do / verifyData
 Login : exit / verified
 
 state LoginDecision <<choice>>
 Login --> LoginDecision
-
 state JourneyDetails
 JourneyDetails : entry / user selects destination
 JourneyDetails : do / display journey details
 JourneyDetails : exit / user chooses option
 
 state DrivingModeChoice <<choice>>
+DrivingModeChoice : [user chooses driving mode]
 DrivingModeChoice --> DrivingMode
 DrivingModeChoice --> OtherOptions
 
 state DiningChoice <<choice>>
+DiningChoice : [user is hungry]
 DiningChoice --> EatPlaceSelection
 DiningChoice --> NoHunger
 
@@ -65,18 +63,30 @@ state Feedback
 Feedback : entry / journey completed
 Feedback : do / allow user to provide feedback
 Feedback : exit / feedback received
+
+JourneyDetails --> DrivingModeChoice
+DrivingModeChoice --> [*] : COMPLETION_EVENT
+DrivingMode --> [*] : COMPLETION_EVENT
+OtherOptions --> [*] : COMPLETION_EVENT
+EatPlaceSelection --> [*] : COMPLETION_EVENT
+AccidentReporting --> [*] : COMPLETION_EVENT
+Notification --> [*] : COMPLETION_EVENT
+Feedback --> [*] : COMPLETION_EVENT
 @enduml
 
 
-Validation issues to fix:
-- missing_final_state_transition (state --> [*])
-- orphan: AccidentReporting, Feedback, JourneyDetails, Notification
-- orphan_states_detected
+Validation issues:
 - unreachable: AccidentReporting, DiningChoice, DrivingMode, DrivingModeChoice, EatPlaceSelection, Feedback, JourneyDetails, NoHunger, Notification, OtherOptions
 - unreachable_states_detected
 - choice_node_without_guarded_outgoing_transitions (DiningChoice)
 - choice_node_without_guarded_outgoing_transitions (DrivingModeChoice)
 - choice_node_without_outgoing_transitions (LoginDecision)
+
+Validator details:
+- Current initial state: Login
+- Unreachable states: AccidentReporting, DiningChoice, DrivingMode, DrivingModeChoice, EatPlaceSelection, Feedback, JourneyDetails, NoHunger, Notification, OtherOptions
+- State count: 12
+- Transition count: 6
 
 --- Structural Validation Rules ---
 - Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
@@ -93,9 +103,13 @@ Validation issues to fix:
 - Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
 - If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
 
-Repair guidance for these issues:
-- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
-- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
-- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
-- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].
-- Give each choice node at least two outgoing alternatives when possible.
+Valid PlantUML repair patterns:
+Pattern 1: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT
+
+Pattern 2: valid guarded choice node
+state DECISION_NODE <<choice>>
+SOURCE_STATE --> DECISION_NODE : SUPPORTED_EVENT
+DECISION_NODE --> FIRST_STATE : [FIRST_GUARD]
+DECISION_NODE --> SECOND_STATE : [SECOND_GUARD]

@@ -6,20 +6,28 @@ title State diagram of the system operations of "Process Sale"
 state "Waiting for customer" as WaitingCustomer
 state "Record items" as RecordItems
 state "Waiting for payment" as WaitingPayment
+state "Cash Payment" as CashPayment
+state "Card or Check Payment" as CardOrCheckPayment
+state "Payment Verification" as PaymentVerification
+state "Approved Payment" as ApprovedPayment
+state "Completed Sale" as CompletedSale
 
 WaitingCustomer --> RecordItems : enter item
 RecordItems --> RecordItems : enter item
 RecordItems --> WaitingPayment : end of sale
-
-WaitingPayment --> CashPaymentOrCardOrCheck : choose payment method
-CashPaymentOrCardOrCheck --> CashPayment : cash payment
-CashPayment --> CompletedSale : complete sale
-CompletedSale --> WaitingCustomer : finish payment
-
-WaitingPayment --> CardOrCheckPayment : card or check payment
+WaitingPayment --> CashPayment : cash payment [valid]
+WaitingPayment --> CardOrCheckPayment : card or check payment [valid]
 CardOrCheckPayment --> PaymentVerification : verify payment
-PaymentVerification --> ApprovedPayment : approved payment
-ApprovedPayment --> CompletedSale : complete sale
+PaymentVerification --> ApprovedPayment : approved payment [valid]
+ApprovedPayment --> CompletedSale : complete sale [valid]
+CompletedSale --> WaitingCustomer : finish payment [valid]
+CashPayment --> CompletedSale : cash payment approved [valid]
+CardOrCheckPayment --> PaymentVerification : card or check payment verified [valid]
+PaymentVerification --> ApprovedPayment : payment approved [valid]
 
-WaitingCustomer --> [*] : wait for next customer
+WaitingPayment --> [*] : Sale completed [invalid]
+CompletedSale --> [*] : Next sale [invalid]
+
+WaitingCustomer --> WaitingPayment : all items added [valid]
+CompletedSale --> [*] : Next sale [valid]
 @enduml

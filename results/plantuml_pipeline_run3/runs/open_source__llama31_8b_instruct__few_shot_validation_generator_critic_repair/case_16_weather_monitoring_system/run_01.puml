@@ -4,11 +4,11 @@ title UML State Chart Diagram
 [*] --> CreateAccount
 
 state "Create Account" as CreateAccount
-state Login <<[valid]>>
+state Login <<choice>>
 state RegistrationDecision <<choice>>
 state InvalidRegistration as InvalidRegistration
 state ValidLogin as ValidLogin
-state LocationChoice <<[valid]>>
+state LocationChoice <<choice>>
 state InvalidLocation as InvalidLocation
 state ValidLocation as ValidLocation
 state CheckWeather <<choice>>
@@ -21,7 +21,7 @@ CreateAccount : exit / Account created or not
 
 InvalidRegistration : entry / Registration failed
 InvalidRegistration : do / Show error message
-InvalidRegistration --> [*]
+InvalidRegistration : exit / Abnormal termination
 
 ValidLogin : entry / User logged in
 ValidLogin : do / Location selection
@@ -33,33 +33,54 @@ LocationChoice : exit / Location entered or not
 
 InvalidLocation : entry / Invalid location
 InvalidLocation : do / Show error message
-InvalidLocation --> [*]
+InvalidLocation : exit / Abnormal termination
 
 ValidLocation : entry / Valid location
 ValidLocation : do / Check weather
-ValidLocation --> CheckWeather
+ValidLocation : exit / Weather checked
 
 CheckWeather : entry / To Action
 CheckWeather : do / Select what to check (temperature, humidity, rainfall, pressure, or dew point)
-CheckWeather : exit / What to check selected
-CheckWeather --> [valid]WeatherDetails
+CheckWeather --> TemperatureSelected : [temperature]
+CheckWeather --> HumiditySelected : [humidity]
+CheckWeather --> RainfallSelected : [rainfall]
+CheckWeather --> PressureSelected : [pressure]
+CheckWeather --> DewPointSelected : [dew_point]
+
+TemperatureSelected --> WeatherDetails
+HumiditySelected --> WeatherDetails
+RainfallSelected --> WeatherDetails
+PressureSelected --> WeatherDetails
+DewPointSelected --> WeatherDetails
 
 WeatherDetails : entry / To Action
 WeatherDetails : do / View additional weather details (alerts, a weekly analysis, a future prediction, or a graph)
-WeatherDetails : exit / Details viewed
-WeatherDetails --> [invalid]Logout
+WeatherDetails --> AlertsViewed : [alerts]
+WeatherDetails --> WeeklyAnalysisViewed : [weekly_analysis]
+WeatherDetails --> FuturePredictionViewed : [future_prediction]
+WeatherDetails --> GraphViewed : [graph]
+
+AlertsViewed --> Logout
+WeeklyAnalysisViewed --> Logout
+FuturePredictionViewed --> Logout
+GraphViewed --> Logout
 
 Logout : entry / User logged out
 Logout : do / End session
-Logout --> [*]
+Logout : exit / Session ended
 
 CreateAccount --> Login
 Login --> RegistrationDecision
-RegistrationDecision --> InvalidRegistration
-RegistrationDecision --> ValidLogin
+RegistrationDecision --> InvalidRegistration : [invalid_registration]
+RegistrationDecision --> ValidLogin : [valid_login]
 
 ValidLogin --> LocationChoice
-LocationChoice --> [invalid]InvalidLocation
-LocationChoice --> [valid]ValidLocation
+LocationChoice --> LocationChoice : [location_valid]
+LocationChoice --> InvalidLocation : [location_invalid]
+InvalidLocation --> [*] : [abnormal_termination]
+
+ValidLocation --> CheckWeather
+
+InvalidRegistration --> [*] : [abnormal_termination]
 
 @enduml

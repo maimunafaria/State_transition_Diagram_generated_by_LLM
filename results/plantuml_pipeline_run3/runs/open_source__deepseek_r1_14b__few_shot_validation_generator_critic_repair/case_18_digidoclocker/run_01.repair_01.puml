@@ -4,8 +4,8 @@ title Digidoclocker State Transition Diagram
 [*] --> Initial
 
 state Initial <<choice>>
-Initial --> Citizen : [Citizen]
-Initial --> Registrar : [Registrar]
+Initial --> Citizen : Identify as citizen [Citizen]
+Initial --> Registrar : Identify as registrar [Registrar]
 
 state Citizen
 Citizen --> Register : Not registered
@@ -21,19 +21,19 @@ state Login
 Login --> MainMenu : Login successful
 
 state MainMenu <<choice>>
-MainMenu --> UploadDocuments : [Upload]
-MainMenu --> ViewProfile : [View]
-MainMenu --> ApplyCertificate : [Apply]
-MainMenu --> ContinueActions : [Continue]
-MainMenu --> EndSession : [Logout]
+MainMenu --> UploadDocuments : Upload documents [Upload]
+MainMenu --> ViewProfile : View profile [View]
+MainMenu --> ApplyCertificate : Apply for certificate [Apply]
+MainMenu --> ContinueActions : Continue previous action [Continue]
+MainMenu --> EndSession : Logout [Logout]
 
 state UploadDocuments
 UploadDocuments --> MainMenu : Back to main menu
 UploadDocuments --> ContinueUploading : Continue uploading
 
 state ContinueUploading <<choice>>
-ContinueUploading --> UploadDocuments : More documents [More]
-ContinueUploading --> MainMenu : Done [Done]
+ContinueUploading --> UploadDocuments : More documents to upload [More]
+ContinueUploading --> MainMenu : Done uploading [Done]
 
 state ViewProfile
 ViewProfile --> MainMenu : Back to main menu
@@ -42,27 +42,27 @@ state ApplyCertificate
 ApplyCertificate --> RequestSent : Certificate request sent
 
 state RequestSent <<choice>>
-RequestSent --> MainMenu : Back to main menu
-RequestSent --> Reapply : Reapply for certificate
+RequestSent --> MainMenu : Back to main menu [Back]
+RequestSent --> Reapply : Reapply for certificate [Reapply]
 
-state ContinueActions <<choice>>
-ContinueActions --> UploadDocuments : [Upload]
-ContinueActions --> ViewProfile : [View]
-ContinueActions --> ApplyCertificate : [Apply]
-ContinueActions --> EndSession : [Logout]
-
-state EndSession
-EndSession --> Terminal : Session ended
+state Reapply
+Reapply --> RequestVerification : Verify request details
 
 state RequestVerification
-RequestVerification --> MainMenu : Back to main menu
-RequestVerification --> RequestMore : More certificates needed
+RequestVerification --> MainMenu : Back to main menu [MainMenu]
+RequestVerification --> RequestMore : Request additional certificates [More]
 
 state RequestMore <<choice>>
-RequestMore --> RequestVerification : Continue requesting
-RequestMore --> MainMenu : Done requesting
+RequestMore --> ApplyCertificate : Apply new certificate [Apply]
+RequestMore --> MainMenu : Return to main menu [Back]
 
-state Terminal
-Terminal --> [*] : Process completed
+state ContinueActions <<choice>>
+ContinueActions --> UploadDocuments : Continue uploading [Upload]
+ContinueActions --> ViewProfile : Continue viewing profile [View]
+ContinueActions --> ApplyCertificate : Continue applying [Apply]
+ContinueActions --> EndSession : Logout [Logout]
+
+state EndSession
+EndSession --> [*] : Session ended
 
 @enduml

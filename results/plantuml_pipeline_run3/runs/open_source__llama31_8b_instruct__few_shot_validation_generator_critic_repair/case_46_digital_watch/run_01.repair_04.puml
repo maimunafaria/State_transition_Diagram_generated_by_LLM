@@ -1,0 +1,74 @@
+@startuml
+title UML State Chart Diagram
+
+[*] --> Idle
+
+state Idle
+Idle : entry / Initial state
+
+state AdjustingTime <<choice>>
+Idle --> AdjustingTime : press button
+
+state "Adjust Hour" as AdjustHour
+AdjustHour : entry / Press hour button
+AdjustHour : do / increase hour value
+AdjustHour : exit / Exit adjusting time mode
+
+state "Adjust Minute" as AdjustMinute
+AdjustMinute : entry / Press minute button
+AdjustMinute : do / increase minute value
+AdjustMinute : exit / Exit adjusting time mode
+
+state "Alarm Hour" as AlarmHour
+AlarmHour : entry / Press alarm hour button
+AlarmHour : do / set alarm hour value
+AlarmHour : exit / Exit adjusting time mode
+
+state "Alarm Minute" as AlarmMinute
+AlarmMinute : entry / Press alarm minute button
+AlarmMinute : do / set alarm minute value
+AlarmMinute : exit / Exit adjusting time mode
+
+AdjustingTime --> AdjustHour : press hour button
+AdjustingTime --> AdjustMinute : press minute button
+AdjustingTime --> AlarmHour : press alarm hour button
+AdjustingTime --> AlarmMinute : press alarm minute button
+
+state "Alarm On" as AlarmOn
+AlarmOn : entry / Turn on alarm feature
+AlarmOn : do / Set alarm time
+AlarmOn : exit / Exit alarm mode
+
+state "Alarm Off" as AlarmOff
+AlarmOff : entry / Turn off alarm feature
+AlarmOff : do / Reset alarm time
+AlarmOff : exit / Exit alarm mode
+
+state "Light On" as LightOn
+LightOn : entry / Press light button
+LightOn : do / Turn on light
+LightOn : exit / Exit light mode
+
+state "Light Off" as LightOff
+LightOff : entry / Release light button
+LightOff : do / Turn off light
+LightOff : exit / Exit light mode
+
+AlarmHour --> AlarmOn : [alarm hour set]
+AlarmMinute --> AlarmOn : [alarm minute set]
+AdjustingTime --> [*] : completion_event
+
+state DECISION_NODE <<choice>>
+Idle --> DECISION_NODE : press button
+DECISION_NODE --> AdjustHour : [hour selected]
+DECISION_NODE --> AdjustMinute : [minute selected]
+DECISION_NODE --> AlarmHour : [alarm hour selected]
+DECISION_NODE --> AlarmMinute : [alarm minute selected]
+
+AlarmOn --> Idle : alarm triggered
+Idle --> AlarmOff : turn off alarm feature
+AlarmOff --> LightOn : press light button
+LightOn --> LightOff : release light button
+LightOff --> Idle : exit light mode
+
+@enduml

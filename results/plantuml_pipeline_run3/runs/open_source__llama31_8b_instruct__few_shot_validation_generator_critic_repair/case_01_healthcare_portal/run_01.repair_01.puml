@@ -1,6 +1,8 @@
 @startuml
 title UML State Chart Diagram
 
+[*] --> Registration
+
 state "Registration" as Registration {
   [*] --> RegEnterDetails
 
@@ -23,7 +25,7 @@ state "Authentication" as Authentication {
   state "successful Login" as SuccessfulLogin
   state "Invalid Member_ID or Password" as InvalidCreds
 
-  AuthEnterMemberID --> EnterPassword : [Valid]
+  AuthEnterMemberID --> EnterPassword
   EnterPassword --> SuccessfulLogin : [Valid]
   EnterPassword --> InvalidCreds : [Invalid]
 }
@@ -49,23 +51,19 @@ state "Payment Processing" as PaymentProcessing {
 
   SelectPaymentMethod --> InformCashDetails : [Cash]
   SelectPaymentMethod --> CompleteInsurancePayment : [Insurance]
+
+  SuccessfulRegistration --> AuthEnterMemberID
+  SuccessfulLogin --> ViewNewsContent
+  SuccessfulLogin --> SelectPaymentMethod
 }
 
-state StartJoin <<choice>> {
-  [*] --> StartJoin
-  StartJoin --> Registration
-  StartJoin --> Authentication
-  StartJoin --> AccessFacilities
-  StartJoin --> PaymentProcessing
-}
-
-SuccessfulRegistration --> AuthEnterMemberID
-
-SuccessfulLogin --> ViewNewsContent
-SuccessfulLogin --> SelectPaymentMethod
-
+state StartJoin <<choice>>
+SuccessfulRegistration --> StartJoin
+StartJoin --> Authentication
+StartJoin --> AccessFacilities
+StartJoin --> PaymentProcessing
 
 ContinueFinishSession --> [*]
-CollectFeedback --> CompleteInsurancePayment : [User Choice]
+CollectFeedback --> ContinueFinishSession : [User Choice]
 
 @enduml

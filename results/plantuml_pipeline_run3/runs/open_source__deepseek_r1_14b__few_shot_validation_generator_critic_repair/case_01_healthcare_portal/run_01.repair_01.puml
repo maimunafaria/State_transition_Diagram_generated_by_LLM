@@ -1,78 +1,60 @@
 @startuml
 title State machine for Healthcare Portal
 
-[*] --> Idle
+[*] --> Idle : Start
 
 state "Idle" as Idle
 Idle : entry/Waiting for action
-Idle --> Registering : Start registration
-Idle --> SignIn : User sign-in attempt
+Idle --> Registering : Register
+Idle --> SignIn : SignIn
 
 state "Registering" as Registering
 Registering : do/Register process
-Registering --> RegistrationFailed : Failure
 Registering --> Registered : Success
-
-state "RegistrationFailed" as RegistrationFailed
-RegistrationFailed : exit/End access
-RegistrationFailed --> [*]
+Registering --> RegistrationFailed : Failure
 
 state "Registered" as Registered
 Registered : entry/Successful registration
-Registered --> FacilityAccess : Access facilities
-Registered --> ReadingContent : Read news/expert content
-Registered --> HealthInfo : Check symptoms or fitness
+Registered --> SignIn : Proceed to Login
 
 state "SignIn" as SignIn
 SignIn : do/User sign-in attempt
-SignIn --> LoggedIn : Success
-SignIn --> RegistrationFailed : Failure
+SignIn --> LoggedIn : Valid
+SignIn --> Idle : Invalid
 
 state "LoggedIn" as LoggedIn
 LoggedIn : entry/Access granted
-LoggedIn --> FacilityAccess : Access facilities
-LoggedIn --> ReadingContent : Read news/expert content
-LoggedIn --> HealthInfo : Check symptoms or fitness
+LoggedIn --> FacilityAccess : Access facility
+LoggedIn --> ReadingContent : Read content
+LoggedIn --> HealthInfo : Check symptoms
+LoggedIn --> SelectPaymentMethod : Choose payment
+LoggedIn --> Logout : Logout
 
 state "FacilityAccess" as FacilityAccess
 FacilityAccess : do/Access facilities
-FacilityAccess --> ViewingResult : View result
-FacilityAccess --> LoggedIn : Back to login
+FacilityAccess --> LoggedIn : Continue
 
 state "ReadingContent" as ReadingContent
 ReadingContent : do/Read news/expert content
-ReadingContent --> ViewingResult : View result
-ReadingContent --> LoggedIn : Back to login
+ReadingContent --> LoggedIn : Back
 
 state "HealthInfo" as HealthInfo
 HealthInfo : do/Check symptoms or fitness
 HealthInfo --> ViewingResult : View result
-HealthInfo --> LoggedIn : Back to login
+HealthInfo --> LoggedIn : Continue
 
 state "ViewingResult" as ViewingResult
 ViewingResult : do/View result
-ViewingResult -->LoggedIn : Continue using system
-ViewingResult --> [*] : Finish session
-
-state "ProcessingInsurance" as ProcessingInsurance
-ProcessingInsurance : do/Process insurance for services
-ProcessingInsurance --> InsurancePayment : Proceed with insurance
-ProcessingInsurance --> SelectPaymentMethod : Choose payment method
+ViewingResult --> LoggedIn : Finish viewing
 
 state "SelectPaymentMethod" as SelectPaymentMethod
 SelectPaymentMethod : do/Choose payment method
-SelectPaymentMethod --> CashPayment : Cash chosen
-SelectPaymentMethod --> InsurancePayment : Insurance chosen
+SelectPaymentMethod --> CashPayment : Cash
+SelectPaymentMethod --> InsurancePayment : Insurance
 
 state "CashPayment" as CashPayment
 CashPayment : do/Cash payment details
-CashPayment --> [*] : Payment complete
+CashPayment --> LoggedIn : Processed
 
-state "InsurancePayment" as InsurancePayment
-InsurancePayment : do/Insurance-based payment
-InsurancePayment --> [*] : Payment complete
-
-state "LoggedIn" as LoggedIn
-LoggedIn : entry/Access granted
-LoggedIn --> ProcessingInsurance : Request insurance processing
+state "Insurance
 @enduml

@@ -1,12 +1,11 @@
-You are a UML repair assistant.
-Fix the candidate PlantUML using only the validation issues and repair guidance below.
-Make the smallest possible edit.
-Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
-Do not remove or rename unaffected states.
-Do not change unaffected transition labels.
-Do not redesign or simplify the diagram.
-Only change the lines needed to fix the listed validation issues.
-Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
 
 Requirement:
 Business Process Outsourcing Bpo Management System Scenario 2 — Polished Requirement Specification
@@ -24,8 +23,6 @@ title UML State Machine Diagram (Search by Filter)
 
 state "Search By Filter" as SearchByFilter {
 
-    SearchByFilter : entry / Start search
-
     state Choice1 <<choice>>
 
     Choice1 --> SelectCategory : [select category]
@@ -39,18 +36,32 @@ state "Search By Filter" as SearchByFilter {
     state "Select Price Range" as SelectPriceRange
 
     SelectPriceRange : do / Apply filter -> DisplayMatchingUsers
-
-    DisplayMatchingUsers --> [*] : exit / End search
 }
+
+state "Search By Filter" as SearchByFilterFinal {
+    SearchByFilterFinal : exit / End search
+    DisplayMatchingUsers --> [*] : [back to initial state]
+}
+
+Choice1 --> Choice1 : [invalid]
+
+SelectCategory --> DisplayMatchingUsers : [apply filter]
+SelectPriceRange --> DisplayMatchingUsers : [apply filter]
+
+DisplayMatchingUsers --> SearchByFilter : [return to filter selection]
 
 @enduml
 
 
-Validation issues to fix:
-- orphan: Search By Filter, Select Category, Select Price Range
-- orphan_states_detected
+Validation issues:
 - unreachable: Choice1, Display Matching Users, Search By Filter, Select Category, Select Price Range, SelectCategory, SelectPriceRange
 - unreachable_states_detected
+
+Validator details:
+- Current initial state: SearchByFilter
+- Unreachable states: Choice1, Display Matching Users, Search By Filter, Select Category, Select Price Range, SelectCategory, SelectPriceRange
+- State count: 8
+- Transition count: 6
 
 --- Structural Validation Rules ---
 - Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
@@ -67,6 +78,7 @@ Validation issues to fix:
 - Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
 - If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
 
-Repair guidance for these issues:
-- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
-- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+Valid PlantUML repair patterns:
+Pattern 1: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT

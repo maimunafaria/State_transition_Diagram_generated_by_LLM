@@ -1,12 +1,11 @@
-You are a UML repair assistant.
-Fix the candidate PlantUML using only the validation issues and repair guidance below.
-Make the smallest possible edit.
-Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
-Do not remove or rename unaffected states.
-Do not change unaffected transition labels.
-Do not redesign or simplify the diagram.
-Only change the lines needed to fix the listed validation issues.
-Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
 
 Requirement:
 Weather Monitoring System — Polished Requirement Specification
@@ -24,7 +23,7 @@ Functional Requirements
 
 Candidate PlantUML:
 @startuml
-title Weather Monitoring System - User Authentication and Location Selection
+title Weather Monitoring System - User Authentication, Location Selection, and Weather Information
 
 [*] --> LoginOrRegister : [Prompt user to choose]
 
@@ -45,9 +44,10 @@ UserDashboard --> LocationSelection : [Check weather for current or another loca
 UserDashboard --> ProfileManagement : [Edit details, upload or accept requests, search for other users, or view current deals]
 UserDashboard --> Logout : [Log out after completing tasks]
 
-state LocationSelection <<choice>>
-LocationSelection --> ValidLocation : [Enter a valid location]
-LocationSelection --> InvalidLocation : [Enter an invalid location]
+state UserDashboard_LocationSelection <<choice>>
+UserDashboard_LocationSelection --> ValidLocation : [Enter a valid location]
+UserDashboard_LocationSelection --> InvalidLocation : [Enter an invalid location]
+UserDashboard_LocationSelection --> LocationSelection : [Proceed to weather information selection]
 
 state WeatherInformationChoice <<choice>>
 WeatherInformationChoice --> Temperature : [Temperature]
@@ -61,13 +61,24 @@ WeatherDetails --> Alerts : [Alerts]
 WeatherDetails --> WeeklyAnalysis : [Weekly analysis]
 WeatherDetails --> FuturePrediction : [Future prediction]
 WeatherDetails --> Graph : [Graph]
+
+UserDashboard_LocationSelection --> UserDashboard : [Return to user dashboard if location is invalid]
+ValidLocation --> WeatherInformationChoice : [Proceed to weather information selection if location is valid]
+
+state End : [*] : COMPLETION_EVENT
+End --> [*] : COMPLETION_EVENT
 @enduml
 
 
-Validation issues to fix:
-- missing_final_state_transition (state --> [*])
-- unreachable: Alerts, DewPoint, FuturePrediction, Graph, Humidity, InvalidLocation, LocationSelection, Logout, Pressure, ProfileManagement, Rainfall, Temperature, UserDashboard, ValidLocation, WeatherDetails, WeatherInformationChoice, WeeklyAnalysis
+Validation issues:
+- unreachable: Alerts, DewPoint, End, FuturePrediction, Graph, Humidity, InvalidLocation, LocationSelection, Logout, Pressure, ProfileManagement, Rainfall, Temperature, UserDashboard, UserDashboard_LocationSelection, ValidLocation, WeatherDetails, WeatherInformationChoice, WeeklyAnalysis
 - unreachable_states_detected
+
+Validator details:
+- Current initial state: LoginOrRegister
+- Unreachable states: Alerts, DewPoint, End, FuturePrediction, Graph, Humidity, InvalidLocation, LocationSelection, Logout, Pressure, ProfileManagement, Rainfall, Temperature, UserDashboard, UserDashboard_LocationSelection, ValidLocation, WeatherDetails, WeatherInformationChoice, WeeklyAnalysis
+- State count: 26
+- Transition count: 23
 
 --- Structural Validation Rules ---
 - Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
@@ -84,6 +95,7 @@ Validation issues to fix:
 - Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
 - If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
 
-Repair guidance for these issues:
-- Add at least one final transition from a natural terminal state to [*], such as LoggedOut --> [*] or AccessEnded --> [*].
-- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+Valid PlantUML repair patterns:
+Pattern 1: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT

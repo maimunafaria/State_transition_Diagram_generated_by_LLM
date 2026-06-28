@@ -27,11 +27,11 @@ Maintenance --> Preparation [Prepare]
 
 state OutOfService
 OutOfService : entry / takeOutOfService
-[*] --> OutOfService
+Order --> OutOfService [Plane unavailable]
 
 state PermanentlyWithdrawn
 PermanentlyWithdrawn : entry / removeFromOperations
-[*] --> PermanentlyWithdrawn
+Order --> PermanentlyWithdrawn [Permanent withdrawal]
 
 plane_state_machine @enduml
 
@@ -52,7 +52,9 @@ Production : entry / processRawMaterials
 Production : condition / passDefectCheck
 Production : do / produceGarmentsIfPassed
 Production : exit / produce
-[*] --> Delivery
+Delivery --> Production [Garments delivered]
+
+state Delivery
 Delivery : entry / deliverGarments
 Delivery : do / completeBillingAndPayment
 Delivery : exit / delivered
@@ -70,7 +72,6 @@ state LoginError
 LoginError : entry / incorrectDetails
 LoginError : do / displayErrorMessage
 LoginError : exit / preventInteraction
-[*] --> LoginError
 
 state UserDashboard
 UserDashboard : entry / showDashboard
@@ -82,7 +83,6 @@ state ProductSelection
 ProductSelection : entry / selectItems
 ProductSelection : do / addToOrder
 ProductSelection : exit / orderPlaced
-[*] --> UserDashboard
 
 state PaymentSelection
 PaymentSelection : entry / choosePaymentMethod
@@ -90,7 +90,6 @@ PaymentSelection : do / processPayment
 PaymentSelection : condition / paymentSuccessful
 PaymentSelection --> Delivery [Deliver]
 PaymentSelection --> LoginError [Login Error]
-[*] --> PaymentSelection
 
 art_gallery_management_system @enduml
 
@@ -100,7 +99,8 @@ equihealth
 NewUserRegistration : entry / registerUser
 NewUserRegistration : condition / registrationCompleted
 NewUserRegistration --> Login [Login]
-[*] --> UserSignIn
+
+state UserSignIn
 UserSignIn : entry / signIn
 UserSignIn : do / checkRegistration
 UserSignIn : exit / notRegistered
@@ -108,11 +108,9 @@ UserSignIn : choice / userType
 UserSignIn --> PatientDashboard [Patient]
 UserSignIn --> HealthWorkerDashboard [Health Worker]
 UserSignIn --> GovernmentOfficialDashboard [Government Official]
-[*] --> UserSignIn
 
 state PatientDashboard
 PatientDashboard : entry / showMedicalInfo
-[*] --> PatientDashboard
 
 state HealthWorkerDashboard
 HealthWorkerDashboard : entry / checkAndAnalyzeData
@@ -120,11 +118,9 @@ HealthWorkerDashboard : do / prepareAlerts
 HealthWorkerDashboard : choice / sendToPatientOrHealthWorker
 HealthWorkerDashboard --> PatientDashboard [Alert to patient]
 HealthWorkerDashboard --> HealthWorkerDashboard [Alert to health worker]
-[*] --> HealthWorkerDashboard
 
 state GovernmentOfficialDashboard
 GovernmentOfficialDashboard : entry / showPlannedActivities
 GovernmentOfficialDashboard : exit / viewResults
-[*] --> GovernmentOfficialDashboard
 equihealth @enduml
 @enduml

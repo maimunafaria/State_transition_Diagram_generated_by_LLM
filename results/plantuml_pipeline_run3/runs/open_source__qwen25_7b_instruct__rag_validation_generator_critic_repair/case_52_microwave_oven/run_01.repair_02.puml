@@ -21,8 +21,8 @@ Cooking {
   [*] --> Checking
   Checking : do / Check Status
   Checking --> Cook : OK
-  Checking --> Alarm : Turntable Fault
-  Checking --> Alarm : Emitter Fault
+  Checking --> Alarm : Turntable Fault [invalid]
+  Checking --> Alarm : Emitter Fault [invalid]
 
   Cook --> Done : Timeout
   Cook --> DoorOpen : Door Opened
@@ -35,13 +35,36 @@ state "Alarm" as Alarm {
 }
 
 Done {
-  DoorShut --> [*]
-  DoorOpen --> [*]
-  Waiting --> [*]
-  Cooking --> [*]
-  Alarm --> [*]
+  [*] --> Waiting
 }
 
 DoorOpen --> Disabled : Door Opened
+
+state "TimeSet" as TimeSet {
+  [*] --> PowerSelect
+}
+
+state "Checking" as Checking {
+  [*] --> Cook [OK]
+  [*] --> Alarm [Turntable Fault | Emitter Fault]
+}
+
+state "Cook" as Cook {
+  [*] --> Done [Timeout]
+  [*] --> DoorOpen [Door Opened]
+  [*] --> Cooking [Time]
+}
+
+state "PowerSelect" as PowerSelect {
+  [*] --> Cooking
+}
+
+state "Alarm" as Alarm {
+  [*] --> Disabled
+}
+
+state "Disabled" as Disabled {
+  [*] --> Waiting
+}
 
 @enduml

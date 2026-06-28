@@ -8,22 +8,30 @@ Order : exit / delivered
 
 state Arrival
 Arrival : entry / planeArrived
-Arrival : exit / transitionPreparation --> Preparation
+Arrival : exit / transitionPreparation
+Order --> Arrival : deliverPlane
 
 state Preparation
 Preparation : entry / assignCondition
-Preparation : exit / readyForOperationsOrMaintenance --> Operations | readyForPreparation --> Maintenance
+Preparation : exit / readyForOperationsOrMaintenance
+Arrival --> Preparation : planeArrived
 
 state Operations
 Operations : entry / hasScheduledFlights
-Operations : exit / noMoreScheduledFlights --> Maintenance
+Operations : exit / noMoreScheduledFlights
+Preparation --> Operations : readyForOperations
+Operations --> Maintenance : noMoreScheduledFlights
 
 state Maintenance
 Maintenance : entry / checkAndService
-Maintenance : exit / readyForPreparation --> Preparation
+Maintenance : exit / readyForPreparation
+Operations --> Maintenance : noMoreScheduledFlightsOrMaintenanceRequired
+Maintenance --> Preparation : readyForPreparation
 
 state OutOfService
 OutOfService : entry / planeNotAvailable
-Maintenance --> [*]
+Maintenance --> OutOfService : planeNotAvailable
+
+Maintenance --> [*] : planeRemovedFromService
 
 @enduml

@@ -4,72 +4,47 @@ title Inventory System State Machine
 [*] --> AddGoods
 
 state "Add Goods" as AddGoods {
+  AddGoods --> UpdatePrice : addGoodsSelected()
+  state "Update Price" as UpdatePrice
+
   UpdatePrice --> RemoveGoods : removeGoodsSelected()
-}
 
-state "Remove Goods" as RemoveGoods {
+  RemoveGoods --> IdentifyExpiredGoods : identifyExpiredGoods()
+  state "Identify Expired Goods" as IdentifyExpiredGoods
+
   IdentifyExpiredGoods --> NotifyUser : notifyUserAboutRemoval()
-}
+  state "Notify User" as NotifyUser
 
-state "Notify User" as NotifyUser {
+  NotifyUser --> PlaceOrder : placeOrderSelected()
+  state "Place Order" as PlaceOrder
+
   PlaceOrder --> GenerateInvoice : generateInvoiceForOrder()
-}
 
-state "Generate Invoice" as GenerateInvoice {
+  GenerateInvoice --> SearchItems : searchItemsSelected()
+  state "Search Items" as SearchItems
+
   SearchItems --> SelectItemsForPurchase : selectItemsForPurchase()
-}
 
-state "Select Items for Purchase" as SelectItemsForPurchase {
+  SelectItemsForPurchase --> CalculateDiscountAndTax : calculateDiscountAndTax()
+  state "Calculate Discount and Tax" as CalculateDiscountAndTax
+
   CalculateDiscountAndTax --> GenerateReceipt : generateReceiptForCustomer()
-}
 
-state "Generate Receipt" as GenerateReceipt {
+  GenerateReceipt --> ReplaceItemOrCancelReceipt : replaceItemOrCancelReceiptSelected()
+  state "Replace Item or Cancel Receipt" as ReplaceItemOrCancelReceipt
+
   ReplaceItemOrCancelReceipt --> RecordCustomerRequest : recordCustomerRequest()
-}
 
-state "Record Customer Request" as RecordCustomerRequest {
+  RecordCustomerRequest --> ViewSummaryReport : viewSummaryReport()
+  state "View Summary Report" as ViewSummaryReport
+
   ViewSummaryReport --> [*]
 }
 
-AddGoods --> UpdatePrice : addGoodsSelected()
-UpdatePrice --> RemoveGoods : removeGoodsSelected()
-RemoveGoods --> IdentifyExpiredGoods : identifyExpiredGoods()
-IdentifyExpiredGoods --> NotifyUser : notifyUserAboutRemoval()
-NotifyUser --> PlaceOrder : placeOrderSelected()
-PlaceOrder --> GenerateInvoice : generateInvoiceForOrder()
-GenerateInvoice --> SearchItems : searchItemsSelected()
-SearchItems --> SelectItemsForPurchase : selectItemsForPurchase()
-SelectItemsForPurchase --> CalculateDiscountAndTax : calculateDiscountAndTax()
-CalculateDiscountAndTax --> GenerateReceipt : generateReceiptForCustomer()
-GenerateReceipt --> ReplaceItemOrCancelReceipt : replaceItemOrCancelReceiptSelected()
-ReplaceItemOrCancelReceipt --> RecordCustomerRequest : recordCustomerRequest()
-
-state "Update Price" as UpdatePrice {
-  [*] --> RemoveGoods
-}
-
-state "Identify Expired Goods" as IdentifyExpiredGoods {
-  [*] --> NotifyUser
-}
-
-state "Place Order" as PlaceOrder {
-  [*] --> GenerateInvoice
-}
-
-state "Search Items" as SearchItems {
-  [*] --> SelectItemsForPurchase
-}
-
-state "Calculate Discount and Tax" as CalculateDiscountAndTax {
-  [*] --> GenerateReceipt
-}
-
-state "Replace Item or Cancel Receipt" as ReplaceItemOrCancelReceipt {
-  [*] --> RecordCustomerRequest
-}
-
-state "View Summary Report" as ViewSummaryReport {
-  [*]
-}
+RemoveGoods --> NotifyUser
+PlaceOrder --> GenerateInvoice
+SearchItems --> SelectItemsForPurchase
+CalculateDiscountAndTax --> GenerateReceipt
+ReplaceItemOrCancelReceipt --> RecordCustomerRequest
 
 @enduml

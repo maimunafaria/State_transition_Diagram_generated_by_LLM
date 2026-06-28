@@ -1,12 +1,11 @@
-You are a UML repair assistant.
-Fix the candidate PlantUML using only the validation issues and repair guidance below.
-Make the smallest possible edit.
-Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
-Do not remove or rename unaffected states.
-Do not change unaffected transition labels.
-Do not redesign or simplify the diagram.
-Only change the lines needed to fix the listed validation issues.
-Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
 
 Requirement:
 Atm Many Scenarios Scenario 7 — Polished Requirement Specification
@@ -24,7 +23,7 @@ Candidate PlantUML:
 @startuml
 title ATM State Machine Diagram
 
-[*] --> Greeting : Initial Transition
+[*] --> Greeting
 
 state Greeting {
   state "Greet User" as GreetUser
@@ -63,22 +62,27 @@ state ProcessRequest {
 ProcessRequest --> [*] : Operation Completed
 
 GreetUser --> Cancel : User Cancels Operation
+
 Cancel --> ReturnCard : Card Returned to User
-CheckPIN --> InvalidPIN : PIN Entered Incorrectly
-ValidPIN --> WithdrawMoney : User Selected Option / Withdraw Money
-ValidPIN --> CheckInformation : User Selected Option / Check Information
-ValidPIN --> MakeTransfer : User Selected Option / Make Transfer
 
-ReturnCard --> [*] : Operation Completed
+CheckInformation --> DisplayOptions : User Chooses Check Information
+MakeTransfer --> DisplayOptions : User Chooses Make Transfer
+WithdrawMoney --> DisplayOptions : User Chooses Withdraw Money
 
-end state
+DisplayOptions --> ProcessRequest : User Selected Option
 
 @enduml
 
 
-Validation issues to fix:
+Validation issues:
 - unreachable: Cancel, Check Information, Check PIN, Confiscate, DisplayOptions, Greet User, InsertCard, Invalid PIN, Make Transfer, Process Request, ProcessRequest, ReturnCard, Valid PIN, ValidatePIN, Withdraw Money
 - unreachable_states_detected
+
+Validator details:
+- Current initial state: Greeting
+- Unreachable states: Cancel, Check Information, Check PIN, Confiscate, DisplayOptions, Greet User, InsertCard, Invalid PIN, Make Transfer, Process Request, ProcessRequest, ReturnCard, Valid PIN, ValidatePIN, Withdraw Money
+- State count: 16
+- Transition count: 11
 
 --- Structural Validation Rules ---
 - Avoid invalid [*] --> [*] transitions: use a real terminal state before [*].
@@ -95,5 +99,7 @@ Validation issues to fix:
 - Avoid history_state_used_without_composite_state: use [H] or [H*] only inside a composite state.
 - If modeling nested behavior, do not add extra [*] transitions inside composite states; connect the parent state to its first child state instead.
 
-Repair guidance for these issues:
-- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+Valid PlantUML repair patterns:
+Pattern 1: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT

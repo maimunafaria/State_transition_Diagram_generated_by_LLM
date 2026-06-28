@@ -5,23 +5,31 @@ title UML State Machine Diagram (Search by Filter)
 
 state "Search By Filter" as SearchByFilter {
 
-    SearchByFilter : entry / Start search
-
     state Choice1 <<choice>>
 
     Choice1 --> SelectCategory : [select category]
     Choice1 --> SelectPriceRange : [select price range]
 
     state "Select Category" as SelectCategory
-    state DisplayMatchingUsers
+    state "Display Matching Users" as DisplayMatchingUsers
 
     SelectCategory : do / Apply filter -> DisplayMatchingUsers
 
     state "Select Price Range" as SelectPriceRange
 
     SelectPriceRange : do / Apply filter -> DisplayMatchingUsers
-
-    DisplayMatchingUsers --> [*] : exit / End search
 }
+
+state "Search By Filter" as SearchByFilterFinal {
+    SearchByFilterFinal : exit / End search
+    DisplayMatchingUsers --> [*] : [back to initial state]
+}
+
+Choice1 --> Choice1 : [invalid]
+
+SelectCategory --> DisplayMatchingUsers : [apply filter]
+SelectPriceRange --> DisplayMatchingUsers : [apply filter]
+
+DisplayMatchingUsers --> SearchByFilter : [return to filter selection]
 
 @enduml

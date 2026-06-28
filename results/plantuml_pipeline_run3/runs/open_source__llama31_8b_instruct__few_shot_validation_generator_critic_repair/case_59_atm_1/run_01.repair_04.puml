@@ -2,7 +2,7 @@
 title UML State Machine Diagram
 
 
-[*] --> ChooseAmount : [initial]
+[*] --> ChooseAmount
 
 state "Choose Amount" as ChooseAmount
 ChooseAmount : entry / select predefined amount or custom amount
@@ -24,41 +24,43 @@ ChooseAmount --> CancelTransaction : [user selects cancel option]
 InputCustomAmount --> CancelTransaction : [user selects cancel option]
 
 
-state C1 <<choice>>
-CancelTransaction --> C1 : [possibilities after cancellation]
-
 state ReturnCard
 ReturnCard : entry / stop transaction and return card
 ReturnCard : do / return card to user
 ReturnCard : exit / transaction completed
 
-C1 --> ReturnCard
-
-
-state C2 <<choice>>
-ChooseAmount --> C2 : [possibilities for amount selection]
-C2 --> PredefinedAmounts : [user selects predefined option]
+CancelTransaction --> ReturnCard : [transaction cancelled]
 
 state PredefinedAmounts
 PredefinedAmounts : entry / select predefined amounts
 PredefinedAmounts : do / display predefined amounts
 PredefinedAmounts : exit / user selects an option
 
-C2 --> InputCustomAmount : [user chooses to input custom amount]
-InputCustomAmount : entry / enter custom amount
-InputCustomAmount : do / validate custom amount
-InputCustomAmount : exit / custom amount accepted or rejected
+ChooseAmount --> PredefinedAmounts : [user chooses predefined amount]
+
+
+state C1 <<choice>>
+CancelTransaction --> C1 : [possibilities after cancellation]
+C1 --> ReturnCard : [transaction cancelled]
+
+state C2 <<choice>>
+ChooseAmount --> C2 : [possibilities for amount selection]
+C2 --> PredefinedAmounts : [predefined amounts selected]
 
 
 state MergeEnd <<choice>>
-ReturnCard --> MergeEnd : [transaction completed]
-CancelTransaction --> MergeEnd : [transaction cancelled]
+ReturnCard --> MergeEnd
+MergeEnd --> [*]
 
-MergeEnd --> [*] : [end of transaction]
+state "Cancel Transaction" as CancelTransaction
+CancelTransaction --> ReturnCard : [transaction cancelled]
+
+state ChooseAmount
+ChooseAmount --> InputCustomAmount : [user chooses to input custom amount]
+InputCustomAmount --> ReturnCard : [custom amount accepted or rejected]
 
 
-C1 --> PredefinedAmounts : [user selects predefined option]
-PredefinedAmounts --> InputCustomAmount : [user chooses to input custom amount]
-InputCustomAmount --> C2 : [possibilities for amount selection]
+state PredefinedAmounts
+PredefinedAmounts --> ReturnCard : [predefined amounts selected]
 
 @enduml
