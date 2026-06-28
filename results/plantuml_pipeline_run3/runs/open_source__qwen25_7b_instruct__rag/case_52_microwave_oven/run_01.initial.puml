@@ -14,20 +14,30 @@ state Waiting {
   TimeSet : do / Set Cooking Time
   TimeSet --> PowerSelect : Select Power Level
   PowerSelect : do / Choose Power Level
-  PowerSelect --> Cook : Full Power
-  PowerSelect --> Cook : Half Power
+  PowerSelect --> Cooking : Start Cooking
 }
 
-Cook {
-  state "Cooking" as Cooking
-  state "Stopped" as Stopped
+Cooking {
+  [*] --> Checking
+  Checking : do / Check Status
+  Checking --> Cook : OK
+  Checking --> Alarm : Turntable Fault
+  Checking --> Alarm : Emitter Fault
 
-  DoorOpen --> Stopped : Door Opened
-  Stopped : do / Stop Operation
-  Stopped --> Waiting : Cancel
-  Stopped --> TimeSet : Resume
+  Cook --> Done : Timeout
+  Cook --> DoorOpen : Door Opened
+  Cook --> Cooking : Time
 }
 
-DoorShut --> TimeSet : Door Closed
+state "Alarm" as Alarm {
+  [*] --> Disabled
+  Disabled : do / Deactivate System
+}
+
+Done {
+  [*] --> Waiting
+}
+
+DoorOpen --> Disabled : Door Opened
 
 @enduml

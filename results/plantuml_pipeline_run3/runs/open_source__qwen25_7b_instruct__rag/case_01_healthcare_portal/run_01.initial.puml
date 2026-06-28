@@ -8,38 +8,38 @@ Registration : entry / startRegistration
 Registration : exit / registrationComplete
 
 state RegistrationFailure <<choice>>
-Registration --> RegistrationFailure
+Registration --> RegistrationFailure : registrationFailed
 
-state SignIn
-SignIn : entry / verifyCredentials
-SignIn : exit / signInSuccess
+state Login
+Login : entry / verifyCredentials
+Login : exit / loginSuccess
+
+state MainMenu <<choice>>
+Login --> MainMenu
 
 state FacilityAccess
-FacilityAccess : entry / grantAccess
-FacilityAccess : exit / sessionEnd
+MainMenu --> FacilityAccess : accessFacilities
 
 state NewsAndContent
-NewsAndContent : entry / readContent
-NewsAndContent : exit / continueSession
+MainMenu --> NewsAndContent : readNewsOrContent
 
-state SymptomCheck
-SymptomCheck : entry / checkSymptoms
-SymptomCheck : exit / finishSession
+state SymptomChecker
+NewsAndContent --> SymptomChecker : checkSymptomsOrFitness
+
+state SessionEnd <<choice>>
+SymptomChecker --> SessionEnd : continueSession
+SymptomChecker --> SessionEnd : finishSession
 
 state InsuranceProcessing
-InsuranceProcessing : entry / processInsurance
-InsuranceProcessing : exit / paymentComplete
+RegistrationFailure --> InsuranceProcessing : processInsurance
 
-state PaymentSelection
-PaymentSelection : entry / selectPaymentMethod
-PaymentSelection : exit / completePayment
+state PaymentProcess
+InsuranceProcessing --> PaymentProcess : validatePayment
 
 state FeedbackCollection
-FeedbackCollection : entry / collectFeedback
-FeedbackCollection : exit / sessionEnd
+PaymentProcess --> FeedbackCollection : collectFeedback
 
 state Logout
-Logout : entry / logOutUser
-Logout : exit / sessionEnd
+FeedbackCollection --> Logout : logoutUser
 
 @enduml

@@ -14,25 +14,19 @@ state StartupProblem {
 
 state StartupReady {
     [*] --> ReadyToUse : user action
-}
-
-state ReadyToUse {
-    ReadyToUse --> Activated : activate
-    ReadyToUse --> Off : turn off
-    Activated --> Monitoring : start monitoring
+    ReadyToUse --> Activating : activate
+    ReadyToUse --> TurningOff : turn off
+    Activating --> Monitoring : start monitoring
 }
 
 state Monitoring {
-    Monitoring --> AlarmActivated : sensor triggered
+    Monitoring --> AlarmTriggered : sensor triggered
     Monitoring --> ContinueMonitoring : false alarm or time ends
+    AlarmTriggered --> SendingAlerts : send alerts
 }
 
-state AlarmActivated {
-    AlarmActivated --> AlertsSent : send alerts
-    AlarmActivated --> NormalState : password entered
+state SendingAlerts {
+    [*] --> ReadyToUse : user action
 }
 
-state Off {
-    Off --> ReadyToUse : turn on
-}
 @enduml

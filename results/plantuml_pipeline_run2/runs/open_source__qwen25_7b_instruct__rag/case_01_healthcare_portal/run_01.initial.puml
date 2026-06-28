@@ -7,39 +7,46 @@ state Registration
 Registration : entry / startRegistration
 Registration : exit / registrationComplete
 
-state RegistrationDecision <<choice>>
-Registration --> RegistrationDecision
+state RegistrationFailure <<choice>>
+Registration --> RegistrationFailure : registrationFailed
 
-state SignIn
-SignIn : entry / verifyUser
-SignIn : exit / accessGranted
+state Login
+Login : entry / verifyCredentials
+Login : exit / loginSuccess
 
-state AccessAvailableFacilities
-AccessAvailableFacilities : entry / grantAccess
-AccessAvailableFacilities : exit / sessionEnd
+state MainMenu <<choice>>
+Login --> MainMenu
 
-state ReadContent
-ReadContent : entry / readNewsOrExpertContent
-ReadContent : exit / continueSession
+state FacilityAccess
+MainMenu --> FacilityAccess : accessFacilities
 
-state CheckSymptoms
-CheckSymptoms : entry / checkSymptomsOrFitnessOptions
-CheckSymptoms : exit / finishSession
+state NewsAndContent
+MainMenu --> NewsAndContent : readNewsOrContent
 
-state ProcessInsurance
-ProcessInsurance : entry / processAndValidateInsurance
-ProcessInsurance : exit / paymentComplete
+state SymptomChecker
+NewsAndContent --> SymptomChecker : checkSymptomsOrFitness
 
-state PaymentMethods
-PaymentMethods : entry / selectPaymentMethod
-PaymentMethods : exit / completePayment
+state SessionContinuation <<choice>>
+SymptomChecker --> SessionContinuation : continueSession
+SessionContinuation --> SymptomChecker : viewResult
+
+state InsuranceProcessing
+RegistrationFailure --> InsuranceProcessing : processInsurance
+MainMenu --> InsuranceProcessing : validateInsuranceForFinanceServices
+
+state PaymentSelection
+InsuranceProcessing --> PaymentSelection : selectPaymentMethod
+
+state CashDetails
+PaymentSelection --> CashDetails : showCashDetails
+
+state InsurancePayment
+PaymentSelection --> InsurancePayment : completeInsurancePayment
 
 state FeedbackCollection
-FeedbackCollection : entry / collectUserFeedback
-FeedbackCollection : exit / sessionEnd
+SessionContinuation --> FeedbackCollection : provideFeedback
 
 state Logout
-Logout : entry / logOutUser
-Logout : exit / sessionEnd
+MainMenu --> Logout : endSession
 
 @enduml

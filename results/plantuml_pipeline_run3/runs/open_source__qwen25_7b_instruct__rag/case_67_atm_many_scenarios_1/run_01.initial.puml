@@ -8,38 +8,23 @@ state Idle
 state "Checking PIN" as CheckingPIN {
   state "Correct PIN" as CorrectPIN
   state "Incorrect PIN" as IncorrectPIN
+
+  CorrectPIN : entry / Display Options
+  CorrectPIN --> ProcessingTransaction
+  IncorrectPIN : entry / Ask for PIN Again
+  IncorrectPIN --> CheckingPIN
 }
 
-state "Processing Transaction" as ProcessingTransaction
+state "Processing Transaction" as ProcessingTransaction {
+  state "Withdrawal Request Approved" as WithdrawalApproved
+  state "Withdrawal Request Rejected" as WithdrawalRejected
 
-state "Dispensing Cash" as DispensingCash
+  WithdrawalApproved : entry / Dispense Cash, Print Receipt, Return Card
+  WithdrawalApproved --> Idle
+  WithdrawalRejected : entry / Cancel Operation, Return Card
+  WithdrawalRejected --> Idle
+}
 
-state "Printing Receipt" as PrintingReceipt
-
-state "Returning Card" as ReturningCard
-
-state "Resetting System" as ResettingSystem
-
-Idle --> CheckingPIN : Insert Card
-
-CheckingPIN --> CorrectPIN : Verify PIN
-
-CorrectPIN --> ProcessingTransaction : Provide Options
-
-ProcessingTransaction --> DispensingCash : User Approves Withdrawal
-
-DispensingCash --> PrintingReceipt : Dispense Cash
-
-PrintingReceipt --> ReturningCard : Print Receipt
-
-ReturningCard --> ResettingSystem : Return Card
-
-ResettingSystem --> Idle : System Resets
-
-CheckingPIN --> IncorrectPIN : PIN Incorrect
-
-IncorrectPIN --> CheckingPIN : Ask for PIN Again
-
-IncorrectPIN --> ReturningCard : Keep Card Secure, User Cancels
+state Idle : entry / Display Welcome
 
 @enduml

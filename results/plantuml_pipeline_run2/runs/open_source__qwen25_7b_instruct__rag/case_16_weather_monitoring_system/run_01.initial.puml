@@ -4,23 +4,35 @@ title UML State Machine Diagram (Weather Monitoring System)
 [*] --> RegistrationOrLogin
 
 state RegistrationOrLogin <<choice>>
-RegistrationOrLogin --> Register : [New user]
-RegistrationOrLogin --> Login : [Registered user]
+RegistrationOrLogin --> CreateAccount : [New user]
+RegistrationOrLogin --> ExistingUser : [Registered user]
 
-state Register <<final>>
-state Login <<final>>
+state CreateAccount
+CreateAccount --> AccountCreated : [Successful registration]
+CreateAccount --> EndProcess : [Not successful]
 
-state RegisteredUser <<choice>>
-Login --> CheckLocation : [Check weather after login]
-CheckLocation --> ValidLocation : [Valid location entered]
-ValidLocation --> ChooseWeatherInfo : [Choose what to check]
-ChooseWeatherInfo --> ShowWeatherInfo : [Show selected weather information]
-ShowWeatherInfo --> ViewDetails : [View additional details]
-ViewDetails --> Logout : [Logout]
+state ExistingUser
+ExistingUser --> LoginSuccess : [Valid login]
+ExistingUser --> EndProcess : [Invalid login]
 
-state NewUser <<choice>>
-Register --> SaveRegistration : [Save registration if valid]
-SaveRegistration --> LoginAfterRegister : [Login after successful registration]
-LoginAfterRegister --> CheckLocation : [Check weather after login]
+state MainMenu
+MainMenu --> CheckWeather : [Check weather]
+MainMenu --> ViewDetails : [View additional details]
+
+state CheckWeather
+CheckWeather --> LocationValid : [Valid location]
+CheckWeather --> EndProcess : [Not valid location]
+
+state LocationValid
+LocationValid --> WeatherInfoSelected : [Choose what to check]
+LocationValid --> EndProcess : [No selection]
+
+state WeatherInfoSelected
+WeatherInfoSelected --> ShowWeatherInfo : [Show selected weather info]
+WeatherInfoSelected --> EndProcess : [Invalid choice]
+
+state ViewDetails
+ViewDetails --> DetailsChosen : [Choose details]
+ViewDetails --> EndSession : [Logout]
 
 @enduml

@@ -5,7 +5,7 @@ title Safehome Security System State Machine
 
 state PowerOnCheck {
     [*] --> StartupProblem : problem detected
-    [*] --> StartupReady : everything is fine
+    [*] --> StartupReady : everything fine
 }
 
 state StartupProblem {
@@ -13,26 +13,19 @@ state StartupProblem {
 }
 
 state StartupReady {
-    [*] --> ResetAllowed : reset allowed
-    [*] --> ActivateAllowed : activate allowed
-    [*] --> TurnOffAllowed : turn off allowed
-    ActivateAllowed --> MonitoringStart : activated
+    [*] --> ReadyToUse : user action
+    ReadyToUse --> Monitoring : activate
+    ReadyToUse --> Off : turn off
 }
 
-state MonitoringStart {
-    MonitoringStart --> AlarmTriggered : sensor triggered
-    MonitoringStart --> ContinueMonitoring : false alarm or time ends
+state Monitoring {
+    Monitoring --> AlarmActivated : sensor triggered
+    Monitoring --> ContinueMonitoring : false alarm or time ends
 }
 
-state AlarmTriggered {
-    AlarmTriggered --> SendAlerts : send alerts
-    SendAlerts --> ContinueMonitoring : continue monitoring
+state AlarmActivated {
+    AlarmActivated --> AlertsSent : send alerts
+    AlertsSent --> Monitoring : continue monitoring
 }
-
-state ContinueMonitoring {
-    [*] --> TurnOffAllowed : turn off allowed
-}
-
-state ReadyToUse
 
 @enduml

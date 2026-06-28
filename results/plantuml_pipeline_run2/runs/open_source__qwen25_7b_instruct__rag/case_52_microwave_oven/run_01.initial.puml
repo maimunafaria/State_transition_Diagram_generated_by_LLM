@@ -6,24 +6,31 @@ title Microwave Oven Operation
 state "Door Shut" as DoorShut
 state "Door Open" as DoorOpen
 
-DoorShut --> Checking : Check Status
-Checking --> Cook : OK
-Checking --> Alarm : Turntable Fault
-Checking --> Alarm : Emitter Fault
+DoorShut --> DisplayTime : Door Closed
+DoorShut --> PowerSelection : Power Selection
+DoorShut --> TimeSetting : Set Cooking Time
 
-Cook --> Done : Timeout
-Cook --> Cook : Time
-Cook --> DoorOpen : Door Opened
+PowerSelection --> DoorShut : Door Closed
+PowerSelection --> DoorOpen : Door Opened
 
-Alarm --> Disabled
+TimeSetting --> DoorShut : Door Closed
+TimeSetting --> DoorOpen : Door Opened
 
-Done --> Waiting : Door Closed
+DoorOpen --> DoorShut : Door Closed
+DoorOpen --> StopCooking : Cancel
+DoorOpen --> DoorShut : Door Closed During Cooking
 
-state "Waiting" as Waiting
-state "Disabled" as Disabled
+state "Stop Cooking" as StopCooking
+StopCooking --> DisplayTime : Door Closed
 
-DoorOpen --> Disabled : Door Open
-Cook --> Disabled : Door Open
-Operation --> Disabled : Cancel
+DisplayTime --> PowerSelection : Power Selection
+DisplayTime --> TimeSetting : Set Cooking Time
+
+state "Cooking" as Cooking
+
+Cooking --> StopCooking : Door Opened
+Cooking --> Cooking : Time
+
+Cooking --> DisplayTime : Door Closed
 
 @enduml

@@ -19,17 +19,20 @@ Operations : entry / hasScheduledFlights
 Operations : exit / noMoreScheduledFlights
 
 state Maintenance
-Maintenance : entry / checkAndService
-Maintenance : exit / readyForPreparation
+Maintenance : entry / checkAndServicePlane
+Maintenance : exit / planeReadyForOperations
 
 state OutOfService
-OutOfService : entry / planeNotAvailable
-OutOfService : exit / transitionToPreparationOrOrder
+OutOfService : entry / planeNoLongerAvailable
 
 state WithdrawnFromService
-WithdrawnFromService : entry / permanentlyWithdrawn
+WithdrawnFromService : entry / permanentWithdrawal
 
-state Preparation --> Operations : [hasScheduledFlights]
-state Maintenance --> Operations : [noMoreScheduledFlightsOrMaintenanceRequired]
+state Arrival --> Preparation : planeArrived
+Preparation --> Operations : hasScheduledFlights
+Operations --> Maintenance : noMoreScheduledFlightsOrMaintenanceRequired
+Maintenance --> Preparation : planeReadyForOperations
+Order --> OutOfService : planeNoLongerAvailable
+OutOfService --> WithdrawnFromService : permanentWithdrawal
 
 @enduml
