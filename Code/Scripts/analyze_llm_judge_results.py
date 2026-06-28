@@ -14,7 +14,6 @@ CRITERIA = [
     "understandability",
     "terminological_alignment",
 ]
-REPAIR_STRATEGIES = ["baseline_repair", "syntax_grounded_repair"]
 JUDGE_TO_GENERATOR = {
     "deepseek": "DeepSeek_R1_14B",
     "llama": "Llama_3.1_8B",
@@ -222,7 +221,8 @@ def main() -> int:
             result = metric_row(criterion_subset, f"{judge}_score", "human_score")
             criterion_rows.append({"criterion": criterion, "judge": judge, **result})
 
-    for strategy in REPAIR_STRATEGIES:
+    repair_strategies = sorted({(row.get("repair_strategy") or "").strip() for row in rows if (row.get("repair_strategy") or "").strip()})
+    for strategy in repair_strategies:
         strategy_subset = [row for row in rows if (row.get("repair_strategy") or "").strip() == strategy]
         for judge in JUDGES:
             result = metric_row(strategy_subset, f"{judge}_score", "human_score")

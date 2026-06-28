@@ -158,7 +158,18 @@ def main() -> int:
             target_case_dir = output_dir / llm_name / method_name / case.case_id
             target_case_dir.mkdir(parents=True, exist_ok=True)
             shutil.copy2(puml_path, target_case_dir / "diagram.puml")
-            (target_case_dir / "requirement.txt").write_text(case.raw_requirement, encoding="utf-8")
+            (target_case_dir / "requirement.txt").write_text(
+                case.structured_requirement,
+                encoding="utf-8",
+            )
+            (target_case_dir / "structured_requirement.txt").write_text(
+                case.structured_requirement,
+                encoding="utf-8",
+            )
+            (target_case_dir / "raw_requirement.txt").write_text(
+                case.raw_requirement,
+                encoding="utf-8",
+            )
             (target_case_dir / "source_run_id.txt").write_text(run_folder + "\n", encoding="utf-8")
 
         summary_rows.append(
@@ -190,7 +201,9 @@ def main() -> int:
         "",
         "Files per case folder:",
         "- diagram.puml",
-        "- requirement.txt",
+        "- requirement.txt (structured requirement used for judging)",
+        "- structured_requirement.txt",
+        "- raw_requirement.txt",
         "- source_run_id.txt",
     ]
     (output_dir / "README.txt").write_text("\n".join(readme_lines) + "\n", encoding="utf-8")
