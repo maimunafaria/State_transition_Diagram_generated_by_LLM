@@ -1,0 +1,160 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.
+
+Candidate PlantUML:
+@startuml
+Here is the final PlantUML:
+
+title UML state machine diagram
+
+state Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Login / Register
+
+state Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state ReadBlog
+ReadBlog : entry/To home page
+ReadBlog : entry/Read blogs of recovered patients
+ReadBlog : exit/Idle
+
+state UpdateCurrentNoOfInfectedPeople
+UpdateCurrentNoOfInfectedPeople : entry/To home page
+UpdateCurrentNoOfInfectedPeople : do/Update current no. of infected people in the locality
+UpdateCurrentNoOfInfectedPeople : exit/View
+
+state ViewNumberOfInfectedPeopleInTheLocality
+ViewNumberOfInfectedPeopleInTheLocality : entry/View
+ViewNumberOfInfectedPeopleInTheLocality : do/View number of infected people in the locality
+ViewNumberOfInfectedPeopleInTheLocality : exit/Idle
+
+state NoOfDeathsInTheLocality
+NoOfDeathsInTheLocality : entry/View
+NoOfDeathsInTheLocality : do/View no. of deaths in the locality
+NoOfDeathsInTheLocality : exit/Idle
+
+state ViewMaskDemand
+ViewMaskDemand : entry/View
+ViewMaskDemand : do/View mask demand in the locality
+ViewMaskDemand : exit/Stock
+
+state StockUp
+StockUp : entry/Stock
+StockUp : do/Stock up masks and gloves by the shops
+StockUp : exit/End
+
+state SendPatientInfo
+SendPatientInfo : entry/To home page
+SendPatientInfo : do/Update data by home quarantined patients
+SendPatientInfo : exit/View patient info
+
+state ViewPatientInfo
+ViewPatientInfo : entry/View patient info
+ViewPatientInfo : do/View patient info by the medical professional
+ViewPatientInfo : exit/Prescribe
+
+state PrescribeMedicinesIfNeeded
+PrescribeMedicinesIfNeeded : entry/Prescribe
+PrescribeMedicinesIfNeeded : do/Prescribe medicines if needed
+PrescribeMedicinesIfNeeded : exit/View data from doc
+
+state ViewDataSharedByDoctor
+ViewDataSharedByDoctor : entry/View data from doc
+ViewDataSharedByDoctor : do/View data shared by doctor
+ViewDataSharedByDoctor : exit/Buy medicines
+
+state ListAllMedicalShops
+ListAllMedicalShops : entry/To home page
+ListAllMedicalShops : do/List all medical shops in the locality
+ListAllMedicalShops : exit/Buy medicines
+
+state AssignCorporationWorker
+AssignCorporationWorker : entry/To home page
+AssignCorporationWorker : do/Assign workers to disinfect in an area
+AssignCorporationWorker : exit/Update status
+
+state UpdateStatusOfCleanliness
+UpdateStatusOfCleanliness : entry/Update status
+UpdateStatusOfCleanliness : do/Update status of cleanliness in the locality
+UpdateStatusOfCleanliness : exit/End
+
+state BuyMedicines
+BuyMedicines : entry/Buy medicines
+BuyMedicines : do/Buy medicines if needed
+BuyMedicines : exit/End
+
+state J1 <<choice>>
+state J2 <<choice>>
+[*] --> Idle
+
+Idle --> J1
+J1 --> Register
+J1 --> Login
+
+Register --> J2
+J2 --> Login
+J2 --> InvalidRegistration
+InvalidRegistration --> [*]
+
+Login --> J3
+J3 --> InvalidLogin
+J3 --> ReadBlog
+J3 --> UpdateCurrentNoOfInfectedPeople
+J3 --> SendPatientInfo
+J3 --> ListAllMedicalShops
+J3 --> AssignCorporationWorker
+@enduml
+
+
+Validation issues to fix:
+- unreachable_states_detected
+- unreachable: BuyMedicines, NoOfDeathsInTheLocality, PrescribeMedicinesIfNeeded, StockUp, UpdateStatusOfCleanliness, ViewDataSharedByDoctor, ViewMaskDemand, ViewNumberOfInfectedPeopleInTheLocality, ViewPatientInfo
+- orphan_states_detected
+- orphan: BuyMedicines, NoOfDeathsInTheLocality, PrescribeMedicinesIfNeeded, StockUp, UpdateStatusOfCleanliness, ViewDataSharedByDoctor, ViewMaskDemand, ViewNumberOfInfectedPeopleInTheLocality, ViewPatientInfo
+- choice_node_without_guarded_outgoing_transitions (J1)
+- choice_node_without_guarded_outgoing_transitions (J2)
+
+Repair guidance for these issues:
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+- For orphan states, either connect them with reasonable incoming/outgoing transitions based on the requirement, or remove them if they are unsupported.
+- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].

@@ -1,0 +1,105 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Healthcare Portal — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to complete registration.
+2. The system shall end access if registration fails.
+3. The system shall allow registered users to sign in.
+4. The system shall provide access to available facilities after signing in.
+5. The system shall allow users to read news and expert content.
+6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.
+7. The system shall allow users to continue using the system or finish the session after viewing a result.
+8. The system shall process and validate insurance for available finance-related services.
+9. The system shall check payment with insurance for doctor consultations and complete the payment process.
+10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.
+11. The system shall inform users about cash payment details if chosen as the payment method.
+12. The system shall complete the payment process for insurance-based payments.
+13. The system shall collect user feedback after service completion.
+14. The system shall log out users at the end of their session.
+
+Candidate PlantUML:
+@startuml
+title UML State Transition Diagram - Healthcare Portal
+
+state "Idle" as Idle
+[*] --> Idle : Start
+
+state "Register" as Register
+Idle --> Register : Register
+
+state "InvalidRegister" as InvalidRegister
+Register --> InvalidRegister : Registration Failed
+InvalidRegister --> [*] : Logout
+
+state "Login" as Login
+Idle --> Login : Login
+
+state "InvalidLogin" as InvalidLogin
+Login --> InvalidLogin : Invalid Credentials
+InvalidLogin --> [*] : Logout
+
+state "MainMenu" as MainMenu
+Register --> MainMenu : Successful Registration
+Login --> MainMenu : Successful Login
+MainMenu : entry/MainMenu
+MainMenu : do/Access facilities
+
+state "ReadContent" as ReadContent
+MainMenu --> ReadContent : Read content
+ReadContent --> MainMenu : Back to Menu
+
+state "HealthInfo" as HealthInfo
+MainMenu --> HealthInfo : Check health info
+HealthInfo --> MainMenu : Back to Menu
+
+state "ViewResult" as ViewResult
+MainMenu --> ViewResult : View result
+ViewResult --> MainMenu : Continue
+ViewResult --> [*] : Logout
+
+state "ProcessInsurance" as ProcessInsurance
+MainMenu --> ProcessInsurance : Process Insurance
+ProcessInsurance --> MainMenu : Insurance Approved
+ProcessInsurance --> InvalidRegister : Insurance Rejected
+
+state "PaymentSelection" as PaymentSelection
+ProcessInsurance --> PaymentSelection : Select Payment Method
+PaymentSelection --> CashPayment : Cash
+PaymentSelection --> InsurancePayment : Insurance
+
+state "CashPayment" as CashPayment
+PaymentSelection --> CashPayment : Cash
+CashPayment --> MainMenu : Payment Completed
+
+state "InsurancePayment" as InsurancePayment
+PaymentSelection --> InsurancePayment : Insurance
+InsurancePayment --> MainMenu : Payment Completed
+
+state "Logout" as Logout
+ViewResult --> Logout : Logout
+MainMenu --> Logout : Logout
+@enduml
+
+
+Validation issues:
+- duplicate_transitions_detected (2)
+
+Validator details:
+- Current initial state: Idle
+- State count: 14
+- Transition count: 22
+- Duplicate transition count: 2
+
+Valid PlantUML repair patterns:
+Pattern 1: merge duplicate transitions
+' Keep one transition for the same source and target
+SOURCE_STATE --> TARGET_STATE : COMBINED_SUPPORTED_EVENT

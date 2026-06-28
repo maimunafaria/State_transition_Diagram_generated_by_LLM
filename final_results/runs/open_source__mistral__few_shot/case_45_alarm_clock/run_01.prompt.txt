@@ -1,0 +1,282 @@
+Act as a software requirements analyst and UML modeling expert.
+
+
+
+Your task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.
+
+
+
+Follow the structure demonstrated in the examples below.
+
+
+
+--- Examples ---
+
+Example 1 Requirement:
+Controlpanel Class — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check the entered password.
+2. The system shall allow the user to continue making selections if the password is correct.
+3. The system shall limit the number of incorrect password attempts a user can make.
+4. The system shall lock and not allow further access for a certain period after too many incorrect attempts.
+5. The system shall allow users to try accessing again after the lockout period has passed.
+
+Example 1 PlantUML:
+@startuml
+title State Diagram - Control Panel
+
+[*] --> Reading : Key hit
+
+state Reading
+state Comparing
+state Locked
+state Selecting
+
+
+Comparing : do / validatePassword
+
+
+Reading --> Comparing : Password entered
+
+
+Comparing --> Comparing : Password incorrect\nnumberOfTries < maxTries
+
+
+Comparing --> Locked : numberOfTries > maxTries
+
+
+Comparing --> Selecting : Password correct
+
+
+Locked --> Locked : Timer <= lockedTime
+
+
+Locked --> Reading : Timer > lockedTime
+
+
+Selecting --> Reading : Activation successful
+
+@enduml
+
+Example 2 Requirement:
+Business Process Outsourcing Bpo Management System Scenario 1 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall prompt the user to choose whether they are a new user or an already registered user.
+2. The system shall require new users to enter their details for registration and end the process if the details are invalid.
+3. The system shall save the user's information after a successful registration and allow them to log in.
+4. The system shall allow registered users to directly log in by entering their username and password and continue if the login is successful.
+5. The system shall allow users to manage their profile after logging in, which includes editing details, uploading or accepting requests, searching for other users, or viewing current deals.
+6. The system shall require users to log out after they complete any action.
+
+Example 2 PlantUML:
+@startuml
+title UML State Machine Diagram (User System)
+
+[*] --> UserType
+
+state UserType <<choice>>
+UserType --> Registration : [New user]
+UserType --> Login : [Registered user]
+
+state "Registration" as Registration {
+    [*] --> GettingDetails
+
+    state GettingDetails
+    state ChoiceReg <<choice>>
+    state "Update Database" as UpdateDB
+    state EndInvalid <<choice>>
+
+    GettingDetails --> ChoiceReg : [Registration verification]
+    ChoiceReg --> UpdateDB : [valid]
+    ChoiceReg --> EndInvalid : [invalid]
+
+    EndInvalid --> [*]
+}
+
+Registration : entry / New user
+Registration : do / Registration
+Registration : exit / After updation
+
+UpdateDB --> Login : [verified]
+
+state Login
+Login : do / Enter username and password
+Login : exit / After verification
+
+Login --> Profile : [valid uname & pwd]
+
+state "Profile" as Profile {
+    [*] --> ChoiceProfile
+
+    state ChoiceProfile <<choice>>
+    state "View or Edit profile" as EditProfile
+    state "Upload or Accept request" as UploadReq
+    state "Search users" as SearchUsers
+    state "View current deals" as ViewDeals
+
+    ChoiceProfile --> EditProfile : [edit profile data]
+    ChoiceProfile --> UploadReq : [new project]
+    ChoiceProfile --> SearchUsers : [search user]
+    ChoiceProfile --> ViewDeals : [current deals]
+
+
+}
+
+Profile : entry / View or Edit profile
+Profile : do / Upload or Accept request
+Profile : do / Search users
+Profile : do / View current deals
+Profile : exit / Logout
+
+    EditProfile --> [*] : [Logout]
+    UploadReq --> [*] : [Logout]
+    SearchUsers --> [*] : [Logout]
+    ViewDeals --> [*] : [Logout]
+
+@enduml
+
+Example 3 Requirement:
+Business Process Outsourcing Bpo Management System Scenario 3 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to upload a new request.
+2. The system shall enable a BPO organization to save the details of a project.
+3. The system shall allow a client to search for a suitable project category.
+4. The system shall enable an BPO organization to accept or decline a request from a client.
+5. The system shall allow a client to decide whether to proceed with an accepted project or reject it.
+6. The system shall update the project status after acceptance by both parties.
+7. The system shall allow a client to track the progress of a project.
+8. The system shall enable an BPO organization to update the progress of a project.
+9. The system shall upload a final project once work is completed.
+10. The system shall perform a quality check on the final project.
+11. The system shall restart the process if a client is unsatisfied with the final project.
+12. The system shall make payment if the client is satisfied with the final project.
+13. The system shall deliver the project after payment.
+14. The system shall allow a client to provide a rating for the completed project.
+
+Example 3 PlantUML:
+@startuml
+title UML State Machine Diagram (Upload or Accept Request)
+
+state "Upload or Accept request" as UAR {
+
+    [*] --> ChoiceUser
+
+
+    UAR : entry / Regarding request details
+    UAR : do / Project dealings
+    UAR : exit / After finishing rating
+
+
+    state ChoiceUser <<choice>>
+
+    ChoiceUser --> EnterDetails : [user = BPO organization]
+    ChoiceUser --> SearchCategory : [user = client]
+
+
+    state "Enter project details" as EnterDetails
+    state "Update database" as UpdateDB
+
+    EnterDetails --> UpdateDB
+    UpdateDB --> [*]
+
+
+    state "Search project category" as SearchCategory
+    state ChoiceBPO <<choice>>
+    state ChoiceClient <<choice>>
+
+    SearchCategory --> ChoiceBPO
+
+    ChoiceBPO --> EndDecline : [BPO org declines]
+    ChoiceBPO --> ChoiceClient : [BPO org accepts]
+
+    ChoiceClient --> EndReject : [client rejects]
+    ChoiceClient --> UpdateStatus : [client accepts]
+
+    state EndDecline <<choice>>
+    EndDecline --> [*]
+
+    state EndReject <<choice>>
+    EndReject --> [*]
+
+    state "Update status of project" as UpdateStatus
+
+    state ChoiceTracking <<choice>>
+
+    UpdateStatus --> ChoiceTracking
+
+    ChoiceTracking --> DisplayProgress : [client wishes to track]
+    ChoiceTracking --> UpdateProgress : [user = BPO org]
+
+    state "Display progress" as DisplayProgress
+    DisplayProgress --> [*]
+
+    state "Update progress" as UpdateProgress
+
+
+    UpdateProgress --> UploadFinal : [End of project]
+
+    state "Upload final project" as UploadFinal
+
+    state QualityCheck <<choice>>
+
+    UploadFinal --> QualityCheck : [Quality check]
+
+    QualityCheck --> Payment : [satisfied]
+    QualityCheck --> ChoiceTracking : [Not satisfied]
+
+    state Payment
+    state Shipment
+    state Rating
+
+    Payment --> Shipment
+    Shipment --> Rating
+
+    Rating --> [*]
+}
+
+@enduml
+
+
+
+--- Process ---
+
+1. Identify all system states.
+
+2. Identify events/conditions triggering transitions.
+
+3. Define transitions clearly between states.
+
+4. Ensure logical consistency (no unreachable states).
+
+5. Identify one initial state and at least one final state.
+
+
+
+--- Output Rules ---
+
+- Generate ONLY valid PlantUML code.
+
+- Include initial and final states.
+
+- Use proper UML state diagram syntax.
+
+- Do not include explanations or extra text.
+
+
+
+--- Task ---
+
+Requirement:
+
+Alarm Clock — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall be in an off state initially.
+2. The system shall support when the user sets an alarm time, the system shall activate the alarm.
+3. The system shall ensure that the user shall be able to turn off the activated alarm.
+4. The system shall support when the current time matches the set alarm time, the system shall start ringing the alarm.
+5. The system shall ensure that once the alarm is ringing, the user shall be able to stop it.
+6. The system shall support after stopping the alarm, the system shall remain active for the next scheduled alarm time.

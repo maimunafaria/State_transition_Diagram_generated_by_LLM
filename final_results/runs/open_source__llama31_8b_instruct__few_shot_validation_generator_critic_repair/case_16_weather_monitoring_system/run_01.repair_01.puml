@@ -1,0 +1,93 @@
+@startuml
+title Weather Monitoring System State Diagram
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Create account / Login
+
+state "Create account" as CreateAccount
+CreateAccount : entry/Create account
+CreateAccount : do/Create account
+CreateAccount : exit/Login / [invalid]Invalid registration
+
+state "Invalid registration" as InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login / [invalid]To home page
+
+state "Invalid login" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state "Check weather" as CheckWeather
+CheckWeather : entry/To home page
+CheckWeather : entry/Check weather for current or new location
+CheckWeather : exit/[invalid]Invalid location / Select weather parameter
+
+state "Select weather parameter" as SelectWeatherParameter
+SelectWeatherParameter : entry/Select weather parameter
+SelectWeatherParameter : do/Select temperature, humidity, rainfall, pressure, or dew point
+SelectWeatherParameter : exit/[invalid]Invalid parameter / Update weather information
+
+state "Update weather information" as UpdateWeatherInformation
+UpdateWeatherInformation : entry/Update weather information
+UpdateWeatherInformation : do/Update and show selected weather information
+UpdateWeatherInformation : exit/View additional weather details
+
+state "View additional weather details" as ViewAdditionalWeatherDetails
+ViewAdditionalWeatherDetails : entry/View additional weather details
+ViewAdditionalWeatherDetails : do/View alerts, weekly analysis, future prediction, or graph
+ViewAdditionalWeatherDetails : exit/[invalid]Logout
+
+state "Logout" as Logout
+Logout : entry/Logout
+Logout : do/End session
+Logout : exit/End
+
+state J1 <<choice>>
+J1 --> [valid]CreateAccount
+J1 --> Login
+
+state J2 <<choice>>
+J2 --> Login
+J2 --> InvalidRegistration
+
+state J3 <<choice>>
+J3 --> InvalidLogin
+J3 --> CheckWeather
+J3 --> Logout
+
+state J4 <<choice>>
+J4 --> SelectWeatherParameter
+J4 --> [invalid]Invalid location
+
+state J5 <<choice>>
+J5 --> UpdateWeatherInformation
+J5 --> [invalid]Invalid parameter
+
+state J6 <<choice>>
+J6 --> ViewAdditionalWeatherDetails
+J6 --> Logout
+
+state J7 <<choice>>
+J7 --> Logout
+
+[*] --> Idle
+
+Idle --> J1
+CreateAccount --> J2
+Login --> J3
+CheckWeather --> J4
+SelectWeatherParameter --> J5
+UpdateWeatherInformation --> J6
+ViewAdditionalWeatherDetails --> J7
+Logout --> [*]
+
+@enduml

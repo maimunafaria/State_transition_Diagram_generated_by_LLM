@@ -1,0 +1,134 @@
+{
+  "run_id": "open_source__qwen25_7b_instruct__rag",
+  "case_id": "case_45_alarm_clock",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nAlarm Clock — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall be in an off state initially.\n2. The system shall support when the user sets an alarm time, the system shall activate the alarm.\n3. The system shall ensure that the user shall be able to turn off the activated alarm.\n4. The system shall support when the current time matches the set alarm time, the system shall start ringing the alarm.\n5. The system shall ensure that once the alarm is ringing, the user shall be able to stop it.\n6. The system shall support after stopping the alarm, the system shall remain active for the next scheduled alarm time.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Diagram Core Syntax\n\nUse this document when generating a basic UML state transition diagram in PlantUML.\n\n## Diagram wrapper\n\nPlantUML code should be enclosed between `@startuml` and `@enduml`.\n\n```plantuml\n@startuml\n[*] --> Idle\nIdle --> [*]\n@enduml\n```\n\n## Initial and final state\n\nThe initial and final pseudostate is written as `[*]`.\n\nInitial transition:\n\n```plantuml\n[*] --> State1\n```\n\nFinal transition:\n\n```plantuml\nState1 --> [*]\n```\n\n## Transitions\n\nUse arrows between states.\n\n```plantuml\nState1 --> State2\nState1 -> State2\n```\n\nTransitions can include labels after a colon.\n\n```plantuml\nIdle --> LoggedIn : login successful\nLoggedIn --> LoggedOut : logout\n```\n\nLabels may include event, guard, and action information.\n\n```plantuml\n\n# PlantUML Composite States and Pseudostates\n\nUse this document when the requirement contains nested behavior, decisions, history, branching, or concurrent regions.\n\n## Composite states\n\nA composite state is declared with `state Name { ... }`.\n\n```plantuml\n@startuml\n[*] --> LoggedIn\n\nstate LoggedIn {\n  [*] --> Dashboard\n  Dashboard --> Settings : open settings\n  Settings --> Dashboard : back\n}\n\nLoggedIn --> [*] : logout\n@enduml\n```\n\n## Nested substates\n\nNested states may be declared inside a composite state.\n\n```plantuml\nstate Parent {\n  state ChildA\n  state ChildB\n  ChildA --> ChildB\n}\n```\n\n## Substate-to-substate transitions\n\nTransitions between substates are allowed.\n\n```plantuml\nstate A {\n  [*] --> X\n  X --> Y : next\n}\n```\n\n## History states\n\n# UML State Diagram Usage Guidelines\n\nUse this document to decide whether a requirement should be modeled as a state machine and how much detail to include.\n\n## When state diagrams are useful\n\nState diagrams are most useful when the same system or object behaves differently depending on its current state.\n\nGood candidates:\n\n```text\nATM sessions\nlogin/authentication flows\norder/payment lifecycles\ndevice controllers\napproval workflows\nbooking or registration workflows\nalarm/notification systems\n```\n\n## Scope\n\nA state diagram should focus on the lifecycle of one system, object, session, controller, or business process.\n\nAvoid mixing unrelated lifecycles into one diagram unless the requirement clearly describes them as one process.\n\n## Observability\n\n# State Syntax, Actions, and Activities\n\nUse this document when deciding whether something belongs inside a state or on a transition.\n\n## State meaning\n\nA state represents a condition during the lifecycle of the reactive object. In that condition, the object may wait for events, perform behavior, or react in a specific way.\n\nGood states:\n\n```text\nWaitingForInput\nAuthenticating\nPaymentPending\nProcessingOrder\nAlarmActive\n```\n\n## Actions\n\nAn action is short, atomic behavior. In modeling, actions are often attached to transitions or to state entry/exit behavior.\n\nTransition action pattern:\n\n```plantuml\nPending --> Approved : approve / notify user\n```\n\n## Activities\n\nExample requirement:\nMicrowave Oven Operation — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check for proper functioning before starting.\n2. The system shall alert the user and stop operation if an issue is detected.\n3. The system shall start cooking and run for the set time if no issues are detected.\n4. The system shall emit a sound to notify the user upon completion of cooking.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Microwave Oven Operation\n\nstate Operation {\n\n  state Checking\n  Checking : do / Check Status\n\n  state Cook\n  Cook : do / Run Generator\n\n  state Alarm\n  Alarm : do / Display Event\n\n  state Done\n  Done : do / Buzzer On for 5 Secs.\n\n  [*] --> Checking\n\n  Checking --> Cook : OK\n  Checking --> Alarm : Turntable Fault\n  Checking --> Alarm : Emitter Fault\n\n  Cook --> Done : Timeout\n  Cook --> Cook : Time\n}\n\nstate Disabled\nstate Waiting\n\nOperation --> Disabled : Door Open\nOperation --> Waiting : Cancel\n\nAlarm --> Disabled\nDone --> Waiting\n\n@enduml\n```\n\nExample requirement:\nOven — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to open the door whenever it is closed.\n2. The system shall allow the user to place food inside or remove it from the microwave when the door is open.\n3. The system shall require the user to close the door after placing food inside.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Microwave Oven Control - State Diagram\n\n[*] --> DoorShut\n\nstate \"Door Shut\" as DoorShut\nstate \"Door Open\" as DoorOpen\nstate \"Door Open With Item\" as DoorOpenItem\nstate \"Door Shut With Item\" as DoorShutItem\nstate \"Ready To Cook\" as ReadyToCook\nstate Cooking\n\nDoorShut --> DoorOpen : Door Opened\nDoorOpen --> DoorShut : Door Closed\n\nDoorOpen --> DoorOpenItem : Item Placed\nDoorOpenItem --> DoorOpen : Item Removed\n\nDoorOpenItem --> DoorShutItem : Door Closed\nDoorShutItem --> DoorOpenItem : Door Opened\n\nDoorShutItem --> ReadyToCook : Cooking Time Entered\nReadyToCook --> ReadyToCook : Cooking Time Entered\n\nReadyToCook --> Cooking : Start\n\nCooking --> DoorOpenItem : Door Opened\nCooking --> DoorShutItem : Timer Expired\n\n@enduml\n```\n\nExample requirement:\nAlert Notifier — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall initialize a component to detect updates upon initial loading.\n2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.\n3. The system shall process detected updates by storing them and evaluating their significance.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle Alert Notifier Component States\n\n[*] --> InitializeComponent : Load Component\n\nstate \"Initialize\\nComponent\" as InitializeComponent\nstate \"Waiting for Update\" as WaitingForUpdate\nstate \"Processing Update\" as ProcessingUpdate\nstate \"Unloading Component\" as UnloadingComponent\n\nWaitingForUpdate : do / checkForUpdate\n\nProcessingUpdate : entry / storeUpdate\nProcessingUpdate : do / evaluateUpdate\nProcessingUpdate : exit / [update > delta] Operator.Notify(update)\n\nUnloadingComponent : exit / compMgr.compUnloaded()\n\nInitializeComponent --> WaitingForUpdate : [ init. success ]\nInitializeComponent --> UnloadingComponent : [ init. failure ]\n\nWaitingForUpdate --> ProcessingUpdate : stock update\nProcessingUpdate --> WaitingForUpdate\n\nWaitingForUpdate --> UnloadingComponent : shutdown\n\nUnloadingComponent --> [*]\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Alarm Clock — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall be in an off state initially.\n2. The system shall support when the user sets an alarm time, the system shall activate the alarm.\n3. The system shall ensure that the user shall be able to turn off the activated alarm.\n4. The system shall support when the current time matches the set alarm time, the system shall start ringing the alarm.\n5. The system shall ensure that once the alarm is ringing, the user shall be able to stop it.\n6. The system shall support after stopping the alarm, the system shall remain active for the next scheduled alarm time.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag\\case_45_alarm_clock\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "multiple_initial_state_transitions (Off, Idle, SetAlarm)",
+      "missing_final_state_transition (state --> [*])",
+      "duplicate_transitions_detected (1)",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "initial_state": null,
+    "duplicate_transition_count": 1,
+    "unreachable_states": [],
+    "state_count": 6,
+    "transition_count": 7
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "vector",
+      "top_k": 3,
+      "query_domains": [],
+      "retrieved_docs": [
+        {
+          "name": "plantuml_rules\\plantuml_state_core_syntax.md",
+          "source_type": "plantuml_rule",
+          "vector_distance": 1.5069247484207153,
+          "clipped_chars": 759
+        },
+        {
+          "name": "plantuml_rules\\plantuml_state_composite_pseudostates.md",
+          "source_type": "plantuml_rule",
+          "vector_distance": 1.539171576499939,
+          "clipped_chars": 755
+        },
+        {
+          "name": "state_diagram_theory\\uml_state_diagram_usage_guidelines.md",
+          "source_type": "state_diagram_theory",
+          "vector_distance": 1.0893936157226562,
+          "clipped_chars": 755
+        },
+        {
+          "name": "state_diagram_theory\\arlow_state_action_activity_syntax.md",
+          "source_type": "state_diagram_theory",
+          "vector_distance": 1.219312071800232,
+          "clipped_chars": 669
+        },
+        {
+          "name": "dataset_examples\\case_53_microwave_oven_operation.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.9566522240638733,
+          "clipped_chars": 1017
+        },
+        {
+          "name": "dataset_examples\\case_73_oven.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.0095347166061401,
+          "clipped_chars": 1136
+        },
+        {
+          "name": "dataset_examples\\case_74_alert_notifier.md",
+          "source_type": "dataset_example",
+          "vector_distance": 1.0395448207855225,
+          "clipped_chars": 1266
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "valid": true,
+      "errors": []
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.16666666666666666,
+    "state_recall": 0.3333333333333333,
+    "state_f1": 0.2222222222222222,
+    "state_tp": 1,
+    "state_fp": 5,
+    "state_fn": 2,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 7,
+    "transition_fn": 4,
+    "state_precision_relaxed": 0.16666666666666666,
+    "state_recall_relaxed": 0.3333333333333333,
+    "state_f1_relaxed": 0.2222222222222222,
+    "state_tp_relaxed": 1,
+    "state_fp_relaxed": 5,
+    "state_fn_relaxed": 2,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 7,
+    "transition_fn_relaxed": 4,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 7,
+    "transition_fn_semantic": 4,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "multiple_initial_state_transitions (Off, Idle, SetAlarm)",
+      "missing_final_state_transition (state --> [*])",
+      "duplicate_transitions_detected (1)",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "hallucination_state_rate": 0.8333333333333334,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.8333333333333334,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.1111111111111111,
+    "overall_f1_relaxed": 0.1111111111111111,
+    "weighted_f1_relaxed_70_30": 0.15555555555555553,
+    "overall_f1_semantic": 0.1111111111111111,
+    "weighted_f1_semantic_70_30": 0.15555555555555553
+  }
+}

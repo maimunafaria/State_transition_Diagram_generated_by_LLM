@@ -1,0 +1,102 @@
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AccountCreationChoice <<choice>>
+state LoginChoice <<choice>>
+state ApplicationChoice <<choice>>
+state StatusViewChoice <<choice>>
+state StatusCheckChoice <<choice>>
+state ApplicationCancelChoice <<choice>>
+state DetailModificationChoice <<choice>>
+state DetailViewChoice <<choice>>
+state FeedbackChoice <<choice>>
+state EndJoin <<choice>>
+
+[*] --> AccountCreationChoice
+
+AccountCreationChoice --> Register
+AccountCreationChoice --> LoginChoice
+
+Register : do / Fill details
+Register : exit / Registration successful
+
+LoginChoice --> Login
+LoginChoice --> InvalidUser
+
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+InvalidUser : entry / Invalid login or invalid registration
+InvalidUser : do / Block entry to system
+InvalidUser : exit / Abnormal termination
+
+ApplicationChoice --> ApplyForVisa
+ApplicationChoice --> CancelApplication
+ApplicationChoice --> ModifyDetails
+ApplicationChoice --> ViewDetails
+ApplicationChoice --> ViewPurpose
+ApplicationChoice --> StatusViewChoice
+ApplicationChoice --> StatusCheckChoice
+ApplicationChoice --> FeedbackChoice
+
+ApplyForVisa : entry / User logged in
+ApplyForVisa : do / Apply for visa, make payment
+ApplyForVisa : exit / Application accepted
+
+CancelApplication : entry / User logged in
+CancelApplication : do / Cancel application
+CancelApplication : exit / Application cancelled
+
+ModifyDetails : entry / User logged in
+ModifyDetails : do / Modify user details
+ModifyDetails : exit / Details modified
+
+ViewDetails : entry / User logged in
+ViewDetails : do / View user details
+ViewDetails : exit / Details viewed
+
+ViewPurpose : entry / User logged in
+ViewPurpose : do / View visa application purpose
+ViewPurpose : exit / Purpose viewed
+
+StatusViewChoice --> ViewStatus
+StatusViewChoice --> StatusCheckChoice
+
+ViewStatus : entry / User logged in
+ViewStatus : do / View visa status
+ViewStatus : exit / Status viewed
+
+StatusCheckChoice --> CheckStatus
+StatusCheckChoice --> ViewStatus
+
+CheckStatus : entry / User logged in
+CheckStatus : do / Check visa status
+CheckStatus : exit / Status checked
+
+FeedbackChoice --> GiveFeedback
+FeedbackChoice --> StatusCheckChoice
+
+GiveFeedback : entry / User logged in
+GiveFeedback : do / Provide feedback
+GiveFeedback : exit / Feedback given
+
+DetailModificationChoice --> ModifyDetails
+DetailModificationChoice --> DetailViewChoice
+
+DetailModificationChoice --> ModifyDetails
+DetailViewChoice --> ViewDetails
+
+ModifyDetails --> DetailViewChoice
+ViewDetails --> DetailModificationChoice
+
+StatusCheckChoice --> ViewStatus
+ViewStatus --> StatusCheckChoice
+
+FeedbackChoice --> EndJoin
+StatusCheckChoice --> EndJoin
+
+EndJoin --> [*]
+
+@enduml

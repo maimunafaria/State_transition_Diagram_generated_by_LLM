@@ -1,0 +1,134 @@
+{
+  "run_id": "open_source__qwen25_7b_instruct__rag",
+  "case_id": "case_60_atm_2",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nAtm Scenario 2 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to select an amount to withdraw from a list of options.\n2. The system shall permit the user to enter a custom value if they want a different amount.\n3. The system shall verify the transaction after the user enters an amount.\n4. The system shall allow the user to re-enter the amount if the transaction is rejected.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Aliases, Notes, and Descriptions\n\nUse this document when state names are long or when the diagram needs annotations.\n\n## Long state names with alias\n\nUse aliases to keep transitions readable when state names are long.\n\n```plantuml\nstate \"Waiting for Payment Confirmation\" as WaitingPayment\nstate \"Order Completed Successfully\" as OrderComplete\n\nWaitingPayment --> OrderComplete : payment confirmed\n```\n\nAlternative alias form:\n\n```plantuml\nstate WaitingPayment as \"Waiting for Payment Confirmation\"\n```\n\n## Notes attached to states\n\nUse notes to add additional explanation without changing the state name.\n\n```plantuml\nnote right of Processing : validates request details\n```\n\nMulti-line notes:\n\n```plantuml\nnote left of Processing\nThe system checks the request,\n\n# PlantUML State Diagram Points, Pins, and Arrow Direction\n\nUse this document for less common state diagram syntax.\n\n## Entry and exit points\n\nEntry and exit points can be declared with stereotypes.\n\n```plantuml\nstate e1 <<entryPoint>>\nstate x1 <<exitPoint>>\n\n[*] --> e1\ne1 --> Processing\nProcessing --> x1\nx1 --> [*]\n```\n\n## Input and output pins\n\nUse `<<inputPin>>` and `<<outputPin>>` when the diagram needs explicit input/output pin notation.\n\n```plantuml\nstate input1 <<inputPin>>\nstate output1 <<outputPin>>\n\ninput1 --> Processing\nProcessing --> output1\n```\n\n## Expansion nodes\n\nUse `<<expansionInput>>` and `<<expansionOutput>>` for expansion nodes.\n\n```plantuml\nstate expIn <<expansionInput>>\nstate expOut <<expansionOutput>>\n\nexpIn --> Processing\nProcessing --> expOut\n```\n\n# UML State Diagram Usage Guidelines\n\nUse this document to decide whether a requirement should be modeled as a state machine and how much detail to include.\n\n## When state diagrams are useful\n\nState diagrams are most useful when the same system or object behaves differently depending on its current state.\n\nGood candidates:\n\n```text\nATM sessions\nlogin/authentication flows\norder/payment lifecycles\ndevice controllers\napproval workflows\nbooking or registration workflows\nalarm/notification systems\n```\n\n## Scope\n\nA state diagram should focus on the lifecycle of one system, object, session, controller, or business process.\n\nAvoid mixing unrelated lifecycles into one diagram unless the requirement clearly describes them as one process.\n\n## Observability\n\n# State Syntax, Actions, and Activities\n\nUse this document when deciding whether something belongs inside a state or on a transition.\n\n## State meaning\n\nA state represents a condition during the lifecycle of the reactive object. In that condition, the object may wait for events, perform behavior, or react in a specific way.\n\nGood states:\n\n```text\nWaitingForInput\nAuthenticating\nPaymentPending\nProcessingOrder\nAlarmActive\n```\n\n## Actions\n\nAn action is short, atomic behavior. In modeling, actions are often attached to transitions or to state entry/exit behavior.\n\nTransition action pattern:\n\n```plantuml\nPending --> Approved : approve / notify user\n```\n\n## Activities\n\nExample requirement:\nAtm Many Scenarios Scenario 6 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the entered PIN is correct.\n2. The system shall ask for the PIN again if it is incorrect.\n3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle ATM Control - Validate PIN and Withdraw Funds\n\n[*] --> Idle\n\nstate Idle\nstate WaitingForPIN\nstate ValidatingPIN\nstate WaitingForCustomerChoice\nstate ProcessingWithdrawal\nstate Dispensing\nstate Printing\nstate Ejecting\nstate Confiscating\nstate Terminating\nstate ClosedDown\n\nIdle : entry / Display Welcome\nClosedDown : entry / Display System Down\n\nIdle --> WaitingForPIN : Card Inserted / Get PIN\n\n\nWaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN\nWaitingForPIN --> Confiscating : Card Confiscated / display Confiscated\nValidatingPIN --> WaitingForPIN : Invalid PIN / Invalid PIN Prompt\n\nValidatingPIN --> Confiscating : Card Stolen, Card Expired /\\nConfiscate, Update Status\nValidatingPIN --> Confiscating : Third Invalid PIN /\\nConfiscate\n\nValidatingPIN --> WaitingForCustomerChoice : Valid PIN / Display Menu\n\nWaitingForPIN --> Ejecting : Cancel / Eject\nWaitingForCustomerChoice --> Ejecting : Cancel / Eject\nValidatingPIN --> Ejecting : Cancel / Eject\n\nWaitingForCustomerChoice --> ProcessingWithdrawal : Withdrawal Selected /\\nRequest Withdrawal, Display Wait\n\nProcessingWithdrawal --> Dispensing : Withdrawal Approved /\\nDispense Cash, Update Status\nProcessingWithdrawal --> Ejecting : Rejected / Eject\n\nDispensing --> Printing : Cash Dispensed /\\nPrint Receipt,\\nDisplay Cash Dispensed,\\nConfirm Cash Dispensed\nDispensing --> ClosedDown : Insufficient Cash / Eject\n\nPrinting --> Ejecting : Receipt Printed / Eject\n\nEjecting --> Terminating : Card Ejected / Display Ejected\nConfiscating --> Terminating : Card Confiscated / Display Confiscated\n\nTerminating --> Idle : After (Elapsed Time)\\n[Closedown Not Requested]\n\n\n@enduml\n```\n\nExample requirement:\nAtm Many Scenarios Scenario 9 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to choose to transfer money after entering the correct PIN.\n2. The system shall process the transfer request if it is approved.\n3. The system shall print a receipt for approved transfers and queries.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle ATM Control - Processing Transaction\n\nstate \"Waiting for Customer Choice\" as WaitingForChoice\n\nstate \"Processing Transaction\" as ProcessingTransaction {\n  state \"Processing Transfer\" as ProcessingTransfer\n  state \"Processing Query\" as ProcessingQuery\n  state \"Processing Withdrawal\" as ProcessingWithdrawal\n}\n\nstate Ejecting\nstate Printing\nstate Dispensing\n\nWaitingForChoice --> ProcessingTransfer : Transfer Selected /\\nRequest Transfer,\\nDisplay Wait\nWaitingForChoice --> ProcessingQuery : Query Selected /\\nRequest Query,\\nDisplay Wait\nWaitingForChoice --> ProcessingWithdrawal : Withdrawal Selected /\\nRequest Withdrawal,\\nDisplay Wait\n\nProcessingTransaction --> Ejecting : Rejected /\\nEject,\\nDisplay Apology\nProcessingTransfer --> Printing : Transfer Approved /\\nPrint Receipt,\\nUpdate Status\nProcessingQuery --> Printing : Query Approved /\\nPrint Receipt,\\nUpdate Status\nProcessingWithdrawal --> Dispensing : Withdrawal Approved /\\nDispense Cash,\\nUpdate Status\n\n@enduml\n```\n\nExample requirement:\nAtm Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the inserted card is valid.\n2. The system shall prompt the user to select an amount to withdraw if the card is valid.\n3. The system shall verify the transaction after the user selects an amount.\n4. The system shall return the card to the user once the transaction is completed.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle ATM State Machine\n\n[*] --> VerifyCard\n\nstate \"VerifyCard <<final>>\" as VerifyCard\n\nstate ReadAmount {\n  [*] --> SelectAmount\n  state SelectAmount\n  SelectAmount --> [*] : amount\n}\n\nstate OutOfService\nstate \"VerifyTransaction <<final>>\" as VerifyTransaction\nstate ReleaseCard\n\nVerifyCard --> ReadAmount : acceptCard\nReadAmount --> OutOfService : outOfService\nReadAmount --> VerifyTransaction\nVerifyTransaction --> ReleaseCard : releaseCard / <<final>>\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Atm Scenario 2 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to select an amount to withdraw from a list of options.\n2. The system shall permit the user to enter a custom value if they want a different amount.\n3. The system shall verify the transaction after the user enters an amount.\n4. The system shall allow the user to re-enter the amount if the transaction is rejected.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__rag\\case_60_atm_2\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "unreachable_states_detected",
+      "unreachable: SelectAmount <<initial>>",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "initial_state": "SelectAmount",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [
+      "SelectAmount <<initial>>"
+    ],
+    "state_count": 4,
+    "transition_count": 2
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "vector",
+      "top_k": 3,
+      "query_domains": [],
+      "retrieved_docs": [
+        {
+          "name": "plantuml_rules\\plantuml_state_alias_notes_descriptions.md",
+          "source_type": "plantuml_rule",
+          "vector_distance": 1.541597604751587,
+          "clipped_chars": 779
+        },
+        {
+          "name": "plantuml_rules\\plantuml_state_points_pins_and_direction.md",
+          "source_type": "plantuml_rule",
+          "vector_distance": 1.653182864189148,
+          "clipped_chars": 781
+        },
+        {
+          "name": "state_diagram_theory\\uml_state_diagram_usage_guidelines.md",
+          "source_type": "state_diagram_theory",
+          "vector_distance": 1.1858882904052734,
+          "clipped_chars": 755
+        },
+        {
+          "name": "state_diagram_theory\\arlow_state_action_activity_syntax.md",
+          "source_type": "state_diagram_theory",
+          "vector_distance": 1.4262183904647827,
+          "clipped_chars": 669
+        },
+        {
+          "name": "dataset_examples\\case_69_atm_many_scenarios_6.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.46443668007850647,
+          "clipped_chars": 2051
+        },
+        {
+          "name": "dataset_examples\\case_72_atm_many_scenarios_9.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.5410305857658386,
+          "clipped_chars": 1378
+        },
+        {
+          "name": "dataset_examples\\case_61_atm_3.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.675918698310852,
+          "clipped_chars": 917
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "valid": true,
+      "errors": []
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 4,
+    "state_fn": 5,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 2,
+    "transition_fn": 3,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 4,
+    "state_fn_relaxed": 5,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 2,
+    "transition_fn_relaxed": 3,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 2,
+    "transition_fn_semantic": 3,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "unreachable_states_detected",
+      "unreachable: SelectAmount <<initial>>",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0
+  }
+}

@@ -1,0 +1,92 @@
+@startuml
+title UML State Machine Diagram
+
+state StartChoice <<choice>>
+state AdminChoice <<choice>>
+state EditorChoice <<choice>>
+state ReadFeedbackChoice <<choice>>
+state EndJoin <<choice>>
+
+[*] --> StartChoice
+
+state Register
+Register : do / Fill details
+Register : exit / Registration successful
+
+state Login
+Login : entry / Registered user
+Login : do / Enter login credentials
+Login : exit / Valid username and password
+
+state "Manage profiles" as ManageProfiles
+ManageProfiles : entry / Admin logged in
+ManageProfiles : do / Manage profile in database
+ManageProfiles : do / Add, delete or edit profiles if necessary
+ManageProfiles : exit / Action completed
+
+state "Invalid user" as InvalidUser
+InvalidUser : entry / Invalid login or invalid registration
+InvalidUser : do / Block entry to system
+InvalidUser : exit / Abnormal termination
+
+state Writing
+Writing : entry / Writer logged in
+Writing : do / Write article
+Writing : exit / Send to editor
+
+state Editing
+Editing : entry / Editor logged in and article to be edited
+Editing : do / Edit article
+Editing : exit / Send to moderator/admin
+
+state Publishing
+Publishing : entry / Admin logged in and article to be approved
+Publishing : do / Choose to approve and publish or reject article
+Publishing : do / Add article to database if approved
+Publishing : exit / Publish article
+
+state Search
+Search : entry / Choose to search for articles
+Search : do / Read searched articles
+Search : exit / Completed reading
+
+state Reading
+Reading : entry / Published article
+Reading : do / Read article
+Reading : exit / Completed reading
+
+state Feedback
+Feedback : entry / Reader chosen to give feedback
+Feedback : do / Get feedback
+Feedback : exit / Feedback entry successful
+
+StartChoice --> Register [user]
+StartChoice --> Login [user]
+
+AdminChoice [admin] --> ManageProfiles [manage_profile]
+AdminChoice [admin] --> InvalidUser [invalid_login]
+
+EditorChoice [editor] --> Writing [write_article]
+EditorChoice [editor] --> Editing [edit_article]
+EditorChoice [editor] --> InvalidUser [invalid_user]
+
+Writing [writer] --> Editing [edit_article]
+Editing [editor] --> Publishing [approve_or_reject]
+ManageProfiles [admin] --> Publishing [approve_or_reject]
+
+InvalidUser [user] --> [*]
+
+Publishing [admin] --> Reading [read_article]
+Reading [reader] --> Reading [continue_reading]
+
+Search [user] --> Search [search_articles]
+Reading [reader] --> ReadFeedbackChoice [give_feedback]
+
+ReadFeedbackChoice [reader] --> Search [search_articles]
+ReadFeedbackChoice [reader] --> Feedback [give_feedback]
+
+Feedback [reader] --> EndJoin [exit]
+Search [user] --> EndJoin [exit]
+
+EndJoin [*] --> [*]
+@enduml

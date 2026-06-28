@@ -1,0 +1,134 @@
+{
+  "run_id": "open_source__deepseek_r1_14b__rag",
+  "case_id": "case_02_inventory",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "You convert natural language software requirements into UML state machine diagrams in PlantUML format.\n\nRules:\n\n- Output ONLY PlantUML code.\n\n- Start with @startuml and end with @enduml.\n\n- Use [*] for exactly one initial transition.\n\n- Use --> for transitions.\n\n- Include transition labels when requirement evidence exists.\n\n- Do not add explanations or markdown fences.\n\nTarget requirement:\n\nInventory — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to add new goods to the inventory.\n2. The system shall allow the user to update the price of existing items in the inventory.\n3. The system shall allow the user to remove goods from the inventory that are no longer required.\n4. The system shall identify expired goods and notify the user about their removal from the inventory.\n5. The system shall allow the user to place an order to a supplier for additional goods when required.\n6. The system shall generate an invoice for the order once it is placed.\n7. The system shall allow the user to search for items available in the inventory and select them for purchase.\n8. The system shall calculate the applicable discount and tax based on the selected items.\n9. The system shall generate a receipt for the customer after the purchase.\n10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.\n11. The system shall record customer requests for items that may not be currently available.\n12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.\n\nReference context (use as support; the target requirement above is primary):\n\n# PlantUML State Aliases, Notes, and Descriptions\n\nUse this document when state names are long or when the diagram needs annotations.\n\n## Long state names with alias\n\nUse aliases to keep transitions readable when state names are long.\n\n```plantuml\nstate \"Waiting for Payment Confirmation\" as WaitingPayment\nstate \"Order Completed Successfully\" as OrderComplete\n\nWaitingPayment --> OrderComplete : payment confirmed\n```\n\nAlternative alias form:\n\n```plantuml\nstate WaitingPayment as \"Waiting for Payment Confirmation\"\n```\n\n## Notes attached to states\n\nUse notes to add additional explanation without changing the state name.\n\n```plantuml\nnote right of Processing : validates request details\n```\n\nMulti-line notes:\n\n```plantuml\nnote left of Processing\nThe system checks the request,\n\n# PlantUML State Diagram Points, Pins, and Arrow Direction\n\nUse this document for less common state diagram syntax.\n\n## Entry and exit points\n\nEntry and exit points can be declared with stereotypes.\n\n```plantuml\nstate e1 <<entryPoint>>\nstate x1 <<exitPoint>>\n\n[*] --> e1\ne1 --> Processing\nProcessing --> x1\nx1 --> [*]\n```\n\n## Input and output pins\n\nUse `<<inputPin>>` and `<<outputPin>>` when the diagram needs explicit input/output pin notation.\n\n```plantuml\nstate input1 <<inputPin>>\nstate output1 <<outputPin>>\n\ninput1 --> Processing\nProcessing --> output1\n```\n\n## Expansion nodes\n\nUse `<<expansionInput>>` and `<<expansionOutput>>` for expansion nodes.\n\n```plantuml\nstate expIn <<expansionInput>>\nstate expOut <<expansionOutput>>\n\nexpIn --> Processing\nProcessing --> expOut\n```\n\n# UML State Diagram Usage Guidelines\n\nUse this document to decide whether a requirement should be modeled as a state machine and how much detail to include.\n\n## When state diagrams are useful\n\nState diagrams are most useful when the same system or object behaves differently depending on its current state.\n\nGood candidates:\n\n```text\nATM sessions\nlogin/authentication flows\norder/payment lifecycles\ndevice controllers\napproval workflows\nbooking or registration workflows\nalarm/notification systems\n```\n\n## Scope\n\nA state diagram should focus on the lifecycle of one system, object, session, controller, or business process.\n\nAvoid mixing unrelated lifecycles into one diagram unless the requirement clearly describes them as one process.\n\n## Observability\n\n# State Syntax, Actions, and Activities\n\nUse this document when deciding whether something belongs inside a state or on a transition.\n\n## State meaning\n\nA state represents a condition during the lifecycle of the reactive object. In that condition, the object may wait for events, perform behavior, or react in a specific way.\n\nGood states:\n\n```text\nWaitingForInput\nAuthenticating\nPaymentPending\nProcessingOrder\nAlarmActive\n```\n\n## Actions\n\nAn action is short, atomic behavior. In modeling, actions are often attached to transitions or to state entry/exit behavior.\n\nTransition action pattern:\n\n```plantuml\nPending --> Approved : approve / notify user\n```\n\n## Activities\n\nExample requirement:\nOnline Pharmacy Management System Scenario 1 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow customers to search for products.\n2. The system shall allow customers to add products to their wishlist.\n3. The system shall allow customers to move items from their wishlist to the shopping cart.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Machine Diagram - Customer\n\n[*] --> SearchProduct\n\nstate \"Search product\" as SearchProduct\nstate \"Add to wishlist\" as AddToWishlist\nstate \"Add to cart\" as AddToCart\nstate \"Update delivery info\" as UpdateDeliveryInfo\nstate \"Track order\" as TrackOrder\nstate Payment\n\nSearchProduct --> AddToWishlist\nAddToWishlist --> AddToCart\nAddToCart --> UpdateDeliveryInfo\nUpdateDeliveryInfo --> TrackOrder\nTrackOrder --> Payment\nPayment --> [*]\n\n@enduml\n```\n\nExample requirement:\nTextile — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow customers to create an account by filling in required details.\n2. The system shall enable customers to place orders for garments once they are registered.\n3. The system shall send out sample materials if a customer needs them after placing an order.\n\nReference PlantUML:\n```plantuml\n@startuml\n\n[*] --> CustomerRegistration\nstate Choice1 <<choice>>\nstate Choice2 <<choice>>\nCustomerRegistration : entry / Start state\nCustomerRegistration : do / Fill in required details\nCustomerRegistration : exit / Getting garment orders\n\nCustomerRegistration --> GettingGarmentOrders : registration complete\n\nGettingGarmentOrders : entry / Customer registration\nGettingGarmentOrders : do / Place the orders\nGettingGarmentOrders : exit / Sampling / Stock checking\n\nGettingGarmentOrders --> Sampling : sampling required\nGettingGarmentOrders --> StockChecking : check stock\n\nSampling : entry / Getting garment orders\nSampling : do / Send out sample materials while ordering\nSampling : exit / decision\n\nSampling --> Choice1 : proceed\nStockChecking --> Choice1\n\nStockChecking : entry / Getting garment orders\nStockChecking : do / Check availability of raw material\nStockChecking : exit / decision making\n\nChoice1 --> PurchasingRawMaterials : not in stock\nChoice1 --> ProcessingRawMaterials : in stock\n\nPurchasingRawMaterials : entry / Stock checking\nPurchasingRawMaterials : do / Buy raw materials\nPurchasingRawMaterials : exit / Production of garments\n\nProcessingRawMaterials : entry / Stock checking\nProcessingRawMaterials : do / Processing\nProcessingRawMaterials : exit / Production of garments\nProcessingRawMaterials --> Choice2\nPurchasingRawMaterials --> Choice2\nChoice2 --> ProductionOfGarments\n\nProductionOfGarments : entry / Purchasing or processing of raw materials\nProductionOfGarments : do / Manufacturing\nProductionOfGarments : exit / Product checking\n\nProductionOfGarments --> ProductChecking\n\nProductChecking : entry / Production of garments\nProductChecking : do / Checking for defects and clearance\nProductChecking : exit / Receiving the ordered garments\n\nProductChecking --> ReceivingOrderedGarments\n\nReceivingOrderedGarments : entry / Product checking\nReceivingOrderedGarments : do / Garment delivered\nReceivingOrderedGarments : exit / Billing\n\nReceivingOrderedGarments --> Billing\n\nBilling : entry / Receiving the ordered garments\nBilling : do / Making payments\nBilling : exit / Report generation\n\nBilling --> ReportGeneration\n\nReportGeneration : entry / Billing\nReportGeneration : do / Giving feedback\nReportGeneration : exit / final state\n\nReportGeneration --> [*]\n\n@enduml\n```\n\nExample requirement:\nArt Gallery Mananement System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall verify login credentials upon submission.\n2. The system shall display an error message and prevent further interaction if login details are incorrect.\n3. The system shall allow users to view products or update their information after a successful login.\n\nReference PlantUML:\n```plantuml\n@startuml\ntitle UML State Chart Diagram\n\n\n[*] --> Login\n\nstate Login\nLogin : entry / getInfo\nLogin : do / verifyData\nLogin : exit / verified\n\nstate LoginDecision <<choice>>\nLogin --> LoginDecision\n\nstate \"Valid Login\" as ValidLogin\nValidLogin : entry / contain Info\nValidLogin : do / allow Access to system\nValidLogin : exit / gallery Entry\n\nstate \"Invalid Login\" as InvalidLogin\nInvalidLogin : entry / wrong Info\nInvalidLogin : do / display Error message\nInvalidLogin : exit / return To Start\n\nLoginDecision --> ValidLogin\nLoginDecision --> InvalidLogin\n\nstate NavChoice <<choice>>\nValidLogin --> NavChoice\n\nstate Gallery\nGallery : entry / show Products\nGallery : do / allow to select Products\nGallery : exit / save Products\n\nstate Update\nUpdate : entry / contain Info\nUpdate : do / take New Info\nUpdate : exit / save new Info\n\nNavChoice --> Gallery\nNavChoice --> Update\n\nUpdate --> [*]\n\nstate Order\nOrder : entry / select Items\nOrder : do / allowto order If products In Stock\nOrder : exit / verification\n\nstate Cart\nCart : entry / contain Selected Items\nCart : do / all billing Info\nCart : exit / payment Method\n\nGallery --> Order\nOrder --> Cart\n\nstate Payment\nPayment : entry / get Payment Method\nPayment : do / confirm Payment\nPayment : exit / verify\n\nCart --> Payment\n\nstate PayDecision <<choice>>\nPayment --> PayDecision\n\nstate \"Valid Payment\" as ValidPayment\nValidPayment : entry / payment Method\nValidPayment : do / get Cash\nValidPayment : exit / confirmation of product\n\nstate \"Invalid Payment\" as InvalidPayment\nInvalidPayment : entry / wrong Entry\nInvalidPayment : do / error Message\nInvalidPayment : exit / return\n\nPayDecision --> ValidPayment\nPayDecision --> InvalidPayment\n\n\nstate Delivery\nDelivery : entry / take out Order\nDelivery : do / deliver Product\nDelivery : exit / exit System\n\nValidPayment --> Delivery\nDelivery --> [*]\n\nInvalidPayment --> [*]\n\n@enduml\n```\n\nNow return only the final PlantUML.\n",
+  "requirement_used": "Inventory — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow the user to add new goods to the inventory.\n2. The system shall allow the user to update the price of existing items in the inventory.\n3. The system shall allow the user to remove goods from the inventory that are no longer required.\n4. The system shall identify expired goods and notify the user about their removal from the inventory.\n5. The system shall allow the user to place an order to a supplier for additional goods when required.\n6. The system shall generate an invoice for the order once it is placed.\n7. The system shall allow the user to search for items available in the inventory and select them for purchase.\n8. The system shall calculate the applicable discount and tax based on the selected items.\n9. The system shall generate a receipt for the customer after the purchase.\n10. The system shall allow the user to replace an item or cancel the receipt during the billing process if needed.\n11. The system shall record customer requests for items that may not be currently available.\n12. The system shall allow the user to view a summary report of all transactions carried out in the system at any point.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__rag\\case_02_inventory\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "initial_state": "Start",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 13,
+    "transition_count": 24
+  },
+  "processing_steps": [
+    {
+      "stage": "rag_retrieval",
+      "mode": "vector",
+      "top_k": 3,
+      "query_domains": [
+        "customer",
+        "inventory",
+        "order"
+      ],
+      "retrieved_docs": [
+        {
+          "name": "plantuml_rules\\plantuml_state_alias_notes_descriptions.md",
+          "source_type": "plantuml_rule",
+          "vector_distance": 1.4518646001815796,
+          "clipped_chars": 779
+        },
+        {
+          "name": "plantuml_rules\\plantuml_state_points_pins_and_direction.md",
+          "source_type": "plantuml_rule",
+          "vector_distance": 1.7940571308135986,
+          "clipped_chars": 781
+        },
+        {
+          "name": "state_diagram_theory\\uml_state_diagram_usage_guidelines.md",
+          "source_type": "state_diagram_theory",
+          "vector_distance": 1.2597869634628296,
+          "clipped_chars": 755
+        },
+        {
+          "name": "state_diagram_theory\\arlow_state_action_activity_syntax.md",
+          "source_type": "state_diagram_theory",
+          "vector_distance": 1.420680284500122,
+          "clipped_chars": 669
+        },
+        {
+          "name": "dataset_examples\\case_24_online_pharmacy_management_system_1.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.7678822875022888,
+          "clipped_chars": 853
+        },
+        {
+          "name": "dataset_examples\\case_08_textile.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.7759957313537598,
+          "clipped_chars": 2694
+        },
+        {
+          "name": "dataset_examples\\case_35_art_gallery_mananement_system.md",
+          "source_type": "dataset_example",
+          "vector_distance": 0.8087369203567505,
+          "clipped_chars": 2300
+        }
+      ]
+    },
+    {
+      "stage": "generator",
+      "valid": true,
+      "errors": []
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 13,
+    "state_fn": 16,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 24,
+    "transition_fn": 11,
+    "state_precision_relaxed": 0.23076923076923078,
+    "state_recall_relaxed": 0.1875,
+    "state_f1_relaxed": 0.20689655172413793,
+    "state_tp_relaxed": 3,
+    "state_fp_relaxed": 10,
+    "state_fn_relaxed": 13,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 24,
+    "transition_fn_relaxed": 11,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 24,
+    "transition_fn_semantic": 11,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [
+      "missing_final_state_transition (state --> [*])",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.7692307692307693,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.10344827586206896,
+    "weighted_f1_relaxed_70_30": 0.14482758620689654,
+    "overall_f1_semantic": 0.10344827586206896,
+    "weighted_f1_semantic_70_30": 0.14482758620689654
+  }
+}

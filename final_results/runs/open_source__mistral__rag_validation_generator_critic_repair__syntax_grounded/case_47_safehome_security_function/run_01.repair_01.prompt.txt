@@ -1,0 +1,104 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.
+
+Candidate PlantUML:
+@startuml
+title Safehome Security Function State Diagram
+
+state Startup {
+  [*] --> Checking
+
+  state Checking
+  Checking : do / check everything during startup
+
+  state ReadyToUse
+  ReadyToUse : do / become ready to use if no problems found
+
+  state Resetting
+  Resetting : do / allow user to reset
+
+  state Activating
+  Activating : do / allow user to activate
+
+  state TurningOff
+  TurningOff : do / allow user to turn off
+
+  Checking --> ReadyToUse : no problems found
+  Checking --> Resetting : problem during startup
+
+  ReadyToUse --> StartMonitoring : user activates system
+  Activating --> StartMonitoring : user activates system
+  TurningOff --> [*] : user turns off system
+}
+
+state Monitoring {
+  state Normal
+  Normal : do / continue monitoring if no alarms
+
+  state AlarmActive
+  AlarmActive : do / start alarm and send alerts if sensor triggered
+
+  state FalseAlarm
+  FalseAlarm : do / continue monitoring if false alarm
+
+  state TimeEnded
+  TimeEnded : do / continue monitoring if time ends
+
+  Normal --> AlarmActive : sensor triggered
+  AlarmActive --> FalseAlarm : false alarm or time ended
+  FalseAlarm --> Normal
+  TimeEnded --> Normal
+}
+
+state Password {
+  state WaitingForPassword
+  WaitingForPassword : do / wait for user input at any time
+
+  state PasswordEntered
+  PasswordEntered : do / check entered password
+
+  WaitingForPassword --> PasswordEntered : password entered
+  PasswordEntered --> WaitingForPassword : incorrect password or password correct and system returning to normal
+}
+
+Startup --> Monitoring : no problems during startup and system activated
+Monitoring --> Password : alarm triggered or system turned off
+Password --> Monitoring : user enters the correct password
+@enduml
+
+
+Validation issues:
+- unreachable: Activating, AlarmActive, FalseAlarm, Monitoring, Normal, Password, PasswordEntered, Startup, TimeEnded, TurningOff, WaitingForPassword
+- unreachable_states_detected
+
+Validator details:
+- Current initial state: Checking
+- Unreachable states: Activating, AlarmActive, FalseAlarm, Monitoring, Normal, Password, PasswordEntered, Startup, TimeEnded, TurningOff, WaitingForPassword
+- State count: 15
+- Transition count: 13
+
+Valid PlantUML repair patterns:
+Pattern 1: connect a requirement-supported unreachable state
+REACHABLE_STATE --> UNREACHABLE_STATE : SUPPORTED_EVENT
+UNREACHABLE_STATE --> NEXT_STATE : SUPPORTED_EVENT

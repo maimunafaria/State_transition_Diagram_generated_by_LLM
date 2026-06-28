@@ -1,0 +1,33 @@
+@startuml
+title BPO Management System Search State Machine
+
+state "Main Window" as MainWindow
+state "Search Results" as SearchResults
+state "Filter Selection" as FilterSelection {
+  [*] --> NoCategorySelected
+
+  state "1 No Category Selected" as NoCategorySelected
+  state "2 Price Range Selection" as PriceRangeSelection {
+    [*] --> NoPriceRangeSelected
+
+    state "3 No Price Range Selected" as NoPriceRangeSelected
+
+    state "Search Flow" as SearchFlow {
+      [*] --> EmptyResults
+      state "4 Empty Results" as EmptyResults
+      state "5 Matching Users" as MatchingUsers
+
+      EmptyResults --> MainWindow : search()
+      MatchingUsers --> MainWindow : backButtonClicked()
+    }
+
+    NoPriceRangeSelected --> SearchFlow : priceRangeSelected()
+    SearchFlow --> SearchFlow : priceRangeSelected()
+  }
+
+  NoCategorySelected --> FilterSelection : categorySelected()
+  FilterSelection --> FilterSelection : categorySelected()
+}
+
+MainWindow --> FilterSelection : searchButtonClicked()
+@enduml

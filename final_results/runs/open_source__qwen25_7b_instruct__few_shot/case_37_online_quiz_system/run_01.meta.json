@@ -1,0 +1,99 @@
+{
+  "run_id": "open_source__qwen25_7b_instruct__few_shot",
+  "case_id": "case_37_online_quiz_system",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nAccount — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start an account as empty when it is first opened.\n2. The system shall activate an account and make it ready to use after setting it up and making an initial deposit.\n3. The system shall allow a user to deposit money while the account is active.\n4. The system shall allow a user to withdraw money while the account is active.\n5. The system shall allow a user to check account details like balance while the account is active.\n6. The system shall make an account inactive if all the money is withdrawn.\n7. The system shall allow closing an account after it has become inactive.\n8. The system shall render an account unusable once it is closed.\n\nExample 1 PlantUML:\n@startuml\ntitle State diagram for the Account class\n\n[*] --> EmptyAcct : Open\n\nstate \"Empty\\nacct\" as EmptyAcct\nstate \"Set up\\nacct\" as SetupAcct\nstate \"Working\\nacct\" as WorkingAcct\nstate \"Nonworking\\nacct\" as NonworkingAcct\nstate \"Dead\\nacct\" as DeadAcct\n\nEmptyAcct --> SetupAcct : Setup Acct\nSetupAcct --> WorkingAcct : Deposit (initial)\n\nWorkingAcct --> WorkingAcct : Deposit\nWorkingAcct --> WorkingAcct : Withdraw\nWorkingAcct --> WorkingAcct : Balance\\ncredit\\nacctInfo\n\nWorkingAcct --> NonworkingAcct : Withdrawal (final)\nNonworkingAcct --> DeadAcct : Close\nDeadAcct --> [*]\n\n@enduml\n\nExample 2 Requirement:\nAtm Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall check if the inserted card is valid.\n2. The system shall prompt the user to select an amount to withdraw if the card is valid.\n3. The system shall verify the transaction after the user selects an amount.\n4. The system shall return the card to the user once the transaction is completed.\n5. The system shall go out of service and not allow any operation if the machine is not working.\n\nExample 2 PlantUML:\n@startuml\ntitle ATM State Machine\n\n[*] --> VerifyCard\n\nstate \"VerifyCard <<final>>\" as VerifyCard\n\nstate ReadAmount {\n  [*] --> SelectAmount\n  state SelectAmount\n  SelectAmount --> [*] : amount\n}\n\nstate OutOfService\nstate \"VerifyTransaction <<final>>\" as VerifyTransaction\nstate ReleaseCard\n\nVerifyCard --> ReadAmount : acceptCard\nReadAmount --> OutOfService : outOfService\nReadAmount --> VerifyTransaction\nVerifyTransaction --> ReleaseCard : releaseCard / <<final>>\n\n@enduml\n\nExample 3 Requirement:\nOnline Marketplace — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall require the user to provide their details and create an account before they can join as a seller or customer.\n2. The system shall allow the user to sign in and access their workspace after completing registration and verification.\n3. The system shall enable the seller to add new products to the marketplace.\n4. The system shall allow the seller to promote existing products on the platform.\n5. The system shall enable the seller to communicate with customers through the platform.\n6. The system shall allow the seller to leave the platform at any time, leading to logging out.\n7. The system shall require the customer to sign in and access their personal dashboard upon joining.\n8. The system shall allow the customer to explore products on the platform.\n9. The system shall enable the customer to search and view available products during browsing.\n10. The system shall allow the customer to either stop browsing or proceed with a purchase after viewing products.\n11. The system shall add the selected product to the customer's cart and allow them to proceed to checkout if they decide to make a purchase.\n12. The system shall handle payment during the checkout process.\n13. The system shall allow the customer to communicate with a seller during their session.\n14. The system shall enable the customer to report a seller if needed, based on previous interactions.\n15. The system shall allow the customer to rate and review products after receiving them.\n16. The system shall allow both the seller and the customer to log out by choosing to leave the platform at any time.\n\nExample 3 PlantUML:\n@startuml\ntitle UML state machine diagram\n\nstate \"Seller Registration\" as SellerRegistration\nSellerRegistration : entry/Unregistered Seller\nSellerRegistration : do/Get Valid Seller Credentials\nSellerRegistration : exit/Seller Account Registered\n\nstate \"Seller Verification\" as SellerVerification\nSellerVerification : entry/Seller Account Registered\nSellerVerification : do/Verify Seller\nSellerVerification : exit/Login Seller\n\nstate \"Seller Login\" as SellerLogin\nSellerLogin : entry/Unverified Seller\nSellerLogin : entry/Seller not logged in\nSellerLogin : do/Authenticate Seller\nSellerLogin : exit/Logged In Successfully\n\nstate \"Customer Login\" as CustomerLogin\nCustomerLogin : entry/Not Logged In\nCustomerLogin : do/Authenticate Customer\nCustomerLogin : exit/Successfully Logged In\n\nstate \"Seller Home\" as SellerHome\nSellerHome : entry/Logged In Seller\nSellerHome : do/Display Seller Dashboard\nSellerHome : exit/Sale Products\nSellerHome : exit/Promote Products\nSellerHome : exit/Chat\nSellerHome : exit/Logout\n\nstate \"Customer Home\" as CustomerHome\nCustomerHome : entry/Customer Logged in\nCustomerHome : do/Display Recommended/Promoted Products\nCustomerHome : exit/View Product\nCustomerHome : exit/Buy Product\nCustomerHome : exit/Chat\nCustomerHome : exit/Report Seller\nCustomerHome : exit/Rate and Review\n\nstate \"View Product\" as ViewProduct\nViewProduct : entry/To View Products\nViewProduct : do/Search and View Products\nViewProduct : exit/Return to home\nViewProduct : exit/Buy Product\n\nstate \"Buy Product\" as BuyProduct\nBuyProduct : entry/Opted to Buy\nBuyProduct : do/Add product to cart\nBuyProduct : exit/Proceed to Checkout\n\nstate \"Make Purchase\" as MakePurchase\nMakePurchase : entry/Proceeded to Checkout\nMakePurchase : do/Enable payment\nMakePurchase : exit/Payment Successful\nMakePurchase : exit/Payment Unsuccessful\nMakePurchase : exit/Return to Home\n\nstate \"Chat\" as CustomerChat\nCustomerChat : entry/To Chat\nCustomerChat : do/Chat with Seller\nCustomerChat : exit/Return to Home\n\nstate \"Report Seller\" as ReportSeller\nReportSeller : entry/To Report Seller\nReportSeller : entry/Seller in Purchase History\nReportSeller : do/Issue Report to Seller\nReportSeller : exit/Return to Home\n\nstate \"Rate and Review\" as RateReview\nRateReview : entry/To Rate and Review\nRateReview : entry/Product Delivered\nRateReview : do/Rate and Review the product\nRateReview : exit/Return to Home\n\nstate \"Sale Products\" as SaleProducts\nSaleProducts : entry/To Sale Products\nSaleProducts : do/Add new Product to Seller Inventory\nSaleProducts : exit/Product added Successfully\nSaleProducts : exit/Return to Home State\n\nstate \"Promote Products\" as PromoteProducts\nPromoteProducts : entry/To Promote Products\nPromoteProducts : entry/Product in Sale\nPromoteProducts : do/Promote a Product\nPromoteProducts : exit/Return to Home State\n\nstate \"Chat\" as SellerChat\nSellerChat : entry/To Chat\nSellerChat : entry/Seller Product in Sale\nSellerChat : entry/Message from Customer\nSellerChat : do/Enable chat with Customer\nSellerChat : exit/Return to Home State\n\nstate \"Logout\" as Logout\nLogout : entry/To Logout User\nLogout : do/Logout User\nLogout : exit/User Logged out\n\nstate J0 <<choice>>\nstate J1 <<choice>>\nstate J2 <<choice>>\nstate J3 <<choice>>\nstate J4 <<choice>>\nstate J5 <<choice>>\nstate J6 <<choice>>\nstate J7 <<choice>>\nstate J8 <<choice>>\n\n[*] --> J0\nJ0 --> J1 : [Seller Portal]\nJ0 --> CustomerLogin : [Customer Portal]\n\nJ1 --> SellerRegistration : [New Seller]\nJ1 --> J2 : [Registered Seller]\n\nSellerRegistration --> SellerVerification\nSellerVerification --> J2\nJ2 --> SellerLogin\n\nCustomerLogin --> J3\nSellerLogin --> J7\nJ7 --> SellerHome : [Go To Home]\n\nJ3 --> CustomerHome : [Go To Home]\n\nCustomerHome --> J4 : [Possible Activities]\nJ4 --> ViewProduct : [View Products]\nJ4 --> CustomerChat : [Chat]\nJ4 --> ReportSeller : [Report Seller]\nJ4 --> RateReview : [Rate and Review]\nJ4 --> J8 : [Logout]\n\nViewProduct --> J5\nJ5 --> J3 : [Not to Buy]\nJ5 --> BuyProduct : [Proceed to Buy]\n\nBuyProduct --> MakePurchase\nMakePurchase --> J3\n\nCustomerChat --> J3\nReportSeller --> J3\nRateReview --> J3\n\nSellerHome --> J6 : [Possible Activities]\nJ6 --> PromoteProducts : [Promote Products]\nJ6 --> SellerChat : [Chat]\nJ6 --> SaleProducts\nJ6 --> J8 : [Logout]\n\nSaleProducts --> J7\n\nPromoteProducts --> J7\nSellerChat --> J7\n\nJ8 -->  Logout\nLogout --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nOnline Quiz System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to register or log in with their details.\n2. The system shall allow users to continue as a teacher or a student after logging in.\n3. The system shall allow teachers to create a new quiz.\n4. The system shall allow teachers to edit an existing quiz.\n5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.\n6. The system shall allow teachers to view quiz results once the quiz is over.\n7. The system shall allow students to select a quiz after getting notified if they continue as a student.\n8. The system shall allow students to answer the selected quiz.\n9. The system shall allow students to submit their quiz after answering.\n10. The system shall allow students to view the result after submitting the quiz.\n",
+  "requirement_used": "Online Quiz System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to register or log in with their details.\n2. The system shall allow users to continue as a teacher or a student after logging in.\n3. The system shall allow teachers to create a new quiz.\n4. The system shall allow teachers to edit an existing quiz.\n5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.\n6. The system shall allow teachers to view quiz results once the quiz is over.\n7. The system shall allow students to select a quiz after getting notified if they continue as a student.\n8. The system shall allow students to answer the selected quiz.\n9. The system shall allow students to submit their quiz after answering.\n10. The system shall allow students to view the result after submitting the quiz.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__few_shot\\case_37_online_quiz_system\\run_01.puml",
+  "validation": {
+    "valid": false,
+    "errors": [
+      "unreachable_states_detected",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "warnings": [
+      "unreachable: Logged Out"
+    ],
+    "initial_state": "Unregistered",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [
+      "Logged Out"
+    ],
+    "state_count": 15,
+    "transition_count": 15
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_49_account",
+        "case_61_atm_3",
+        "case_03_online_marketplace"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "valid": false,
+      "errors": [
+        "unreachable_states_detected",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 15,
+    "state_fn": 25,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 15,
+    "transition_fn": 27,
+    "state_precision_relaxed": 0.26666666666666666,
+    "state_recall_relaxed": 0.17391304347826086,
+    "state_f1_relaxed": 0.2105263157894737,
+    "state_tp_relaxed": 4,
+    "state_fp_relaxed": 11,
+    "state_fn_relaxed": 19,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 15,
+    "transition_fn_relaxed": 27,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 15,
+    "transition_fn_semantic": 27,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": false,
+    "structural_errors": [
+      "unreachable_states_detected",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "structural_warnings": [
+      "unreachable: Logged Out"
+    ],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.7333333333333333,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.10526315789473685,
+    "weighted_f1_relaxed_70_30": 0.1473684210526316,
+    "overall_f1_semantic": 0.10526315789473685,
+    "weighted_f1_semantic_70_30": 0.1473684210526316
+  }
+}

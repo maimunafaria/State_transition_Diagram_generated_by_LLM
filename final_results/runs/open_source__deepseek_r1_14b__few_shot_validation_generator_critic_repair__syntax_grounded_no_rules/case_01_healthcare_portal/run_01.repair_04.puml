@@ -1,0 +1,55 @@
+@startuml
+title UML State Transition Diagram - Healthcare Portal
+
+state "Idle" as Idle
+[*] --> Idle : Start
+
+state "Register" as Register
+Idle --> Register : Register
+
+state "InvalidRegister" as InvalidRegister
+Register --> InvalidRegister : Registration Failed
+InvalidRegister --> [*] : Logout
+
+state "Login" as Login
+Idle --> Login : Login
+
+state "InvalidLogin" as InvalidLogin
+Login --> InvalidLogin : Invalid Credentials
+InvalidLogin --> [*] : Logout
+
+state "MainMenu" as MainMenu
+Register --> MainMenu : Successful Registration
+Login --> MainMenu : Successful Login
+MainMenu : entry/MainMenu
+MainMenu : do/Access facilities
+
+state "ReadContent" as ReadContent
+MainMenu --> ReadContent : Read content
+ReadContent --> MainMenu : Back to Menu
+
+state "HealthInfo" as HealthInfo
+MainMenu --> HealthInfo : Check health info
+HealthInfo --> MainMenu : Back to Menu
+
+state "ViewResult" as ViewResult
+MainMenu --> ViewResult : View result
+ViewResult --> MainMenu : Continue
+ViewResult --> [*] : Logout
+
+state "PaymentSelection" as PaymentSelection
+ProcessInsurance --> PaymentSelection : Select Payment Method
+PaymentSelection --> CashPayment : Cash
+PaymentSelection --> InsurancePayment : Insurance
+
+state "CashPayment" as CashPayment
+PaymentSelection --> CashPayment : Cash
+CashPayment --> MainMenu : Payment Completed
+
+state "InsurancePayment" as InsurancePayment
+PaymentSelection --> InsurancePayment : Insurance
+InsurancePayment --> MainMenu : Payment Completed
+
+ViewResult --> [*] : Logout
+MainMenu --> [*] : Logout
+@enduml

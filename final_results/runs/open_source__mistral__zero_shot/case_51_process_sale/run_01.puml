@@ -1,0 +1,21 @@
+@startuml
+hide empty package
+
+skinparam packageStyle rectangular
+skinparam packagePadding 5mm
+
+package "Sale Process" {
+    state WaitingForCustomer
+    state ItemsSelection
+    state PaymentVerification
+    state PaymentCompleted
+}
+
+WaitingForCustomer -- CustomerArrives: Customer Arrives ::trigger> ItemsSelection :end::
+ItemsSelection -- ItemAdded: Item Added ::trigger> :end::
+ItemsSelection -- AllItemsAdded: All Items Added ::transition> PaymentVerification :end::
+PaymentVerification -- CashPaid: Cash Paid ::condition> Cash Payment ::else> CardOrCheckPayment :end::
+PaymentCompleted -- SaleCompleted: Sale Completed ::condition> Approved Payment ::else> Invalid Payment :end::
+PaymentCompleted -- WaitingForCustomer: Return to Waiting ::transition> :end::
+
+@enduml

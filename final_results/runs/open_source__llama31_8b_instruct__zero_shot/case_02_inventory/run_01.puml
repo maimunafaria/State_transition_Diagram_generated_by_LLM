@@ -1,0 +1,37 @@
+@startuml
+[*] as Initial State
+state "Inventory" as InventoryState
+state "Adding Goods" as AddingGoodsState
+state "Updating Price" as UpdatingPriceState
+state "Removing Goods" as RemovingGoodsState
+state "Expired Goods" as ExpiredGoodsState
+state "Order Placed" as OrderPlacedState
+state "Invoice Generated" as InvoiceGeneratedState
+state "Searching Items" as SearchingItemsState
+state "Purchase Made" as PurchaseMadeState
+state "Billing Process" as BillingProcessState
+state "Receipt Generated" as ReceiptGeneratedState
+
+[*] --> InventoryState: Initial State
+
+InventoryState -->|Add Goods|> AddingGoodsState: Add new goods to inventory
+AddingGoodsState -->|Update Price|> UpdatingPriceState: Update price of existing items in inventory
+UpdatingPriceState -->|Remove Goods|> RemovingGoodsState: Remove goods from inventory that are no longer required
+
+RemovingGoodsState -->|Expired Goods|> ExpiredGoodsState: Identify expired goods and notify user about removal from inventory
+
+InventoryState -->|Place Order|> OrderPlacedState: Place an order to supplier for additional goods when required
+OrderPlacedState -->|Invoice Generated|> InvoiceGeneratedState: Generate invoice for the order once it is placed
+
+InventoryState -->|Search Items|> SearchingItemsState: Search for items available in inventory and select them for purchase
+SearchingItemsState -->|Purchase Made|> PurchaseMadeState: Calculate applicable discount and tax based on selected items
+
+PurchaseMadeState -->|Billing Process|> BillingProcessState: Generate receipt for customer after purchase
+BillingProcessState -->|Replace Item or Cancel Receipt|> InventoryState: Replace an item or cancel the receipt during billing process if needed
+
+InventoryState -->|Record Customer Request|> InventoryState: Record customer requests for items that may not be currently available
+
+PurchaseMadeState -->|View Summary Report|> InventoryState: View a summary report of all transactions carried out in system at any point
+
+[*] as Final State
+@enduml

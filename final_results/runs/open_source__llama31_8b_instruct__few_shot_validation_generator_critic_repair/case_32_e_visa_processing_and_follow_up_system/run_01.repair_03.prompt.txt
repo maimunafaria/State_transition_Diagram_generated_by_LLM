@@ -1,0 +1,141 @@
+You are a UML repair assistant.
+Fix the candidate PlantUML using only the validation issues and repair guidance below.
+Make the smallest possible edit.
+Do not add new states or transitions unless a listed issue cannot be fixed without doing so.
+Do not remove or rename unaffected states.
+Do not change unaffected transition labels.
+Do not redesign or simplify the diagram.
+Only change the lines needed to fix the listed validation issues.
+Preserve the requirement meaning. Output ONLY corrected PlantUML. No explanations.
+
+Requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Candidate PlantUML:
+@startuml
+[*] --> CreateUser
+state Choice1 <<choice>>
+state Choice2 <<choice>>
+state Choice3 <<choice>>
+state Choice4 <<choice>>
+state Choice5 <<choice>>
+state Choice6 <<choice>>
+state Choice7 <<choice>>
+state Choice8 <<choice>>
+state Choice9 <<choice>>
+state Choice10 <<choice>>
+state Choice11 <<choice>>
+
+CreateUser : entry / nil
+CreateUser : do / Create account
+CreateUser : exit / Login
+
+CreateUser --> Login : user creates account
+
+Login : entry / nil
+Login : do / Login
+Login : exit / Application
+
+Login --> Application : user logs in
+
+Application : entry / Login
+Application : do / Apply for visa
+Application : exit / Payment
+
+Application --> Payment : user applies for visa
+
+Payment : entry / Application
+Payment : do / Make payment
+Payment : exit / Accepted
+
+Payment --> Accepted : payment made
+
+Accepted : entry / Payment
+Accepted : do / Accept application
+Accepted : exit / Status
+
+Accepted --> Status : application accepted
+
+Status : entry / Accepted
+Status : do / View status
+Status --> CheckStatus : user views status
+
+CheckStatus : entry / Status
+CheckStatus : do / Check status
+CheckStatus --> Cancel : user checks status and cancels application
+CheckStatus --> GiveFeedback : user checks status and gives feedback
+
+Cancel : entry / CheckStatus
+Cancel : do / Cancel application
+Cancel --> Logout : user cancels application
+
+ModifyDetails : entry / Login
+ModifyDetails : do / Modify details
+ModifyDetails --> Logout : user modifies details
+
+ViewDetails : entry / Login
+ViewDetails : do / View details
+ViewDetails --> Logout : user views details
+
+ViewPurpose : entry / Login
+ViewPurpose : do / View purpose
+ViewPurpose --> UpdateStatus : user views purpose and updates status
+
+UpdateStatus : entry / ViewPurpose
+UpdateStatus : do / Update status
+UpdateStatus --> Logout : user updates status
+
+GiveFeedback : entry / CheckStatus
+GiveFeedback : do / Give feedback
+GiveFeedback --> Logout : user gives feedback
+
+Logout : entry / nil
+Logout : do / Logout
+Logout --> [*] : user logs out
+
+Choice1 --> CreateUser : user chooses to create account
+Choice2 --> Login : user chooses to log in
+Choice3 --> Application : user chooses to apply for visa
+Choice4 --> ModifyDetails : user chooses to modify details
+Choice5 --> ViewDetails : user chooses to view details
+Choice6 --> ViewPurpose : user chooses to view purpose
+Choice7 --> GiveFeedback : user chooses to give feedback
+Choice8 --> Cancel : user chooses to cancel application
+Choice9 --> UpdateStatus : user chooses to update status
+Choice10 --> Status : user chooses to view status
+Choice11 --> Logout : user chooses to log out
+
+@enduml
+
+
+Validation issues to fix:
+- unreachable_states_detected
+- unreachable: Choice1, Choice10, Choice11, Choice2, Choice3, Choice4, Choice5, Choice6, Choice7, Choice8, Choice9, ModifyDetails, UpdateStatus, ViewDetails, ViewPurpose
+- choice_node_without_guarded_outgoing_transitions (Choice1)
+- choice_node_without_guarded_outgoing_transitions (Choice10)
+- choice_node_without_guarded_outgoing_transitions (Choice11)
+- choice_node_without_guarded_outgoing_transitions (Choice2)
+- choice_node_without_guarded_outgoing_transitions (Choice3)
+- choice_node_without_guarded_outgoing_transitions (Choice4)
+- choice_node_without_guarded_outgoing_transitions (Choice5)
+- choice_node_without_guarded_outgoing_transitions (Choice6)
+- choice_node_without_guarded_outgoing_transitions (Choice7)
+- choice_node_without_guarded_outgoing_transitions (Choice8)
+- choice_node_without_guarded_outgoing_transitions (Choice9)
+
+Repair guidance for these issues:
+- For unreachable states, add a path from the initial lifecycle to those states, usually through a decision/choice or a transition from the preceding activity.
+- Label choice-node outgoing transitions with guard conditions like [valid] and [invalid].

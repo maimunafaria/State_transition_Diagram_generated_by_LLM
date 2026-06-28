@@ -1,0 +1,81 @@
+@startuml
+title UML state machine diagram
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Register
+
+state "Register" as Register
+Register : entry/Register
+Register : do/Register after validating
+Register : exit/Login/Invalid registration
+
+state "Invalid registration" as InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login/To home page
+
+state "Invalid login" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state "Check weather" as CheckWeather
+CheckWeather : entry/To home page
+CheckWeather : do/Check weather for current or new location
+CheckWeather : exit/Choose what to check
+
+state "Choose what to check" as ChooseWhatToCheck
+ChooseWhatToCheck : entry/Choose what to check
+ChooseWhatToCheck : do/Choose temperature, humidity, rainfall, pressure, or dew point
+ChooseWhatToCheck : exit/View selected weather information
+
+state "View selected weather information" as ViewWeatherInfo
+ViewWeatherInfo : entry/View selected weather information
+ViewWeatherInfo : do/Update and show selected weather information
+ViewWeatherInfo : exit/View additional weather details
+
+state "View additional weather details" as ViewAdditionalDetails
+ViewAdditionalDetails : entry/View additional weather details
+ViewAdditionalDetails : do/View alerts, weekly analysis, future prediction, or graph
+ViewAdditionalDetails : exit/End session
+
+state "End session" as EndSession
+EndSession : entry/End session
+EndSession : do/End session when user logs out
+EndSession : exit/End
+
+[*] --> Idle
+
+Idle --> J1
+J1 --> Register
+J1 --> Login
+
+Register --> J2
+J2 --> Login
+J2 --> InvalidRegistration
+InvalidRegistration --> [*]
+
+Login --> J3
+J3 --> InvalidLogin
+J3 --> CheckWeather
+InvalidLogin --> [*]
+
+CheckWeather --> J4
+J4 --> ChooseWhatToCheck
+ChooseWhatToCheck --> J5
+J5 --> ViewWeatherInfo
+ViewWeatherInfo --> J6
+J6 --> ViewAdditionalDetails
+ViewAdditionalDetails --> J7
+J7 --> EndSession
+
+EndSession --> [*]
+
+@enduml

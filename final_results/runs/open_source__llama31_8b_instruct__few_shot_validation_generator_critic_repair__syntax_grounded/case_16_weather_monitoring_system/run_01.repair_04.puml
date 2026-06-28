@@ -1,0 +1,90 @@
+@startuml
+title Weather Monitoring System State Diagram
+
+state "Idle" as Idle
+Idle : entry/To action
+Idle : do/Remain in same state
+Idle : exit/Create account / Login
+
+state "Create account" as CreateAccount
+CreateAccount : entry/Create account
+CreateAccount : do/Create account
+CreateAccount : exit/Login / Invalid registration
+
+state "Invalid registration" as InvalidRegistration
+InvalidRegistration : entry/Invalid registration
+InvalidRegistration : do/Cannot register
+InvalidRegistration : exit/Abnormal termination
+
+state "Login" as Login
+Login : entry/Login
+Login : do/Login using valid username and password
+Login : exit/Invalid login / To home page
+
+state "Invalid login" as InvalidLogin
+InvalidLogin : entry/Invalid login
+InvalidLogin : do/Cannot login
+InvalidLogin : exit/Abnormal termination
+
+state "Check weather" as CheckWeather
+CheckWeather : entry/To home page
+CheckWeather : entry/Check weather for current or new location
+CheckWeather : exit/Invalid location / Select weather parameter
+
+state "Select weather parameter" as SelectWeatherParameter
+SelectWeatherParameter : entry/Select weather parameter
+SelectWeatherParameter : do/Select temperature, humidity, rainfall, pressure, or dew point
+SelectWeatherParameter : exit/Update weather information
+
+state "Update weather information" as UpdateWeatherInformation
+UpdateWeatherInformation : entry/Update weather information
+UpdateWeatherInformation : do/Update and show selected weather information
+UpdateWeatherInformation : exit/View additional weather details
+
+state "View additional weather details" as ViewAdditionalWeatherDetails
+ViewAdditionalWeatherDetails : entry/View additional weather details
+ViewAdditionalWeatherDetails : do/View alerts, weekly analysis, future prediction, or graph
+ViewAdditionalWeatherDetails : exit/Logout
+
+state "Logout" as Logout
+Logout : entry/Logout
+Logout : do/End session
+Logout : exit/End
+
+state J1 <<choice>>
+[*] --> Idle : To create account / login
+Idle --> J1 : To create account / login
+J1 --> CreateAccount : [Is user creating an account?]
+J1 --> Login : [Is user logging in?]
+
+state J2 <<choice>>
+CreateAccount --> J2 : [Registration successful?]
+J2 --> Login : [Yes]
+J2 --> InvalidRegistration : [No]
+
+state J3 <<choice>>
+Login --> J3 : [User logged in successfully?]
+J3 --> CheckWeather : [Yes]
+J3 --> Logout : [No]
+InvalidLogin --> J3 : [Invalid login credentials]
+
+state J4 <<choice>>
+CheckWeather --> J4 : [Location entered is valid?]
+J4 --> SelectWeatherParameter : [Yes]
+J4 --> Invalid location : [No]
+
+state J5 <<choice>>
+SelectWeatherParameter --> J5 : [Valid parameter selected?]
+J5 --> UpdateWeatherInformation : [Yes]
+J5 --> Invalid parameter : [No]
+
+state J6 <<choice>>
+UpdateWeatherInformation --> J6 : [User wants to view additional details?]
+J6 --> ViewAdditionalWeatherDetails : [Yes]
+J6 --> Logout : [No]
+
+state J7 <<choice>>  // Valid guarded choice node
+InvalidLogin --> J3 : [Invalid login credentials]
+Logout --> [*] : COMPLETION_EVENT
+
+@enduml

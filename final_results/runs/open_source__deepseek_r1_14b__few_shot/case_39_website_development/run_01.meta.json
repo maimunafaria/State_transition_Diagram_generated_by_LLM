@@ -1,0 +1,93 @@
+{
+  "run_id": "open_source__deepseek_r1_14b__few_shot",
+  "case_id": "case_39_website_development",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nAccount — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall start an account as empty when it is first opened.\n2. The system shall activate an account and make it ready to use after setting it up and making an initial deposit.\n3. The system shall allow a user to deposit money while the account is active.\n4. The system shall allow a user to withdraw money while the account is active.\n5. The system shall allow a user to check account details like balance while the account is active.\n6. The system shall make an account inactive if all the money is withdrawn.\n7. The system shall allow closing an account after it has become inactive.\n8. The system shall render an account unusable once it is closed.\n\nExample 1 PlantUML:\n@startuml\ntitle State diagram for the Account class\n\n[*] --> EmptyAcct : Open\n\nstate \"Empty\\nacct\" as EmptyAcct\nstate \"Set up\\nacct\" as SetupAcct\nstate \"Working\\nacct\" as WorkingAcct\nstate \"Nonworking\\nacct\" as NonworkingAcct\nstate \"Dead\\nacct\" as DeadAcct\n\nEmptyAcct --> SetupAcct : Setup Acct\nSetupAcct --> WorkingAcct : Deposit (initial)\n\nWorkingAcct --> WorkingAcct : Deposit\nWorkingAcct --> WorkingAcct : Withdraw\nWorkingAcct --> WorkingAcct : Balance\\ncredit\\nacctInfo\n\nWorkingAcct --> NonworkingAcct : Withdrawal (final)\nNonworkingAcct --> DeadAcct : Close\nDeadAcct --> [*]\n\n@enduml\n\nExample 2 Requirement:\nE Ration Shop — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to raise a complaint directly.\n2. The system shall end the process after a user raises a complaint.\n3. The system shall allow users to authenticate their identity using an OTP.\n4. The system shall allow multiple attempts for OTP authentication if the initial attempt fails.\n5. The system shall enable users to view items based on different categories once they are successfully authenticated.\n6. The system shall allow users to select items for purchase after viewing them.\n7. The system shall provide users with the option to pay either through an online method or by cash on delivery.\n8. The system shall deliver the product after the payment is completed.\n\nExample 2 PlantUML:\n@startuml\ntitle UML State Machine Diagram\n\n\n[*] --> C1\n\nstate C1 <<choice>>\nC1 --> Auth : [possibilities to start]\nC1 --> Complaints\n\n\nstate \"Authentication of aadhar card by OTP\" as Auth\nAuth : entry / card holder\nAuth : do / Generates OTP\nAuth : do / OTP should match\nAuth : exit / authentication completed\n\nstate Complaints\nComplaints : entry / fill\nComplaints : do / raise a complaint\nComplaints : exit / complaint send\n\nComplaints --> [*]\n\nAuth --> Auth \nAuth --> ViewItems\n\nstate \"View items\" as ViewItems\nViewItems : entry / from Authentication\nViewItems : do / items shown based on category\nViewItems : do / select items required\nViewItems : exit / after selecting\n\nViewItems --> Purchase\n\nstate \"make purchase\" as Purchase\nPurchase : entry / from view items\nPurchase : do / payment\nPurchase : exit / chose the mode of payment\n\n\nstate C2 <<choice>>\nPurchase --> C2 : [possibilities for payment]\n\nstate PAYTM\nPAYTM : entry / make purchase\nPAYTM : do / making payment\nPAYTM : exit / payment done\n\nstate COD\nCOD : entry / make purchase\nCOD : do / making payment\nCOD : exit / payment done\n\nC2 --> PAYTM\nC2 --> COD\n\n\nstate C3 <<choice>>\nPAYTM --> C3\nCOD --> C3\n\nC3 --> Delivery : [payment completed]\n\n\nstate Delivery\nDelivery : entry / COD\nDelivery : entry / PAYTM\nDelivery : do / product delivered\n\nDelivery --> [*]\n\n@enduml\n\nExample 3 Requirement:\nBook Bank Management System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to register by entering their details.\n2. The system shall issue a member ID and complete the registration upon correct entry of details.\n3. The system shall require the user to re-enter their details upon incorrect entry of details.\n4. The system shall allow a user to log in after successful registration using their member ID and password.\n5. The system shall allow the user to continue upon correct entry of member ID and password during login. Otherwise, they cannot log in.\n6. The system shall allow a user to search for a book by entering its details.\n7. The system shall show suggestions if a book is found during a search; otherwise, it shall allow the user to choose another option.\n8. The system shall allow a user to get a book by entering its ID and their member ID.\n9. The system shall allow the user to get the book if their membership is active; otherwise, it shall require them to pay the fine amount first.\n10. The system shall allow a user to buy a book by entering its ID and seeing the price.\n11. The system shall provide the book if the user pays; otherwise, it shall end the process there.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Chart Diagram\n\nstate \"Registration\" as Registration {\n  [*] --> RegEnterDetails\n\n  state \"Enter Details\" as RegEnterDetails\n  state \"Get Member_ID\" as GetMemberID\n  state \"Successful Registration\" as SuccessfulRegistration\n  state \"Re-enter Details\" as ReEnterDetails\n\n  RegEnterDetails --> GetMemberID : [Valid]\n  RegEnterDetails --> ReEnterDetails : [Invalid]\n  ReEnterDetails --> RegEnterDetails\n  GetMemberID --> SuccessfulRegistration\n}\n\nstate \"Authentication\" as Authentication {\n  [*] --> AuthEnterMemberID\n\n  state \"Enter Member_ID\" as AuthEnterMemberID\n  state \"Enter Password\" as EnterPassword\n  state \"successful Login\" as SuccessfulLogin\n  state \"Invalid Member_ID or Password\" as InvalidCreds\n\n  AuthEnterMemberID --> EnterPassword\n  EnterPassword --> SuccessfulLogin : [Valid]\n  EnterPassword --> InvalidCreds : [Invalid]\n}\n\nstate \"Search Books\" as SearchBooks {\n  [*] --> EnterBookDetails\n\n  state \"Enter Book Details\" as EnterBookDetails\n  state \"Display Suggestion\" as DisplaySuggestion\n  state \"choose Alternate option\" as ChooseAlternate\n\n  EnterBookDetails --> DisplaySuggestion : [Found]\n  EnterBookDetails --> ChooseAlternate : [Not Found]\n}\n\nstate \"Get Books\" as GetBooksState {\n  [*] --> GetEnterBookID\n\n  state \"Enter Book_ID\" as GetEnterBookID\n  state \"Enter Member_ID\" as GetEnterMemberID\n  state \"Obtain Books\" as ObtainBooks\n  state \"Pay Fine Amount\" as PayFineAmount\n\n  GetEnterBookID --> GetEnterMemberID\n  GetEnterMemberID --> ObtainBooks : [Active Member]\n  GetEnterMemberID --> PayFineAmount : [Inactive Member]\n}\n\nstate \"Buy Books\" as BuyBooks {\n  [*] --> BuyEnterBookID\n\n  state \"Enter Book_ID\" as BuyEnterBookID\n  state \"Display Book Amount\" as DisplayBookAmount\n  state \"Get Books\" as BuyGetBooks\n  state BuyNotPaidEnd <<choice>>\n\n  BuyEnterBookID --> DisplayBookAmount\n  DisplayBookAmount --> BuyGetBooks : [Paid]\n  DisplayBookAmount --> BuyNotPaidEnd : [Not Paid]\n  BuyNotPaidEnd --> [*]\n}\n\nstate StartJoin <<choice>>\n\n[*] --> StartJoin\nStartJoin --> Registration\nStartJoin --> Authentication\nStartJoin --> SearchBooks\nStartJoin --> GetBooksState\nStartJoin --> BuyBooks\n\nSuccessfulRegistration --> AuthEnterMemberID\n\nSuccessfulLogin --> EnterBookDetails\nSuccessfulLogin --> GetEnterBookID\nSuccessfulLogin --> BuyEnterBookID\n\n\nObtainBooks --> [*]\nBuyGetBooks --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nWebsite Development — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to navigate from the homepage using a navigation bar.\n2. The system shall display information about projects when selected by the user.\n3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.\n4. The system shall display information about career opportunities when selected by the user.\n5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.\n6. The system shall check submitted job applications after they are submitted.\n",
+  "requirement_used": "Website Development — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to navigate from the homepage using a navigation bar.\n2. The system shall display information about projects when selected by the user.\n3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.\n4. The system shall display information about career opportunities when selected by the user.\n5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.\n6. The system shall check submitted job applications after they are submitted.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot\\case_39_website_development\\run_01.puml",
+  "validation": {
+    "valid": false,
+    "errors": [
+      "missing_initial_state_transition ([*] --> state)",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "warnings": [],
+    "initial_state": null,
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 10,
+    "transition_count": 11
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_49_account",
+        "case_20_e_ration_shop",
+        "case_38_book_bank_management_system"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "valid": false,
+      "errors": [
+        "missing_initial_state_transition ([*] --> state)",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.1,
+    "state_recall": 0.07142857142857142,
+    "state_f1": 0.08333333333333333,
+    "state_tp": 1,
+    "state_fp": 9,
+    "state_fn": 13,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 11,
+    "transition_fn": 19,
+    "state_precision_relaxed": 0.1,
+    "state_recall_relaxed": 0.07142857142857142,
+    "state_f1_relaxed": 0.08333333333333333,
+    "state_tp_relaxed": 1,
+    "state_fp_relaxed": 9,
+    "state_fn_relaxed": 13,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 11,
+    "transition_fn_relaxed": 19,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 11,
+    "transition_fn_semantic": 19,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": false,
+    "structural_errors": [
+      "missing_initial_state_transition ([*] --> state)",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "structural_warnings": [],
+    "hallucination_state_rate": 0.9,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.9,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.041666666666666664,
+    "overall_f1_relaxed": 0.041666666666666664,
+    "weighted_f1_relaxed_70_30": 0.05833333333333333,
+    "overall_f1_semantic": 0.041666666666666664,
+    "weighted_f1_semantic_70_30": 0.05833333333333333
+  }
+}

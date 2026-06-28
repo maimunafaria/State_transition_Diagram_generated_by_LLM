@@ -1,0 +1,320 @@
+{
+  "run_id": "open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair",
+  "case_id": "case_32_e_visa_processing_and_follow_up_system",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nFirst Person Shooter Fps Games — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall keep the troll in a calm state with no actions if there is no detected threat.\n2. The system shall determine the troll's reaction based on the perceived strength of the detected opponent.\n3. The system shall make the troll aggressive and start an attack if the opponent appears weak enough to defeat.\n4. The system shall continue the troll's fight while it can see the opponent.\n5. The system shall calm the troll and return it to a normal state if it loses sight of the opponent.\n6. The system shall make the troll scared and panic if the opponent appears too strong.\n7. The system shall calm the troll and return it to a normal state if it gets away from or loses sight of a stronger opponent.\n8. The system shall remove the troll from the game if it takes a fatal hit and its health reaches zero.\n\nExample 1 PlantUML:\n@startuml\ntitle Troll State Diagram\n\n[*] --> Neutral\n\nstate Neutral\nstate Attack\nstate Panic\nstate Die\n\nNeutral --> Attack : see opponent [defeatable]\nAttack --> Neutral : lost opponent\n\nNeutral --> Panic : see opponent [undefeatable]\nPanic --> Neutral : lost opponent\n\nAttack --> Die : receive blow [health = 0] / pray\nPanic --> Die : receive blow [health = 0] / pray\n\nDie --> [*]\n\n@enduml\n\nExample 2 Requirement:\nAtm Many Scenarios Scenario 8 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall keep the card if it is invalid, expired, or the PIN was entered incorrectly too many times.\n2. The system shall return the card with a message if the user cancels the operation or the request is rejected.\n3. The system shall print a receipt and dispense cash if needed before returning the card to the user after a successful transaction.\n4. The system shall consider the session finished once the card is ejected.\n5. The system shall move into a short ending phase before resetting itself after completing the transaction or cancellation process.\n6. The system shall return to its normal waiting condition or shut down depending on the situation.\n\nExample 2 PlantUML:\n@startuml\ntitle ATM Control - Terminating Transaction\n\nstate \"Closed Down\" as ClosedDown\nClosedDown : entry / Display System Down\n\nstate Idle\nIdle : entry / Display Welcome\n\nstate \"Processing Customer Input\" as ProcessingCustomerInput\nstate \"Processing Transaction\" as ProcessingTransaction\n\nstate \"Terminating Transaction\" as TerminatingTransaction {\n\n  state Terminating\n  state Confiscating\n  state Ejecting\n  state Printing\n  state Dispensing\n\n  Confiscating --> Terminating : Card Confiscated /\\nDisplay Confiscated\n  Ejecting --> Terminating : Card Ejected /\\nDisplay Ejected\n  Printing --> Ejecting : Receipt Printed /\\nEject\n  Dispensing --> Printing : Cash Dispensed /\\nPrint Receipt,\\nDisplay Cash Dispensed,\\nConfirm Cash Dispensed\n}\n\nProcessingCustomerInput --> Confiscating : Stolen Card, Expired Card /\\nConfiscate, Update Status\nProcessingCustomerInput --> Confiscating : Third Invalid PIN /\\nConfiscate\nProcessingCustomerInput --> Ejecting : Cancel / Eject,\\nDisplay Cancel\n\nProcessingTransaction --> Ejecting : Rejected / Eject,\\nDisplay Apology\nProcessingTransaction --> Printing : Transfer Approved /\\nPrint Receipt,\\nUpdate Status\nProcessingTransaction --> Printing : Query Approved /\\nPrint Receipt,\\nUpdate Status\nProcessingTransaction --> Dispensing : Withdrawal Approved /\\nDispense Cash,\\nUpdate Status\n\nDispensing --> ClosedDown : Insufficient Cash /\\nEject,\\nAbort Cash Dispensed\n\nTerminating --> Idle : After (Elapsed Time) [Closedown Not Requested]\nTerminating --> ClosedDown : After (Elapsed Time) [Closedown Was Requested]\n\n@enduml\n\nExample 3 Requirement:\nE Med Medical Assistance Tool — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow users to fill in their personal medical history if it is missing, and then check and save the information.\n2. The system shall provide users with the ability to view their medical history, receive reminders for medication, receive reminders for medicine restocking, schedule appointments, use an emergency button, write and view medical notes.\n3. The system shall allow users to update their medical history if they choose to do so after viewing it.\n4. The system shall allow users to update their medical notes if they choose to do so after viewing them.\n5. The system shall call emergency contacts if they use the emergency button.\n\nExample 3 PlantUML:\n@startuml\ntitle UML State Chart Diagram - Medical System\n\n[*] --> CheckHistory\n\nstate CheckHistory <<choice>>\nCheckHistory --> FillHistory : [No]\nCheckHistory --> Hub : [Yes]\n\nstate \"Fill personal medical history\" as FillHistory\nFillHistory : entry / start state\nFillHistory : do / fill details in personal medical history\nFillHistory : exit / verify medical history\n\nstate \"Validate and store\" as ValidateStore\nValidateStore : entry / verify medical history\nValidateStore : do / validate and store\nValidateStore : exit / medical history stored\n\nFillHistory --> ValidateStore\nValidateStore --> Hub\n\nstate Hub <<choice>>\n\nstate \"View Medical History\" as ViewHistory\nViewHistory : entry / entered the app\nViewHistory : do / view medical history stored\nViewHistory : exit / viewed medical history\n\nstate \"Reminder to have medicines on time\" as ReminderTime\nReminderTime : entry / entered the app\nReminderTime : do / user is reminded to have medicines\nReminderTime : exit / notification acknowledged\n\nstate \"Reminder to buy medicines when not in stock\" as ReminderBuy\nReminderBuy : entry / entered the app\nReminderBuy : do / user is reminded to buy medicines\nReminderBuy : exit / notification acknowledged\n\nstate \"Schedule Appointments Regularly\" as Schedule\nSchedule : entry / entered the app\nSchedule : do / schedule the appointment regularly\nSchedule : exit / scheduled appointment\n\nstate \"Press Emergency Button\" as Emergency\nEmergency : entry / entered the app\nEmergency : do / press emergency button\nEmergency : exit / pressed emergency button\n\nstate \"Write medical notes for reference\" as WriteNotes\nWriteNotes : entry / entered the app\nWriteNotes : do / write medical notes\nWriteNotes : exit / store in database\n\nstate \"View medical notes\" as ViewNotes\nViewNotes : entry / entered the app\nViewNotes : do / view medical notes stored\nViewNotes : exit / viewed medical notes\n\nstate \"Send message to receptionist\" as MessageReception\nMessageReception : entry / scheduled appointment\nMessageReception : do / send message to receptionist based on schedule\nMessageReception : exit / message sent\n\nstate \"Call Emergency Contacts\" as CallEmergency\nCallEmergency : entry / pressed emergency button\nCallEmergency : do / call the emergency contacts\nCallEmergency : exit / called emergency contacts\n\nstate \"Update Medical History\" as UpdateHistory\nUpdateHistory : entry / want to update medical history\nUpdateHistory : do / update medical history\nUpdateHistory : exit / updated details are stored in the database\n\nstate \"Update Medical Notes\" as UpdateNotes\nUpdateNotes : entry / want to update medical notes\nUpdateNotes : do / update medical notes\nUpdateNotes : exit / updated details are stored in the database\n\nstate UpdateChoice <<choice>>\nstate UpdateChoice1 <<choice>>\nHub --> ViewHistory\nHub --> ReminderTime\nHub --> ReminderBuy\nHub --> Schedule\nHub --> Emergency\nHub --> WriteNotes\nHub --> ViewNotes\n\nSchedule --> MessageReception\nEmergency --> CallEmergency\n\nViewHistory --> UpdateChoice : [Update ?]\nViewNotes --> UpdateChoice1 : [Update ?]\n\nUpdateChoice --> UpdateHistory : [Yes]\nUpdateChoice1 --> UpdateNotes : [Yes]\nUpdateChoice --> [*] : [No]\nUpdateChoice1 --> [*] : [No]\nReminderTime --> [*]\nReminderBuy --> [*]\nWriteNotes --> [*]\nMessageReception --> [*]\nCallEmergency --> [*]\nUpdateHistory --> [*]\nUpdateNotes --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nE Visa Processing And Follow Up System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create an account.\n2. The system shall allow a user to log in after they have created an account.\n3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .\n4. The system shall allow a user to view the status after they have applied for a visa.\n5. The system shall allow a user to check the status after they have viewed it.\n6. The system shall allow a user to cancel an application after they have logged in.\n7. The system shall allow a user to modify their details after they have logged in.\n8. The system shall allow a user to view their details after they have logged in.\n9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..\n10. The system shall allow a user to give feedback after they have checked the status.\n11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.\n",
+  "requirement_used": "E Visa Processing And Follow Up System — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow a user to create an account.\n2. The system shall allow a user to log in after they have created an account.\n3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .\n4. The system shall allow a user to view the status after they have applied for a visa.\n5. The system shall allow a user to check the status after they have viewed it.\n6. The system shall allow a user to cancel an application after they have logged in.\n7. The system shall allow a user to modify their details after they have logged in.\n8. The system shall allow a user to view their details after they have logged in.\n9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..\n10. The system shall allow a user to give feedback after they have checked the status.\n11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_32_e_visa_processing_and_follow_up_system\\run_01.puml",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "initial_state": "Initial",
+    "duplicate_transition_count": 0,
+    "unreachable_states": [],
+    "state_count": 1,
+    "transition_count": 0
+  },
+  "strict_validation": {
+    "valid": true,
+    "issues": []
+  },
+  "processing_steps": [
+    {
+      "stage": "generator_reused",
+      "source": "open_source__deepseek_r1_14b__few_shot",
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])",
+        "duplicate_transitions_detected (41)"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "duplicate_transitions_detected (41)"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 5,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: LoggedOut",
+        "orphan_states_detected",
+        "orphan: LoggedOut"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "unreachable_states_detected",
+        "unreachable: LoggedOut",
+        "orphan_states_detected",
+        "orphan: LoggedOut"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 1,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "duplicate_transitions_detected (41)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 6,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])",
+        "duplicate_transitions_detected (28)",
+        "unreachable_states_detected",
+        "unreachable: LoggedOut",
+        "orphan_states_detected",
+        "orphan: LoggedOut"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "duplicate_transitions_detected (28)",
+        "unreachable_states_detected",
+        "unreachable: LoggedOut",
+        "orphan_states_detected",
+        "orphan: LoggedOut"
+      ]
+    },
+    {
+      "stage": "repair_rejected",
+      "attempt": 2,
+      "reason": "repair_did_not_improve_validation_score",
+      "kept_previous_issues": [
+        "missing_final_state_transition (state --> [*])",
+        "duplicate_transitions_detected (41)"
+      ],
+      "action": "kept_best_diagram_and_continued"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "accepted": true,
+      "previous_score": 2,
+      "repair_score": 1,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": false,
+      "errors": [],
+      "warnings": [
+        "missing_final_state_transition (state --> [*])"
+      ],
+      "strict_issues": [
+        "missing_final_state_transition (state --> [*])"
+      ]
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "accepted": true,
+      "previous_score": 1,
+      "repair_score": 0,
+      "plantuml_valid": true,
+      "strict_state_diagram_valid": true,
+      "errors": [],
+      "warnings": [],
+      "strict_issues": []
+    },
+    {
+      "stage": "repair_loop_summary",
+      "attempts": 4,
+      "strict_state_diagram_valid": true,
+      "remaining_issues": []
+    }
+  ],
+  "attempt_artifacts": [
+    {
+      "stage": "initial",
+      "attempt": 0,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])",
+          "duplicate_transitions_detected (41)"
+        ],
+        "initial_state": "Initial",
+        "duplicate_transition_count": 41,
+        "unreachable_states": [],
+        "state_count": 8,
+        "transition_count": 21
+      },
+      "strict_state_diagram_valid": false,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_32_e_visa_processing_and_follow_up_system\\run_01.initial.puml"
+    },
+    {
+      "stage": "repair",
+      "attempt": 1,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])",
+          "unreachable_states_detected",
+          "unreachable: LoggedOut",
+          "orphan_states_detected",
+          "orphan: LoggedOut"
+        ],
+        "initial_state": "Initial",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [
+          "LoggedOut"
+        ],
+        "state_count": 8,
+        "transition_count": 10
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 5,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_32_e_visa_processing_and_follow_up_system\\run_01.repair_01.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_32_e_visa_processing_and_follow_up_system\\run_01.repair_01.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 2,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])",
+          "duplicate_transitions_detected (28)",
+          "unreachable_states_detected",
+          "unreachable: LoggedOut",
+          "orphan_states_detected",
+          "orphan: LoggedOut"
+        ],
+        "initial_state": "Initial",
+        "duplicate_transition_count": 28,
+        "unreachable_states": [
+          "LoggedOut"
+        ],
+        "state_count": 8,
+        "transition_count": 14
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": false,
+      "previous_score": 2,
+      "repair_score": 6,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_32_e_visa_processing_and_follow_up_system\\run_01.repair_02.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_32_e_visa_processing_and_follow_up_system\\run_01.repair_02.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 3,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [
+          "missing_final_state_transition (state --> [*])"
+        ],
+        "initial_state": "Initial",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 1,
+        "transition_count": 0
+      },
+      "strict_state_diagram_valid": false,
+      "accepted": true,
+      "previous_score": 2,
+      "repair_score": 1,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_32_e_visa_processing_and_follow_up_system\\run_01.repair_03.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_32_e_visa_processing_and_follow_up_system\\run_01.repair_03.prompt.txt"
+    },
+    {
+      "stage": "repair",
+      "attempt": 4,
+      "validation": {
+        "valid": true,
+        "errors": [],
+        "warnings": [],
+        "initial_state": "Initial",
+        "duplicate_transition_count": 0,
+        "unreachable_states": [],
+        "state_count": 1,
+        "transition_count": 0
+      },
+      "strict_state_diagram_valid": true,
+      "accepted": true,
+      "previous_score": 1,
+      "repair_score": 0,
+      "path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_32_e_visa_processing_and_follow_up_system\\run_01.repair_04.puml",
+      "repair_prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot_validation_generator_critic_repair\\case_32_e_visa_processing_and_follow_up_system\\run_01.repair_04.prompt.txt"
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.0,
+    "state_recall": 0.0,
+    "state_f1": 0.0,
+    "state_tp": 0,
+    "state_fp": 1,
+    "state_fn": 20,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 0,
+    "transition_fn": 27,
+    "state_precision_relaxed": 0.0,
+    "state_recall_relaxed": 0.0,
+    "state_f1_relaxed": 0.0,
+    "state_tp_relaxed": 0,
+    "state_fp_relaxed": 1,
+    "state_fn_relaxed": 20,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 0,
+    "transition_fn_relaxed": 27,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 0,
+    "transition_fn_semantic": 27,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": true,
+    "structural_errors": [],
+    "structural_warnings": [],
+    "hallucination_state_rate": 1.0,
+    "hallucination_transition_rate": 0.0,
+    "hallucination_state_rate_relaxed": 1.0,
+    "hallucination_transition_rate_relaxed": 0.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.0,
+    "overall_f1_relaxed": 0.0,
+    "weighted_f1_relaxed_70_30": 0.0,
+    "overall_f1_semantic": 0.0,
+    "weighted_f1_semantic_70_30": 0.0,
+    "strict_state_diagram_valid": true,
+    "strict_state_diagram_issues": []
+  },
+  "reused_base_run": {
+    "run_id": "open_source__deepseek_r1_14b__few_shot",
+    "strategy": "few_shot",
+    "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot\\case_32_e_visa_processing_and_follow_up_system\\run_01.puml",
+    "prompt_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__deepseek_r1_14b__few_shot\\case_32_e_visa_processing_and_follow_up_system\\run_01.prompt.txt"
+  }
+}

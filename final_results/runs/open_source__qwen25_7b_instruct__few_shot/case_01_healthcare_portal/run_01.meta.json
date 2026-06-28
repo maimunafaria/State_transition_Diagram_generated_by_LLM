@@ -1,0 +1,102 @@
+{
+  "run_id": "open_source__qwen25_7b_instruct__few_shot",
+  "case_id": "case_01_healthcare_portal",
+  "run_index": 1,
+  "status": "ok",
+  "error_message": "",
+  "prompt": "Act as a software requirements analyst and UML modeling expert.\n\n\n\nYour task is to generate a UML state transition diagram in PlantUML format from the given natural language requirement.\n\n\n\nFollow the structure demonstrated in the examples below.\n\n\n\n--- Examples ---\n\nExample 1 Requirement:\nOnline Pharmacy Management System Scenario 3 — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall display a list of available orders to the delivery person.\n2. The system shall allow the delivery person to contact the delivery address for coordination.\n3. The system shall enable the delivery person to update their profile as needed.\n\nExample 1 PlantUML:\n@startuml\ntitle UML State Machine Diagram - Delivery Man\n\n[*] --> ViewOrders\n\nstate \"View orders\" as ViewOrders\nstate \"Contact delivery address\" as ContactDeliveryAddress\nstate \"Update profile\" as UpdateProfile\n\nViewOrders --> ContactDeliveryAddress\nContactDeliveryAddress --> UpdateProfile\nUpdateProfile --> [*]\n\n@enduml\n\nExample 2 Requirement:\nClass Campaign Final Version — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall activate a campaign once a manager and staff are assigned, it is approved, and the contract is signed.\n2. The system shall allow surveys to be carried out and evaluated during the campaign.\n3. The system shall prepare, approve, schedule, and run adverts during the campaign.\n4. The system shall allow adjustments to the campaign, such as extending its duration or changing the budget.\n5. The system shall pause a campaign, stopping all adverts, and allow resuming to continue work.\n6. The system shall calculate costs and prepare a final statement if the campaign is cancelled.\n7. The system shall complete the campaign and prepare a final statement when all work is finished.\n8. The system shall handle payment after completion; if the amount does not match what is due, it may make adjustments such as refunds.\n9. The system shall mark a campaign as paid once the correct payment is settled.\n10. The system shall archive the campaign and release all assigned staff and managers after completion.\n\nExample 2 PlantUML:\n@startuml\ntitle Campaign State Machine (Final Version)\n\n[*] --> Commissioned : /assignManager; assignStaff\n\nstate Commissioned\nstate Suspended\nstate Completed\nstate Paid\n\nCommissioned --> Active : authorized(authorizationCode)\\n[contract signed]\\n/setCampaignActive\nCommissioned --> Completed : campaignCancelled;\\ncalculateCosts;\\nprepareFinalStatement\nstate Active {\n\n  state Monitoring {\n    [*] --> Survey\n\n    state Survey\n    state Evaluation\n    state H1 <<history>>\n\n    Survey --> Evaluation : surveyComplete\n    Evaluation --> Survey : runSurvey\n  }\n\n  --\n\n  state Running {\n    [*] --> AdvertPreparation\n\n    state AdvertPreparation\n    state Scheduling\n    state \"Running Adverts\" as RunningAdverts\n    state H2 <<history>>\n\n    AdvertPreparation --> Scheduling : advertsApproved\\n/authorize\n    Scheduling --> RunningAdverts : confirmSchedule\n    RunningAdverts --> AdvertPreparation : extendCampaign\\n/modifyBudget\n  }\n\n}\n\n\nActive --> Suspended : suspendCampaign\\n/stopAdverts\nSuspended --> Active : resumeCampaign\n\n\nActive --> Completed : campaignCancelled\\n/cancelSchedule;\\ncalculateCosts;\\nprepareFinalStatement\nAdvertPreparation --> Completed : campaignCompleted\\n/prepareFinalStatement\n\n\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment = 0]\nCompleted --> Completed : paymentReceived(payment)\\n[paymentDue - payment > 0]\nCompleted --> Paid : paymentReceived(payment)\\n[paymentDue - payment < 0]\\n/generateRefund\n\n\nPaid --> [*] : archiveCampaign\\n/unassignStaff;\\nunassignManager\n\n@enduml\n\nExample 3 Requirement:\nOnline Marketplace — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall require the user to provide their details and create an account before they can join as a seller or customer.\n2. The system shall allow the user to sign in and access their workspace after completing registration and verification.\n3. The system shall enable the seller to add new products to the marketplace.\n4. The system shall allow the seller to promote existing products on the platform.\n5. The system shall enable the seller to communicate with customers through the platform.\n6. The system shall allow the seller to leave the platform at any time, leading to logging out.\n7. The system shall require the customer to sign in and access their personal dashboard upon joining.\n8. The system shall allow the customer to explore products on the platform.\n9. The system shall enable the customer to search and view available products during browsing.\n10. The system shall allow the customer to either stop browsing or proceed with a purchase after viewing products.\n11. The system shall add the selected product to the customer's cart and allow them to proceed to checkout if they decide to make a purchase.\n12. The system shall handle payment during the checkout process.\n13. The system shall allow the customer to communicate with a seller during their session.\n14. The system shall enable the customer to report a seller if needed, based on previous interactions.\n15. The system shall allow the customer to rate and review products after receiving them.\n16. The system shall allow both the seller and the customer to log out by choosing to leave the platform at any time.\n\nExample 3 PlantUML:\n@startuml\ntitle UML state machine diagram\n\nstate \"Seller Registration\" as SellerRegistration\nSellerRegistration : entry/Unregistered Seller\nSellerRegistration : do/Get Valid Seller Credentials\nSellerRegistration : exit/Seller Account Registered\n\nstate \"Seller Verification\" as SellerVerification\nSellerVerification : entry/Seller Account Registered\nSellerVerification : do/Verify Seller\nSellerVerification : exit/Login Seller\n\nstate \"Seller Login\" as SellerLogin\nSellerLogin : entry/Unverified Seller\nSellerLogin : entry/Seller not logged in\nSellerLogin : do/Authenticate Seller\nSellerLogin : exit/Logged In Successfully\n\nstate \"Customer Login\" as CustomerLogin\nCustomerLogin : entry/Not Logged In\nCustomerLogin : do/Authenticate Customer\nCustomerLogin : exit/Successfully Logged In\n\nstate \"Seller Home\" as SellerHome\nSellerHome : entry/Logged In Seller\nSellerHome : do/Display Seller Dashboard\nSellerHome : exit/Sale Products\nSellerHome : exit/Promote Products\nSellerHome : exit/Chat\nSellerHome : exit/Logout\n\nstate \"Customer Home\" as CustomerHome\nCustomerHome : entry/Customer Logged in\nCustomerHome : do/Display Recommended/Promoted Products\nCustomerHome : exit/View Product\nCustomerHome : exit/Buy Product\nCustomerHome : exit/Chat\nCustomerHome : exit/Report Seller\nCustomerHome : exit/Rate and Review\n\nstate \"View Product\" as ViewProduct\nViewProduct : entry/To View Products\nViewProduct : do/Search and View Products\nViewProduct : exit/Return to home\nViewProduct : exit/Buy Product\n\nstate \"Buy Product\" as BuyProduct\nBuyProduct : entry/Opted to Buy\nBuyProduct : do/Add product to cart\nBuyProduct : exit/Proceed to Checkout\n\nstate \"Make Purchase\" as MakePurchase\nMakePurchase : entry/Proceeded to Checkout\nMakePurchase : do/Enable payment\nMakePurchase : exit/Payment Successful\nMakePurchase : exit/Payment Unsuccessful\nMakePurchase : exit/Return to Home\n\nstate \"Chat\" as CustomerChat\nCustomerChat : entry/To Chat\nCustomerChat : do/Chat with Seller\nCustomerChat : exit/Return to Home\n\nstate \"Report Seller\" as ReportSeller\nReportSeller : entry/To Report Seller\nReportSeller : entry/Seller in Purchase History\nReportSeller : do/Issue Report to Seller\nReportSeller : exit/Return to Home\n\nstate \"Rate and Review\" as RateReview\nRateReview : entry/To Rate and Review\nRateReview : entry/Product Delivered\nRateReview : do/Rate and Review the product\nRateReview : exit/Return to Home\n\nstate \"Sale Products\" as SaleProducts\nSaleProducts : entry/To Sale Products\nSaleProducts : do/Add new Product to Seller Inventory\nSaleProducts : exit/Product added Successfully\nSaleProducts : exit/Return to Home State\n\nstate \"Promote Products\" as PromoteProducts\nPromoteProducts : entry/To Promote Products\nPromoteProducts : entry/Product in Sale\nPromoteProducts : do/Promote a Product\nPromoteProducts : exit/Return to Home State\n\nstate \"Chat\" as SellerChat\nSellerChat : entry/To Chat\nSellerChat : entry/Seller Product in Sale\nSellerChat : entry/Message from Customer\nSellerChat : do/Enable chat with Customer\nSellerChat : exit/Return to Home State\n\nstate \"Logout\" as Logout\nLogout : entry/To Logout User\nLogout : do/Logout User\nLogout : exit/User Logged out\n\nstate J0 <<choice>>\nstate J1 <<choice>>\nstate J2 <<choice>>\nstate J3 <<choice>>\nstate J4 <<choice>>\nstate J5 <<choice>>\nstate J6 <<choice>>\nstate J7 <<choice>>\nstate J8 <<choice>>\n\n[*] --> J0\nJ0 --> J1 : [Seller Portal]\nJ0 --> CustomerLogin : [Customer Portal]\n\nJ1 --> SellerRegistration : [New Seller]\nJ1 --> J2 : [Registered Seller]\n\nSellerRegistration --> SellerVerification\nSellerVerification --> J2\nJ2 --> SellerLogin\n\nCustomerLogin --> J3\nSellerLogin --> J7\nJ7 --> SellerHome : [Go To Home]\n\nJ3 --> CustomerHome : [Go To Home]\n\nCustomerHome --> J4 : [Possible Activities]\nJ4 --> ViewProduct : [View Products]\nJ4 --> CustomerChat : [Chat]\nJ4 --> ReportSeller : [Report Seller]\nJ4 --> RateReview : [Rate and Review]\nJ4 --> J8 : [Logout]\n\nViewProduct --> J5\nJ5 --> J3 : [Not to Buy]\nJ5 --> BuyProduct : [Proceed to Buy]\n\nBuyProduct --> MakePurchase\nMakePurchase --> J3\n\nCustomerChat --> J3\nReportSeller --> J3\nRateReview --> J3\n\nSellerHome --> J6 : [Possible Activities]\nJ6 --> PromoteProducts : [Promote Products]\nJ6 --> SellerChat : [Chat]\nJ6 --> SaleProducts\nJ6 --> J8 : [Logout]\n\nSaleProducts --> J7\n\nPromoteProducts --> J7\nSellerChat --> J7\n\nJ8 -->  Logout\nLogout --> [*]\n\n@enduml\n\n\n\n--- Process ---\n\n1. Identify all system states.\n\n2. Identify events/conditions triggering transitions.\n\n3. Define transitions clearly between states.\n\n4. Ensure logical consistency (no unreachable states).\n\n5. Identify one initial state and at least one final state.\n\n\n\n--- Output Rules ---\n\n- Generate ONLY valid PlantUML code.\n\n- Include initial and final states.\n\n- Use proper UML state diagram syntax.\n\n- Do not include explanations or extra text.\n\n\n\n--- Task ---\n\nRequirement:\n\nHealthcare Portal — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow new users to complete registration.\n2. The system shall end access if registration fails.\n3. The system shall allow registered users to sign in.\n4. The system shall provide access to available facilities after signing in.\n5. The system shall allow users to read news and expert content.\n6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.\n7. The system shall allow users to continue using the system or finish the session after viewing a result.\n8. The system shall process and validate insurance for available finance-related services.\n9. The system shall check payment with insurance for doctor consultations and complete the payment process.\n10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.\n11. The system shall inform users about cash payment details if chosen as the payment method.\n12. The system shall complete the payment process for insurance-based payments.\n13. The system shall collect user feedback after service completion.\n14. The system shall log out users at the end of their session.\n",
+  "requirement_used": "Healthcare Portal — Polished Requirement Specification\n\nFunctional Requirements\n1. The system shall allow new users to complete registration.\n2. The system shall end access if registration fails.\n3. The system shall allow registered users to sign in.\n4. The system shall provide access to available facilities after signing in.\n5. The system shall allow users to read news and expert content.\n6. The system shall provide health-related information allowing users to check symptoms or use fitness checking options.\n7. The system shall allow users to continue using the system or finish the session after viewing a result.\n8. The system shall process and validate insurance for available finance-related services.\n9. The system shall check payment with insurance for doctor consultations and complete the payment process.\n10. The system shall allow users to select payment methods (cash or insurance) for drug and supplement purchases.\n11. The system shall inform users about cash payment details if chosen as the payment method.\n12. The system shall complete the payment process for insurance-based payments.\n13. The system shall collect user feedback after service completion.\n14. The system shall log out users at the end of their session.",
+  "puml_path": "C:\\Users\\Faria\\OneDrive\\Desktop\\State_transition_Diagram_generated_by_LLM\\results\\plantuml_pipeline\\runs\\open_source__qwen25_7b_instruct__few_shot\\case_01_healthcare_portal\\run_01.puml",
+  "validation": {
+    "valid": false,
+    "errors": [
+      "duplicate_transitions_detected (3)",
+      "unreachable_states_detected",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "warnings": [
+      "unreachable: Feedback Collection"
+    ],
+    "initial_state": "Initial State",
+    "duplicate_transition_count": 3,
+    "unreachable_states": [
+      "Feedback Collection"
+    ],
+    "state_count": 16,
+    "transition_count": 21
+  },
+  "processing_steps": [
+    {
+      "stage": "few_shot_selection",
+      "case_ids": [
+        "case_26_online_pharmacy_management_system_3",
+        "case_79_class_campaign_final_version",
+        "case_03_online_marketplace"
+      ],
+      "seed": 42,
+      "run_index": 1
+    },
+    {
+      "stage": "generator",
+      "valid": false,
+      "errors": [
+        "duplicate_transitions_detected (3)",
+        "unreachable_states_detected",
+        "plantuml_command_not_found_for_official_syntax_check"
+      ]
+    }
+  ],
+  "metrics": {
+    "state_precision": 0.125,
+    "state_recall": 0.08,
+    "state_f1": 0.09756097560975609,
+    "state_tp": 2,
+    "state_fp": 14,
+    "state_fn": 23,
+    "transition_precision": 0.0,
+    "transition_recall": 0.0,
+    "transition_f1": 0.0,
+    "transition_tp": 0,
+    "transition_fp": 21,
+    "transition_fn": 30,
+    "state_precision_relaxed": 0.125,
+    "state_recall_relaxed": 0.08,
+    "state_f1_relaxed": 0.09756097560975609,
+    "state_tp_relaxed": 2,
+    "state_fp_relaxed": 14,
+    "state_fn_relaxed": 23,
+    "transition_precision_relaxed": 0.0,
+    "transition_recall_relaxed": 0.0,
+    "transition_f1_relaxed": 0.0,
+    "transition_tp_relaxed": 0,
+    "transition_fp_relaxed": 21,
+    "transition_fn_relaxed": 30,
+    "transition_precision_semantic": 0.0,
+    "transition_recall_semantic": 0.0,
+    "transition_f1_semantic": 0.0,
+    "transition_tp_semantic": 0,
+    "transition_fp_semantic": 21,
+    "transition_fn_semantic": 30,
+    "transition_event_similarity_mean": 0.0,
+    "structural_valid": false,
+    "structural_errors": [
+      "duplicate_transitions_detected (3)",
+      "unreachable_states_detected",
+      "plantuml_command_not_found_for_official_syntax_check"
+    ],
+    "structural_warnings": [
+      "unreachable: Feedback Collection"
+    ],
+    "hallucination_state_rate": 0.875,
+    "hallucination_transition_rate": 1.0,
+    "hallucination_state_rate_relaxed": 0.875,
+    "hallucination_transition_rate_relaxed": 1.0,
+    "missing_transition_rate": 1.0,
+    "missing_transition_rate_relaxed": 1.0,
+    "overall_f1": 0.048780487804878044,
+    "overall_f1_relaxed": 0.048780487804878044,
+    "weighted_f1_relaxed_70_30": 0.06829268292682926,
+    "overall_f1_semantic": 0.048780487804878044,
+    "weighted_f1_semantic_70_30": 0.06829268292682926
+  }
+}

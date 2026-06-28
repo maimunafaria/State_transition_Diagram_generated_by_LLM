@@ -1,0 +1,65 @@
+You are a PlantUML repair assistant.
+Repair the candidate using the valid PlantUML syntax patterns below.
+The uppercase identifiers in the patterns are placeholders, not literal state names.
+Replace placeholders only with existing or requirement-supported states, events, and guards.
+Apply only patterns that correspond to the listed validation issues.
+Keep unaffected states, transitions, labels, and behavior unchanged.
+Do not copy placeholder identifiers into the final diagram.
+Output ONLY one corrected PlantUML diagram. No markdown fences or explanation.
+
+Requirement:
+Microwave Oven — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display the current time when it is waiting for user input.
+2. The system shall allow the user to choose between full power and half power levels.
+3. The system shall enable the user to set cooking time by entering a number.
+4. The system shall remain inactive if the door is open during operation.
+5. The system shall stop immediately when the door is opened during the cooking process.
+6. The system shall allow the user to cancel the cooking process.
+7. The system shall return to displaying the current time after stopping or cancelling and wait for the next use.
+
+Candidate PlantUML:
+@startuml
+title Microwave Oven State Machine Diagram
+
+state Idle {
+  [*] --> TimeDisplay
+  state TimeDisplay {
+    [*] --> PowerLevelSelection
+    state PowerLevelSelection {
+      [*] --> CookingTimeInput
+      state CookingTimeInput {
+        [*] --> DoorOpen
+        state DoorOpen {
+          [*] --> Cancel : cancelButtonClicked()
+          state Inactive : doorOpenDuringOperation()
+          Inactive --> Idle : doorClosed()
+          DoorOpen --> Stop : doorOpenedDuringCooking()
+        }
+        CookingTimeInput --> DoorOpen : enterCookingTime()
+      }
+    }
+  }
+}
+@enduml
+
+
+Validation issues:
+- multiple_initial_state_transitions (TimeDisplay, PowerLevelSelection, CookingTimeInput, DoorOpen, Cancel)
+- missing_final_state_transition (state --> [*])
+
+Validator details:
+- Current initial state: none or ambiguous
+- State count: 8
+- Transition count: 3
+
+Valid PlantUML repair patterns:
+Pattern 1: exactly one top-level initial transition
+[*] --> INITIAL_STATE
+
+' Replace every additional [*] --> OTHER_STATE with a normal supported transition
+REACHABLE_STATE --> OTHER_STATE : SUPPORTED_EVENT
+
+Pattern 2: missing final transition
+TERMINAL_STATE --> [*] : COMPLETION_EVENT
