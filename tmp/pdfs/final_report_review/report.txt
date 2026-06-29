@@ -1,0 +1,1186 @@
+===== PAGE 1 =====
+ 
+ 
+ 
+Large Language Model–Driven 
+Generation of State Transition 
+Diagrams from Natural Language 
+Requirements 
+ 
+Result and Analysis 
+ 
+Submitted by 
+Mussammat Maimuna Faria 
+Institute of Information Technology 
+University of Dhaka 
+ 
+ 
+Supervised by 
+Dr. Ahmedul Kabir 
+Associate Professor 
+Institute of Information Technology 
+University of Dhaka 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Submission Date: 29 June, 2026 
+ 
+
+===== PAGE 2 =====
+ 
+Master’s Thesis Result & Analysis 
+ 
+ 
+ 
+ 
+ 
+Large Language Model–Driven Generation of 
+State Transition Diagrams from Natural 
+Language Requirements 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Author 
+Mussammat Maimuna Faria 
+Institute of Information Technology 
+University of Dhaka 
+ 
+ 
+       Supervisor 
+Dr. Ahmedul Kabir 
+Associate Professor 
+Institute of Information Technology 
+University of Dhaka 
+Results and Analysis  |  2 
+
+===== PAGE 3 =====
+ 
+Table of Content 
+1. Introduction---------------------------------------------------------------------------------------------------------------5 
+2. Experimental Setup---------------------------------------------------------------------------------------------------- 5 
+2.1 Dataset and Split------------------------------------------------------------------------------------------------- 5 
+2.2 Models and Generation Strategies------------------------------------------------------------------------- 5 
+2.3 Validation and Repair------------------------------------------------------------------------------------------- 6 
+2.4 Human and LLM Evaluation---------------------------------------------------------------------------------- 6 
+2.5 Computing Environment and Hyperparameters-------------------------------------------------------6 
+3. Evaluation Metrics------------------------------------------------------------------------------------------------------7 
+3.1 Syntactic and Structural Validity--------------------------------------------------------------------------------7 
+3.2 Semantic State Matching---------------------------------------------------------------------------------------- 7 
+3.3 Repair Effectiveness---------------------------------------------------------------------------------------------- 8 
+3.4 Stability Across Runs--------------------------------------------------------------------------------------------- 8 
+3.5 Human–LLM and Inter-Judge Agreement------------------------------------------------------------------- 8 
+4. Experimental Results--------------------------------------------------------------------------------------------------9 
+4.1 Quantitative Results---------------------------------------------------------------------------------------------9 
+4.1.1 RQ1: Effect of Generation Strategies on Validity---------------------------------------------- 9 
+4.1.2 RQ2: Effect of RAG Knowledge Sources--------------------------------------------------------10 
+4.1.3 RQ3: Iterative Repair-----------------------------------------------------------------------------------10 
+4.1.4 RQ4: Baseline vs Syntax-Grounded Repair---------------------------------------------------- 11 
+4.1.5 Stability Across Runs----------------------------------------------------------------------------------11 
+4.1.6 RQ5: Human Evaluation------------------------------------------------------------------------------ 12 
+4.1.7 RQ6: LLM-as-a-Judge Agreement----------------------------------------------------------------- 12 
+4.1.8 Stacked Ensemble Selection-------------------------------------------------------------------------- 13 
+4.2 Visual Results----------------------------------------------------------------------------------------------------- 14 
+5. Comparative Analysis----------------------------------------------------------------------------------------------- 16 
+6. Discussion of Findings----------------------------------------------------------------------------------------------16 
+7. Threats to Validity and Limitations------------------------------------------------------------------------------18 
+7.1 Construct Validity-------------------------------------------------------------------------------------------------18 
+7.2 Internal Validity----------------------------------------------------------------------------------------------------18 
+7.3 External Validity---------------------------------------------------------------------------------------------------18 
+7.4 Human Evaluator Bias------------------------------------------------------------------------------------------ 18 
+7.5 Reliability of Reconstructed Requirements---------------------------------------------------------------- 18 
+7.6 Generality of Validation Heuristics--------------------------------------------------------------------------- 18 
+7.7 LLM Training Data Contamination--------------------------------------------------------------------------- 19 
+8. Summary-----------------------------------------------------------------------------------------------------------------19 
+ 
+Results and Analysis  |  3 
+
+===== PAGE 4 =====
+ 
+List of Figures 
+1 
+Mean syntactic and strict structural validity across generation strategies. 
+ 
+14 
+2 
+Structural validity before and after iterative repair. 
+14 
+3 
+Aggregate comparison of baseline and syntax-grounded repair 
+15 
+4 
+Exact and within-one-point agreement between LLM judges and human scores. 
+15 
+5 
+Syntactic validity rates and average structural-violation counts across prompting strategies. 
+ 
+16 
+6 
+ Repair success by iteration; most successful repairs occur during the first two iterations. 
+16 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Results and Analysis  |  4 
+
+===== PAGE 5 =====
+ 
+1. Introduction 
+This chapter presents and analyses the empirical results of the study on generating UML state transition 
+diagrams from natural-language requirements using open-source large language models (LLMs). The 
+evaluation covers the effects of prompting strategies, retrieval-augmented generation (RAG), automated 
+syntactic and structural validation, iterative repair, semantic metrics, generation stability, and LLM-as-a-Judge 
+evaluation. The chapter first reports the original generation and repair findings, then presents the extension 
+comparing baseline repair with syntax-grounded repair and examining the alignment of three LLM judges with 
+human evaluators. 
+The analysis is organised around three complementary notions of quality. First, syntactic validity determines 
+whether the generated PlantUML code can be parsed. Second, structural validity checks graph-level UML 
+constraints, including lifecycle, reachability, duplicate transitions, and special-node rules. Third, semantic 
+quality examines whether the diagram represents the intended behaviour through State F1, human judgment, 
+and LLM-based judgment. This separation is necessary because a diagram can compile successfully and 
+satisfy structural rules while still omitting or contradicting required behaviour. 
+2. Experimental Setup 
+2.1 Dataset and Split 
+The benchmark contains 80 requirement–diagram pairs collected from software-engineering textbooks and 
+UML instructional materials. Each item includes a structured natural-language requirement and a 
+corresponding ground-truth PlantUML state transition diagram. Twenty-seven cases were selected as the 
+held-out test set, while the remaining 53 cases were used only for prompting examples and retrieval support. 
+The test cases were excluded from the example pool and the RAG corpus to reduce information leakage. 
+The dataset covers simple, medium, and complex diagrams. Complexity was operationalised using the number 
+of states: simple diagrams contain at most six states, medium diagrams contain seven to fourteen states, and 
+complex diagrams contain more than fourteen states. These thresholds correspond to the 25th and 75th 
+percentiles of the dataset distribution. 
+2.2 Models and Generation Strategies 
+Role 
+Model 
+Generator / general judge 
+Llama 3.1 8B Instruct 
+Generator 
+Mistral 7B Instruct 
+Generator / general judge 
+DeepSeek-R1 14B 
+Generator 
+Qwen 2.5 7B Instruct 
+Specialised judge 
+Prometheus 2 7B 
+ 
+Four generation strategies were evaluated: zero-shot prompting, one-shot prompting, few-shot prompting using 
+three examples spanning the three complexity categories, and RAG. The RAG corpus combined 
+requirement–diagram examples, PlantUML documentation, and theoretical UML resources. Additional RAG 
+analysis isolated examples-only, rules-only, and theory-only retrieval configurations. 
+Results and Analysis  |  5 
+
+===== PAGE 6 =====
+ 
+2.3 Validation and Repair 
+Every generated output was checked using the PlantUML command-line validator and a deterministic 
+rule-based graph analyser. The structural analyser verifies exactly one initial transition, at least one final 
+transition, absence of duplicate transitions, reachability, absence of orphan states, valid choice/fork/join 
+behavior, valid use of history states, and reliable graph extraction. 
+At first, we used a validation-aware repair workflow in which detected syntax and structural violations were 
+supplied to the same LLM that generated the diagram. Then we compare this baseline repair prompt with a 
+syntax-grounded repair prompt that provides targeted guidance relevant to the detected violation. Both repair 
+methods were applied to the same set of 108 cases, enabling paired comparison. 
+2.4 Human and LLM Evaluation 
+Only diagrams that passed both syntactic and structural validation were submitted for semantic quality 
+evaluation. Human evaluators rated four criteria on a five-point Likert scale: completeness, correctness, 
+understandability, and terminological alignment. Scores below five required a short justification. 
+Three LLM judges evaluated the same requirement–diagram pairs using the same rubric content. DeepSeek 
+and Llama evaluated all four criteria in one structured JSON response. Prometheus evaluated one criterion per 
+call using its rubric-based absolute-grading format. The LLM judges were not used as formal syntax or 
+structural validators; their role was to approximate human semantic assessment after automated filtering. 
+2.5 Computing Environment and Hyperparameters 
+Item 
+Configuration 
+Inference environment 
+Windows machine; PlantUML 1.2026.6; 64-bit OpenJDK 
+Analysis environment 
+MacBook Air (Apple M4, 10-core CPU, 8-core GPU, 16 GB unified memory) 
+Software 
+macOS 26.5.1, Python 3.11.8, OpenJDK 25.0.2, PlantUML 1.2026.1, Ollama 0.30.11 
+Embedding model 
+all-MiniLM-L6-v2, 
+revision 
+1110a243fdf4706b3f48f1d95db1a4f5529b4d41 
+Embedding settings 
+CPU, batch size 32, thresholds 0.80 and 0.48, seed 42 
+ 
+Results and Analysis  |  6 
+
+===== PAGE 7 =====
+ 
+ 
+Stage 
+Temperature 
+Top-p 
+Rationale 
+Generation and repair 
+0.2 
+0.9 
+Low randomness with limited generation flexibility 
+LLM judging 
+0.0 
+1.0 
+Deterministic and consistent scoring 
+Meta-LLM ensemble 
+0.0 
+1.0 
+Only short candidate selection output was required 
+All experiments were inference-only, and no fine-tuning, LoRA, Q-LoRA, continued pretraining, or parameter 
+updates were performed. 
+3. Evaluation Metrics 
+3.1 Syntactic and Structural Validity 
+Metric 
+Description 
+Range 
+Interpretation 
+Syntactic Validity 
+Percentage of diagrams accepted by PlantUML without 
+syntax errors 
+0–100% 
+Higher is better 
+Strict 
+Structural 
+Validity 
+Percentage of diagrams that satisfy all structural validation 
+rules 
+0–100% 
+Higher is better 
+3.2 Semantic State Matching 
+Metric 
+Description 
+Range 
+Interpretation 
+Semantic 
+State 
+Precision 
+Proportion of generated states that correctly match reference 
+states 
+0–1 
+Higher is better 
+Semantic State Recall 
+Proportion of reference states correctly identified in the 
+generated diagram 
+0–1 
+Higher is better 
+Semantic State F1 
+Harmonic mean of state precision and recall 
+0–1 
+Higher is better 
+ 
+Results and Analysis  |  7 
+
+===== PAGE 8 =====
+ 
+3.3 Repair Effectiveness 
+Metric 
+Description 
+Range 
+Interpretation 
+Strict 
+Repair 
+Validity 
+Percentage of repaired diagrams passing both syntactic 
+and structural validation 
+0–100% 
+Higher is better 
+Error-Resolution 
+Rate 
+Proportion of initial violations removed during repair 
+0–1 
+or 
+0–100% 
+Higher is better 
+3.4 Stability Across Runs 
+Metric 
+Description 
+Range 
+Interpretation 
+Mean State F1 Across Runs 
+Average State F1 across three independent 
+runs 
+0–1 
+Higher is better 
+Run-Level 
+State 
+F1 
+Standard 
+Deviation 
+Variation among the mean State F1 values of 
+the runs 
+0 upward 
+Lower is better 
+Mean Case-Wise State F1 Standard 
+Deviation 
+Average case-level variation in State F1 
+across runs 
+0 upward 
+Lower is better 
+Structural-Validity 
+Standard 
+Deviation 
+Variation in structural-validity rates across 
+runs 
+0 upward 
+Lower is better 
+Structural-Validity 
+Consistency 
+Percentage 
+Percentage of cases with the same validity 
+outcome in all runs 
+0–100% 
+Higher is better 
+3.5 Human–LLM and Inter-Judge Agreement 
+Metric 
+Description 
+Range 
+Interpretation 
+Spearman 
+Rank 
+Correlation 
+Similarity between human and 
+LLM-judge score rankings 
+−1 to 1 
+Closer to 1 is better 
+Mean Absolute Error 
+Average 
+absolute 
+difference 
+between human and judge scores 
+0–4 
+Lower is better 
+Exact 
+Agreement 
+Percentage 
+Percentage of identical human 
+and judge scores 
+0–100% 
+Higher is better 
+Results and Analysis  |  8 
+
+===== PAGE 9 =====
+ 
+Within-One-Point 
+Agreement Percentage 
+Percentage of scores differing by 
+no more than one point 
+0–100% 
+Higher is better 
+Weighted 
+Cohen’s 
+Kappa 
+Agreement after accounting for 
+chance and disagreement severity 
+−1 to 1 
+Higher is better 
+Mean Signed Error 
+Average 
+judge 
+score 
+minus 
+human score 
+−4 to 4 
+Closer to 0 is better; negative 
+indicates under-scoring 
+Inter-Judge Agreement 
+Consistency among the scores 
+produced 
+by 
+different 
+LLM 
+judges 
+Depends 
+on 
+the 
+agreement statistic 
+Higher is better 
+ 
+4. Experimental Results 
+The research questions are  
+RQ1: How do zero-shot, one-shot, few-shot, and RAG strategies affect the syntactic and structural validity of 
+generated state transition diagrams? 
+RQ2: How do different RAG knowledge-base configurations affect diagram validity? 
+RQ3: How effective is iterative repair in improving syntactic and structural validity? 
+RQ4: How do different prompting strategies in the repair phase handle errors and improve strict repair validity 
+and error-resolution rate compared with baseline repair? 
+RQ5: To what extent do generated diagrams satisfy correctness, completeness, understandability, and 
+terminological alignment? 
+RQ6: To what extent do LLM judges agree with human evaluators and with one another when assessing 
+generated diagrams? 
+4.1 Quantitative Results 
+4.1.1 RQ1: Effect of Generation Strategies on Validity 
+Strategy 
+Model 
+Syntactic validity 
+Strict structural validity 
+Zero-shot 
+LLaMA 
+29.6% 
+0.0% 
+Zero-shot 
+Mistral 
+3.7% 
+0.0% 
+Zero-shot 
+DeepSeek 
+59.3% 
+0.0% 
+Zero-shot 
+Qwen 
+22.2% 
+0.0% 
+One-shot 
+LLaMA 
+96.3% 
+18.5% 
+One-shot 
+Mistral 
+85.2% 
+3.7% 
+One-shot 
+DeepSeek 
+92.6% 
+11.1% 
+One-shot 
+Qwen 
+74.1% 
+3.7% 
+Results and Analysis  |  9 
+
+===== PAGE 10 =====
+ 
+Few-shot 
+LLaMA 
+92.6% 
+29.6% 
+Few-shot 
+Mistral 
+96.3% 
+7.4% 
+Few-shot 
+DeepSeek 
+88.9% 
+22.2% 
+Few-shot 
+Qwen 
+96.3% 
+11.1% 
+RAG 
+LLaMA 
+100.0% 
+22.2% 
+RAG 
+Mistral 
+74.1% 
+14.8% 
+RAG 
+DeepSeek 
+85.2% 
+14.8% 
+RAG 
+Qwen 
+100.0% 
+14.8% 
+ 
+Few-shot prompting produced the highest mean syntactic validity (93.5%), compared with 28.7% for 
+zero-shot, 87.1% for one-shot, and 89.8% for RAG. However, mean strict structural validity remained low: 
+0.0% for zero-shot, 9.3% for one-shot, 17.6% for few-shot, and 16.7% for RAG. The gap shows that 
+PlantUML compilation is necessary, but does not establish lifecycle correctness, reachability, or completeness. 
+The dominant failures were missing final states, missing initial states, unreachable states, orphan states, and 
+invalid choice-node usage. The small number of recurring violation types indicates systematic rule omissions 
+rather than random generation failures. 
+4.1.2 RQ2: Effect of RAG Knowledge Sources 
+RAG configuration 
+Model 
+Syntactic validity 
+Strict structural validity 
+Full corpus 
+LLaMA 
+100.0% 
+22.2% 
+Full corpus 
+Mistral 
+74.1% 
+14.8% 
+Full corpus 
+DeepSeek 
+85.2% 
+14.8% 
+Full corpus 
+Qwen 
+100.0% 
+14.8% 
+Rules only 
+LLaMA 
+77.8% 
+42.9% 
+Rules only 
+Mistral 
+66.7% 
+5.6% 
+Rules only 
+DeepSeek 
+81.5% 
+18.2% 
+Rules only 
+Qwen 
+81.5% 
+50.0% 
+Examples only 
+LLaMA 
+96.3% 
+15.4% 
+Examples only 
+Mistral 
+88.9% 
+4.2% 
+Examples only 
+DeepSeek 
+74.1% 
+10.0% 
+Examples only 
+Qwen 
+92.6% 
+12.0% 
+Theory only 
+LLaMA 
+88.9% 
+4.2% 
+Theory only 
+Mistral 
+25.9% 
+0.0% 
+Theory only 
+DeepSeek 
+63.0% 
+0.0% 
+Theory only 
+Qwen 
+81.5% 
+4.6% 
+ 
+No retrieval corpus was uniformly best. Rules-only RAG produced the strongest structural results for LLaMA 
+(42.9%) and Qwen (50.0%), whereas the full corpus was more useful for Mistral. Theory-only RAG was 
+consistently weak, reaching only 0–4.6% structural validity. Retrieved examples could also transfer behavior 
+that was textually similar but unsupported by the target requirement, creating retrieval-induced hallucination. 
+4.1.3 RQ3: Iterative Repair 
+Model 
+Initial structural validity 
+Final syntactic validity 
+Final structural validity 
+LLaMA 
+29.6% 
+96.30% 
+55.56% 
+Mistral 
+14.8% 
+74.07% 
+29.63% 
+DeepSeek 
+22.2% 
+92.59% 
+88.89% 
+Qwen 
+14.8% 
+92.59% 
+40.74% 
+ 
+Results and Analysis  |  10 
+
+===== PAGE 11 =====
+ 
+Iterative repair improved strict structural validity for all models. DeepSeek showed the largest increase, from 
+22.2% to 88.9%, followed by LLaMA (29.6% to 55.6%), Qwen (14.8% to 40.7%), and Mistral (14.8% to 
+29.6%). Most successful repairs occurred within the first two iterations. Repair was strongest for localized 
+errors such as missing initial or final states and weaker for diagrams containing multiple interacting problems 
+or unreachable-state errors. 
+4.1.4 RQ4: Baseline vs Syntax-Grounded Repair 
+Model 
+Baseline syntax 
+Syntax-grounded 
+syntax 
+Baseline structural 
+Syntax-grounded 
+structural 
+Qwen 
+92.59% 
+96.30% 
+40.74% 
+51.85% 
+Mistral 
+74.07% 
+77.78% 
+29.63% 
+37.04% 
+DeepSeek 
+92.59% 
+92.59% 
+88.89% 
+81.48% 
+LLaMA 
+96.30% 
+85.19% 
+55.56% 
+62.96% 
+Overall 
+88.89% 
+87.96% 
+53.70% 
+58.33% 
+ 
+Repair method 
+Strict validity 
+Errors resolved 
+Baseline repair 
+58/108 (53.70%) 
+86/161 (53.42%) 
+Syntax-grounded repair 
+63/108 (58.33%) 
+101/161 (62.73%) 
+ 
+Syntax-grounded repair increased aggregate strict validity by 4.63 percentage points and error resolution by 
+9.31 percentage points. Qwen, Mistral, and LLaMA improved structurally, while DeepSeek decreased from 
+88.9% to 81.5%. Overall syntactic validity changed little (88.9% to 88.0%), showing that the main benefit was 
+structural rather than syntactic. 
+Model 
+Raw State F1 
+Baseline-repair State F1 
+Syntax-grounded State F1 
+DeepSeek 
+0.4785 
+0.4793 
+0.4862 
+LLaMA 
+0.5349 
+0.5261 
+0.5339 
+Mistral 
+0.4263 
+0.4200 
+0.4554 
+Qwen 
+0.5841 
+0.5830 
+0.5841 
+Macro mean 
+0.5060 
+0.5021 
+0.5149 
+ 
+The macro mean Semantic State F1 increased to 0.5149 under syntax-grounded repair, compared with 0.5060 
+for raw outputs and 0.5021 for baseline repair. The largest gain occurred for Mistral, suggesting that targeted 
+rules can improve semantic preservation for weaker repair models. The improvement was modest overall, 
+confirming that structural correction does not automatically guarantee semantic completeness. 
+4.1.5 Stability Across Runs 
+Model 
+Method 
+Mean State F1 
+Run SD 
+Case-wise SD 
+Syntax rate 
+Structural 
+rate 
+DeepSeek 
+Raw 
+0.4170 
+0.0610 
+0.1770 
+81.48% 
+19.75% 
+DeepSeek 
+Baseline repair 
+0.4282 
+0.0448 
+0.1695 
+87.65% 
+77.78% 
+LLaMA 
+Raw 
+0.5294 
+0.0062 
+0.1067 
+90.12% 
+18.52% 
+LLaMA 
+Baseline repair 
+0.5297 
+0.0033 
+0.1147 
+87.65% 
+37.04% 
+Mistral 
+Raw 
+0.3875 
+0.0370 
+0.1847 
+74.07% 
+6.17% 
+Mistral 
+Baseline repair 
+0.3862 
+0.0293 
+0.1713 
+75.31% 
+24.69% 
+Qwen 
+Raw 
+0.5080 
+0.0744 
+0.1287 
+90.12% 
+4.94% 
+Qwen 
+Baseline repair 
+0.5033 
+0.0753 
+0.1298 
+85.19% 
+30.86% 
+ 
+Results and Analysis  |  11 
+
+===== PAGE 12 =====
+ 
+Repair substantially increased structural-validity rates, but its effect on semantic stability was 
+model-dependent. Run-level standard deviation decreased for DeepSeek, LLaMA, and Mistral, while Qwen 
+remained unstable. Case-wise standard deviations were much larger than run-level deviations, demonstrating 
+that aggregate means can hide case-specific output changes. 
+4.1.6 RQ5: Human Evaluation 
+Method 
+Quality dimension 
+Mean score 
+Model range 
+One-shot 
+Completeness 
+4.12 
+3.5–5.0 
+One-shot 
+Correctness 
+3.62 
+2.5–4.5 
+One-shot 
+Understandability 
+3.88 
+2.5–5.0 
+One-shot 
+Terminology 
+3.88 
+3.0–5.0 
+Few-shot 
+Completeness 
+3.75 
+3.0–4.0 
+Few-shot 
+Correctness 
+3.75 
+3.0–4.0 
+Few-shot 
+Understandability 
+4.88 
+4.5–5.0 
+Few-shot 
+Terminology 
+4.88 
+4.5–5.0 
+RAG 
+Completeness 
+3.75 
+3.0–4.5 
+RAG 
+Correctness 
+3.75 
+3.0–4.5 
+RAG 
+Understandability 
+4.75 
+4.5–5.0 
+RAG 
+Terminology 
+4.25 
+3.5–5.0 
+Repair 
+Completeness 
+4.00 
+4.0–4.0 
+Repair 
+Correctness 
+4.25 
+4.0–5.0 
+Repair 
+Understandability 
+4.50 
+3.0–5.0 
+Repair 
+Terminology 
+4.50 
+4.0–5.0 
+ 
+Understandability was consistently rated higher than correctness and completeness. Few-shot prompting 
+showed stronger behavioral quality than RAG despite RAG’s high syntactic validity. Repaired diagrams that 
+passed automated checks generally received strong human ratings, but structurally valid diagrams could still 
+omit required behaviors. This confirms that automated validation must be followed by semantic review. 
+4.1.7 RQ6: LLM-as-a-Judge Agreement 
+Judge 
+N 
+Spearman 
+MAE 
+Exact 
+Within ±1 
+Weighted κ 
+Signed error 
+DeepSeek 
+388 
+0.245 
+0.655 
+50.77% 
+87.37% 
+0.401 
++0.232 
+LLaMA 
+388 
+0.226 
+0.915 
+36.60% 
+78.87% 
+0.273 
+-0.461 
+Prometheus 
+332 
+0.099 
+0.780 
+34.34% 
+87.95% 
+0.385 
+-0.328 
+ 
+DeepSeek aligned most closely with human scores overall, with the lowest MAE (0.655), highest exact 
+agreement (50.77%), and highest weighted kappa (0.401). Prometheus achieved the highest within-one-point 
+agreement (87.95%) but the weakest rank correlation (0.099). Signed error revealed different calibration 
+patterns: DeepSeek slightly over-scored (+0.232), whereas LLaMA (−0.461) and Prometheus (−0.328) 
+under-scored. 
+Judge pair 
+N 
+Spearman 
+MAE 
+Exact 
+Within ±1 
+Weighted κ 
+DeepSeek vs 
+LLaMA 
+388 
+0.247 
+0.946 
+37.37% 
+76.55% 
+0.275 
+DeepSeek vs 
+Prometheus 
+332 
+0.162 
+0.837 
+29.22% 
+87.95% 
+0.363 
+LLaMA vs 
+Prometheus 
+332 
+0.028 
+0.922 
+30.72% 
+81.93% 
+0.174 
+ 
+Results and Analysis  |  12 
+
+===== PAGE 13 =====
+ 
+Inter-judge agreement was weak to moderate. DeepSeek and Prometheus had the highest weighted kappa 
+(0.363), while LLaMA and Prometheus had almost no rank correlation (0.028). Therefore, combining judges 
+does not remove uncertainty unless their disagreements are explicitly resolved. 
+Judge 
+Same-model 
+MAE 
+Other-model 
+MAE 
+Same exact 
+Other exact 
+Interpretation 
+DeepSeek 
+0.538 
+0.737 
+58.75% 
+45.18% 
+Possible 
+model-family 
+advantage 
+LLaMA 
+0.870 
+0.929 
+34.78% 
+37.16% 
+Weak/mixed 
+evidence 
+Prometheus 
+N/A 
+N/A 
+N/A 
+N/A 
+Not applicable: no 
+Prometheus-gener
+ated diagrams 
+ 
+DeepSeek evaluated outputs from its own model family more accurately than outputs from other generators, 
+indicating a possible model-family advantage. LLaMA showed mixed evidence rather than a clear 
+self-preference. The result should be treated as a bias signal, not proof of intentional favoritism. 
+4.1.8 Stacked Ensemble Selection 
+Selected strategy 
+Cases 
+Percentage 
+Baseline repair 
+12/27 
+44.44% 
+Syntax-grounded repair 
+10/27 
+37.04% 
+Few-shot 
+3/27 
+11.11% 
+RAG 
+2/27 
+7.41% 
+ 
+Selected generator 
+Cases 
+Percentage 
+Selected when available 
+DeepSeek R1 14B 
+12/27 
+44.44% 
+50.00% 
+Qwen 2.5 7B 
+5/27 
+18.52% 
+33.33% 
+Mistral 
+5/27 
+18.52% 
+45.45% 
+LLaMA 3.1 8B 
+5/27 
+18.52% 
+29.41% 
+ 
+The ensemble selected repair-based candidates in 22 of 27 cases: 12 baseline-repair outputs and 10 
+syntax-grounded outputs. DeepSeek was the most frequently selected generator (12 cases), while each of the 
+other models contributed five cases. This diversity demonstrates that no single model or strategy dominated 
+every requirement and supports case-specific candidate selection. 
+ 
+Results and Analysis  |  13 
+
+===== PAGE 14 =====
+ 
+4.2 Visual Results 
+ 
+ 
+Figure 1. Mean syntactic and strict structural validity across generation strategies. 
+Providing examples substantially improved syntactic validity, but strict structural validity remained low, 
+showing that valid PlantUML syntax does not guarantee a correct state-machine structure. 
+ 
+ 
+Figure 2. Structural validity before and after iterative repair. 
+Iterative repair improved structural validity for every model, with DeepSeek showing the largest increase from 
+22.2% to 88.9%. 
+Results and Analysis  |  14 
+
+===== PAGE 15 =====
+ 
+ 
+Figure 3. Aggregate comparison of baseline and syntax-grounded repair. 
+Syntax-grounded repair increased strict validity from 53.70% to 58.33% and the error-resolution rate from 
+53.42% to 62.73%. 
+ 
+Figure 4. Exact and within-one-point agreement between LLM judges and human scores. 
+Results and Analysis  |  15 
+
+===== PAGE 16 =====
+ 
+DeepSeek achieved the highest exact agreement with human scores, while Prometheus achieved the highest 
+within-one-point agreement; however, overall agreement remained limited. 
+ 
+ 
+ 
+Figure 5. Syntactic validity rates and average structural-violation counts across prompting strategies. 
+Although examples sharply improved syntax, a small set of recurring violations—particularly missing initial or 
+final states and unreachable states—continued to limit structural validity. 
+ 
+Figure 6. Repair success by iteration; most successful repairs occur during the first two iterations. 
+Most successful repairs occurred within the first two iterations, indicating diminishing returns from additional 
+repair attempts. 
+5. Comparative Analysis 
+The proposed framework is compared with its own baselines and with major families of prior UML-generation 
+approaches. Direct numerical comparison with published systems is not valid because prior studies use 
+different diagram types, datasets, prompts, and evaluation rules. 
+6. Discussion of Findings 
+ 
+1.​ Finding 1: PlantUML examples provide essential guidance for syntactic validity. Zero-shot prompting 
+produced poor syntax, while one-shot and few-shot examples sharply improved PlantUML compilation. 
+Few-shot prompting consolidated the improvement and produced the strongest average syntactic validity. 
+Results and Analysis  |  16 
+
+===== PAGE 17 =====
+ 
+2.​ Finding 2: Structural validity remains low across prompting strategies. Even when few-shot or RAG 
+outputs compiled successfully, strict structural validity remained below 30% in the initial experiments. 
+Missing initial or final states and unreachable states were recurring causes of failure. 
+3.​ Finding 3: A small set of violation types repeats across many invalid diagrams. Most invalid outputs 
+contained only a few violations, but the same violations appeared repeatedly. This suggests systematic 
+omissions of critical rules rather than random failure. 
+4.​ Finding 4: RAG is not uniformly reliable and its best knowledge source is model-dependent. 
+Rules-only RAG worked best for LLaMA and Qwen, the full corpus was comparatively stronger for 
+Mistral, and theory-only retrieval was consistently ineffective. Similar but behaviorally different examples 
+could also cause retrieval-induced hallucination. 
+5.​ Finding 5: More repair iterations do not always improve the result. Most diagrams that became valid 
+did so within the first two iterations. Later iterations added few or no successful repairs, indicating 
+diminishing returns beyond two or three attempts. 
+6.​ Finding 6: Repair is effective for diagrams with fewer issues but struggles with many interacting 
+issues. Localized violations were often repaired successfully, whereas diagrams containing multiple faults 
+rarely became valid after several attempts. Aggressive correction could remove required states or 
+transitions. 
+7.​ Finding 7: Repair success varies by violation type and model. DeepSeek repaired a broad range of 
+localized violations but struggled with unreachable states. Other models showed narrower strengths, such 
+as Mistral on duplicate transitions and Qwen on missing final states. 
+8.​ Finding 8: Incorrect diagrams can still be highly understandable. Human evaluators often rated 
+readability and understandability higher than correctness. Clear layout and sensible terminology can 
+therefore create false confidence when important behavioral flows are missing. 
+9.​ Finding 9: Few-shot prompting provides better behavioral quality than RAG. Although RAG 
+sometimes improved syntax, few-shot outputs were generally rated more favorably for correctness and 
+completeness because fixed examples introduced less irrelevant behavior. 
+10.​Finding 10: Syntactic validity is necessary but insufficient. A diagram may compile perfectly while 
+violating lifecycle, reachability, or structural requirements. PlantUML validation alone cannot establish 
+reliable behavioral modeling. 
+11.​Finding 11: Structural validity does not guarantee human-perceived correctness. Some diagrams 
+passed every deterministic structural rule but still received low human correctness scores because required 
+transitions or behaviors were absent. 
+12.​Finding 12: Iterative repair is the strongest overall technique among the evaluated workflows. Repair 
+produced the largest gains in automated structural validity, and repaired diagrams that passed validation 
+generally received strong human ratings. Targeted validation feedback made repair more dependable than 
+single-pass generation. 
+13.​Finding 13: Repair effectiveness is model-dependent. Models that performed poorly during initial 
+generation also achieved lower repair success. A repair loop cannot fully compensate for weaknesses in a 
+model’s understanding of state-machine behavior. 
+Practical Recommendations 
+●​ Use three to four representative few-shot examples spanning simple, medium, and complex diagrams. 
+●​ Apply deterministic validation and limit iterative repair to approximately two or three attempts because 
+later iterations show diminishing returns. 
+●​ Use automated checks as filters, but retain human review for semantic correctness and completeness, 
+especially in safety-critical settings. 
+ 
+Results and Analysis  |  17 
+
+===== PAGE 18 =====
+ 
+7. Threats to Validity and Limitations 
+The research identifies several potential threats to the validity of the findings. 
+7.1 Construct Validity 
+While PlantUML syntactic and structural validity offer a quantitative measure of diagram correctness, they 
+may not capture a diagram’s practical usefulness in development workflows. Human evaluation metrics, 
+including correctness, completeness, understandability, and terminology alignment, complement the automated 
+metrics and provide a more comprehensive quality assessment. 
+7.2 Internal Validity 
+he main internal threat is variability in LLM responses based on prompt construction. A standardized prompt 
+template was utilized for all experiments. The non-deterministic nature of autoregressive generation can 
+produce outliers. We addressed this by running each generation once per configuration and focusing on 
+systematic patterns across 27 test cases per condition. 
+7.3 External Validity 
+External validity is limited due to the use of textbook case studies, which may not fully represent the 
+complexities found in actual industrial documents. Textbook examples offer a controlled baseline, but 
+real-world requirements are often messy and incomplete. Future work should evaluate the proposed workflows 
+using industrial requirements. 
+7.4 Human Evaluator Bias 
+Human evaluation introduces subjectivity, especially when assessing behavioral correctness and 
+understandability. To mitigate this threat, the diagrams were independently evaluated by two evaluators with 
+experience in UML using predefined criteria and scoring guidelines. Inter-rater agreement was measured using 
+Cohen’s Kappa coefficient, with values ranging from κ = 0.44 to κ = 0.68 across the evaluation dimensions. 
+Disagreements were resolved through consensus. 
+7.5 Reliability of Reconstructed Requirements 
+Some requirements were partially reconstructed from textbook diagrams because the original specifications 
+were missing or incomplete. Despite manual verification and consistency checks, this reconstruction process 
+may have introduced implicit assumptions that were not present in the original sources. 
+7.6 Generality of Validation Heuristics 
+Some structural validation rules are based on practical modeling heuristics rather than strict UML standards. 
+Although these heuristics improve the automated assessment of diagram quality, alternative interpretations of 
+the rules may exist. The complete validation rule set is available in the artifact repository for replication and 
+adaptation. 
+Results and Analysis  |  18 
+
+===== PAGE 19 =====
+ 
+7.7 LLM Training Data Contamination 
+A significant threat is that the evaluated LLMs may have been pre-trained using the same textbooks and UML 
+resources from which the dataset was constructed. If the models had previously encountered the case-study 
+diagrams during training, their performance could be inflated because of memorization. Although this 
+possibility cannot be completely ruled out, three measures reduce the likelihood that memorization alone 
+explains the results. First, structured reformulations of the requirements were used instead of the original 
+textbook wording. Second, the models were required to generate diagrams in PlantUML syntax, which was 
+unlikely to appear verbatim in the source materials. Third, the poor zero-shot performance across all models, 
+including 0% structural validity, indicates that prior exposure alone was insufficient because the models still 
+failed without explicit prompting. Future work should validate the findings using newly created and non-public 
+requirements. 
+8. Summary 
+This study presents a validation-aware framework for generating UML state transition diagrams from natural 
+language requirements using prompting, RAG, automated validation, iterative repair, LLM-based judging, and 
+stacked ensemble selection. Four open-source LLMs were evaluated on a dataset of 80 requirement–diagram 
+pairs. 
+Few-shot prompting substantially improved syntactic validity, but structural validity remained low because of 
+recurring issues such as missing initial or final states, unreachable states, and orphan states. RAG performance 
+was model- and corpus-dependent; rules-only retrieval helped some models, while theory-only retrieval was 
+generally ineffective and retrieved examples sometimes introduced unsupported behavior. 
+Iterative repair produced the strongest improvements. Syntax-grounded repair increased strict repair validity 
+from 53.70% to 58.33% and the error-resolution rate from 53.42% to 62.73%. However, repair was most 
+effective for small, localized errors and offered limited gains for diagrams with multiple interacting violations. 
+The LLM-as-a-judge results showed only moderate alignment with human evaluation. DeepSeek achieved the 
+best overall agreement, with an MAE of 0.655, 50.77% exact agreement, and weighted kappa of 0.401. 
+Inter-judge agreement was also limited, and possible self-evaluation bias was observed. Therefore, LLM 
+judges can support large-scale evaluation but should not replace human assessment. 
+The stacked ensemble selected candidates from different models and strategies, showing that no single 
+configuration performed best for every case. Baseline repair was selected most often, followed by 
+syntax-grounded repair, while DeepSeek was the most frequently selected generator. 
+Overall, reliable AI-assisted behavioral modeling requires a combined workflow of few-shot prompting, 
+deterministic validation, targeted repair, multi-model selection, and human review. LLMs are therefore better 
+suited as collaborative modeling assistants than as fully autonomous generators. 
+ 
+Results and Analysis  |  19 
