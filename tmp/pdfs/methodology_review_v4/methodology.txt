@@ -1,0 +1,364 @@
+===== PAGE 1 =====
+3 Methodology 
+We conducted an empirical study to evaluate the capability of locally hosted Large Language 
+Models (LLMs) to generate UML state transition diagrams from natural language requirements. 
+The study consisted of four main stages. First, we constructed a benchmark dataset containing 
+natural language requirements and corresponding ground-truth state transition diagrams. 
+Second, we generated PlantUML diagrams using zero-shot prompting, few-shot prompting, and 
+Retrieval-Augmented Generation (RAG). Third, diagrams that failed automated validation were 
+processed using baseline repair and syntax-grounded repair. Finally, we evaluated whether local 
+LLM judges could approximate human assessments of diagram quality. 
+All experiments were conducted at inference time. No task-specific fine-tuning, prompt tuning, 
+preference optimization, or model-parameter updates were performed. 
+3.1 Dataset Preparation 
+To the best of our knowledge, no publicly available benchmark contained aligned natural 
+language requirements and UML state transition diagrams in a form suitable for evaluating 
+LLM-based diagram generation. We therefore constructed a dataset from 12 software 
+engineering textbooks. 
+Textbook examples were selected because they provide curated descriptions of system 
+behavior, established modeling practices, and diagrams that can be independently inspected. 
+The collected cases covered systems from different domains and contained diagrams with 
+different levels of structural complexity. 
+For each case, we collected the available natural language description and its corresponding 
+state transition diagram. However, some sources contained incomplete requirements or 
+presented a diagram without a complete textual description. In these cases, the requirement 
+was manually aligned with the diagram. Missing behavioral statements were reconstructed from 
+the corresponding states and transitions, and statements were added when a diagram 
+contained behavior that was absent from the original text. 
+After alignment, each requirement was converted into a structured format consisting of 
+individually numbered functional statements. This representation was used in all generation, 
+repair, human-evaluation, and LLM-as-a-Judge experiments. The structured format reduced 
+variation caused by document layout and made individual behavioral requirements easier to 
+identify. 
+The corresponding diagrams were manually converted into PlantUML code. PlantUML was 
+selected because its text-based representation supports automated compilation, graph 
+extraction, version control, and reproducible rendering. Each ground-truth PlantUML diagram 
+was compiled and manually checked against its aligned requirement. 
+
+===== PAGE 2 =====
+Each final case contained five artifacts: 
+1.​ the original natural language requirement; 
+2.​ the aligned requirement; 
+3.​ the structured requirement; 
+4.​ the original textbook diagram in image format; and 
+5.​ the ground-truth diagram in PlantUML format. 
+The final dataset contained 80 requirement–diagram pairs. We randomly selected 27 cases as 
+the test set. The remaining 53 cases were used only as potential few-shot examples and 
+retrieval documents. No test case was included in the examples or retrieval corpus used to 
+generate its own diagram. 
+To represent different diagram sizes, we divided the dataset into three complexity categories 
+according to the number of states in the ground-truth diagram. Based on the dataset 
+distribution, cases containing six or fewer states were classified as simple, cases containing 
+7–14 states were classified as medium, and cases containing more than 14 states were 
+classified as complex. These categories were used when selecting the few-shot examples. 
+3.2 Models and Execution Environment 
+We evaluated four locally hosted instruction-tuned LLMs through Ollama: Qwen2.5-7B-Instruct, 
+Mistral-7B-Instruct, DeepSeek-R1-Distill-Qwen-14B, and Meta-Llama-3.1-8B-Instruct. For 
+LLM-based quality evaluation, we used DeepSeek-R1-Distill-Qwen-14B, 
+Meta-Llama-3.1-8B-Instruct, and the specialized Prometheus 2 evaluator. 
+The corresponding Ollama tags were: 
+●​ Qwen2.5-7B-Instruct: qwen2.5:7b-instruct; 
+●​ Mistral-7B-Instruct: mistral:7b-instruct; 
+●​ DeepSeek-R1-Distill-Qwen-14B: deepseek-r1:14b; 
+●​ Meta-Llama-3.1-8B-Instruct: llama3.1:8b-instruct-q4_K_M; and 
+●​ Prometheus 2 (7B): ggozad/prometheus2:latest. 
+All five downloaded model variants used Q4_K_M quantization. The shorter names Qwen, 
+Mistral, DeepSeek, Llama, and Prometheus are used in the remainder of the paper. 
+Diagram generation and repair used a temperature of (0.2), top-p of (0.9), and a maximum 
+output length of 1,024 tokens. Each model was instructed to return only one PlantUML diagram 
+enclosed by @startuml and @enduml. LLM-as-a-Judge evaluation used deterministic 
+inference settings with a temperature of (0.0), top-p of (1.0), and a maximum output length of 
+1,200 tokens. 
+3.3 Diagram Generation 
+
+===== PAGE 3 =====
+For each of the 27 test requirements, every generator model produced one diagram using each 
+of three generation strategies: zero-shot prompting, few-shot prompting, and RAG. The same 
+core generation instructions were used across the three strategies. The prompt instructed the 
+model to represent the behavior described in the structured requirement as a UML state 
+transition diagram, include appropriate lifecycle states and transitions, follow PlantUML syntax, 
+avoid unsupported behavior, and return only the generated code. 
+3.3.1 Zero-Shot Prompting 
+The zero-shot condition provided the model with the task instructions and the target structured 
+requirement. No requirement–diagram example, retrieved document, ground-truth diagram, or 
+validation feedback was included. 
+The zero-shot condition measured the model’s ability to interpret the requirement and produce a 
+state transition diagram using only its pretrained knowledge and the generation instructions. It 
+therefore served as the minimum-context generation setting. 
+3.3.2 Few-Shot Prompting 
+The few-shot condition provided the task instructions, three requirement-diagram examples, and 
+the target structured requirement. One example was selected from each dataset complexity 
+category: simple, medium, and complex. 
+For each target case, three examples were deterministically selected using a fixed random 
+seed, with one example drawn from each complexity category: simple, medium, and complex. 
+Example selection was restricted to the 53 non-test cases. Although the selected examples 
+could vary across target cases and models, the complexity-category ordering remained fixed. 
+The target requirement was clearly separated from the examples, and the model was instructed 
+to generate a new diagram rather than modify or repeat an example. 
+3.3.3 Retrieval-Augmented Generation 
+The RAG condition dynamically added relevant supporting documents to the generation prompt. 
+The retrieval corpus was constructed using the 53 requirement–diagram pairs outside the test 
+set, PlantUML syntax documentation, and theoretical material describing UML state transition 
+diagram concepts and modeling practices. 
+The documents were divided into retrievable units and indexed in a vector database using 
+semantic embeddings. For each target case, the structured requirement was used as the 
+retrieval query. The system calculated semantic similarity between the query and indexed 
+documents and returned the highest-ranked supporting content. 
+The retrieved content was inserted into the prompt together with the generation instruction and 
+target requirement. The model was instructed to treat the retrieved documents as supporting 
+context and to include only behavior supported by the target requirement. The retrieved 
+
+===== PAGE 4 =====
+requirement–diagram examples were therefore intended to demonstrate relevant modeling 
+patterns rather than provide behavior that could be copied directly. 
+ 
+3.4 Automated Diagram Evaluation 
+Every generated and repaired diagram was processed through an automated evaluation 
+pipeline. The pipeline assessed PlantUML syntactic validity, strict structural validity, and 
+recorded violation types. 
+3.4.1 PlantUML Syntactic Validity 
+The generated response was first normalized by removing Markdown fences and extracting the 
+content between @startuml and @enduml. The normalized code was then checked using the 
+PlantUML command-line compiler with the -checkonly option. 
+A diagram was classified as syntactically valid when PlantUML completed the validation without 
+reporting an error. Compiler messages from invalid diagrams were retained and provided to the 
+repair methods. 
+Syntactic validity was calculated as: 
+[\frac{\text{Number of syntactically valid diagrams}}​
+{\text{Total number of generated diagrams}}.​
+] 
+3.4.2 Strict Structural Validity 
+Syntactically valid diagrams were parsed into a graph representation containing declared states, 
+source and target states, transition labels, initial transitions, final transitions, and special 
+pseudostates. 
+A deterministic structural validator then checked whether the graph satisfied the required 
+state-transition-diagram properties. The validator detected: 
+●​ missing initial transitions; 
+●​ multiple initial transitions; 
+●​ missing final transitions; 
+●​ invalid direct [*] --> [*] transitions; 
+●​ duplicate transitions; 
+●​ orphan states; 
+●​ unreachable states; 
+●​ choice nodes without outgoing transitions; 
+●​ choice-node transitions without guards; 
+●​ fork nodes without at least two outgoing branches; 
+
+===== PAGE 5 =====
+●​ join nodes without at least two incoming branches; 
+●​ history states used without a composite state; and 
+●​ parser warnings that prevented reliable graph extraction. 
+A diagram passed strict structural validation only when it passed PlantUML compilation and 
+produced no structural violations. Consequently, a diagram that was valid PlantUML but violated 
+one or more graph rules was not considered strictly valid. 
+Strict structural validity was calculated as: 
+[ 
+\text{Strict Structural Validity} 
+\frac{\text{Diagrams passing syntax and all structural checks}}​
+{\text{Total number of diagrams}}.​
+] 
+The validator also recorded the frequency of each violation type. This enabled analysis of 
+whether failures were distributed across many unrelated problems or concentrated around 
+recurring structural mistakes. 
+3.5 Iterative Repair Workflow 
+We evaluated two validation-aware repair methods: baseline repair and syntax-grounded repair. 
+Both methods used the same validation pipeline, initial candidates, generator models, inference 
+parameters, acceptance condition, and maximum number of attempts. 
+For each model, we selected the generation strategy used as the input to repair before 
+comparing the two repair methods. Qwen and Mistral repaired diagrams generated using their 
+Basic RAG configuration, whereas DeepSeek and Llama repaired their few-shot outputs. Each 
+model repaired its own generated diagrams. 
+The selected outputs contained 27 diagrams per model, resulting in 108 initial repair candidates. 
+Baseline repair and syntax-grounded repair received identical copies of these 108 candidates, 
+enabling a paired comparison between the two prompt designs. 
+For each candidate, the repair workflow followed five steps: 
+1.​ The current diagram was checked using the PlantUML compiler and deterministic 
+structural validator. 
+2.​ All syntax errors, structural violation types, and available diagnostic details were 
+collected. 
+
+===== PAGE 6 =====
+3.​ The same LLM that generated the candidate received a repair prompt and produced 
+revised PlantUML code. 
+4.​ The revised diagram was normalized and re-evaluated using the same validation 
+pipeline. 
+5.​ The process stopped when the diagram passed all checks or when five repair attempts 
+had been completed. 
+The repair instruction was conservative. The model was asked to modify only the parts needed 
+to address the reported issues, preserve unaffected behavior, avoid introducing 
+requirement-unsupported states or transitions, and return only the corrected PlantUML code. 
+When a repaired candidate reduced the number of detected issues, it replaced the current 
+version. If it introduced more issues or failed to improve the candidate, the previous version was 
+retained for the next attempt. At the end of the workflow, the first strictly valid version was saved. 
+If no version became strictly valid, the accepted version with the fewest remaining validation 
+issues was retained. 
+3.5.1 Baseline Repair 
+The baseline repair method provided natural-language repair instructions together with 
+validation feedback. For each repair attempt, the prompt contained a general repair instruction, 
+the structured requirement, the current candidate PlantUML diagram, the detected syntactic and 
+structural issues, and diagnostic details identifying the affected states or transitions when 
+available. 
+The natural-language instructions described how the model should correct the reported issues 
+while preserving the unaffected parts of the diagram. For example, the prompt could instruct the 
+model to add a final transition from an appropriate terminal state, retain only one top-level initial 
+transition, connect an orphan state using requirement-supported transitions, or remove 
+duplicate transitions without changing the intended behavior. 
+The model was also instructed to use only states, events, guards, and actions supported by the 
+requirement, avoid introducing unrelated behavior, preserve valid parts of the existing diagram, 
+and return only the corrected PlantUML code. 
+The baseline condition therefore, evaluated repair using natural-language issue descriptions 
+and correction guidance. It did not provide explicit PlantUML syntax patterns or the complete 
+structural validation rule set. 
+3.5.2 Syntax-Grounded Repair 
+The syntax-grounded repair method used the same structured requirement, candidate diagram, 
+and detected validation issues as baseline repair. However, the repair information was 
+presented differently. While baseline repair used natural-language, issue-specific guidance, 
+syntax-grounded repair used diagnostic validator details and concrete PlantUML repair patterns. 
+
+===== PAGE 7 =====
+The complete set of general structural-validation rules was not included. This design compared 
+descriptive natural-language repair guidance with violation-specific PlantUML patterns. 
+For a candidate diagram \(D\), the syntax-grounded repair prompt can be represented as: 
+\[ P_{\text{repair}} = \langle R, D, E(D), V(D), S(E(D)) \rangle \] 
+where \(R\) denotes the structured requirement, \(D\) denotes the current candidate diagram, 
+\(E(D)\) denotes the set of detected syntactic and structural violations, \(V(D)\) contains 
+available diagnostic information identifying affected states or transitions, and \(S(E(D))\) 
+contains PlantUML repair patterns corresponding to the detected violations. 
+For example, when the validator detected a missing initial transition, the following pattern was 
+included: 
+[*] --> INITIAL_STATE 
+When an orphan state was detected, the prompt provided a pattern such as: 
+PREVIOUS_STATE --> ORPHAN_STATE : SUPPORTED_EVENT 
+ORPHAN_STATE --> NEXT_STATE : SUPPORTED_EVENT 
+The uppercase identifiers were explicitly defined as placeholders rather than literal state or 
+transition names. The model was instructed to replace them using only states, events, guards, 
+or actions already present in the candidate diagram or supported by the structured requirement. 
+It was also instructed to preserve unaffected behavior and avoid introducing unsupported states 
+or transitions. 
+Repair patterns were defined for PlantUML syntax errors, missing or multiple initial transitions, 
+missing final transitions, invalid direct [*] --> [*] transitions, orphan and unreachable 
+states, duplicate transitions, and invalid choice, fork, join, and history-node configurations. 
+During each repair attempt, only the patterns associated with the currently detected violations 
+were included in the prompt. 
+ 
+3.5.3 Repair Evaluation 
+The two repair methods were evaluated using syntactic repair validity, strict repair validity, and 
+violation-resolution rate. 
+Syntactic repair validity measured the proportion of the 108 repair candidates that produced 
+syntactically valid PlantUML code after the repair process. 
+Strict repair validity measured the proportion that passed both PlantUML validation and every 
+structural rule: 
+
+===== PAGE 8 =====
+[ 
+\text{Strict Repair Validity} 
+\frac{\text{Strictly valid diagrams after repair}}​
+{108}.​
+] 
+Violation-resolution rate measured the proportion of initial violation instances that were no 
+longer present in the final accepted diagrams: 
+[ 
+\text{Violation Resolution Rate} 
+\frac{\text{Resolved initial violation instances}}​
+{\text{Total initial violation instances}}.​
+] 
+Newly introduced issues were recorded separately so that resolving one violation while creating 
+another was not interpreted as an unqualified improvement. 
+3.6 Human Reference Evaluation 
+Human evaluation was used as the reference for the LLM-as-a-Judge experiment. Only 
+diagrams that passed both syntactic and strict structural validation were eligible for quality 
+evaluation. 
+The diagrams were assessed according to four quality dimensions: 
+Completeness: Whether the diagram included all requirement-supported states, transitions, 
+events, guards, and initial and final lifecycle elements. 
+Correctness: Whether the represented behavior logically matched the intended system 
+behavior without contradictory, invalid, or unsupported flows. 
+Understandability: Whether the diagram was clear, readable, logically organized, and free from 
+unnecessary complexity or redundant behavior. 
+Terminological alignment: Whether state names and transition labels used terminology 
+consistent with the structured requirement. 
+Each criterion was rated on a five-point Likert scale, where 1 indicated that the criterion was not 
+fulfilled and 5 indicated that it was completely fulfilled. 
+
+===== PAGE 9 =====
+The final human-reference dataset contained 97 unique diagrams. For diagrams with two 
+ratings, the arithmetic mean was calculated separately for each criterion and rounded half-up to 
+the nearest Likert category. For example, a mean score of 4.5 was converted to 5. This rounded 
+consensus score was used as the human reference in all human–LLM correlation, error, and 
+agreement calculations.  
+3.7 Reference-Free LLM-as-a-Judge Evaluation 
+We conducted a reference-free LLM-as-a-Judge experiment to determine whether locally hosted 
+LLMs could approximate human assessment of state transition diagram quality. 
+Only diagrams that passed both PlantUML syntactic validation and strict structural validation 
+were included. The final LLM-as-a-Judge dataset contained 97 unique requirement–diagram 
+pairs. 
+Three judge models were evaluated: DeepSeek-R1-Distill-Qwen-14B, 
+Meta-Llama-3.1-8B-Instruct, and Prometheus 2 (7B). 
+3.7.1 Judge Input and Blinding 
+For each evaluation case, the judge received only: 
+1.​ the structured requirement; 
+2.​ the candidate PlantUML diagram; 
+3.​ the definition of the target quality criteria; 
+4.​ the five-point Likert scale; and 
+5.​ the required output format. 
+The judges were not shown the generator identity, generation strategy, repair method, 
+automated validation scores, human scores, or ground-truth diagram. This anonymous setup 
+reduced the possibility of preference toward a particular generator model or experimental 
+strategy. 
+Because the judges did not receive a reference diagram, they were required to compare the 
+candidate directly with the behavioral information expressed in the structured requirement. 
+3.7.2 Judge Scoring Procedure 
+Each judge assessed completeness, correctness, understandability, and terminological 
+alignment using the same definitions and five-point scale used in the human evaluation. A short 
+justification was required for every score. 
+DeepSeek and Llama evaluated all four criteria in one inference call. They were instructed to 
+return a structured JSON object containing one integer score and one justification for each 
+criterion. 
+
+===== PAGE 10 =====
+Prometheus followed its specialized rubric-based evaluation procedure. It evaluated one 
+criterion per inference call and returned textual feedback. 
+3.7.3 Human–Judge Comparison 
+Each judge was compared with the human reference separately for the four criteria. The 
+following measures were calculated: 
+●​ Spearman rank correlation; 
+●​ Mean Absolute Error (MAE); 
+●​ exact agreement percentage; 
+●​ within-one-point agreement percentage; 
+●​ weighted Cohen’s kappa; and 
+●​ mean signed error. 
+Spearman correlation measured whether the judge and human evaluators ranked diagrams 
+similarly. MAE measured the average magnitude of score disagreement. Exact agreement 
+represented the percentage of cases in which the judge and human reference assigned the 
+same Likert category. Within-one-point agreement represented the percentage in which the two 
+scores differed by no more than one point. 
+Mean signed error was calculated as: 
+[ 
+\text{Mean Signed Error} 
+\frac{1}{N}​
+\sum_{i=1}^{N}​
+\left(​
+s_i^{\text{judge}}-s_i^{\text{human}}​
+\right).​
+] 
+A negative value indicated systematic under-scoring by the judge, whereas a positive value 
+indicated systematic over-scoring. 
+Weighted Cohen’s kappa was used because the evaluation scores were ordinal. Larger 
+disagreements on the five-point scale were therefore treated as more serious than 
+adjacent-category disagreements. 
+3.7.4 Inter-Judge Agreement 
+Inter-judge agreement was calculated for the following judge pairs: 
+
+===== PAGE 11 =====
+●​ DeepSeek–Llama; 
+●​ DeepSeek–Prometheus; and 
+●​ Llama–Prometheus. 
+The four criterion-level scores from each of the 97 diagrams were pooled, producing 388 paired 
+observations for each judge pair. Agreement was therefore measured across the complete set 
+of criterion-level judgments rather than calculated separately for each criterion. 
+For each judge pair, we calculated Spearman rank correlation, mean absolute error, exact 
+agreement, within-one-point agreement, quadratic-weighted Cohen’s kappa, and mean signed 
+difference. These measures examined whether the judges demonstrated similar scoring 
+behavior independently of their agreement with the human reference. 
+ 
+ 

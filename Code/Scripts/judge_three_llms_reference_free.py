@@ -26,7 +26,10 @@ PROMETHEUS_PROMPT_VERSION = "human_rubric_prometheus_reference_free_v1"
 DEFAULT_OUTPUT_DIR = Path(
     "results/plantuml_pipeline/llm_judge/three_judge_reference_free_v1"
 )
-RESULT_PATTERN = re.compile(r"\[RESULT\]\s*([1-5])\b", re.IGNORECASE)
+RESULT_PATTERN = re.compile(
+    r"\[RESULT\]\s*(?:<\s*score\s*>\s*)?([1-5])\b",
+    re.IGNORECASE,
+)
 
 GENERAL_JUDGE_MODELS = {
     "deepseek": "deepseek-r1:14b",
@@ -158,8 +161,9 @@ def build_prometheus_prompt(
     retry_reminder: bool = False,
 ) -> str:
     reminder = (
-        "\n6. This is a retry. You MUST end with exactly `[RESULT] <score>`, "
-        "where score is one integer from 1 to 5.\n"
+        "\n6. This is a retry. End with `[RESULT] 1`, `[RESULT] 2`, "
+        "`[RESULT] 3`, `[RESULT] 4`, or `[RESULT] 5` according to your score. "
+        "Never write the literal text `<score>`.\n"
         if retry_reminder
         else ""
     )
@@ -173,9 +177,9 @@ def build_prometheus_prompt(
         "2. Do not generate new PlantUML.\n"
         "3. Do not assume behaviour that is not stated or clearly implied by the instruction.\n"
         "4. Provide concise evaluation feedback.\n"
-        "5. End the response using exactly:\n\n"
-        "[RESULT] <score>\n\n"
-        "The score must be an integer from 1 to 5.\n"
+        "5. End with `[RESULT] N`, replacing N with one integer from 1 to 5. "
+        "For example, a score of four must end exactly with `[RESULT] 4`. "
+        "Never write the literal text `<score>`.\n"
         f"{reminder}\n"
         "### The instruction to evaluate:\n\n"
         f"{requirement}\n\n"
@@ -638,6 +642,11 @@ def main() -> int:
     parser.add_argument("--timeout", type=int, default=300)
     parser.add_argument("--shuffle-seed", type=int, default=20260627)
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument(
+        "--only-diagram-id",
+        action="append",
+        help="Run only this diagram ID; repeatable.",
+    )
     parser.add_argument("--fresh", action="store_true")
     parser.add_argument("--retry-failed", action="store_true")
     args = parser.parse_args()
@@ -654,6 +663,17 @@ def main() -> int:
             path.unlink(missing_ok=True)
 
     diagrams = discover_diagrams(args.valid_diagrams_root)
+    if args.only_diagram_id:
+        requested_ids = set(args.only_diagram_id)
+        available_ids = {diagram["diagram_id"] for diagram in diagrams}
+        missing_ids = sorted(requested_ids - available_ids)
+        if missing_ids:
+            raise ValueError(
+                "Requested diagram IDs were not found: " + ", ".join(missing_ids)
+            )
+        diagrams = [
+            diagram for diagram in diagrams if diagram["diagram_id"] in requested_ids
+        ]
     random.Random(args.shuffle_seed).shuffle(diagrams)
     if args.limit > 0:
         diagrams = diagrams[: args.limit]

@@ -1,0 +1,2255 @@
+===== PAGE 1 =====
+Towards Reliable AI-Assisted Behavioral Modeling:
+1
+Evaluating Prompting, Retrieval, and Repair
+2
+Strategies for UML State Transition Diagram
+3
+Generation
+4
+Anonymous author
+5
+Anonymous affiliation
+6
+Abstract
+7
+Background: Generating behavioral models, such as state transition diagrams, from natural
+8
+language requirements presents challenges in requirements analysis and design. Traditional NLP
+9
+and ML methods struggle to maintain the correct execution flow and structural consistency. Recent
+10
+advances in LLMs offer new opportunities, though their effectiveness in generating behavioral
+11
+models—particularly concerning prompting, retrieval, and repair strategies—remains largely unex-
+12
+amined. Aims: This paper evaluates how LLM-based generation strategies (zero-shot, one-shot,
+13
+few-shot, and RAG) impact the quality dimensions (correctness, completeness, understandability,
+14
+and terminological alignment) of state transition diagrams.
+It also explores whether iterative
+15
+repair mechanisms enhance validity. Method: We created a dataset of 80 requirement–diagram
+16
+pairs from software engineering textbooks, featuring structured requirements and corresponding
+17
+PlantUML state transition diagrams. For each requirement, we generated PlantUML code using
+18
+four prompting strategies across four open-source LLMs. To isolate the effect of different knowledge
+19
+sources, we conducted a RAG analysis study comparing four retrieval corpus configurations (full
+20
+corpus, examples-only, rules-only, and theory-only). We additionally assessed the effectiveness of an
+21
+iterative repair workflow using automated evaluation to improve the validity of generated PlantUML
+22
+code. The code was evaluated for syntactic validity through PlantUML validation and structural
+23
+validity using rule-based analysis, supplemented by human evaluation of quality dimensions. In
+24
+total, we produced 1,169 PlantUML code outputs, of which 120 outputs that passed both validations
+25
+were manually evaluated by human experts. Results: Few-shot prompting outperformed zero-shot
+26
+methods, improving syntactic validity from 28.7% to 93.5% on average. Iterative repair significantly
+27
+improved structural validity, especially for DeepSeek (from 22.2% to 88.9%), with most repairs
+28
+succeeding in the first two iterations. Human evaluation indicated that understandability was rated
+29
+higher than correctness, highlighting a gap between perceived and actual quality. Conclusions: We
+30
+recommend using few-shot prompting with iterative repair as the primary workflow for AI-assisted
+31
+behavioral modeling. Our findings reveal critical trade-offs: retrieval improves syntax but risks
+32
+hallucination, model architecture matters more than strategy, and automated validation cannot
+33
+substitute for human correctness assessment. To our knowledge, this is the first empirical study
+34
+of LLM-based UML state transition diagram generation from natural language requirements that
+35
+systematically evaluates prompting, retrieval analysis, and repair workflows.
+36
+2012 ACM Subject Classification Software and its engineering →Software design engineering
+37
+Keywords and phrases State Transition Diagrams, Behavioral Software Modeling
+38
+1
+Introduction
+39
+Requirements engineering bridges stakeholder aspirations and technical software implementa-
+40
+tion by relying primarily on natural language requirements, which remain widely used due
+41
+to their flexibility and accessibility for non-technical stakeholders [48]. However, natural
+42
+language often introduces lexical, syntactic, and semantic ambiguities [45], necessitating
+43
+rigorous requirements analysis and modeling. Graphical modeling languages like the Unified
+44
+Modeling Language (UML) [40] provide structured representations of system behavior [33].
+45
+
+===== PAGE 2 =====
+2
+Towards Reliable AI-Assisted Behavioral Modeling
+UML diagrams are categorized into structural models and behavioral models [2, 47]. Among
+46
+behavioral models, state transition diagrams are crucial for modeling discrete system states
+47
+and event-driven transitions. These diagrams are essential in safety-critical applications, such
+48
+as healthcare, financial processing, embedded systems, and robotics[41], where state logic
+49
+errors can lead to significant failures. Yet, constructing these diagrams manually is labor-
+50
+intensive and error-prone, as analysts must infer states, transitions, and guards implicitly
+51
+embedded in text—a task more challenging than automating structural models [12]. Previous
+52
+automation attempts, using Natural Language Processing (NLP) or machine learning (ML),
+53
+failed to achieve the necessary contextual reasoning for global model consistency [61].
+54
+Recent advances in large language models (LLMs) enable automation in behavioral soft-
+55
+ware modeling through their ability to process long inputs and capture semantic relationships
+56
+across requirements [6]. Studies show LLMs effectively support software engineering tasks
+57
+like code generation and requirements analysis [32, 51, 54, 53, 16, 13, 8, 1, 58]. However,
+58
+most research has focused on structural UML models, leaving the generation of behavioral
+59
+models, particularly UML state transition diagrams, underexplored [26, 60].
+60
+Behavioral diagrams must preserve global execution semantics [11], including state
+61
+reachability, transition consistency, branching behavior, and lifecycle correctness [25] across
+62
+the entire model. Consequently, the challenge lies in not just generating valid diagrams
+63
+but ensuring they are structurally consistent, behaviorally correct, and comprehensible to
+64
+practitioners. In practice, generated diagrams often require verification and refinement,
+65
+making the reliability of AI-assisted modeling contingent on the LLM and the surrounding
+66
+workflow, which includes prompting strategies, retrieval support, automated validation, and
+67
+iterative repair. Our study examines how different AI-assisted generation workflows affect the
+68
+reliability of synthesizing UML state transition diagrams from natural language requirements.
+69
+In this paper, we present a dataset and an empirical framework to systematically evaluate
+70
+LLM-based generation of UML state transition diagrams from natural language requirements.
+71
+The dataset consists of curated requirement–diagram pairs derived from software engineering
+72
+textbook sources, including structured requirements and corresponding PlantUML [42]
+73
+representations. We evaluate multiple open-source LLMs (Llama-3.1-8B [14], DeepSeek-
+74
+14B [23], Mistral 7B Instruct [31], and Qwen-2.5-Coder-7B [27]), chosen for their use in
+75
+recent literature [15, 57, 62], across generation strategies, including structured prompting
+76
+[56], Retrieval-Augmented Generation (RAG), and a iterative repair workflow for iterative
+77
+refinement.
+We introduce diagram-specific metrics such as syntax validity (PlantUML
+78
+validation), structural validity (rule based analysis of the diagram detecting orphan states,
+79
+unreachable states, invalid transitions, etc), and quality evaluation through human evaluation
+80
+(correctness, completeness, understandability and technological alignment), which enables
+81
+assessment of the diagrams and workflow.
+82
+The research questions driving this study focus on understanding the behavior of LLMs
+83
+in software modeling tasks. While LLMs can generate diagrams from requirements, the
+84
+impact of different prompting and retrieval strategies on structural correctness and reliability
+85
+remains unclear. Generating valid state transition diagrams requires identifying states and
+86
+transitions while ensuring global properties like reachability and consistency. To investigate
+87
+the effect of generation strategies on structural correctness, we first ask:
+88
+RQ1: How do LLM-based generation strategies (zero-shot, one-shot, few-shot, RAG)
+89
+impact the validity (syntactic and structural) of state transition diagrams?
+90
+Recent studies suggest that RAG may improve LLM performance by incorporating relevant
+91
+contextual information; however, its effectiveness in structured diagram generation remains
+92
+underexplored [55, 19]. To evaluate its impact, we analyze how retrieval augmentation
+93
+
+===== PAGE 3 =====
+Anonymous author(s)
+3
+influences syntactic validity and structural validity across different retrieval knowledge-base
+94
+configurations, including requirement-diagram examples, PlantUML syntax documentation,
+95
+and theoretical resources on UML state transition diagrams:
+96
+RQ2: How do different retrieval knowledge base configurations in RAG affect the validity
+97
+of state transition diagrams?
+98
+To explore how repair mechanisms in the workflow can improve the state transition
+99
+diagrams we ask,
+100
+RQ3: How effective are iterative repair workflows in improving the syntactic and
+101
+structural validity of state transition diagrams?
+102
+Beyond structural and syntactic validity, it is important to assess whether generated
+103
+diagrams accurately represent the intended system behavior and remain understandable to
+104
+human practitioners. Since the practical usefulness of behavioral models ultimately depends
+105
+on human interpretation and evaluation, we assess the behavioral quality of generated
+106
+diagrams through human evaluation across multiple quality dimensions:
+107
+RQ4: To what extent do UML state transition diagrams generated using different LLM-
+108
+based strategies satisfy quality dimensions (correctness, completeness, understandability, and
+109
+terminological alignment)?
+110
+The contributions of this work are: (1) a benchmark dataset of 80 requirement–state
+111
+transition diagram pairs; (2) novel automated metrics for structural validity via rule-based
+112
+graph analysis; (3) a systematic comparison of prompting, retrieval, and repair strategies
+113
+for enabling LLMs to function as software modeling assistants; and (4) a human evaluation
+114
+framework assessing quality dimensions.
+115
+2
+Background and Related Work
+116
+2.1
+Rule-Based and Symbolic NLP Approaches
+117
+Early automated software architectural model derivations utilized symbolic NLP techniques
+118
+like part-of-speech tagging and syntax parsing [59]. ArchE [5] was one of the first systems
+119
+to use predefined architectural reasoning rules for software design. Similarly, frameworks
+120
+like aToucan [59] applied handcrafted linguistic patterns to extract entities and actions
+121
+from use case models and map them to UML elements. Jahan et al. [29] enhanced rule-
+122
+based approaches with heuristic mappings for generating sequence diagrams from textual
+123
+requirements. While effective for structured requirements, these approaches were difficult to
+124
+generalize across domains. Most notably, rule-based systems struggled to capture implicit
+125
+behavioral dependencies and global execution semantics needed for modeling behaviors in
+126
+UML state transition diagrams [59, 29, 30]. Consequently, symbolic approaches remained
+127
+limited to requirement extraction tasks and structural UML models.
+128
+2.2
+Machine Learning for Software Architectural Model Extraction
+129
+To address the limitations of rule-based systems, later work reframed software model ex-
+130
+traction as ML problem using classification and sequence-labeling techniques [30]. These
+131
+approaches utilized lexical, syntax, and semantic features to identify software entities and
+132
+relationships from natural language requirements. However, the effectiveness of traditional
+133
+ML approaches was constrained by the limited availability of large annotated datasets in
+134
+software engineering [30]. In addition, classical ML models often lacked the contextual
+135
+reasoning capabilities required to preserve behavioral consistency across an entire state
+136
+
+===== PAGE 4 =====
+4
+Towards Reliable AI-Assisted Behavioral Modeling
+transition diagram[30, 39]. Consequently, most prior work focused on extracting structural
+137
+relationships rather than generating behaviorally consistent UML models.
+138
+2.3
+LLMs in Requirements Engineering and UML Modeling
+139
+LLMs have transformed requirements engineering by enabling complex reasoning without
+140
+extensive manual feature engineering [17, 52].
+Studies show LLMs assist in ambiguity
+141
+detection, requirement refinement, and information extraction from Software Requirements
+142
+Specifications (SRS) [36]. Frameworks like REQINONE [62] and ReqBrain [24] demonstrate
+143
+that LLMs can convert natural language requirements into structured representations by
+144
+task specific framework tuning, enhancing clarity and completeness. Research has also
+145
+focused on UML model generation using LLMs, particularly for structural artifacts like class
+146
+and sequence diagrams [17, 52, 10]. LLMs generally produce higher-quality diagrams when
+147
+relationships are clearly described in the requirements [29, 30, 17, 57]. Various approaches
+148
+aim to enhance AI-assisted software modeling workflows. Cervantes et al. [9] integrate the
+149
+Attribute-Driven Design (ADD) methodology into LLM interactions for better alignment with
+150
+expert architectural solutions. Multi-agent systems like NOMAD [20] decompose UML class
+151
+diagram generation into specialized subtasks for improved modularity. Other studies propose
+152
+hybrid workflows combining LLM generation with static analysis and verification tools for
+153
+increased reliability [28]. Despite these advancements, limitations persist. Most studies focus
+154
+on structural models, leaving behavioral model generation underexplored [17, 52, 10, 15].
+155
+Generated diagrams are often evaluated through subjective inspection or syntax correctness,
+156
+with limited attention to behavioral consistency [52, 39, 28]. Many approaches still rely
+157
+heavily on manual refinement and expert intervention to correct artifacts [52, 36, 9]. Lastly,
+158
+prior studies lack standardized empirical evaluation frameworks for systematically comparing
+159
+prompting, retrieval, and repair workflows [30, 17, 52, 15].
+160
+2.4
+Motivation
+161
+Existing research show the potential of LLMs for requirements engineering and structural
+162
+model generation [17, 52, 62, 24]. However, important gaps remain for behavioral modeling
+163
+tasks. Prior work focuses on structural UML artifacts like class and sequence diagrams
+164
+[17, 52, 10, 15], while behavioral models require maintaining global execution semantics and
+165
+behavioral consistency across the entire diagram [39, 28]. Moreover, existing approaches rely
+166
+on manual refinement and oversight [52, 36, 9], provide limited automated validation checking
+167
+[52, 50, 28], and lack standardized empirical evaluation frameworks for comparing AI-assisted
+168
+modeling workflows [30, 17, 52, 15]. Additionally, past evaluations treat diagram generation
+169
+as an isolated task instead of part of a comprehensive software engineering workflow [28, 15],
+170
+leading to a limited understanding of how workflow components affect the validity of AI-
+171
+assisted behavioral modeling. Motivated by these limitations, this study systematically
+172
+evaluates prompting strategies, retrieval augmentation, validation-aware repair workflows,
+173
+and automated and quality evaluation for UML state transition diagram generation from
+174
+natural language requirements.
+175
+3
+Methodology
+176
+We conducted an empirical study to evaluate the capability of LLMs in generating state
+177
+transition diagrams from natural language requirements. First, we created a dataset of
+178
+requirement-diagram pairs from the literature to use as ground truth. Then, we generated
+179
+
+===== PAGE 5 =====
+Anonymous author(s)
+5
+diagrams from the requirements using three strategies: prompting, retrieval, and repair.
+180
+Finally, we evaluated the generated diagrams using automated and human evaluation metrics.
+181
+3.1
+Dataset Preparation
+182
+To the best of our knowledge, no existing dataset with requirement-diagram pairs was
+183
+available as ground truth for state transition diagram generation. Therefore, we construc-
+184
+ted a benchmark dataset from 12 software engineering textbooks and UML instructional
+185
+materials [49, 46, 43, 34, 48, 37, 40, 4, 22, 21, 18, 7]. Textbooks were chosen because they:
+186
+(A) provide curated examples of system behavior reflecting standard modeling practices;
+187
+(B) feature clear behavioral logic, essential for reliable ground truth; and (C) are publicly
+188
+accessible and reproducible, aligning with empirical software engineering standards.
+Figure 1 Behavioral Modeling Dataset Construction Workflow
+189
+For each data point, we extracted the state transition diagram in PNG format and its
+190
+corresponding natural language requirements in TXT format (Fig. 1-A, 1-B). However, many
+191
+natural language requirements were incomplete or absent, with only diagrams provided in
+192
+the books. We addressed this inconsistency by updating the requirements to align with
+193
+the diagrams (Fig. 1-C). In case of absent requirements, we manually reconstructed the
+194
+requirements from the diagram. In case a diagram introduced states or transitions not present
+195
+in the requirements, we added the missing requirements.
+196
+After aligning the requirements with the diagrams, we standardized the requirements
+197
+text of each diagram into a structured requirements format (Fig. 1-D). We represented each
+198
+requirements text as a list of individual requirements so that it is easier and clearer for the
+199
+LLM to understand when used in prompts. Finally, we generated a corresponding diagram
+200
+file in PlantUML [42] format (Fig. 1-E). We used PlantUML because its text-based format
+201
+supports automated syntactic checks, reproducible rendering, and use in software engineering
+202
+workflows [38]. Each diagram was verified for syntax through PlantUML code compilation
+203
+and assessed for correctness against the requirements.
+204
+Each final data point consists of five artifacts: raw requirements text (unstructured natural
+205
+language), aligned requirements text (used when requirements were missing or incomplete),
+206
+structured requirements text (requirements in a standardized list format), book diagram (dia-
+207
+gram in PNG format from the textbook), and PlantUML code (ground truth state transition
+208
+diagram in textual UML format). The final dataset contains 80 requirement-diagram pairs.
+209
+All five artifacts for each case are provided in the companion repository [3]. By addressing
+210
+data incompleteness, enforcing semantic alignment, and standardizing requirements and
+211
+diagram representations, our dataset construction process supports reproducible and con-
+212
+sistent evaluation of LLM-based state transition diagram generation, following empirical
+213
+principles of software engineering [44]. We maintained multiple artifact representations to
+214
+ensure traceability and flexibility for future research.
+215
+To map diagrams with different levels of complexity, we stratified the data points by the
+216
+number of states in each diagram. The stratification thresholds were empirically derived
+217
+
+===== PAGE 6 =====
+6
+Towards Reliable AI-Assisted Behavioral Modeling
+from the dataset distribution. Based on the distribution (25th percentile = 6 states, 75th
+218
+percentile = 14 states), we defined three categories: Simple (≤6 states), Medium (7–14
+219
+states), and Complex (> 14 states). This stratification guided few-shot example selection
+220
+and supported performance analysis across complexity levels.
+221
+3.2
+Diagram Generation Using Different Prompting Strategies
+222
+For our empirical exploration of state transition diagram generation, we used four open-
+223
+source LLMs: Llama-3.1-8B-Instruct [14], DeepSeek-R1-14B [23], Mistral-7B-Instruct [31],
+224
+and Qwen-2.5-Coder-7B-Instruct [27]. We selected these models based on their recent use in
+225
+software engineering literature [15, 57, 62] and their availability for reproducible research.
+226
+From the dataset, we randomly selected 27 data points as the test dataset, using the
+227
+remaining 53 for prompting and retrieval. For each requirement in the test dataset, we
+228
+generated PlantUML code using three prompting strategies:
+229
+Zero-shot: Only structured requirements text was provided with task instructions.
+230
+One-shot: Structured requirements text, task instructions, and one requirement-diagram
+231
+example outside the test dataset were provided.
+232
+Few-shot: Structured requirements text, task instructions, and three examples outside
+233
+the test dataset were provided. One example was selected from each complexity category:
+234
+simple, medium, and complex.
+235
+The exact prompt templates for each strategy are provided in the artifact repository [3].
+236
+3.2.1
+Diagram Generation Using RAG
+237
+Besides different prompting strategies, we explored the capability of RAG [35] for state
+238
+transition diagram generation. Figure 2 illustrates our RAG pipeline. This approach enhances
+239
+the prompt with dynamically retrieved contextual information from a retrieval corpus (Fig. 2-
+240
+B). The corpus contains: (1) the 53 requirement-diagram pairs outside the test dataset, (2)
+241
+PlantUML documentation for syntax and rules, and (3) theoretical resources on UML state
+242
+transition diagrams.
+243
+All documents were indexed in a vector database using semantic embeddings (Fig. 2-C).
+244
+Given a target structured requirements text (Fig. 2-A), the system performs semantic vector
+245
+retrieval over the indexed documents (Fig. 2-D). It then returns the relevant top-ranked
+246
+supporting documents from the retrieval corpus.
+Figure 2 RAG Construction Workflow: retrieval corpus construction, vector database indexing,
+semantic retrieval, and prompt augmentation.
+247
+The prompt is constructed using the retrieved supporting documents and the target
+248
+structured requirements text (Fig. 2-E). Finally, the LLM generates the corresponding
+249
+PlantUML code for the state transition diagram (Fig. 2-F). The retrieval corpus construction
+250
+details, including document sources and document-level indexing, are documented in the
+251
+
+===== PAGE 7 =====
+Anonymous author(s)
+7
+artifact repository (see Sec. 6). To isolate the contribution of each knowledge source in the
+252
+retrieval corpus, we conducted an analysis with four RAG configurations: (1) full corpus, (2)
+253
+examples only, (3) rules only, and (4) theory only. This allowed us to assess how different
+254
+retrieval knowledge sources affect diagram generation performance.
+255
+3.3
+Diagram Evaluation
+256
+Evaluating the quality of generated UML state transition diagrams is inherently multi-faceted.
+257
+Some aspects can be assessed automatically, such as syntactic validity, which checks whether
+258
+the PlantUML code follows the language grammar, and structural validity, which checks
+259
+whether the diagram follows UML state transition diagram rules. However, other aspects
+260
+require human judgment, such as whether the diagram correctly captures the intended
+261
+behavior, is complete with respect to the requirements, is understandable to a human,
+262
+and uses terminology consistently with the requirements. Therefore, we used a two-stage
+263
+evaluation process. First, we performed automated evaluation of syntactic and structural
+264
+validity for every generated diagram. Then, we conducted human evaluation on a subset
+265
+of diagrams that passed both automated stages. For human evaluation, we used quality
+266
+dimensions used by other researchers for UML diagram evaluation [57, 38].
+267
+3.3.1
+Automated Evaluation
+268
+Automated evaluation consists of two stages: syntactic validity and structural validity.
+269
+Both stages were applied to every generated PlantUML diagram before human assessment.
+270
+syntactic validity was assessed using the PlantUML command-line tool with the plantuml
+271
+-checkonly flag. If the code is correct, it completes without errors; if there are violations,
+272
+the tool reports them. A diagram is syntacticly valid only if no errors are reported.
+273
+Diagrams that pass this check are evaluated for structural validity using our rule-based
+274
+graph analyzer. First, the PlantUML code is normalized by removing markdown fences and
+275
+extracting the @startuml ... @enduml block to retain only the diagram code. This normalized
+276
+code is parsed into a graph representation, capturing states, transitions, starting points,
+277
+ending states, and special elements. The analyzer stores each state and records transitions,
+278
+along with source states, destination states, and transition labels or conditions. It also tracks
+279
+the initial state, final states, and special elements like choice, fork, join, and history states.
+280
+The rule-based graph analyzer checks the graph against the structural rules in Table 1,
+281
+each implemented as a deterministic check. A diagram passes structural validity only if all
+282
+rules are satisfied; otherwise, the specific violation types are recorded.
+283
+The row (parse_warning) captures cases where the PlantUML code is syntacticly valid but
+284
+contains ambiguities or non-standard constructs that hinder reliable graph extraction. The
+285
+implementation of the rule-based graph analyzer is available in the artifact repository [3].
+286
+3.3.2
+Human Evaluation
+287
+Diagrams that passed both syntactic and structural validation were further assessed through
+288
+human evaluation. Each selected diagram was independently evaluated by two evaluators
+289
+with prior academic or industry experience in UML state transition diagrams and software
+290
+requirements modeling. The evaluators assessed the diagrams using four quality dimensions,
+291
+following established practices for evaluating generated UML models [57, 38]:
+292
+Completeness: Whether all required states, transitions, events, guards, and initial/final
+293
+states described in the requirements are present in the generated diagram.
+294
+
+===== PAGE 8 =====
+8
+Towards Reliable AI-Assisted Behavioral Modeling
+Table 1 Structural validity rules, implementation checks, and violation types.
+Rule
+Implementation check
+Violation type(s)
+Exactly one initial state
+graph.initial_targets has length exactly 1.
+missing initial state; mul-
+tiple initial states
+At least one final trans-
+ition
+graph.final_states is not empty.
+missing final state
+No duplicate transitions
+len(graph.transitions)
+equals
+len(set(graph.transitions)).
+duplicate transitions
+No unreachable states
+DFS from initial state; all states visited.
+unreachable states
+No orphan states
+Every declared state has incoming or out-
+going transitions.
+orphan states detected
+Choice node has outgo-
+ing transitions
+If ⟨⟨choice⟩⟩, at least one outgoing trans-
+ition exists.
+choice node without out-
+going transitions
+Choice node outgoing
+transitions are guarded
+Each outgoing transition from a choice node
+has a label starting with [.
+choice
+node
+without
+guarded outgoing trans-
+itions
+Fork node has ≥2 out-
+going branches
+If ⟨⟨fork⟩⟩, outgoing_count ≥2.
+fork without multiple out-
+going branches
+Join node has ≥2 in-
+coming branches
+If ⟨⟨join⟩⟩, incoming_count ≥2.
+join without multiple in-
+coming branches
+History state used with
+composite state
+If [H] or [H∗] appears, a composite state
+must exist.
+history
+state
+used
+without composite state
+Valid graph extraction
+Graph extraction completes without parser-
+level warnings.
+parse warning
+Correctness: Ensure the diagram’s behavior aligns with the intended system behavior
+295
+in the requirements, without contradictions or invalid flows.
+296
+Understandability: Whether the diagram is clear, readable, and free from unnecessary
+297
+complexity or redundant elements.
+298
+Terminological Alignment: Whether the state names, transition labels, and behavioral
+299
+terminology are consistent with the terminology used in the requirements text. This is
+300
+also a key indicator for hallucination detection [38].
+301
+Each criterion was rated independently by both evaluators using a 5-point Likert scale,
+302
+where 1 indicates very poor and 5 indicates excellent. Inter-rater agreement was measured
+303
+using Cohen’s Kappa coefficient (κ). Unlike purely syntactic or structural evaluations, state
+304
+transition diagram modeling is a subjective modeling task. Multiple valid models can satisfy
+305
+the same requirements because of differences in abstraction level, state granularity, error
+306
+handling strategies, or modeling patterns. Therefore, we considered a κ value above 0.41,
+307
+indicating moderate agreement, as acceptable for this domain. In cases of lower agreement
+308
+(κ ≤0.41) or a difference of two or more points on the Likert scale, the two evaluators
+309
+discussed the diagram to establish a final consensus score. The human evaluation form,
+310
+including scoring guidelines, is provided as Evaluation Form in the companion repository [3].
+311
+3.4
+Iterative Repair Workflow
+312
+To improve the syntactic and structural validity of generated diagrams, we explored an
+313
+iterative repair workflow. This workflow was applied using the strongest initial strategy
+314
+
+===== PAGE 9 =====
+Anonymous author(s)
+9
+for each LLM, i.e., the strategy that produced the highest number of syntacticly and
+315
+structurally valid diagrams during the initial automated evaluation (see Section 4 for the
+316
+per-LLM ranking). For each selected strategy, only diagrams from the test dataset that
+317
+failed automated evaluation entered the iterative repair workflow. The repair process follows
+318
+the looping mechanism illustrated in Figure 3:
+319
+1. Evaluation and Issue Collection – The candidate PlantUML diagram is checked
+320
+using automated evaluation. This includes syntactic validity checking with plantuml
+321
+-checkonly and structural validity checking using the rule-based graph analyzer described
+322
+in Section 3.3.1. All detected issues, including syntactic error messages and structural
+323
+violation types from Table 1, are collected into a list.
+324
+2. LLM Repair – The same LLM used for generation receives a repair prompt with
+325
+instructions and identified issues, then generates new PlantUML code.
+326
+Figure 3 Validation-aware iterative repair workflow
+3. Re-evaluation and Acceptance – The repaired output is normalized and re-evaluated
+327
+for syntactic and structural validity. If it reduces the recorded validation issues, it replaces
+328
+the current candidate. Otherwise, the previous version is retained.
+329
+4. Iteration – The repair loop is repeated while validity issues remain or repair attempts
+330
+are still available. The loop stops when the diagram passes all checks or the maximum
+331
+repair attempt limit is reached.
+332
+5. Final Output – After the repair loop ends, the best accepted version is saved as the
+333
+final diagram. This is either the first version that passes all checks or the version with
+334
+the fewest validity violations.
+335
+The repair instruction is deliberately conservative. It asks the model to modify only the
+336
+lines necessary to fix the listed issues, avoid redesigning the diagram, and refrain from adding
+337
+unsupported states or transitions. This was designed to prevent the LLM from hallucinating
+338
+large behavioral changes while still allowing targeted corrections. The effectiveness of this
+339
+workflow is evaluated by comparing the automated and human evaluation scores of the
+340
+repaired diagrams against their initial counterparts. Results are presented in Section 4. The
+341
+full repair workflow configuration, including prompt, iteration logging and acceptance criteria,
+342
+is available in the artifact repository [3].
+343
+
+===== PAGE 10 =====
+10
+Towards Reliable AI-Assisted Behavioral Modeling
+4
+Results & Discussion
+344
+4.1
+RQ1: Impact of Prompting Strategies on Validity
+345
+For RQ1, we have evaluated validity of diagrams generated using zero-shot, one-shot, few-shot
+346
+and RAG. Table 2 reports syntactic and structural validity across these strategies.
+347
+Finding 1:
+PlantUML examples provide essential guidance for syntactic
+348
+validity. Zero-shot prompting yields low syntactic validity (lowest - Mistral 3.7%, highest -
+349
+DeepSeek 59.26 %). Adding one example (one-shot) drastically (58% in average) improves
+350
+syntactic validity for most models (lowest - Qwen 74.07%, highest - Llama 96.3 %), and
+351
+few-shot further consolidates this gain by 6.5% on average (lowest - Deepseek 88.9%, highest -
+352
+Qwen 96.3%). This shows that LLMs learn the basic syntax of PlantUML (keywords, arrows,
+353
+brackets) effectively even from a few examples(Table 2, Figure 4a).
+354
+Table 2 Automatic and Human Evaluation Results Across Prompting Strategies and Models (
+Llama as LM, Mistral as MT, DeepSeek as DS, Qwen as Qwn)
+Evaluation
+Type
+Metric
+Zero-shot
+One-shot
+Few-shot
+RAG
+LM
+MT
+DS
+Qwn
+LM
+MT
+DS
+Qwn
+LM
+MT
+DS
+Qwn
+LM
+MT
+DS
+Qwn
+Automatic
+Syntactic
+29.6%
+3.7%
+59.3% 22.2%
+96.3% 85.2%
+92.6%
+74.1%
+92.6%
+96.3% 88.9%
+96.3% 100%
+74.1%
+85.2%
+100%
+Structural
+0%
+0%
+0%
+0%
+18.5% 3.7%
+11.1%
+3.7%
+29.6% 7.4%
+22.2%
+11.1%
+22.2% 14.8%
+14.8%
+14.8%
+Human
+Complete
+–
+–
+–
+–
+4
+5
+4
+3.5
+3
+4
+4
+4
+3
+4.5
+4.5
+3
+Correct
+–
+–
+–
+–
+4
+4.5
+3.5
+2.5
+3
+4
+4
+4
+3
+4
+4.5
+3.5
+Understandability –
+–
+–
+–
+5
+4.5
+3.5
+2.5
+5
+4.5
+5
+5
+4.5
+5
+5
+4.5
+Term.
+alignment
+–
+–
+–
+–
+5
+3.5
+4
+3
+5
+4.5
+5
+5
+4.5
+4
+5
+3.5
+Finding 2: Structural validity remains low across all prompting strategies.
+355
+Even with few-shot or RAG, structural validity never exceeds 29.6% (Llama few-shot). The
+356
+dominant violation types are missing final states, missing initial states, multiple initial states,
+357
+and unreachable states (see Figure 3). This means the failures are not random, they are
+358
+systematic omissions of required elements. Consequently, passing syntactic check gives false
+359
+confidence; a diagram can be valid PlantUML yet still be structurally invalid.
+360
+Finding 3: Few violation types repeated across many invalid diagrams. Across
+361
+all models, the mean number of structural violations per diagram is low (1–3). Yet the same
+362
+violation types (e.g., missing final state) appear repeatedly, suggesting that LLMs nearly
+363
+understand the rules but consistently miss a few critical elements. Figure 4b shows the
+364
+average violation counts per model and strategy.
+365
+(a) Syntactic validity rates.
+(b) Average violation counts
+Figure 4 Syntactic validity rates across prompting strategies (Figure 4a), and average structural
+violation counts per diagram (Figure 4b)
+
+===== PAGE 11 =====
+Anonymous author(s)
+11
+Table 3 Counts of structural violations by model and prompting strategy (Z=zero-shot, O=one-
+shot, F=few-shot, R=RAG). Models: L=Llama, M=Mistral, D=DeepSeek, Q=Qwen.
+Violation
+Llama
+Mistral
+DeepSeek
+Qwen
+Z
+O
+F
+R
+Z
+O
+F
+R
+Z
+O
+F
+R
+Z
+O
+F
+R
+missing final state
+25
+10
+12
+9
+27
+16
+16
+11
+27
+21
+16
+17
+27
+18
+13
+10
+orphan states
+30
+8
+6
+0
+36
+22
+18
+16
+16
+4
+2
+14
+52
+22
+6
+4
+unreachable states
+14
+26
+20
+12
+0
+28
+24
+6
+0
+6
+2
+6
+0
+40
+34
+10
+invalid choice node
+3
+105
+3
+–
+0
+16
+2
+5
+0
+0
+3
+3
+0
+9
+1
+1
+missing initial state
+8
+2
+2
+0
+27
+2
+3
+4
+27
+13
+8
+7
+27
+1
+0
+0
+syntactic error
+19
+1
+2
+0
+26
+4
+1
+7
+11
+2
+3
+4
+21
+7
+1
+0
+invalid choice guards
+0
+9
+7
+10
+0
+12
+4
+7
+0
+1
+3
+10
+0
+27
+1
+1
+multiple initial states
+6
+3
+2
+6
+0
+4
+3
+10
+0
+5
+0
+7
+0
+4
+2
+13
+duplicate transitions
+6
+1
+3
+3
+0
+1
+2
+2
+0
+1
+2
+1
+0
+3
+3
+5
+RQ1 Takeaway: Examples help syntax but not structure.
+Structural validity
+stagnates at around 30%, with missing initial/final states as the dominant, recurring
+errors. As a result, syntax check alone is insufficient for reliability.
+366
+4.2
+RQ2: Retrieval Corpus Analysis – Which Retrieval Source Helps?
+367
+To understand how different document sources in the retrieval corpus affect diagram validity,
+368
+we evaluated RAG using three separate settings: examples only, rules only, and theory only.
+369
+Table 4 shows structural validity for the RAG configurations, the full corpus results are
+370
+shown in Table 3.3.1.
+371
+Finding 4: RAG is not uniformly reliable; different sources work best for
+372
+different models. For instruction-tuned models (Llama, Qwen), rules-only RAG is most
+373
+effective (Llama 42.9%, Qwen 50.0%). For Mistral, full RAG (examples + rules + theory)
+374
+gives the best result (20.0%), while examples-only (4.2%) and rules-only (5.6%) perform
+375
+poorly. Theory-only RAG is uniformly ineffective (0–5% structural validity). Thus, retrieval
+376
+corpus design must be model-aware. No single configuration works best for all LLMs.
+377
+We identified a failure case demonstrating the unreliability of examples-only RAG. A
+378
+human evaluator noted that "requirements 3–6 are missing but adding new things." Upon
+379
+inspection, we found that the retrieved example was textually similar to the target requirement
+380
+but behaviorally different. The generated diagram omitted required states and transitions
+381
+from the target case and included additional ones from the retrieved example, indicating
+382
+a retrieval-induced hallucination where the model borrows unsupported behavior from a
+383
+relevant but different example.
+384
+RQ2 Takeaway: Reliability of retrieval document source depends on the model.
+Rules-only helps instruction-tuned models whereas theory-only performs very poorly.
+Practitioners must tailor retrieval to the target LLM.
+385
+4.3
+RQ3: Effectiveness of Iterative Repair
+386
+To improve the invalid diagrams, we explored how iterative repair may increase the structural
+387
+and syntactic validity of the diagrams. Table 6 presents the structural validity outcomes
+388
+after up to five repair iterations.
+Among all models, DeepSeek is the best performer,
+389
+achieving 88.89% structural validity after repair, compared to its few-shot baseline of 22.2%.
+390
+Llama, Qwen, and Mistral also improve, but to a lesser extent (55.6%, 40.7%, and 29.6%,
+391
+respectively).
+392
+
+===== PAGE 12 =====
+12
+Towards Reliable AI-Assisted Behavioral Modeling
+Table 4 Evaluation Results for RAG Corpus analysis Settings (Llama as LM, Mistral as MT,
+DeepSeek as DS, Qwen as Qwn)
+Evaluation
+Type
+Metric
+RAG (Only Rules)
+RAG (Only Examples)
+RAG (Only Theory)
+LM
+MT
+DS
+Qwn
+LM
+MT
+DS
+Qwn
+LM
+MT
+DS
+Qwn
+Automatic
+Syntactic
+77.8%
+66.7%
+81.5%
+81.5%
+96.3%
+88.9%
+74.1%
+92.6%
+88.9%
+25.9%
+63.0%
+81.5%
+Structural
+42.9%
+5.6%
+18.2%
+50.0%
+15.4%
+4.2%
+10.0%
+12.0%
+4.2%
+0%
+0%
+4.6%
+Human
+Complete
+5
+2
+4.5
+4
+3.5
+5
+5
+5
+5
+–
+–
+5
+Correct
+4
+2
+4.5
+4
+3
+3
+5
+4
+3
+–
+–
+5
+Understandability 5
+3
+5
+5
+4.5
+4
+4.5
+5
+5
+–
+–
+5
+Term.
+alignment
+5
+4
+5
+5
+5
+5
+5
+5
+5
+–
+–
+5
+Finding 5: More iterations do not always improve repair. Most successful repairs
+393
+occurred within the first two iterations. As shown in Figure ??, DeepSeek made 11 diagrams
+394
+valid after the first iteration,but only 2 after the fourth iteration. No additional diagram
+395
+became valid after the fifth iteration. Across all models, the number of newly repaired
+396
+diagrams drops sharply after the first two iterations. This demonstrates that repair yields
+397
+limited improvement beyond 2–3 iterations, and excessive repair attempts are not productive.
+398
+Figure 5 Repair success per iteration. Most valid diagrams are obtained within the first two
+iterations; later iterations contribute few or no improvements.
+Finding 6: Repair is effective for diagrams with fewer issues but struggles with
+399
+many issues. Diagrams with multiple faults often require more iterations and rarely validate
+400
+after three attempts. We noted that when violations exceeded two, DeepSeek aggressively
+401
+attempted fixes, sometimes deleting states and transitions, which removed essential behavioral
+402
+elements. This indicates that while repairs can manage moderate complexity, overly aggressive
+403
+corrections may compromise completeness for structural validity.
+404
+Finding 7: Repair success varies by violation type and model. Table 5 shows
+405
+that DeepSeek successfully fixes 100% of missing final states, missing initial states, duplicate
+406
+transitions, orphan states, and invalid choice guards, but fails to address unreachable states
+407
+(0%). Llama also achieves 100% for missing final states but struggles with other violations,
+408
+particularly invalid choice guards (0%) and duplicate transitions (0%). Mistral excels at
+409
+fixing duplicate transitions (100%) but has low success rates for missing final states (27.3%),
+410
+missing initial states (25.0%), and multiple initial states (20.0%). Qwen is strong on missing
+411
+final states (90.0%) but performs poorly on multiple initial states (15.4%) and cannot fix
+412
+invalid choice nodes or guards. These results indicate that some models, like DeepSeek, offer
+413
+broader repair capabilities, while others are more specialized or limited.
+414
+
+===== PAGE 13 =====
+Anonymous author(s)
+13
+Table 5 Repair success rates per violation type (percentage of instances fixed).
+Violation Type
+DeepSeek
+Llama
+Mistral
+Qwen
+missing_final_state
+100% (16/16)
+100% (12/12)
+27.3% (3/11)
+90.0% (9/10)
+missing_initial_state
+100% (8/8)
+50.0% (1/2)
+25.0% (1/4)
+–
+duplicate_transitions
+100% (2/2)
+0% (0/1)
+100% (2/2)
+60.0% (3/5)
+orphan_states
+100% (1/1)
+66.7% (2/3)
+25.0% (2/8)
+50.0% (1/2)
+unreachable_states
+0% (0/1)
+60.0% (6/10)
+0% (0/3)
+40.0% (2/5)
+multiple_initial_states
+–
+50.0% (1/2)
+20.0% (2/10)
+15.4% (2/13)
+invalid_choice_node
+–
+40.0% (2/5)
+75.0% (3/4)
+0% (0/1)
+invalid_choice_guards
+100% (1/1)
+0% (0/1)
+33.3% (1/3)
+0% (0/1)
+RQ3 Takeaway: Repair could not improve diagrams with a high number of issues,
+even after many iterations. This suggests that repair should be used as a targeted
+tool for small corrections, not as a brute-force method to rewrite entire diagrams.
+DeepSeek’s reasoning capability made it the strongest repair performer. However,
+even DeepSeek struggled when the initial diagram contained a high number of issues.
+415
+Table 6 Evaluation Results for iterative Repair
+Evaluation
+Type
+Metric
+Repair
+LLaMA
+Mistral
+DeepSeek
+Qwen
+Automatic
+Syntactic
+96.30%, n=26
+74.07%, n=20
+92.59%, n=25
+92.59%, n=25
+Structural
+55.56%, n=15
+29.63%, n=8
+88.89%, n=24
+40.74%, n=11
+Human
+Completeness
+4
+4
+4
+4
+Correctness
+4
+5
+4
+4
+Understandability
+5
+5
+5
+3
+Terminological
+alignment
+4
+5
+5
+4
+4.4
+RQ4: Human Evaluation of Quality Dimensions
+416
+To evaluate the quality of valid generated diagrams, we collected human evaluation scores
+417
+for correctness, completeness, understandability, and terminological alignment.
+418
+Finding 8: Even incorrect diagrams can be understandable – a concerning
+419
+disconnect. For few-shot prompting, median understandability scores are 5 (excellent) for
+420
+Llama, DeepSeek, and Qwen, while correctness scores are only 3–4. LLMs produce visually
+421
+clear, readable diagrams (logical state names, clean layout) that look correct on surface, but
+422
+often miss critical behavior. Practitioners may be misled by these aesthetically pleasing but
+423
+incorrect diagrams. Consider the following real critique from our human evaluation of a
+424
+microwave oven state diagram:
+425
+“Some confusions regarding transitions... after ‘CheckExpiry‘, we should notify the user but
+426
+the diagram lacks this. The core user choice requirement is completely ignored ...; instead it
+427
+makes up ‘get amount‘. No transition for when cooking finishes naturally ...”
+428
+This example shows that a diagram can be clear but still miss behavioral flows, overlook key
+429
+requirements, and include incorrect transitions. Such cases highlight a gap between perceived
+430
+and actual quality in LLM-generated state machines.
+431
+Finding 9: Few-shot prompting yields better behavioral quality than RAG.
+432
+Despite RAG achieving higher syntactic validity, human-rated correctness and completeness
+433
+
+===== PAGE 14 =====
+14
+Towards Reliable AI-Assisted Behavioral Modeling
+are consistently higher for few-shot than for RAG (e.g., Llama few-shot correctness 4 vs.
+434
+RAG 3). Fixed examples provide more reliable behavioral guidance than retrieved examples,
+435
+which can introduce irrelevant or misleading content.
+436
+RQ4 Takeaway: Few-shot prompting is more reliable than retrieval for diagram
+quality. However, visually understandable diagrams may still be incorrect. This
+indicates that LLM-based diagram generation requires careful human oversight.
+437
+4.5
+Cross-RQ Findings
+438
+Finding 10: Syntactic validity is necessary but insufficient for behavioral modeling.
+439
+A diagram can be perfectly valid PlantUML (e.g., Llama RAG 100% syntax) yet fail all
+440
+structural rules (only 22% structural validity) (as shown in Table 1). Syntax checks give a
+441
+false sense of security.
+442
+Finding 11: Structural validity does not guarantee human-perceived correct-
+443
+ness. We observed cases where diagrams passed all structural rules, such as having a single
+444
+initial state and no unreachable states, but still received low human correctness scores (2–3)
+445
+because they missed critical transitions. This shows that automated validation alone is not
+446
+sufficient and must be supported by human oversight.
+447
+Finding 12: Repair is the best technique – improves both automated and
+448
+human evaluation.
+DeepSeek achieved the highest repair success rate for structural
+449
+validity (88.9%), followed by Llama (55.6%), Qwen (40.7%), and Mistral (29.6%) as shown
+450
+in Figure 6. This improvement is mainly due to targeted feedback: the LLM receives precise
+451
+structural violation messages, such as missing_final_state, and is instructed to modify only
+452
+the necessary lines. More importantly, diagrams that passed structural validation after repair
+453
+were also rated highly by human evaluators across all quality dimensions. This trend held for
+454
+both few-shot and RAG-based repair settings. Fixing structural issues leads to improving
+455
+the behavioral quality of the diagram as a byproduct. This suggests that automated success
+456
+after repair is a strong indicator of human-perceived quality as well. Therefore, repair is
+457
+not only the most effective strategy for structural validity, but also the most trustworthy
+458
+strategy for practical use.
+459
+Finding 13: Repair effectiveness is model-dependent.
+Models that struggle
+460
+with initial structural validity (Mistral, Qwen) also see lower repair success (29.6%, 40.7%)
+461
+compared to DeepSeek (88.9%).
+The repair loop cannot compensate for fundamental
+462
+limitations in a model’s ability to understand state transition diagram semantics.
+463
+4.6
+Practical Recommendations for AI-Assisted Behavioral Modeling
+464
+Based on our findings, we provide three recommendations for practitioners using LLMs for
+465
+state transition diagram generation.
+466
+1. Prioritize few-shot prompting. Use 3–4 examples representing simple, medium, and
+467
+complex cases. Ensure these examples are structurally correct and aligned with the target
+468
+domain. Few-shot prompting outperforms all other methods in semantic fidelity and
+469
+reduces retrieval-induced hallucinations.
+470
+2. Integrate iterative repair. Despite optimal prompting, 70–80% of generated diagrams
+471
+may have structural violations. Implement an automated repair loop with 2–3 iterations,
+472
+as additional iterations yield diminishing returns. This lightweight feedback mechanism
+473
+significantly improves structural validity (e.g., DeepSeek from 25% to 96%).
+474
+
+===== PAGE 15 =====
+Anonymous author(s)
+15
+Figure 6 Baseline structural validity (best prompting or RAG strategy) vs. final validity after
+repair. DeepSeek shows the largest gain (22.2.0% →88.9%); all models benefit substantially from
+iterative repair.
+3. Incorporate human review for final assessment. Do not rely solely on automated
+475
+checks for syntactic or structural validation, as they can’t verify behavioral semantics or
+476
+completeness. Use automated validation as a filter, followed by a domain expert review
+477
+of a small subset of diagrams to catch semantic mismatches. For safety-critical systems,
+478
+human review is mandatory.
+479
+4.7
+Limitations and Future Work
+480
+Despite the comprehensive evaluation, several limitations remain. The dataset, while system-
+481
+atically constructed, consists of textbook examples that may not capture industrial complexity
+482
+(concurrency, timing constraints, hierarchical states). The repair loop was capped at 5 iter-
+483
+ations based on pilot experiments showing no improvements beyond this point, but more
+484
+iterations might benefit certain cases. Human evaluation, while rigorous, involved only two
+485
+evaluators; larger-scale validation with diverse practitioners would strengthen generalization.
+486
+Future work should explore: (a) hierarchical state transition diagrams and orthogonal regions,
+487
+which introduce additional validation complexity; (b) few-shot example selection optimization
+488
+(currently random, but semantic similarity-based selection may improve performance); (c)
+489
+using LLMs as judges to automate or augment human evaluation of diagram quality; (d)
+490
+providing structural rules themselves as part of the RAG context to assess whether explicit
+491
+rule injection improves structural validity; and (e) analyzing oscillation and regression during
+492
+repair—specifically, tracking per-iteration errors, fixes, and fix patterns to understand why
+493
+some models regress and how to design more stable repair prompts.
+494
+5
+Threats to Validity
+495
+The research identifies several potential threats to the validity of the findings.
+496
+Construct validity: While PlantUML syntactic and structural validity offer a quant-
+497
+itative measure of diagram correctness, they may not capture a diagram’s practical
+498
+usefulness in development workflows. Human evaluation metrics (correctness, complete-
+499
+ness, understandability, terminology alignment) complement automated metrics for a
+500
+more comprehensive quality assessment.
+501
+
+===== PAGE 16 =====
+16
+Towards Reliable AI-Assisted Behavioral Modeling
+Internal validity: The main internal threat is variability in LLM responses based on
+502
+prompt construction. A standardized prompt template was utilized for all experiments.
+503
+The non-deterministic nature of autoregressive generation can produce outliers; we ad-
+504
+dressed this by running each generation once per configuration and focusing on systematic
+505
+patterns across 27 test cases per condition.
+506
+External validity: External validity is limited due to the use of textbook case studies,
+507
+which may not fully represent the complexities found in actual industrial documents.
+508
+Textbook examples offer a controlled baseline, but real-world requirements are often
+509
+messy and incomplete. Future work should evaluate workflows on industrial requirements.
+510
+Human evaluator bias: Human evaluation introduces subjectivity, especially in as-
+511
+sessing behavioral correctness and understandability. To mitigate this, diagrams were
+512
+independently evaluated by two UML-experienced evaluators using predefined criteria and
+513
+scoring guidelines. Inter-rater agreement was measured with Cohen’s Kappa coefficient
+514
+(κ = 0.44–0.68 across dimensions), with disagreements resolved through consensus.
+515
+Reliability of reconstructed requirements: Some requirements were partially re-
+516
+constructed from textbook diagrams due to missing specifications.
+Despite manual
+517
+verification and consistency checks, reconstruction may introduce implicit assumptions
+518
+not present in the original sources.
+519
+Generality of validation heuristics: Some structural validation rules are based on
+520
+practical modeling heuristics rather than strict UML standards. While these heuristics
+521
+enhance automated diagram quality assessment, alternative interpretations may exist. The
+522
+full rule set is available in the artifact repository (Sec. 6) for replication and adaptation.
+523
+LLM training data contamination: A significant threat is that the evaluated LLMs
+524
+may have been pre-trained on the same textbooks and UML resources as our dataset. If
+525
+models "saw" the case study diagrams during training, their performance could be inflated
+526
+due to memorization. While we cannot rule out contamination, we note: (a) we used
+527
+structured requirement reformulations differing from original textbook wording; (b) we
+528
+required generation in PlantUML syntax, unlikely to appear verbatim in training corpora;
+529
+and (c) the poor zero-shot performance across all models (0% structural validity) suggests
+530
+that memorization alone is insufficient, as models still fail without explicit prompting.
+531
+Future work should validate findings on newly created, non-public requirements.
+532
+6
+Conclusion
+533
+This work contributes one of the first validation-aware empirical frameworks for studying AI-
+534
+assisted behavioral model generation, combining automated structural verification, retrieval-
+535
+based prompting, iterative repair, and human-centered evaluation. Using a novel dataset of
+536
+80 requirement–state transition diagram pairs derived from software engineering textbooks,
+537
+we evaluated four open-source LLMs across zero-shot, one-shot, few-shot, RAG, and repair
+538
+workflows. Our key findings are:
+539
+(1) Few-shot prompting significantly outperforms zero-shot and one-shot for syntactic
+540
+validity, but structural validity remains low (30%) across all models, with missing final and
+541
+initial states as common errors. Passing a syntax check alone gives false confidence.
+542
+(2) RAG’s effectiveness is model-dependent. Rules-only RAG works best for instruction-tuned
+543
+models (Llama, Qwen), while theory-only RAG is uniformly ineffective. RAG can induce
+544
+hallucination by copying irrelevant content from retrieved examples.
+545
+(3) Iterative repair dramatically improves structural validity, especially for DeepSeek
+546
+(from 22.2% to 88.9%), with most repairs succeeding within the first two iterations. Repair
+547
+
+===== PAGE 17 =====
+Anonymous author(s)
+17
+is most effective for small, localized errors; diagrams with many violations rarely become
+548
+valid. Repair success also varies by violation type—DeepSeek fixes missing final states and
+549
+missing initial states perfectly but cannot handle unreachable states.
+550
+(4) Human evaluation shows a disconnect: diagrams are rated high for understandab-
+551
+ility (often 5/5) but low for correctness (3–4/5). Few-shot prompting aligns better with
+552
+requirements than RAG, and diagrams passing automated validation after repair receive
+553
+high human ratings, making repair the most reliable strategy.
+554
+Taken together, these results demonstrate that reliable AI-assisted behavioral modeling
+555
+is achievable not through larger prompts or more retrieval, but through targeted, validation-
+556
+aware workflows that combine few-shot examples with iterative repair. Practitioners can
+557
+adopt our validation rules and repair prompts to integrate LLMs into their modeling processes
+558
+as collaborative assistants rather than autonomous generators.
+559
+Data Availability
+560
+All artifacts generated and used in this study are publicly available in the companion
+561
+repository at: https://anonymous.4open.science/r/State_Transition_Diagram_LLM_
+562
+workflow-BE50/README.md
+563
+References
+564
+1
+Between lines of code: Unraveling the distinct patterns of machine-generated code.
+In
+565
+Proceedings of the IEEE/ACM 47th International Conference on Software Engineering (ICSE
+566
+2025), pages 1628–1639. IEEE, 2025.
+567
+2
+Sharif Ahmed, Arif Ahmed, and Nasir U Eisty. Automatic transformation of natural to unified
+568
+modeling language: A systematic review. In 2022 IEEE/ACIS 20th International Conference
+569
+on Software Engineering Research, Management and Applications (SERA), pages 112–119.
+570
+IEEE, 2022.
+571
+3
+anon. State transition diagram llm workflow: Dataset, prompts, validation rules, and eval-
+572
+uation material. Github, May 2026. URL: https://anonymous.4open.science/r/State_
+573
+Transition_Diagram_LLM_workflow-BE50/README.md.
+574
+4
+Jim Arlow and Ila Neustadt. UML 2 and the unified process: practical object-oriented analysis
+575
+and design. Pearson Education, 2005.
+576
+5
+Felix Bachmann, Len Bass, and Mark Klein.
+Preliminary design of arche: A software
+577
+architecture design assistant. Carnegie Mellon University, Software Engineering Institute, 2003.
+578
+6
+Lenz Belzner, Thomas Gabor, and Martin Wirsing. Large language model assisted software
+579
+engineering: Prospects, challenges, andnbsp;anbsp;case study. In Bridging the Gap Between
+580
+AI and Reality: First International Conference, AISoLA 2023, Crete, Greece, October 23–28,
+581
+2023, Proceedings, page 355–374, Berlin, Heidelberg, 2023. Springer-Verlag. doi:10.1007/
+582
+978-3-031-46002-9_23.
+583
+7
+Simon Bennett, Steve McRobb, and Ray Farmer. Object-oriented systems analysis and design
+584
+using UML. McGraw Hill Higher Education, 2005.
+585
+8
+Ishak Bouzenia and Michael Pradel. Understanding software engineering agents: A study of
+586
+thought-action-result trajectories. In Proceedings of the 40th IEEE/ACM International Confer-
+587
+ence on Automated Software Engineering (ASE 2025), 2025. arXiv preprint arXiv:2506.18824.
+588
+9
+Humberto Cervantes, Rick Kazman, and Yuanfang Cai. An llm-assisted approach to designing
+589
+software architectures using add, 2025. URL: https://arxiv.org/abs/2506.22688, arXiv:
+590
+2506.22688.
+591
+10
+Kua Chen, Yujing Yang, Boqi Chen, José Antonio Hernández López, Gunter Mussbacher, and
+592
+Daniel Varro. Automated domain modeling with large language models: A comparative study.
+593
+pages 162–172, 10 2023. doi:10.1109/MODELS58315.2023.00037.
+594
+
+===== PAGE 18 =====
+18
+Towards Reliable AI-Assisted Behavioral Modeling
+11
+Federico Ciccozzi, Ivano Malavolta, and Bran Selic. Execution of uml models: a systematic
+595
+review of research and practice.
+Softw. Syst. Model., 18(3):2313–2360, June 2019.
+doi:
+596
+10.1007/s10270-018-0675-4.
+597
+12
+Maria Stella De Biase, Simona Bernardi, Stefano Marrone, José Merseguer, and Angelo
+598
+Palladino. Completion of sysml state machines from given–when–then requirements: M. stella
+599
+de biase et al. Software and Systems Modeling, 23(6):1455–1491, 2024.
+600
+13
+Malinda Dilhara, Ameya Bellur, Timofey Bryksin, and Danny Dig. Unprecedented code
+601
+change automation: The fusion of llms and transformation by example. Proceedings of the
+602
+ACM on Software Engineering, 1(FSE):631–653, 2024. doi:10.1145/3643755.
+603
+14
+Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Abhishek Kadian, Ahmad Al-Dahle,
+604
+et al. The llama 3 herd of models. arXiv preprint arXiv:2407.21783, 2024.
+605
+15
+Matteo Esposito, Xiaozhou Li, Sergio Moreschini, Noman Ahmad, Tomas Cerny, Karthik
+606
+Vaidhyanathan, Valentina Lenarduzzi, and Davide Taibi. Generative ai for software architecture.
+607
+applications, challenges, and future directions, 2025. URL: https://arxiv.org/abs/2503.
+608
+13310, arXiv:2503.13310.
+609
+16
+Nan Feng, Lina Marsso, Shaukat Ali Yaman, Isabel Standen, Buyanjargal Baatartogtokh, Rym
+610
+Ayad, Victor O. de Mello, Ben Townsend, Holger Bartels, Ana Cavalcanti, Radu Calinescu,
+611
+and Marsha Chechik. Normative requirements operationalization with large language models.
+612
+In Proceedings of the 2024 IEEE 32nd International Requirements Engineering Conference
+613
+(RE 2024), pages 129–141. IEEE, 2024. doi:10.1109/re59067.2024.00022.
+614
+17
+Alessio Ferrari, Sallam Abualhaija, and Chetan Arora. Model generation with llms: From
+615
+requirements to uml sequence diagrams, 2024. URL: https://arxiv.org/abs/2404.06371,
+616
+arXiv:2404.06371.
+617
+18
+Jeff Garland. Large-scale software architecture: a practical guide using UML. John Wiley &
+618
+Sons, 2003.
+619
+19
+Soham Ghosh and Gaurav Mittal. Advancing engineering research through context-aware and
+620
+knowledge graph–based retrieval-augmented generation. Frontiers in Artificial Intelligence,
+621
+8:1697169, 2025.
+622
+20
+Polydoros Giannouris and Sophia Ananiadou. Nomad: A multi-agent llm system for uml
+623
+class diagram generation from natural language requirements. In Proceedings of the 14th
+624
+International Conference on Model-Based Software and Systems Engineering, page 257–264.
+625
+SCITEPRESS - Science and Technology Publications, 2026. URL: http://dx.doi.org/10.
+626
+5220/0014301900004058, doi:10.5220/0014301900004058.
+627
+21
+Hassan Gomaa.
+Software modeling and design: UML, use cases, patterns, and software
+628
+architectures. Cambridge University Press, 2011.
+629
+22
+Patrick Grässle, Henriette Baumann, and Philippe Baumann. Uml 2.0 in action. Birmingham:
+630
+Packt Publishing Ltd, 2005.
+631
+23
+Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Peiyi Wang, Qihao Zhu, Runxin Xu,
+632
+Ruoyu Zhang, Shirong Ma, Xiao Bi, et al. Deepseek-r1: Incentivizing reasoning capability in
+633
+llms via reinforcement learning. arXiv preprint arXiv:2501.12948, 2025.
+634
+24
+Mohammad Kasra Habib, Daniel Graziotin, and Stefan Wagner. Reqbrain: Task-specific
+635
+instruction tuning of llms for ai-assisted requirements generation, 2025. URL: https://arxiv.
+636
+org/abs/2505.17632, arXiv:2505.17632.
+637
+25
+M.P.E. Heimdahl and N.G. Leveson. Completeness and consistency in hierarchical state-
+638
+based requirements. IEEE Transactions on Software Engineering, 22(6):363–377, 1996. doi:
+639
+10.1109/32.508311.
+640
+26
+Xinyi Hou, Yanjie Zhao, Yue Liu, Zhou Yang, Kailong Wang, Li Li, Xiapu Luo, David
+641
+Lo, John Grundy, and Haoyu Wang. Large language models for software engineering: A
+642
+systematic literature review. ACM Transactions on Software Engineering and Methodology,
+643
+33(8), December 2024. Publisher Copyright: © 2024 Copyright held by the owner/author(s).
+644
+Publication rights licensed to ACM. doi:10.1145/3695988.
+645
+
+===== PAGE 19 =====
+Anonymous author(s)
+19
+27
+Binyuan Hui, Jian Yang, Zeyu Cui, Jiaxi Yang, Dayiheng Liu, Lei Zhang, Tianyu Liu, Jiajun
+646
+Zhang, Bowen Yu, Keming Lu, et al.
+Qwen2. 5-coder technical report.
+arXiv preprint
+647
+arXiv:2409.12186, 2024.
+648
+28
+James Ivers and Ipek Ozkaya. Will generative ai fill the automation gap in software architecting?
+649
+pages 41–45, 03 2025. doi:10.1109/ICSA-C65153.2025.00014.
+650
+29
+Munima Jahan, Zahra Shakeri Hossein Abad, and Behrouz Far. Generating sequence dia-
+651
+gram from natural language requirements. In 2021 IEEE 29th International Requirements
+652
+Engineering Conference Workshops (REW), pages 39–48. IEEE, 2021.
+653
+30
+Munima Jahan, Mohammad Mahdi Hassan, Reza Golpayegani, Golshid Ranjbaran, Chanchal
+654
+Roy, Banani Roy, and Kevin Schneider. Automated derivation of uml sequence diagrams from
+655
+user stories: Unleashing the power of generative ai vs. a rule-based approach. In Proceedings
+656
+of the ACM/IEEE 27th International Conference on Model Driven Engineering Languages
+657
+and Systems, pages 138–148, 2024.
+658
+31
+Albert Q. Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford, Devendra Singh
+659
+Chaplot, Diego de las Casas, Florian Bressand, Gianna Lengyel, Guillaume Lample, Lucile
+660
+Saulnier, Lélio Renard Lavaud, Marie-Anne Lachaux, Pierre Stock, Teven Le Scao, Thibaut
+661
+Lavril, Thomas Wang, Timothée Lacroix, and William El Sayed. Mistral 7b, 2023. URL:
+662
+https://arxiv.org/abs/2310.06825, arXiv:2310.06825.
+663
+32
+Juyong Jiang, Fan Wang, Jiasi Shen, Sungju Kim, and Sunghun Kim. A survey on large
+664
+language models for code generation.
+ACM Transactions on Software Engineering and
+665
+Methodology, 35(2):1–72, 2026.
+666
+33
+Rodi Jolak, Maxime Savary-Leblanc, Manuela Dalibor, Andreas Wortmann, Regina Hebig,
+667
+Juraj Vincur, Ivan Polasek, Xavier Le Pallec, Sébastien Gérard, and Michel RV Chaudron.
+668
+Software engineering whispers: The effect of textual vs. graphical software design descriptions
+669
+on software design communication. Empirical software engineering, 25(6):4427–4471, 2020.
+670
+34
+Craig Larman. Applying UML and patterns: an introduction to object oriented analysis and
+671
+design and interative development. Pearson Education India, 2012.
+672
+35
+Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir Karpukhin, Naman
+673
+Goyal, Heinrich Küttler, Mike Lewis, Wen-tau Yih, Tim Rocktäschel, et al.
+Retrieval-
+674
+augmented generation for knowledge-intensive nlp tasks. Advances in neural information
+675
+processing systems, 33:9459–9474, 2020.
+676
+36
+Taslim Mahbub, Dana Dghaym, Aadhith Shankarnarayanan, Taufiq Syed, Salsabeel Shap-
+677
+sough, and Imran Zualkernan. Can gpt-4 aid in detecting ambiguities, inconsistencies, and
+678
+incompleteness in requirements analysis? a comprehensive case study. IEEE Access, PP:1–1,
+679
+01 2024. doi:10.1109/ACCESS.2024.3464242.
+680
+37
+Russ Miles and Kim Hamilton. Learning UML 2.0: a pragmatic introduction to UML. "
+681
+O’Reilly Media, Inc.", 2006.
+682
+38
+Jackson Nguyen, Rui En Koe, Fanyu Wang, Chetan Arora, and Alessio Ferrari. Class model
+683
+generation from requirements using large language models. arXiv preprint arXiv:2603.09100,
+684
+2026.
+685
+39
+Bashar Nuseibeh and Steve Easterbrook. Requirements engineering: a roadmap. In Proceedings
+686
+of the Conference on The Future of Software Engineering, ICSE ’00, page 35–46, New York,
+687
+NY, USA, 2000. Association for Computing Machinery. doi:10.1145/336512.336523.
+688
+40
+Object Management Group.
+Unified modeling language (UML) version 2.5.1.
+Standard
+689
+formal/2017-12-05, Object Management Group, December 2017. URL: https://www.omg.
+690
+org/spec/UML/2.5.1.
+691
+41
+Leonid Ozirkovskyy, Bohdan Volochiy, Oleksandr Shkiliuk, Mykhailo Zmysnyi, and Pavlo
+692
+Kazan. Functional safety analysis of safety-critical system using state transition diagram.
+693
+Radioelectronic and computer systems, (2):145–158, 2022.
+694
+42
+PlantUML Team. Plantuml language reference guide. Accessed: 2026-05-06. URL: https:
+695
+//plantuml.com/guide.
+696
+43
+Roger S Pressman. Software engineering: a practitioner’s approach. Palgrave macmillan, 2005.
+697
+
+===== PAGE 20 =====
+20
+Towards Reliable AI-Assisted Behavioral Modeling
+44
+Paul Ralph, Nauman bin Ali, Sebastian Baltes, et al.
+Empirical standards for software
+698
+engineering research, 2020. URL: https://arxiv.org/abs/2010.03525, arXiv:2010.03525.
+699
+45
+Aqsa Rasheed, Bushra Zafar, Tehmina Shehryar, Naila Aiman Aslam, Muhammad Sajid,
+700
+Nouman Ali, Saadat Hanif Dar, and Samina Khalid. Requirement engineering challenges in
+701
+agile software development. Mathematical Problems in Engineering, 2021(1):6696695, 2021.
+702
+46
+Pascal Roques. UML in practice: the art of modeling software systems demonstrated through
+703
+worked examples and solutions. John Wiley & Sons, 2006.
+704
+47
+Nimra Shehzadi, Javed Ferzund, Rubia Fatima, and Adnan Riaz. Automatic complexity
+705
+analysis of uml class diagrams using visual question answering (vqa) techniques. Software,
+706
+4(4):22, 2025.
+707
+48
+Ian Sommerville. Software engineering 9th edition. ISBN-10, 137035152:18, 2011.
+708
+49
+Suriya Sundaramoorthy. UML diagramming: a case study approach. Auerbach Publications,
+709
+2022.
+710
+50
+Brennan Swick, Sean Donegan, Andrew Gillman, and Michael Groeber. Human planning
+711
+of robot actions through llm-guided state machine synthesis. pages 430–437, 08 2024. doi:
+712
+10.1109/RO-MAN60168.2024.10731325.
+713
+51
+Valerio Terragni, Annie Vella, Partha Roop, and Kelly Blincoe. The future of ai-driven software
+714
+engineering. ACM Trans. Softw. Eng. Methodol., 34(5), May 2025. doi:10.1145/3715003.
+715
+52
+Beian Wang, Chong Wang, Peng Liang, Bing Li, and Cheng Zeng. How llms aid in uml modeling:
+716
+An exploratory study with novice analysts, 2024. URL: https://arxiv.org/abs/2404.17739,
+717
+arXiv:2404.17739.
+718
+53
+Chen Wang, Jiarui Wu, Xiang Ling, Tianyu Luo, and Chang Zhao. Correct code, vulnerable
+719
+dependencies: A large scale measurement study of llm-specified library versions. In Proceedings
+720
+of the International Conference on Software Engineering (ICSE 2026), 2026. arXiv preprint
+721
+arXiv:2605.06279.
+722
+54
+Hao Wang, Christopher M. Poskitt, and Jun Sun. Agentspec: Customizable runtime enforce-
+723
+ment for safe and reliable llm agents. In Proceedings of the 48th International Conference on
+724
+Software Engineering (ICSE 2026), 2026. arXiv preprint arXiv:2503.18666.
+725
+55
+Yuchen Wang, Shangxin Guo, and Chee Wei Tan. From code generation to software testing:
+726
+Ai copilot with context-based rag. IEEE Software, 2025.
+727
+56
+Jules White, Quchen Fu, Sam Hays, Michael Sandborn, Carlos Olea, Henry Gilbert, Ashraf
+728
+Elnashar, Jesse Spencer-Smith, and Douglas C. Schmidt.
+A prompt pattern catalog to
+729
+enhance prompt engineering with chatgpt, 2023. URL: https://arxiv.org/abs/2302.11382,
+730
+arXiv:2302.11382.
+731
+57
+Chi Xiao, Daniel Ståhl, and Jan Bosch. Uml sequence diagram generation: A multi-model,
+732
+multi-domain evaluation. In 2025 IEEE/ACM 47th International Conference on Software
+733
+Engineering: Software Engineering in Practice (ICSE-SEIP), pages 272–283, 2025.
+doi:
+734
+10.1109/ICSE-SEIP66354.2025.00030.
+735
+58
+Aashish Yadavally and Tien N. Nguyen. From seed to scope: Reasoning to identify change
+736
+impact sets. page To Appear, 2026.
+737
+59
+Tao Yue, Lionel C Briand, and Yvan Labiche. atoucan: an automated framework to derive
+738
+uml analysis models from use case models. ACM Transactions on Software Engineering and
+739
+Methodology (TOSEM), 24(3):1–52, 2015.
+740
+60
+Zibin Zheng, Kaiwen Ning, Qingyuan Zhong, Jiachi Chen, Wenqing Chen, Lianghong Guo,
+741
+Weicheng Wang, and Yanlin Wang. Towards an understanding of large language models in
+742
+software engineering tasks. Empirical Software Engineering, 30(2):50, 2025.
+743
+61
+Shaohong Zhong, Andrea Scarinci, and Alice Cicirello. Natural language processing for systems
+744
+engineering: Automatic generation of systems modelling language diagrams. Knowledge-Based
+745
+Systems, 259:110071, 2023.
+746
+62
+Taohong Zhu, Lucas C. Cordeiro, and Youcheng Sun. Reqinone: A large language model-based
+747
+agent for software requirements specification generation, 2025. URL: https://arxiv.org/
+748
+abs/2508.09648, arXiv:2508.09648.
+749
