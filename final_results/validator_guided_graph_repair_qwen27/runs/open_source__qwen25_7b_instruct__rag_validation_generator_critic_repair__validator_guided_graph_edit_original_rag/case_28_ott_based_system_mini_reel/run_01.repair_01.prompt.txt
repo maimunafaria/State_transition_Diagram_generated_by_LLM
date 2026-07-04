@@ -1,0 +1,86 @@
+You are the semantic decision component of a validator-guided graph repair system.
+Do not rewrite PlantUML. Select the smallest graph edit plan that resolves the listed validation issues while preserving requirement-supported behavior. The program will apply your edits and independently validate the result.
+
+Constraints:
+- Use only states already present in the topology.
+- Do not create, rename, merge, or delete states.
+- Add or remove a transition only when justified by the requirement.
+- Preserve unaffected transitions and labels.
+- Use at most 4 edits and prefer fewer edits.
+- Return exactly one JSON object. Do not return PlantUML, markdown, or commentary.
+
+Supported edit shapes:
+{"operation":"add_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"remove_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"set_initial","state":"State A"}
+{"operation":"add_final_transition","state":"State B"}
+{"operation":"replace_transition_label","source":"Choice","target":"State B","old_label":"event","new_label":"[guard] event"}
+
+Required response:
+{"edits":[...],"reason":"one concise sentence"}
+
+Requirement:
+Ott Based System Mini Reel — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall enable a user to watch videos after they have created an account.
+3. The system shall permit a user to upload videos.
+4. The system shall allow a user to save videos in their likes list during video viewing.
+5. The system shall enable a user to view their saved videos from the likes list.
+6. The system shall allow a user to enter the discussion option.
+
+Validation issues:
+- orphan: Idle (orphan: Idle)
+- orphan_states_detected (orphan: Idle)
+- unreachable: Idle (Unreachable states: Idle)
+- unreachable_states_detected (Unreachable states: Idle)
+- choice_node_without_outgoing_transitions (Idle) (choice_node_without_outgoing_transitions (Idle))
+
+Parsed candidate topology:
+{
+  "states": [
+    "Create Account",
+    "Enter Discussion",
+    "Idle",
+    "Save Videos",
+    "Upload Videos",
+    "Watch Videos"
+  ],
+  "initial_targets": [
+    "Create Account"
+  ],
+  "final_states": [
+    "Enter Discussion",
+    "Save Videos",
+    "Upload Videos",
+    "Watch Videos"
+  ],
+  "transitions": [
+    {
+      "source": "Create Account",
+      "target": "Watch Videos",
+      "label": "[User creates account and watches videos]"
+    },
+    {
+      "source": "Create Account",
+      "target": "Upload Videos",
+      "label": "[User creates account and uploads videos]"
+    },
+    {
+      "source": "Create Account",
+      "target": "Save Videos",
+      "label": "[User creates account and saves videos]"
+    },
+    {
+      "source": "Create Account",
+      "target": "Enter Discussion",
+      "label": "[User creates account and enters discussion]"
+    }
+  ],
+  "stereotypes": {
+    "Idle": [
+      "choice"
+    ]
+  }
+}

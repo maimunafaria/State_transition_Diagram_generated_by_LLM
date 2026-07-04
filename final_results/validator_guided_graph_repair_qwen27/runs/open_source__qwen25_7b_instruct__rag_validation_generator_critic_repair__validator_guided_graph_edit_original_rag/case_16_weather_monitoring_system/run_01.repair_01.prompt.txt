@@ -1,0 +1,68 @@
+You are the semantic decision component of a validator-guided graph repair system.
+Do not rewrite PlantUML. Select the smallest graph edit plan that resolves the listed validation issues while preserving requirement-supported behavior. The program will apply your edits and independently validate the result.
+
+Constraints:
+- Use only states already present in the topology.
+- Do not create, rename, merge, or delete states.
+- Add or remove a transition only when justified by the requirement.
+- Preserve unaffected transitions and labels.
+- Use at most 4 edits and prefer fewer edits.
+- Return exactly one JSON object. Do not return PlantUML, markdown, or commentary.
+
+Supported edit shapes:
+{"operation":"add_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"remove_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"set_initial","state":"State A"}
+{"operation":"add_final_transition","state":"State B"}
+{"operation":"replace_transition_label","source":"Choice","target":"State B","old_label":"event","new_label":"[guard] event"}
+
+Required response:
+{"edits":[...],"reason":"one concise sentence"}
+
+Requirement:
+Weather Monitoring System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in to their existing account.
+3. The system shall end the process if the registration is not successful.
+4. The system shall allow a user to check the weather for their current location or another location after logging in.
+5. The system shall end the process if a new location entered is not valid.
+6. The system shall allow a user to choose what to check (temperature, humidity, rainfall, pressure, or dew point) if the entered location is valid.
+7. The system shall update and show the selected weather information to the user.
+8. The system shall allow a user to view additional weather details (alerts, a weekly analysis, a future prediction, or a graph).
+9. The system shall end the session when the user logs out.
+
+Validation issues:
+- multiple_initial_state_transitions (Register, Login, CheckLocation, CheckInfo, ChooseInfo, ShowInfo, ViewDetails) (Problematic initial targets: Register, Login, CheckLocation, CheckInfo, ChooseInfo, ShowInfo, ViewDetails)
+
+Parsed candidate topology:
+{
+  "states": [
+    "CheckInfo",
+    "CheckLocation",
+    "ChooseInfo",
+    "Login",
+    "Register",
+    "ShowInfo",
+    "ViewDetails"
+  ],
+  "initial_targets": [
+    "Register",
+    "Login",
+    "CheckLocation",
+    "CheckInfo",
+    "ChooseInfo",
+    "ShowInfo",
+    "ViewDetails"
+  ],
+  "final_states": [
+    "CheckInfo",
+    "CheckLocation",
+    "ChooseInfo",
+    "Login",
+    "ShowInfo"
+  ],
+  "transitions": [],
+  "stereotypes": {}
+}

@@ -1,0 +1,90 @@
+You are the semantic decision component of a validator-guided graph repair system.
+Do not rewrite PlantUML. Select the smallest graph edit plan that resolves the listed validation issues while preserving requirement-supported behavior. The program will apply your edits and independently validate the result.
+
+Constraints:
+- Use only states already present in the topology.
+- Do not create, rename, merge, or delete states.
+- Add or remove a transition only when justified by the requirement.
+- Preserve unaffected transitions and labels.
+- Use at most 4 edits and prefer fewer edits.
+- Return exactly one JSON object. Do not return PlantUML, markdown, or commentary.
+
+Supported edit shapes:
+{"operation":"add_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"remove_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"set_initial","state":"State A"}
+{"operation":"add_final_transition","state":"State B"}
+{"operation":"replace_transition_label","source":"Choice","target":"State B","old_label":"event","new_label":"[guard] event"}
+
+Required response:
+{"edits":[...],"reason":"one concise sentence"}
+
+Requirement:
+Weather Station System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall restart and begin running from a shut down condition.
+2. The system shall enter configuration mode when changes or power-saving settings are required.
+3. The system shall return to running state after configuration is completed.
+4. The system shall collect data when triggered by the clock while running.
+5. The system shall prepare and send out a weather summary upon request.
+6. The system shall check its own status and transmit the result upon request.
+7. The system shall return to running state after performing an activity (data collection, summary preparation, or status checking).
+8. The system shall move into a controlled mode through remote control.
+9. The system shall return to shut down condition if a shutdown command is given while running.
+
+Validation issues:
+- multiple_initial_state_transitions (Running, Configuring, DataCollection, SummaryPreparation, StatusChecking, ControlledMode, Shutdown) (Problematic initial targets: Running, Configuring, DataCollection, SummaryPreparation, StatusChecking, ControlledMode, Shutdown)
+
+Parsed candidate topology:
+{
+  "states": [
+    "Configuring",
+    "ControlledMode",
+    "DataCollection",
+    "Running",
+    "Shutdown",
+    "StatusChecking",
+    "SummaryPreparation"
+  ],
+  "initial_targets": [
+    "Running",
+    "Configuring",
+    "DataCollection",
+    "SummaryPreparation",
+    "StatusChecking",
+    "ControlledMode",
+    "Shutdown"
+  ],
+  "final_states": [
+    "Shutdown"
+  ],
+  "transitions": [
+    {
+      "source": "Configuring",
+      "target": "Running",
+      "label": "configurationCompleted"
+    },
+    {
+      "source": "DataCollection",
+      "target": "Running",
+      "label": "activityCompleted"
+    },
+    {
+      "source": "SummaryPreparation",
+      "target": "Running",
+      "label": "activityCompleted"
+    },
+    {
+      "source": "StatusChecking",
+      "target": "Running",
+      "label": "activityCompleted"
+    },
+    {
+      "source": "ControlledMode",
+      "target": "Running",
+      "label": "modeExited"
+    }
+  ],
+  "stereotypes": {}
+}

@@ -1,0 +1,156 @@
+You are the semantic decision component of a validator-guided graph repair system.
+Do not rewrite PlantUML. Select the smallest graph edit plan that resolves the listed validation issues while preserving requirement-supported behavior. The program will apply your edits and independently validate the result.
+
+Constraints:
+- Use only states already present in the topology.
+- Do not create, rename, merge, or delete states.
+- Add or remove a transition only when justified by the requirement.
+- Preserve unaffected transitions and labels.
+- Use at most 4 edits and prefer fewer edits.
+- Return exactly one JSON object. Do not return PlantUML, markdown, or commentary.
+
+Supported edit shapes:
+{"operation":"add_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"remove_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"set_initial","state":"State A"}
+{"operation":"add_final_transition","state":"State B"}
+{"operation":"replace_transition_label","source":"Choice","target":"State B","old_label":"event","new_label":"[guard] event"}
+
+Required response:
+{"edits":[...],"reason":"one concise sentence"}
+
+Requirement:
+E Visa Processing And Follow Up System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to create an account.
+2. The system shall allow a user to log in after they have created an account.
+3. The system shall allow a user to apply for a visa after they have logged in, make the payment and then the application is accepted .
+4. The system shall allow a user to view the status after they have applied for a visa.
+5. The system shall allow a user to check the status after they have viewed it.
+6. The system shall allow a user to cancel an application after they have logged in.
+7. The system shall allow a user to modify their details after they have logged in.
+8. The system shall allow a user to view their details after they have logged in.
+9. The system shall allow a user to view the purpose of the application after they have logged in, Based on the document check, the visa is either approved or rejected, and then the status is updated..
+10. The system shall allow a user to give feedback after they have checked the status.
+11. The system shall allow a user to log out after they have modified their details, viewed their details, given feedback, or completed a status update.
+
+Validation issues:
+- multiple_initial_state_transitions (LoggedIn, Dashboard) (Problematic initial targets: LoggedIn, Dashboard)
+
+Parsed candidate topology:
+{
+  "states": [
+    "CancelApp",
+    "Dashboard",
+    "Feedback",
+    "LoggedIn",
+    "ModifyDetails",
+    "Settings",
+    "ViewDetails",
+    "ViewStatus"
+  ],
+  "initial_targets": [
+    "LoggedIn",
+    "Dashboard"
+  ],
+  "final_states": [
+    "LoggedIn"
+  ],
+  "transitions": [
+    {
+      "source": "Dashboard",
+      "target": "Settings",
+      "label": "open settings"
+    },
+    {
+      "source": "Settings",
+      "target": "Dashboard",
+      "label": "back"
+    },
+    {
+      "source": "Dashboard",
+      "target": "ViewStatus",
+      "label": "view status"
+    },
+    {
+      "source": "ViewStatus",
+      "target": "ViewStatus",
+      "label": "check status"
+    },
+    {
+      "source": "ViewStatus",
+      "target": "CancelApp",
+      "label": "cancel application"
+    },
+    {
+      "source": "ViewStatus",
+      "target": "ModifyDetails",
+      "label": "modify details"
+    },
+    {
+      "source": "ViewStatus",
+      "target": "ViewDetails",
+      "label": "view details"
+    },
+    {
+      "source": "ViewDetails",
+      "target": "ViewDetails",
+      "label": "view purpose of application"
+    },
+    {
+      "source": "ViewDetails",
+      "target": "ViewStatus",
+      "label": "view status"
+    },
+    {
+      "source": "ViewDetails",
+      "target": "Feedback",
+      "label": "give feedback"
+    },
+    {
+      "source": "ModifyDetails",
+      "target": "ViewDetails",
+      "label": "view details"
+    },
+    {
+      "source": "ModifyDetails",
+      "target": "ViewStatus",
+      "label": "view status"
+    },
+    {
+      "source": "CancelApp",
+      "target": "ViewStatus",
+      "label": "view status"
+    },
+    {
+      "source": "CancelApp",
+      "target": "ViewDetails",
+      "label": "view details"
+    },
+    {
+      "source": "CancelApp",
+      "target": "Feedback",
+      "label": "give feedback"
+    },
+    {
+      "source": "ViewStatus",
+      "target": "Feedback",
+      "label": "give feedback"
+    },
+    {
+      "source": "Feedback",
+      "target": "ViewDetails",
+      "label": "view details"
+    },
+    {
+      "source": "Feedback",
+      "target": "ViewStatus",
+      "label": "view status"
+    }
+  ],
+  "stereotypes": {}
+}
+Previous edit-plan rejection:
+Edit plan rejected before validation: edit_1_transition_not_found.
+Return a different plan that avoids this rejection.

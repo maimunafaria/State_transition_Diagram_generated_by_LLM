@@ -1,0 +1,109 @@
+You are the semantic decision component of a validator-guided graph repair system.
+Do not rewrite PlantUML. Select the smallest graph edit plan that resolves the listed validation issues while preserving requirement-supported behavior. The program will apply your edits and independently validate the result.
+
+Constraints:
+- Use only states already present in the topology.
+- Do not create, rename, merge, or delete states.
+- Add or remove a transition only when justified by the requirement.
+- Preserve unaffected transitions and labels.
+- Use at most 4 edits and prefer fewer edits.
+- Return exactly one JSON object. Do not return PlantUML, markdown, or commentary.
+
+Supported edit shapes:
+{"operation":"add_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"remove_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"set_initial","state":"State A"}
+{"operation":"add_final_transition","state":"State B"}
+{"operation":"replace_transition_label","source":"Choice","target":"State B","old_label":"event","new_label":"[guard] event"}
+
+Required response:
+{"edits":[...],"reason":"one concise sentence"}
+
+Requirement:
+Farm Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow a user to log in.
+2. The system shall display the main area after a user signs in, allowing them to choose what to check.
+3. The system shall show market conditions when the user selects this option.
+4. The system shall show the market report if the customer selects market condition.
+4. The system shall require users to provide a photo when they choose pest control help.
+4. The system shall show the pest control techniques if the customer selects pest control help.
+5. The system shall provide soil-related suggestions ( which crops are suitable ) after receiving soil information from the user.
+6. The system shall offer weather insights based on the provided location.
+7. The system shall display labour availability details after receiving a location from the user.
+8. The system shall allow users to continue using the service after viewing any of these results.
+9. The system shall end the session when a user logs out.
+
+Validation issues:
+- multiple_initial_state_transitions (LoggedIn, Dashboard, PestControlHelp, SoilSuggestions, WeatherInsights, LabourAvailability) (Problematic initial targets: LoggedIn, Dashboard, PestControlHelp, SoilSuggestions, WeatherInsights, LabourAvailability)
+
+Parsed candidate topology:
+{
+  "states": [
+    "Dashboard",
+    "LabourAvailability",
+    "LabourDetails",
+    "LoggedIn",
+    "MarketConditions",
+    "MarketReport",
+    "PestControlHelp",
+    "PestControlTechniques",
+    "SoilSuggestions",
+    "SoilSuggestionsResult",
+    "WeatherDetails",
+    "WeatherInsights"
+  ],
+  "initial_targets": [
+    "LoggedIn",
+    "Dashboard",
+    "PestControlHelp",
+    "SoilSuggestions",
+    "WeatherInsights",
+    "LabourAvailability"
+  ],
+  "final_states": [
+    "LabourAvailability",
+    "LoggedIn",
+    "MarketConditions",
+    "PestControlHelp",
+    "SoilSuggestions",
+    "WeatherInsights"
+  ],
+  "transitions": [
+    {
+      "source": "Dashboard",
+      "target": "MarketConditions",
+      "label": "select market condition"
+    },
+    {
+      "source": "MarketConditions",
+      "target": "MarketReport",
+      "label": "view market report"
+    },
+    {
+      "source": "PestControlHelp",
+      "target": "PestControlTechniques",
+      "label": "view pest control techniques"
+    },
+    {
+      "source": "SoilSuggestions",
+      "target": "SoilSuggestionsResult",
+      "label": "receive soil-related suggestions"
+    },
+    {
+      "source": "WeatherInsights",
+      "target": "WeatherDetails",
+      "label": "receive weather insights"
+    },
+    {
+      "source": "LabourAvailability",
+      "target": "LabourDetails",
+      "label": "receive labour availability details"
+    }
+  ],
+  "stereotypes": {}
+}
+Previous edit-plan rejection:
+Edit plan introduced new issue types: unreachable_states_detected.
+Return a different plan that avoids this rejection.

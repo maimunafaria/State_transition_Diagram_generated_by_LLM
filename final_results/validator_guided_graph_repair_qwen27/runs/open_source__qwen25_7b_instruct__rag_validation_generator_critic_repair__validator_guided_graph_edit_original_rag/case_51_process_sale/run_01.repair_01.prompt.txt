@@ -1,0 +1,83 @@
+You are the semantic decision component of a validator-guided graph repair system.
+Do not rewrite PlantUML. Select the smallest graph edit plan that resolves the listed validation issues while preserving requirement-supported behavior. The program will apply your edits and independently validate the result.
+
+Constraints:
+- Use only states already present in the topology.
+- Do not create, rename, merge, or delete states.
+- Add or remove a transition only when justified by the requirement.
+- Preserve unaffected transitions and labels.
+- Use at most 4 edits and prefer fewer edits.
+- Return exactly one JSON object. Do not return PlantUML, markdown, or commentary.
+
+Supported edit shapes:
+{"operation":"add_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"remove_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"set_initial","state":"State A"}
+{"operation":"add_final_transition","state":"State B"}
+{"operation":"replace_transition_label","source":"Choice","target":"State B","old_label":"event","new_label":"[guard] event"}
+
+Required response:
+{"edits":[...],"reason":"one concise sentence"}
+
+Requirement:
+Process Sale — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall wait for a new sale.
+2. The system shall enter items one by one as they are selected by the customer.
+3. The system shall move to payment after all items have been added.
+4. The system shall complete the sale immediately if the customer pays with cash.
+5. The system shall verify the payment if the customer chooses to pay by card or check.
+6. The system shall complete the sale once the payment is approved.
+7. The system shall return to waiting for the next customer after the payment has been finished.
+
+Validation issues:
+- missing_final_state_transition (state --> [*]) (No terminal state --> [*] transition was detected.)
+
+Parsed candidate topology:
+{
+  "states": [
+    "Payment completed",
+    "Payment verified",
+    "Record items",
+    "Waiting for customer",
+    "Waiting for payment"
+  ],
+  "initial_targets": [
+    "Waiting for customer"
+  ],
+  "final_states": [],
+  "transitions": [
+    {
+      "source": "Waiting for customer",
+      "target": "Record items",
+      "label": "enter item"
+    },
+    {
+      "source": "Record items",
+      "target": "Record items",
+      "label": "enter item"
+    },
+    {
+      "source": "Record items",
+      "target": "Waiting for payment",
+      "label": "end of sale"
+    },
+    {
+      "source": "Waiting for payment",
+      "target": "Payment verified",
+      "label": "payment by card or check"
+    },
+    {
+      "source": "Payment verified",
+      "target": "Payment completed",
+      "label": "payment approved"
+    },
+    {
+      "source": "Payment completed",
+      "target": "Waiting for customer",
+      "label": "enter next customer"
+    }
+  ],
+  "stereotypes": {}
+}

@@ -1,0 +1,98 @@
+You are the semantic decision component of a validator-guided graph repair system.
+Do not rewrite PlantUML. Select the smallest graph edit plan that resolves the listed validation issues while preserving requirement-supported behavior. The program will apply your edits and independently validate the result.
+
+Constraints:
+- Use only states already present in the topology.
+- Do not create, rename, merge, or delete states.
+- Add or remove a transition only when justified by the requirement.
+- Preserve unaffected transitions and labels.
+- Use at most 4 edits and prefer fewer edits.
+- Return exactly one JSON object. Do not return PlantUML, markdown, or commentary.
+
+Supported edit shapes:
+{"operation":"add_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"remove_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"set_initial","state":"State A"}
+{"operation":"add_final_transition","state":"State B"}
+{"operation":"replace_transition_label","source":"Choice","target":"State B","old_label":"event","new_label":"[guard] event"}
+
+Required response:
+{"edits":[...],"reason":"one concise sentence"}
+
+Requirement:
+Safehome Security Function — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if everything is working upon power-on.
+2. The system shall stop if there is a problem during startup.
+3. The system shall become ready to use if everything is fine during startup.
+4. The system shall allow the user to reset it when it is ready to use.
+5. The system shall allow the user to activate it when it is ready to use.
+6. The system shall allow the user to turn it off when it is ready to use.
+7. The system shall start monitoring if it is activated.
+8. The system shall start the alarm and send alerts if a sensor is triggered during monitoring.
+9. The system shall continue monitoring if it turns out to be a false alarm or the time ends.
+10. The system shall stop and return to normal when the user enters the password at any time.
+
+Validation issues:
+- multiple_initial_state_transitions (Idle, ReadyToUse) (Problematic initial targets: Idle, ReadyToUse)
+
+Parsed candidate topology:
+{
+  "states": [
+    "Activate",
+    "Alarm",
+    "Idle",
+    "Monitoring",
+    "ReadyToUse",
+    "Reset",
+    "TurnOff"
+  ],
+  "initial_targets": [
+    "Idle",
+    "ReadyToUse"
+  ],
+  "final_states": [
+    "Alarm",
+    "Monitoring",
+    "ReadyToUse"
+  ],
+  "transitions": [
+    {
+      "source": "ReadyToUse",
+      "target": "Reset",
+      "label": "reset"
+    },
+    {
+      "source": "ReadyToUse",
+      "target": "Activate",
+      "label": "activate"
+    },
+    {
+      "source": "ReadyToUse",
+      "target": "TurnOff",
+      "label": "turnOff"
+    },
+    {
+      "source": "ReadyToUse",
+      "target": "Monitoring",
+      "label": "monitor"
+    },
+    {
+      "source": "Monitoring",
+      "target": "Alarm",
+      "label": "sensorTriggered"
+    },
+    {
+      "source": "Monitoring",
+      "target": "Monitoring",
+      "label": "falseAlarm"
+    },
+    {
+      "source": "Monitoring",
+      "target": "Monitoring",
+      "label": "timeEnds"
+    }
+  ],
+  "stereotypes": {}
+}

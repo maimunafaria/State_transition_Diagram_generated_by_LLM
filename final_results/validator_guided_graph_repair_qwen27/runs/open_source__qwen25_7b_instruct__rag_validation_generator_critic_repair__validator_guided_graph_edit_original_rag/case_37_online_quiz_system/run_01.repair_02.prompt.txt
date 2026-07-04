@@ -1,0 +1,127 @@
+You are the semantic decision component of a validator-guided graph repair system.
+Do not rewrite PlantUML. Select the smallest graph edit plan that resolves the listed validation issues while preserving requirement-supported behavior. The program will apply your edits and independently validate the result.
+
+Constraints:
+- Use only states already present in the topology.
+- Do not create, rename, merge, or delete states.
+- Add or remove a transition only when justified by the requirement.
+- Preserve unaffected transitions and labels.
+- Use at most 4 edits and prefer fewer edits.
+- Return exactly one JSON object. Do not return PlantUML, markdown, or commentary.
+
+Supported edit shapes:
+{"operation":"add_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"remove_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"set_initial","state":"State A"}
+{"operation":"add_final_transition","state":"State B"}
+{"operation":"replace_transition_label","source":"Choice","target":"State B","old_label":"event","new_label":"[guard] event"}
+
+Required response:
+{"edits":[...],"reason":"one concise sentence"}
+
+Requirement:
+Online Quiz System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to register or log in with their details.
+2. The system shall allow users to continue as a teacher or a student after logging in.
+3. The system shall allow teachers to create a new quiz.
+4. The system shall allow teachers to edit an existing quiz.
+5. The system shall allow teachers to save a quiz as a draft or post it for students after working on it.
+6. The system shall allow teachers to view quiz results once the quiz is over.
+7. The system shall allow students to select a quiz after getting notified if they continue as a student.
+8. The system shall allow students to answer the selected quiz.
+9. The system shall allow students to submit their quiz after answering.
+10. The system shall allow students to view the result after submitting the quiz.
+
+Validation issues:
+- missing_final_state_transition (state --> [*]) (No terminal state --> [*] transition was detected.)
+
+Parsed candidate topology:
+{
+  "states": [
+    "Answer Quiz",
+    "Create Quiz",
+    "Edit Quiz",
+    "Login",
+    "Login/Register",
+    "Register",
+    "Save Quiz",
+    "Select Quiz",
+    "Student",
+    "Submit Quiz",
+    "Teacher",
+    "View Result",
+    "View Results"
+  ],
+  "initial_targets": [
+    "Login/Register"
+  ],
+  "final_states": [],
+  "transitions": [
+    {
+      "source": "Login/Register",
+      "target": "Login",
+      "label": ""
+    },
+    {
+      "source": "Login/Register",
+      "target": "Register",
+      "label": ""
+    },
+    {
+      "source": "Login",
+      "target": "Teacher",
+      "label": ""
+    },
+    {
+      "source": "Login",
+      "target": "Student",
+      "label": ""
+    },
+    {
+      "source": "Student",
+      "target": "Select Quiz",
+      "label": ""
+    },
+    {
+      "source": "Select Quiz",
+      "target": "Answer Quiz",
+      "label": ""
+    },
+    {
+      "source": "Answer Quiz",
+      "target": "Submit Quiz",
+      "label": ""
+    },
+    {
+      "source": "Submit Quiz",
+      "target": "View Result",
+      "label": ""
+    },
+    {
+      "source": "Teacher",
+      "target": "Create Quiz",
+      "label": ""
+    },
+    {
+      "source": "Create Quiz",
+      "target": "Edit Quiz",
+      "label": ""
+    },
+    {
+      "source": "Edit Quiz",
+      "target": "Save Quiz",
+      "label": ""
+    },
+    {
+      "source": "Save Quiz",
+      "target": "View Results",
+      "label": ""
+    }
+  ],
+  "stereotypes": {}
+}
+Previous edit-plan rejection:
+Edit plan rejected before validation: edit_1_contains_unsupported_fields.
+Return a different plan that avoids this rejection.

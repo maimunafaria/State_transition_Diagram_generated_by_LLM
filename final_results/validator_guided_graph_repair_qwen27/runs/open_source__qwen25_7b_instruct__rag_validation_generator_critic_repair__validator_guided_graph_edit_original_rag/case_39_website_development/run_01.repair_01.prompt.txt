@@ -1,0 +1,107 @@
+You are the semantic decision component of a validator-guided graph repair system.
+Do not rewrite PlantUML. Select the smallest graph edit plan that resolves the listed validation issues while preserving requirement-supported behavior. The program will apply your edits and independently validate the result.
+
+Constraints:
+- Use only states already present in the topology.
+- Do not create, rename, merge, or delete states.
+- Add or remove a transition only when justified by the requirement.
+- Preserve unaffected transitions and labels.
+- Use at most 4 edits and prefer fewer edits.
+- Return exactly one JSON object. Do not return PlantUML, markdown, or commentary.
+
+Supported edit shapes:
+{"operation":"add_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"remove_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"set_initial","state":"State A"}
+{"operation":"add_final_transition","state":"State B"}
+{"operation":"replace_transition_label","source":"Choice","target":"State B","old_label":"event","new_label":"[guard] event"}
+
+Required response:
+{"edits":[...],"reason":"one concise sentence"}
+
+Requirement:
+Website Development — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to navigate from the homepage using a navigation bar.
+2. The system shall display information about projects when selected by the user.
+3. The system shall allow users to choose between viewing photos or watching videos when viewing projects.
+4. The system shall display information about career opportunities when selected by the user.
+5. The system shall allow users to choose between viewing updates or opening an application form for employment or internship when viewing career opportunities.
+6. The system shall check submitted job applications after they are submitted.
+
+Validation issues:
+- multiple_initial_state_transitions (NavigationBar, Projects, CareerOpportunities) (Problematic initial targets: NavigationBar, Projects, CareerOpportunities)
+- orphan: HomePage (orphan: HomePage)
+- orphan_states_detected (orphan: HomePage)
+
+Parsed candidate topology:
+{
+  "states": [
+    "ApplicationForm",
+    "CareerOpportunities",
+    "CareerOpportunitiesReview",
+    "HomePage",
+    "NavigationBar",
+    "Projects",
+    "ViewPhotos",
+    "ViewUpdates",
+    "ViewVideos"
+  ],
+  "initial_targets": [
+    "NavigationBar",
+    "Projects",
+    "CareerOpportunities"
+  ],
+  "final_states": [
+    "CareerOpportunitiesReview"
+  ],
+  "transitions": [
+    {
+      "source": "Projects",
+      "target": "ViewPhotos",
+      "label": ""
+    },
+    {
+      "source": "Projects",
+      "target": "ViewVideos",
+      "label": ""
+    },
+    {
+      "source": "ViewPhotos",
+      "target": "Projects",
+      "label": ""
+    },
+    {
+      "source": "ViewVideos",
+      "target": "Projects",
+      "label": ""
+    },
+    {
+      "source": "CareerOpportunities",
+      "target": "ViewUpdates",
+      "label": ""
+    },
+    {
+      "source": "CareerOpportunities",
+      "target": "ApplicationForm",
+      "label": ""
+    },
+    {
+      "source": "ViewUpdates",
+      "target": "CareerOpportunities",
+      "label": ""
+    },
+    {
+      "source": "ApplicationForm",
+      "target": "CareerOpportunities",
+      "label": ""
+    },
+    {
+      "source": "CareerOpportunities",
+      "target": "CareerOpportunitiesReview",
+      "label": ""
+    }
+  ],
+  "stereotypes": {}
+}

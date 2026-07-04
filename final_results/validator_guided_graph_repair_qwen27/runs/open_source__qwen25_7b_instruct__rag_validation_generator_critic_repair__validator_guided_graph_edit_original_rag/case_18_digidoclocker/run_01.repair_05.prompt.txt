@@ -1,0 +1,97 @@
+You are the semantic decision component of a validator-guided graph repair system.
+Do not rewrite PlantUML. Select the smallest graph edit plan that resolves the listed validation issues while preserving requirement-supported behavior. The program will apply your edits and independently validate the result.
+
+Constraints:
+- Use only states already present in the topology.
+- Do not create, rename, merge, or delete states.
+- Add or remove a transition only when justified by the requirement.
+- Preserve unaffected transitions and labels.
+- Use at most 4 edits and prefer fewer edits.
+- Return exactly one JSON object. Do not return PlantUML, markdown, or commentary.
+
+Supported edit shapes:
+{"operation":"add_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"remove_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"set_initial","state":"State A"}
+{"operation":"add_final_transition","state":"State B"}
+{"operation":"replace_transition_label","source":"Choice","target":"State B","old_label":"event","new_label":"[guard] event"}
+
+Required response:
+{"edits":[...],"reason":"one concise sentence"}
+
+Requirement:
+Digidoclocker — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall identify the type of user based on their entered details.
+2. The system shall require citizens to register before logging in.
+3. The system shall allow citizens to log in if their login details are correct.
+4. The system shall enable citizens to upload documents, view their profile, or apply for a certificate after logging in.
+5. The system shall allow citizens to continue uploading documents if needed after initial uploads.
+6. The system shall enable citizens to apply for multiple certificates and reapply after sending a request to the issuer.
+7. The system shall allow registrars to request certificates for verification.
+8. The system shall enable registrars to request multiple certificates and continue requesting more after receiving one.
+9. The system shall end the session once the user is done with their actions.
+
+Validation issues:
+- multiple_initial_state_transitions (Registration, CitizenLogin, DocumentUpload, CertificateApply, RegistrarRequest) (Problematic initial targets: Registration, CitizenLogin, DocumentUpload, CertificateApply, RegistrarRequest)
+
+Parsed candidate topology:
+{
+  "states": [
+    "CertificateApply",
+    "CitizenLogin",
+    "DocumentUpload",
+    "ProfileView",
+    "RegistrarRequest",
+    "Registration"
+  ],
+  "initial_targets": [
+    "Registration",
+    "CitizenLogin",
+    "DocumentUpload",
+    "CertificateApply",
+    "RegistrarRequest"
+  ],
+  "final_states": [
+    "CertificateApply",
+    "RegistrarRequest",
+    "Registration"
+  ],
+  "transitions": [
+    {
+      "source": "Registration",
+      "target": "CitizenLogin",
+      "label": "[Valid Registration]"
+    },
+    {
+      "source": "DocumentUpload",
+      "target": "DocumentUpload",
+      "label": "[Continue Upload if Needed]"
+    },
+    {
+      "source": "DocumentUpload",
+      "target": "ProfileView",
+      "label": "[View Profile]"
+    },
+    {
+      "source": "DocumentUpload",
+      "target": "CertificateApply",
+      "label": "[Apply for Certificate]"
+    },
+    {
+      "source": "CertificateApply",
+      "target": "CertificateApply",
+      "label": "[Reapply for Certificate if Needed]"
+    },
+    {
+      "source": "RegistrarRequest",
+      "target": "RegistrarRequest",
+      "label": "[Continue Requesting if Needed]"
+    }
+  ],
+  "stereotypes": {}
+}
+Previous edit-plan rejection:
+Edit plan introduced new issue types: unreachable_states_detected.
+Return a different plan that avoids this rejection.

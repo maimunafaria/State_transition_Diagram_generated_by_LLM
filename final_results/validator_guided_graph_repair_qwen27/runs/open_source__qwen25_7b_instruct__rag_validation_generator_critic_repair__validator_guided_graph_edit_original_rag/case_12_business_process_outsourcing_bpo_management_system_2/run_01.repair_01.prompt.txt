@@ -1,0 +1,62 @@
+You are the semantic decision component of a validator-guided graph repair system.
+Do not rewrite PlantUML. Select the smallest graph edit plan that resolves the listed validation issues while preserving requirement-supported behavior. The program will apply your edits and independently validate the result.
+
+Constraints:
+- Use only states already present in the topology.
+- Do not create, rename, merge, or delete states.
+- Add or remove a transition only when justified by the requirement.
+- Preserve unaffected transitions and labels.
+- Use at most 4 edits and prefer fewer edits.
+- Return exactly one JSON object. Do not return PlantUML, markdown, or commentary.
+
+Supported edit shapes:
+{"operation":"add_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"remove_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"set_initial","state":"State A"}
+{"operation":"add_final_transition","state":"State B"}
+{"operation":"replace_transition_label","source":"Choice","target":"State B","old_label":"event","new_label":"[guard] event"}
+
+Required response:
+{"edits":[...],"reason":"one concise sentence"}
+
+Requirement:
+Business Process Outsourcing Bpo Management System Scenario 2 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow users to search by selecting a filter category.
+2. The system shall allow users to search by selecting a price range as a filter.
+3. The system shall display matching users based on the chosen criteria after the user selects a filter.
+
+Validation issues:
+- multiple_initial_state_transitions (SearchCriteria, FilterCategory, PriceRange) (Problematic initial targets: SearchCriteria, FilterCategory, PriceRange)
+
+Parsed candidate topology:
+{
+  "states": [
+    "DisplayResults",
+    "FilterCategory",
+    "PriceRange",
+    "SearchCriteria"
+  ],
+  "initial_targets": [
+    "SearchCriteria",
+    "FilterCategory",
+    "PriceRange"
+  ],
+  "final_states": [
+    "DisplayResults"
+  ],
+  "transitions": [
+    {
+      "source": "FilterCategory",
+      "target": "DisplayResults",
+      "label": "[Criteria met]"
+    },
+    {
+      "source": "PriceRange",
+      "target": "DisplayResults",
+      "label": "[Criteria met]"
+    }
+  ],
+  "stereotypes": {}
+}

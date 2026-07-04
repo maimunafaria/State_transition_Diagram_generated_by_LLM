@@ -1,0 +1,90 @@
+You are the semantic decision component of a validator-guided graph repair system.
+Do not rewrite PlantUML. Select the smallest graph edit plan that resolves the listed validation issues while preserving requirement-supported behavior. The program will apply your edits and independently validate the result.
+
+Constraints:
+- Use only states already present in the topology.
+- Do not create, rename, merge, or delete states.
+- Add or remove a transition only when justified by the requirement.
+- Preserve unaffected transitions and labels.
+- Use at most 4 edits and prefer fewer edits.
+- Return exactly one JSON object. Do not return PlantUML, markdown, or commentary.
+
+Supported edit shapes:
+{"operation":"add_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"remove_transition","source":"State A","target":"State B","label":"event"}
+{"operation":"set_initial","state":"State A"}
+{"operation":"add_final_transition","state":"State B"}
+{"operation":"replace_transition_label","source":"Choice","target":"State B","old_label":"event","new_label":"[guard] event"}
+
+Required response:
+{"edits":[...],"reason":"one concise sentence"}
+
+Requirement:
+Green Rides — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall display journey details upon user login and destination selection.
+2. The system shall allow users to activate driving mode or choose other options after viewing journey details.
+3. The system shall enable users to select a place to eat, view its menu, and place an order if they are hungry.
+4. The system shall inform relevant authorities in the event of an accident.
+5. The system shall send notifications during driving or in case of an accident.
+6. The system shall allow users to provide feedback upon completion of their journey.
+
+Validation issues:
+- choice_node_without_guarded_outgoing_transitions (J0) (choice_node_without_guarded_outgoing_transitions (J0))
+
+Parsed candidate topology:
+{
+  "states": [
+    "Accident Notification",
+    "Driving Mode",
+    "Driving Notifications",
+    "J0",
+    "Journey Details",
+    "Order Confirmation",
+    "Place to Eat"
+  ],
+  "initial_targets": [
+    "J0"
+  ],
+  "final_states": [
+    "Order Confirmation"
+  ],
+  "transitions": [
+    {
+      "source": "J0",
+      "target": "Journey Details",
+      "label": ""
+    },
+    {
+      "source": "Journey Details",
+      "target": "Driving Mode",
+      "label": ""
+    },
+    {
+      "source": "Driving Mode",
+      "target": "Place to Eat",
+      "label": ""
+    },
+    {
+      "source": "Place to Eat",
+      "target": "Accident Notification",
+      "label": ""
+    },
+    {
+      "source": "Accident Notification",
+      "target": "Driving Notifications",
+      "label": ""
+    },
+    {
+      "source": "Driving Notifications",
+      "target": "Order Confirmation",
+      "label": ""
+    }
+  ],
+  "stereotypes": {
+    "J0": [
+      "choice"
+    ]
+  }
+}
