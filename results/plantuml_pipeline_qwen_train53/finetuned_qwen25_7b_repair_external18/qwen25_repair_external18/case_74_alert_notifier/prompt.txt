@@ -1,0 +1,59 @@
+<|im_start|>system
+You are a PlantUML state-diagram repair assistant. Repair the candidate diagram according to the validation errors. Do not add unsupported behavior. Return only valid PlantUML code.<|im_end|>
+<|im_start|>user
+Repair the PlantUML state diagram based on the validation errors. Do not add unsupported behavior. Output only valid PlantUML.
+
+Requirement:
+Alert Notifier — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall initialize a component to detect updates upon initial loading.
+2. The system shall enter a waiting mode and continuously check for incoming updates if initialization is successful.
+3. The system shall process detected updates by storing them and evaluating their significance.
+4. The system shall notify appropriate operators of changes based on evaluation results if certain conditions are met.
+5. The system shall return to a waiting state after processing an update.
+6. The system shall enter an unloading phase if initialization fails or if the system is shut down while the component is running.
+7. The system shall perform necessary cleanup operations and inform the component manager of successful removal during unloading.
+8. The system shall terminate the component's operation after unloading is complete.
+
+Invalid PlantUML:
+@startuml
+title UML State Machine Diagram (Alert Notifier)
+
+[*] --> Initialization
+
+state Initialization <<choice>>
+Initialization --> Success : [Initialization successful]
+Initialization --> Failure : [Initialization fails]
+
+state WaitingMode
+WaitingMode --> ProcessUpdate : [Detected update]
+ProcessUpdate --> NotifyOperators : [Conditions met for notification]
+NotifyOperators --> ReturnToWait : [After processing an update]
+
+state UnloadingPhase
+UnloadFailure --> CleanupOperations
+
+state UnloadFailure <<choice>>
+UnloadFailure --> Unloading : [System is shutting down while running]
+
+state SuccessState
+SuccessState --> End : [Unloading complete]
+
+state FailureState
+FailureState --> End : [Unloading complete]
+
+@enduml
+
+Validation Errors:
+- missing_final_state_transition
+- unreachable_state
+- orphan_state
+- choice_without_outgoing
+
+Relevant Rule:
+- missing_final_state_transition: A valid state diagram must include at least one final transition from a natural terminal state to [*].
+- unreachable_state: Every modeled state must be reachable from the initial lifecycle path.
+- orphan_state: Every requirement-supported state must have reasonable incoming or outgoing transitions. Unsupported orphan states should be omitted.
+- choice_without_outgoing: Every choice node must have outgoing alternatives.<|im_end|>
+<|im_start|>assistant

@@ -1,0 +1,77 @@
+<|im_start|>system
+You are a PlantUML state-diagram repair assistant. Repair the candidate diagram according to the validation errors. Do not add unsupported behavior. Return only valid PlantUML code.<|im_end|>
+<|im_start|>user
+Repair the PlantUML state diagram based on the validation errors. Do not add unsupported behavior. Output only valid PlantUML.
+
+Requirement:
+Atm Many Scenarios Scenario 6 — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall check if the entered PIN is correct.
+2. The system shall ask for the PIN again if it is incorrect.
+3. The system shall keep the card for security reasons if the user keeps entering an incorrect PIN or if the card is invalid.
+4. The system shall return the card if the user cancels the process at any moment during this stage.
+5. The system shall display options for the user to choose from if the PIN is correct.
+6. The system shall process the withdrawal request and check if it can approve the transaction.
+7. The system shall cancel everything and return the card if the withdrawal request is rejected.
+8. The system shall dispense cash, print a receipt, and return the card if the withdrawal request is approved.
+9. The system shall stop the operation if it runs out of cash during the process.
+10. The system shall reset itself to be ready for the next user after completing or ending the session.
+
+Invalid PlantUML:
+@startuml
+title ATM Control - Polished Requirement Specification
+
+[*] --> Idle
+
+state Idle
+state WaitingForPIN
+state ValidatingPIN
+state WaitingForChoice
+state Confiscating
+state Ejecting
+
+Idle --> WaitingForPIN : Card Inserted / Get PIN
+
+WaitingForPIN --> ValidatingPIN : PIN Entered / Validate PIN
+ValidatingPIN --> InvalidPIN : Incorrect PIN / Invalid PIN Prompt
+ValidatingPIN --> ValidPIN : Correct PIN / Display Options
+
+InvalidPIN --> Confiscating : Too Many Incorrect Pins / Keep Card
+Confiscating --> Ejecting : Card Confiscated / Return Card
+
+ValidPIN --> WaitingForChoice : Correct PIN / Show Options
+
+WaitingForChoice --> TransferOption : Choose Transfer / Process Transfer
+WaitingForChoice --> QueryOption : Choose Query / Process Query
+WaitingForChoice --> WithdrawOption : Choose Withdrawal / Process Withdrawal
+
+TransferOption --> ProcessingTransaction : Approved Transfer / Print Receipt, Dispense Cash, Return Card
+ProcessingTransaction --> Ejecting : Transaction Complete / Return Card
+
+QueryOption --> ProcessingTransaction : Approved Query / Print Receipt, Return Card
+
+WithdrawOption --> ProcessingTransaction : Approved Withdrawal / Print Receipt, Dispense Cash, Return Card
+
+ProcessingTransaction --> RejectedOperation : Rejected Request / Cancel Operation, Return Card
+
+RejectedOperation --> Ejecting : Operation Rejected / Return Card
+
+Ejecting --> Idle : Card Ejected / Reset System
+
+state "System Out of Cash" as SystemOutOfCash
+SystemOutOfCash --> Idle : No Cash / Display Low Cash Message
+
+state "Resetting" as Resetting
+Resetting --> Idle : Session Ended / Reset System
+
+@enduml
+
+Validation Errors:
+- missing_final_state_transition
+- unreachable_state
+
+Relevant Rule:
+- missing_final_state_transition: A valid state diagram must include at least one final transition from a natural terminal state to [*].
+- unreachable_state: Every modeled state must be reachable from the initial lifecycle path.<|im_end|>
+<|im_start|>assistant

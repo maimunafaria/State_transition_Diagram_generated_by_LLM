@@ -1,0 +1,72 @@
+<|im_start|>system
+You are a PlantUML state-diagram repair assistant. Repair the candidate diagram according to the validation errors. Do not add unsupported behavior. Return only valid PlantUML code.<|im_end|>
+<|im_start|>user
+Repair the PlantUML state diagram based on the validation errors. Do not add unsupported behavior. Output only valid PlantUML.
+
+Requirement:
+Coin Operated Pay Phone — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall start when it is not in use.
+2. The system shall require inserting coins when the user picks up the receiver.
+3. The system shall allow dialing a number only after sufficient credit has been added.
+4. The system shall start the call when the dialed number is valid and the other party answers.
+5. The system shall continue the call as long as there is sufficient credit.
+6. The system shall end the call if the credit runs out during the call.
+7. The system shall allow adding more coins to continue the call.
+8. The system shall return any unused coins when the user hangs up.
+9. The system shall return to an unused state after a call ends.
+
+Invalid PlantUML:
+@startuml
+title Coin Operated Pay Phone State Machine
+
+[*] --> Idle
+
+Idle --> Active : lift receiver / get dial tone
+Active --> DialTone : lift receiver / get dial tone
+DialTone --> CreditCheck : enter coins
+CreditCheck --> CallStart : valid number dialed and answered
+CallStart --> Calling : call in progress
+Calling --> CreditCheck : check credit during call
+Calling --> EndCall : credit runs out
+EndCall --> Idle : hang up
+
+state Idle {
+    [*] --> Active : lift receiver / get dial tone
+}
+
+state Active {
+    [*] --> DialTone : lift receiver / get dial tone
+}
+
+state DialTone {
+    [*] --> CreditCheck : enter coins
+}
+
+state CreditCheck {
+    [*] --> CallStart : valid number dialed and answered
+}
+
+state CallStart {
+    [*] --> Calling : call in progress
+}
+
+state Calling {
+    [*] --> CreditCheck : check credit during call
+    [*] --> EndCall : credit runs out
+}
+
+state EndCall {
+    [*] --> Idle : hang up
+}
+@enduml
+
+Validation Errors:
+- multiple_initial_state_transitions
+- missing_final_state_transition
+
+Relevant Rule:
+- multiple_initial_state_transitions: A valid state diagram should have one clear top-level initial transition. Remove or restructure extra top-level [*] transitions.
+- missing_final_state_transition: A valid state diagram must include at least one final transition from a natural terminal state to [*].<|im_end|>
+<|im_start|>assistant

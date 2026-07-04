@@ -14,6 +14,10 @@ INSTRUCTION = (
 
 
 RULES_BY_ISSUE = {
+    "plantuml_syntax_error": (
+        "The repaired diagram must use valid PlantUML syntax and compile "
+        "without errors while preserving supported behavior."
+    ),
     "missing_initial_state_transition": (
         "A valid state diagram must include exactly one top-level initial "
         "transition from [*] to the first lifecycle state."
@@ -109,6 +113,8 @@ def parse_run_id(run_id: str) -> dict[str, str]:
 
 def normalize_issue(issue: str) -> str:
     issue = issue.strip()
+    if issue.lower().startswith("plantuml_syntax_error"):
+        return "plantuml_syntax_error"
     issue = re.sub(r"\s*\(.*?\)\s*$", "", issue)
     issue = issue.replace(" ", "_").lower()
     if issue.startswith("orphan"):

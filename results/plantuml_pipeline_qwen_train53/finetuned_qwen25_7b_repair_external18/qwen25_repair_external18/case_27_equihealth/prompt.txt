@@ -1,0 +1,63 @@
+<|im_start|>system
+You are a PlantUML state-diagram repair assistant. Repair the candidate diagram according to the validation errors. Do not add unsupported behavior. Return only valid PlantUML code.<|im_end|>
+<|im_start|>user
+Repair the PlantUML state diagram based on the validation errors. Do not add unsupported behavior. Output only valid PlantUML.
+
+Requirement:
+Equihealth — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall allow new users to create an account.
+2. The system shall check if a user's registration is completed before allowing them to sign in.
+3. The system shall display different dashboards based on the user type after they sign in (patient, health worker, or government official).
+4. The system shall show a patient dashboard to users who enter as patients, allowing them to provide medical information.
+5. The system shall allow health workers to check and use the medical information provided by patients for further analysis.
+6. The system shall prepare alerts based on the analyzed information, which may be sent to either the patient or the health worker.
+7. The system shall show planned activities (from the analysis) to health workers.
+8. The system shall display health planning results (from the analysis) to government officials.
+9. The system shall allow users to log out after they complete their tasks.
+
+Invalid PlantUML:
+@startuml
+title UML State Machine Diagram
+
+[*] --> RegistrationCheck
+state RegistrationCheck <<choice>>
+state PatientDashboard
+state HealthWorkerDashboard
+state GovernmentOfficialDashboard
+state Logout
+
+RegistrationCheck --> CompletedRegistration : registration completed
+CompletedRegistration --> PatientDashboard : enter as patient
+PatientDashboard --> ProvideInfo : provide medical information
+ProvideInfo --> AnalyzeInfo : check and use info
+AnalyzeInfo --> PrepareAlerts : prepare alerts
+PrepareAlerts --> SendAlerts : send to patient or health worker
+
+RegistrationCheck --> CompletedRegistration : registration completed
+CompletedRegistration --> HealthWorkerDashboard : enter as health worker
+HealthWorkerDashboard --> CheckInfo : check medical information
+CheckInfo --> UseInfo : use for analysis
+UseInfo --> PrepareAlerts : prepare alerts
+PrepareAlerts --> SendAlerts : send to patient or health worker
+
+RegistrationCheck --> CompletedRegistration : registration completed
+CompletedRegistration --> GovernmentOfficialDashboard : enter as government official
+GovernmentOfficialDashboard --> DisplayResults : display planning results
+DisplayResults --> [*] : logout
+
+@enduml
+
+Validation Errors:
+- duplicate_transitions_detected
+- unreachable_state
+- orphan_state
+- choice_without_outgoing
+
+Relevant Rule:
+- duplicate_transitions_detected: Duplicate transitions should be removed or merged into one transition with a clear label.
+- unreachable_state: Every modeled state must be reachable from the initial lifecycle path.
+- orphan_state: Every requirement-supported state must have reasonable incoming or outgoing transitions. Unsupported orphan states should be omitted.
+- choice_without_outgoing: Every choice node must have outgoing alternatives.<|im_end|>
+<|im_start|>assistant

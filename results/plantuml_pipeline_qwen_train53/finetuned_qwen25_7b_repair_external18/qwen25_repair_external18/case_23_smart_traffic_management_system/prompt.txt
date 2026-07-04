@@ -1,0 +1,58 @@
+<|im_start|>system
+You are a PlantUML state-diagram repair assistant. Repair the candidate diagram according to the validation errors. Do not add unsupported behavior. Return only valid PlantUML code.<|im_end|>
+<|im_start|>user
+Repair the PlantUML state diagram based on the validation errors. Do not add unsupported behavior. Output only valid PlantUML.
+
+Requirement:
+Smart Traffic Management System — Polished Requirement Specification
+
+Functional Requirements
+1. The system shall monitor traffic conditions whenever vehicles are on the road or pedestrians are waiting to cross.
+2. The system shall control street lights according to traffic conditions.
+3. The system shall manage traffic signals in response to detected situations.
+4. The system shall capture vehicle numbers and check driver details when a vehicle passes through a signal or an emergency is identified.
+5. The system shall verify if traffic rules (overspeeding, not wearing a seat belt, or not wearing a helmet) have been broken after capturing vehicle numbers and checking driver details.
+6. The system shall support if no traffic rule has been broken, the system shall end the process.
+7. The system shall ensure that if a traffic rule is broken, the system shall record the violation and issue a fine.
+8. The system shall ensure that if the fine is paid, the system shall complete the process.
+9. The system shall ensure that if the fine is not paid, the system shall send a warning.
+10. The system shall ensure that if the number of violations exceeds the allowed limit, the system shall temporarily hold the driver's license until the fine is cleared or the probation period is over.
+
+Invalid PlantUML:
+@startuml
+title UML State Machine Diagram (Smart Traffic Management System)
+
+[*] --> MonitoringTraffic
+
+state MonitoringTraffic <<choice>>
+MonitoringTraffic --> ControlStreetLights : [Traffic conditions detected]
+MonitoringTraffic --> ManageSignals : [Traffic conditions detected]
+
+state ControlStreetLights <<choice>>
+ControlStreetLights --> CaptureVehicleDetails : [Emergency identified or vehicle passes through signal]
+CaptureVehicleDetails --> VerifyRules : [No traffic rule broken]
+VerifyRules --> EndProcess : [No action needed]
+
+state CaptureVehicleDetails <<choice>>
+CaptureVehicleDetails --> VerifyRules : [Traffic rule broken]
+VerifyRules --> RecordViolation : [Fine not paid]
+RecordViolation --> PayFine : [Fine paid]
+PayFine --> CompleteProcess : [Fine paid]
+RecordViolation --> SendWarning : [Fine not paid]
+SendWarning --> ExceedLimit : [Violations exceed limit]
+ExceedLimit --> HoldLicense : [Fine cleared or probation period over]
+
+state VerifyRules <<choice>>
+VerifyRules --> EndProcess : [No action needed]
+VerifyRules --> RecordViolation : [Fine not paid]
+
+@enduml
+
+Validation Errors:
+- missing_final_state_transition
+- duplicate_transitions_detected
+
+Relevant Rule:
+- missing_final_state_transition: A valid state diagram must include at least one final transition from a natural terminal state to [*].
+- duplicate_transitions_detected: Duplicate transitions should be removed or merged into one transition with a clear label.<|im_end|>
+<|im_start|>assistant
