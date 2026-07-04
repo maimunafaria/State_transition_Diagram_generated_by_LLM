@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .constants import WORD_RE
+from .graph_repair import graph_topology_summary
 from .io_utils import read_text
 from .models import Case, ExperimentConfig, ValidationResult
 from .parser import parse_plantuml
@@ -2040,6 +2041,53 @@ def build_transition_patch_repair_prompt(
         "Output format:\n"
         "SOURCE_STATE --> TARGET_STATE : SUPPORTED_EVENT\n"
         "TARGET_STATE --> NEXT_STATE : SUPPORTED_EVENT\n"
+    )
+
+
+def build_validator_guided_graph_edit_prompt(
+    requirement: str,
+    candidate_puml: str,
+    validation: ValidationResult,
+    critic_feedback: str = "",
+) -> str:
+    topology = graph_topology_summary(candidate_puml)
+    diagnostic_issues = _diagnostic_validation_issue_lines(candidate_puml, validation)
+    previous_rejection = ""
+    if critic_feedback.strip():
+        previous_rejection = (
+            "\nPrevious edit-plan rejection:\n"
+            f"{critic_feedback.strip()}\n"
+            "Return a different plan that avoids this rejection.\n"
+        )
+
+    return (
+        "You are the semantic decision component of a validator-guided graph repair system.\n"
+        "Do not rewrite PlantUML. Select the smallest graph edit plan that resolves the "
+        "listed validation issues while preserving requirement-supported behavior. "
+        "The program will apply your edits and independently validate the result.\n\n"
+        "Constraints:\n"
+        "- Use only states already present in the topology.\n"
+        "- Do not create, rename, merge, or delete states.\n"
+        "- Add or remove a transition only when justified by the requirement.\n"
+        "- Preserve unaffected transitions and labels.\n"
+        "- Use at most 4 edits and prefer fewer edits.\n"
+        "- Return exactly one JSON object. Do not return PlantUML, markdown, or commentary.\n\n"
+        "Supported edit shapes:\n"
+        '{"operation":"add_transition","source":"State A","target":"State B","label":"event"}\n'
+        '{"operation":"remove_transition","source":"State A","target":"State B","label":"event"}\n'
+        '{"operation":"set_initial","state":"State A"}\n'
+        '{"operation":"add_final_transition","state":"State B"}\n'
+        '{"operation":"replace_transition_label","source":"Choice","target":"State B",'
+        '"old_label":"event","new_label":"[guard] event"}\n\n'
+        "Required response:\n"
+        '{"edits":[...],"reason":"one concise sentence"}\n\n'
+        "Requirement:\n"
+        f"{requirement}\n\n"
+        "Validation issues:\n"
+        + "\n".join(diagnostic_issues)
+        + "\n\nParsed candidate topology:\n"
+        + json.dumps(topology, ensure_ascii=False, indent=2)
+        + previous_rejection
     )
 
 

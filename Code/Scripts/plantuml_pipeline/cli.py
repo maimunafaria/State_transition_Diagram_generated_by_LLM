@@ -120,6 +120,7 @@ def build_parser() -> argparse.ArgumentParser:
             "compiler_constrained_patch",
             "constrained_validator",
             "transition_patch",
+            "validator_guided_graph_edit",
             "hybrid_issue_guided",
             "syntax_grounded_pattern_rules",
             "full_patterns",

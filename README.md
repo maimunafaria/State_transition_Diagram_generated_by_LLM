@@ -285,6 +285,19 @@ python3 code/plantuml_experiment_pipeline.py run \
   --save-prompts
 ```
 
+The `validator_guided_graph_edit` repair mode first applies safe deterministic
+edits, such as duplicate removal and uniquely determined initial or final
+transitions. For ambiguous topology, the repair model returns a small JSON edit
+plan instead of rewriting the complete diagram. The pipeline applies the edits
+and accepts them only when official PlantUML syntax passes, the validation score
+improves, and no new violation type is introduced.
+
+The frozen 18-case Qwen RAG experiment can be run on Windows with:
+
+```powershell
+.\collected_ps1_scripts\run_qwen18_validator_guided_graph_repair_windows.ps1
+```
+
 Repair iteration summaries can be produced with:
 
 ```bash

@@ -10,6 +10,11 @@ from .model_client import call_model
 from .models import Case, ExperimentConfig, ValidationResult
 from .parser import normalize_puml_text, parse_and_validate_puml_text, parse_plantuml
 from .constants import TRANSITION_RE
+from .graph_repair import (
+    apply_deterministic_graph_repairs,
+    apply_graph_edit_plan,
+    parse_graph_edit_plan,
+)
 from .prompting import (
     _prioritized_repair_issues,
     build_chain_of_thought_analysis_prompt,
@@ -33,6 +38,7 @@ from .prompting import (
     build_syntax_grounded_pattern_rules_repair_prompt,
     build_targeted_repair_prompt,
     build_transition_patch_repair_prompt,
+    build_validator_guided_graph_edit_prompt,
     select_fewshot_examples,
 )
 
@@ -56,6 +62,25 @@ def validation_repair_score(validation: ValidationResult) -> int:
     return (1000 if not validation.valid else 0) + (100 * len(validation.errors)) + len(
         validation.warnings
     )
+
+
+def validator_guided_repair_score(validation: ValidationResult) -> int:
+    score = validation_repair_score(validation) * 1000
+    score += validation.duplicate_transition_count * 100
+    score += len(validation.unreachable_states) * 100
+    for warning in validation.warnings:
+        if warning.startswith("orphan:"):
+            score += len(
+                [state for state in warning.split(":", 1)[-1].split(",") if state.strip()]
+            ) * 100
+        elif warning.startswith("multiple_initial_state_transitions"):
+            match = re.search(r"\((.*)\)", warning)
+            if match:
+                target_count = len(
+                    [state for state in match.group(1).split(",") if state.strip()]
+                )
+                score += max(0, target_count - 1) * 100
+    return score
 
 
 _TRANSITION_LINE_RE = re.compile(
@@ -932,6 +957,7 @@ def run_single_generation(
     if cfg.use_structural_validation:
         syntax_candidate_history = {final_puml}
         compiler_patch_feedback = ""
+        graph_edit_feedback = ""
         for attempt in range(1, max(0, repair_attempts) + 1):
             current_issues = strict_state_diagram_issues(final_validation)
             if not current_issues:
@@ -944,11 +970,12 @@ def run_single_generation(
                 break
 
             critic_prompt = ""
-            critic_feedback = (
-                compiler_patch_feedback
-                if repair_mode_clean == "compiler_constrained_patch"
-                else ""
-            )
+            if repair_mode_clean == "compiler_constrained_patch":
+                critic_feedback = compiler_patch_feedback
+            elif repair_mode_clean == "validator_guided_graph_edit":
+                critic_feedback = graph_edit_feedback
+            else:
+                critic_feedback = ""
             target_issue = ""
             target_issue_key = ""
             repair_route = ""
@@ -957,6 +984,7 @@ def run_single_generation(
                 repair_mode_clean in {
                     "compiler_guided_syntax",
                     "compiler_guided_issue_routed",
+                    "validator_guided_graph_edit",
                 }
                 and _has_plantuml_syntax_error(final_validation)
             ):
@@ -1045,6 +1073,73 @@ def run_single_generation(
                         if not current_issues:
                             break
 
+            if (
+                repair_mode_clean == "validator_guided_graph_edit"
+                and not _has_plantuml_syntax_error(final_validation)
+            ):
+                deterministic_puml, deterministic_edits = (
+                    apply_deterministic_graph_repairs(final_puml, final_validation)
+                )
+                if deterministic_edits and deterministic_puml != final_puml:
+                    _, deterministic_validation = parse_and_validate_puml_text(
+                        deterministic_puml
+                    )
+                    deterministic_issues = strict_state_diagram_issues(
+                        deterministic_validation
+                    )
+                    current_score = validator_guided_repair_score(final_validation)
+                    deterministic_score = validator_guided_repair_score(
+                        deterministic_validation
+                    )
+                    current_keys = _validation_issue_keys(final_validation)
+                    deterministic_keys = _validation_issue_keys(
+                        deterministic_validation
+                    )
+                    introduced_keys = deterministic_keys - current_keys
+                    accepted = (
+                        deterministic_validation.valid
+                        and deterministic_score < current_score
+                        and not introduced_keys
+                    )
+                    attempt_artifacts.append(
+                        {
+                            "stage": "deterministic_graph_repair",
+                            "attempt": attempt,
+                            "repair_mode": repair_mode_clean,
+                            "graph_edits": deterministic_edits,
+                            "puml": deterministic_puml,
+                            "validation": deterministic_validation.to_dict(),
+                            "strict_state_diagram_valid": not deterministic_issues,
+                            "accepted": accepted,
+                            "introduced_issue_keys": sorted(introduced_keys),
+                            "previous_score": current_score,
+                            "repair_score": deterministic_score,
+                        }
+                    )
+                    steps.append(
+                        {
+                            "stage": "deterministic_graph_repair",
+                            "attempt": attempt,
+                            "repair_mode": repair_mode_clean,
+                            "graph_edits": deterministic_edits,
+                            "accepted": accepted,
+                            "introduced_issue_keys": sorted(introduced_keys),
+                            "previous_score": current_score,
+                            "repair_score": deterministic_score,
+                            "plantuml_valid": deterministic_validation.valid,
+                            "strict_state_diagram_valid": not deterministic_issues,
+                            "errors": list(deterministic_validation.errors),
+                            "warnings": list(deterministic_validation.warnings),
+                        }
+                    )
+                    if accepted:
+                        final_puml = deterministic_puml
+                        final_validation = deterministic_validation
+                        current_issues = deterministic_issues
+                        graph_edit_feedback = ""
+                        if not current_issues:
+                            break
+
             if repair_mode_clean == "targeted":
                 repair_prompt = build_targeted_repair_prompt(
                     requirement,
@@ -1120,6 +1215,21 @@ def run_single_generation(
                     final_validation,
                     critic_feedback,
                 )
+            elif repair_mode_clean == "validator_guided_graph_edit":
+                if _has_plantuml_syntax_error(final_validation):
+                    repair_prompt = build_compiler_constrained_patch_repair_prompt(
+                        requirement,
+                        final_puml,
+                        final_validation,
+                        critic_feedback,
+                    )
+                else:
+                    repair_prompt = build_validator_guided_graph_edit_prompt(
+                        requirement,
+                        final_puml,
+                        final_validation,
+                        critic_feedback,
+                    )
             elif repair_mode_clean == "hybrid_issue_guided":
                 repair_prompt = build_hybrid_issue_guided_repair_prompt(
                     requirement,
@@ -1194,10 +1304,21 @@ def run_single_generation(
             patch_lines: list[str] = []
             compiler_patch_edits: list[dict[str, Any]] = []
             compiler_patch_error = ""
+            graph_edit_plan: list[dict[str, Any]] = []
+            applied_graph_edits: list[dict[str, Any]] = []
+            graph_edit_reason = ""
+            graph_edit_error = ""
+            validator_guided_syntax_patch = (
+                repair_mode_clean == "validator_guided_graph_edit"
+                and _has_plantuml_syntax_error(final_validation)
+            )
             if repair_mode_clean == "transition_patch":
                 patch_lines = _extract_transition_patch_lines(repaired)
                 repaired_puml = _apply_transition_patch(final_puml, patch_lines)
-            elif repair_mode_clean == "compiler_constrained_patch":
+            elif (
+                repair_mode_clean == "compiler_constrained_patch"
+                or validator_guided_syntax_patch
+            ):
                 compiler_patch_edits, compiler_patch_error = (
                     _parse_compiler_constrained_patch(repaired)
                 )
@@ -1210,16 +1331,34 @@ def run_single_generation(
                             compiler_patch_edits,
                         )
                     )
+            elif repair_mode_clean == "validator_guided_graph_edit":
+                graph_edit_plan, graph_edit_reason, graph_edit_error = (
+                    parse_graph_edit_plan(repaired)
+                )
+                if graph_edit_error:
+                    repaired_puml = final_puml
+                else:
+                    repaired_puml, applied_graph_edits, graph_edit_error = (
+                        apply_graph_edit_plan(final_puml, graph_edit_plan)
+                    )
             else:
                 repaired_puml = normalize_puml_text(repaired)
             _, repaired_validation = parse_and_validate_puml_text(repaired_puml)
             repaired_issues = strict_state_diagram_issues(repaired_validation)
-            current_score = validation_repair_score(final_validation)
-            repaired_score = validation_repair_score(repaired_validation)
+            score_function = (
+                validator_guided_repair_score
+                if repair_mode_clean == "validator_guided_graph_edit"
+                else validation_repair_score
+            )
+            current_score = score_function(final_validation)
+            repaired_score = score_function(repaired_validation)
             preserves_shape, preservation_meta = repair_preserves_graph_shape(final_puml, repaired_puml)
             syntax_content_preserved = True
             syntax_preservation_meta: dict[str, Any] = {}
-            if repair_mode_clean in SYNTAX_ONLY_REPAIR_MODES:
+            if (
+                repair_mode_clean in SYNTAX_ONLY_REPAIR_MODES
+                or validator_guided_syntax_patch
+            ):
                 syntax_content_preserved, syntax_preservation_meta = (
                     syntax_repair_preserves_content(final_puml, repaired_puml)
                 )
@@ -1242,18 +1381,32 @@ def run_single_generation(
                     "compiler_guided_issue_routed",
                     "syntax_preserving",
                     "compiler_constrained_patch",
+                    "validator_guided_graph_edit",
                 }
                 and syntax_was_invalid
                 and _has_plantuml_syntax_error(repaired_validation)
             )
             routed_acceptance = True
+            introduced_keys: set[str] = set()
             if repair_mode_clean == "compiler_guided_issue_routed":
                 current_keys = _validation_issue_keys(final_validation)
                 repaired_keys = _validation_issue_keys(repaired_validation)
                 target_solved = bool(target_issue_key) and target_issue_key not in repaired_keys
                 introduced_keys = repaired_keys - current_keys
                 routed_acceptance = target_solved and not introduced_keys
-            if repair_mode_clean in SYNTAX_ONLY_REPAIR_MODES:
+            elif (
+                repair_mode_clean == "validator_guided_graph_edit"
+                and not validator_guided_syntax_patch
+            ):
+                current_keys = _validation_issue_keys(final_validation)
+                repaired_keys = _validation_issue_keys(repaired_validation)
+                introduced_keys = repaired_keys - current_keys
+                routed_acceptance = not graph_edit_error and not introduced_keys
+
+            if (
+                repair_mode_clean in SYNTAX_ONLY_REPAIR_MODES
+                or validator_guided_syntax_patch
+            ):
                 accepted = (
                     not compiler_patch_error
                     and syntax_was_invalid
@@ -1266,6 +1419,13 @@ def run_single_generation(
                         or syntax_diagnostic_progress
                     )
                 )
+            elif repair_mode_clean == "validator_guided_graph_edit":
+                accepted = (
+                    not graph_edit_error
+                    and repaired_validation.valid
+                    and routed_acceptance
+                    and repaired_score < current_score
+                )
             else:
                 accepted = compiler_acceptance and routed_acceptance and repaired_score < current_score and (
                     repair_mode_clean != "targeted" or preserves_shape or repaired_score == 0
@@ -1274,9 +1434,19 @@ def run_single_generation(
             if not accepted:
                 if compiler_patch_error:
                     rejection_reason = "compiler_patch_invalid"
-                elif repair_mode_clean in SYNTAX_ONLY_REPAIR_MODES and not syntax_content_preserved:
+                elif graph_edit_error:
+                    rejection_reason = "graph_edit_plan_invalid"
+                elif introduced_keys:
+                    rejection_reason = "graph_edit_introduced_new_issue_type"
+                elif (
+                    repair_mode_clean in SYNTAX_ONLY_REPAIR_MODES
+                    or validator_guided_syntax_patch
+                ) and not syntax_content_preserved:
                     rejection_reason = "syntax_repair_changed_preserved_content"
-                elif repair_mode_clean in SYNTAX_ONLY_REPAIR_MODES:
+                elif (
+                    repair_mode_clean in SYNTAX_ONLY_REPAIR_MODES
+                    or validator_guided_syntax_patch
+                ):
                     rejection_reason = "compiler_error_not_resolved_or_advanced"
                 else:
                     rejection_reason = "repair_did_not_improve_validation_score"
@@ -1294,6 +1464,11 @@ def run_single_generation(
                     "raw_model_response": repaired,
                     "compiler_patch_edits": compiler_patch_edits,
                     "compiler_patch_error": compiler_patch_error,
+                    "graph_edit_plan": graph_edit_plan,
+                    "applied_graph_edits": applied_graph_edits,
+                    "graph_edit_reason": graph_edit_reason,
+                    "graph_edit_error": graph_edit_error,
+                    "introduced_issue_keys": sorted(introduced_keys),
                     "puml": repaired_puml,
                     "validation": repaired_validation.to_dict(),
                     "strict_state_diagram_valid": not repaired_issues,
@@ -1314,6 +1489,7 @@ def run_single_generation(
                 final_validation = repaired_validation
                 syntax_candidate_history.add(repaired_puml)
                 compiler_patch_feedback = ""
+                graph_edit_feedback = ""
                 current_issues_after_attempt = repaired_issues
             else:
                 if repair_mode_clean == "compiler_constrained_patch":
@@ -1324,6 +1500,29 @@ def run_single_generation(
                         current_syntax_line,
                         repaired_syntax_line,
                     )
+                elif repair_mode_clean == "validator_guided_graph_edit":
+                    if validator_guided_syntax_patch:
+                        graph_edit_feedback = _compiler_patch_rejection_feedback(
+                            rejection_reason,
+                            compiler_patch_error,
+                            syntax_preservation_meta,
+                            current_syntax_line,
+                            repaired_syntax_line,
+                        )
+                    elif graph_edit_error:
+                        graph_edit_feedback = (
+                            f"Edit plan rejected before validation: {graph_edit_error}."
+                        )
+                    elif introduced_keys:
+                        graph_edit_feedback = (
+                            "Edit plan introduced new issue types: "
+                            + ", ".join(sorted(introduced_keys))
+                            + "."
+                        )
+                    else:
+                        graph_edit_feedback = (
+                            "Edit plan did not reduce the validator issue score."
+                        )
                 current_issues_after_attempt = current_issues
             steps.append(
                 {
@@ -1337,6 +1536,11 @@ def run_single_generation(
                     "repair_route": repair_route,
                     "compiler_patch_edits": compiler_patch_edits,
                     "compiler_patch_error": compiler_patch_error,
+                    "graph_edit_plan": graph_edit_plan,
+                    "applied_graph_edits": applied_graph_edits,
+                    "graph_edit_reason": graph_edit_reason,
+                    "graph_edit_error": graph_edit_error,
+                    "introduced_issue_keys": sorted(introduced_keys),
                     "previous_score": current_score,
                     "repair_score": repaired_score,
                     "preserves_graph_shape": preserves_shape,
@@ -1362,7 +1566,11 @@ def run_single_generation(
                         "stage": "repair_rejected",
                         "attempt": attempt,
                         "reason": rejection_reason,
-                        "feedback_for_next_attempt": compiler_patch_feedback,
+                        "feedback_for_next_attempt": (
+                            graph_edit_feedback
+                            if repair_mode_clean == "validator_guided_graph_edit"
+                            else compiler_patch_feedback
+                        ),
                         "kept_previous_issues": current_issues,
                         "action": "kept_best_diagram_and_continued",
                     }

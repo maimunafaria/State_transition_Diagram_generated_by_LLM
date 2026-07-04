@@ -99,6 +99,14 @@ def strip_inline_comment(line: str) -> str:
 def parse_plantuml(puml_text: str) -> DiagramGraph:
     text = normalize_puml_text(puml_text)
     aliases: dict[str, str] = {}
+    for raw_line in text.splitlines():
+        line = strip_inline_comment(raw_line).strip()
+        alias_match = STATE_ALIAS_RE.match(line) or STATE_ALIAS_REVERSE_RE.match(line)
+        if alias_match:
+            aliases[alias_match.group("alias").strip()] = sanitize_name(
+                alias_match.group("label")
+            )
+
     states: set[str] = set()
     transitions: list[tuple[str, str, str]] = []
     initial_targets: list[str] = []
